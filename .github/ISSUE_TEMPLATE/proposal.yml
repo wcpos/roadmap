@@ -1,0 +1,16 @@
+name: Proposal
+description: Idea being evaluated
+labels: [proposal]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What's the pain point?
+    validations:
+      required: true
+  - type: textarea
+    id: approach
+    attributes:
+      label: Suggested approach
+      description: Optional — how might we solve this?

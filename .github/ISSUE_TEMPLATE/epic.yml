@@ -1,0 +1,27 @@
+name: Epic
+description: Cross-repo feature or initiative
+labels: [epic, enhancement]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: 2-3 sentences describing the feature for users
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Why are we doing this?
+    validations:
+      required: true
+  - type: checkboxes
+    id: repos
+    attributes:
+      label: Repos involved
+      options:
+        - label: woocommerce-pos
+        - label: woocommerce-pos-pro
+        - label: monorepo
+        - label: electron
