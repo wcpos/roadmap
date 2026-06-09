@@ -1,0 +1,210 @@
+name: WCPOS Release Train
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_id:
+        description: Optional stable release identifier
+        required: false
+        type: string
+      web_bundle:
+        description: Release web bundle
+        required: false
+        default: false
+        type: boolean
+      electron:
+        description: Release Electron app
+        required: false
+        default: false
+        type: boolean
+      monorepo:
+        description: Bump monorepo submodules / app release state
+        required: false
+        default: false
+        type: boolean
+      mobile:
+        description: Build and submit mobile apps
+        required: false
+        default: false
+        type: boolean
+      free_plugin:
+        description: Release free WordPress plugin
+        required: false
+        default: false
+        type: boolean
+      pro_plugin:
+        description: Release Pro WordPress plugin
+        required: false
+        default: false
+        type: boolean
+      version_overrides_json:
+        description: Optional JSON object, e.g. {"web_bundle":"1.9.9"}
+        required: false
+        default: '{}'
+        type: string
+      dry_run:
+        description: Dispatch target workflows in dry-run mode
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+  issues: write
+  actions: write
+
+concurrency:
+  group: wcpos-release-train
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    name: Plan release train
+    runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.release-id.outputs.release_id }}
+      issue_number: ${{ steps.issue.outputs.issue_number }}
+    steps:
+      - name: Checkout Roadmap
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
+        with:
+          app-id: ${{ secrets.PROJECT_BOT_APP_ID }}
+          private-key: ${{ secrets.PROJECT_BOT_PRIVATE_KEY }}
+          owner: wcpos
+
+      - name: Resolve release id
+        id: release-id
+        run: |
+          set -euo pipefail
+          if [ -n "${{ inputs.release_id }}" ]; then
+            RELEASE_ID="${{ inputs.release_id }}"
+          else
+            RELEASE_ID="release-$(date -u +%Y%m%d-%H%M%S)"
+          fi
+          echo "release_id=$RELEASE_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve next versions
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          RELEASE_ID: ${{ steps.release-id.outputs.release_id }}
+          VERSION_OVERRIDES_JSON: ${{ inputs.version_overrides_json }}
+          ENABLE_WEB_BUNDLE: ${{ inputs.web_bundle }}
+          ENABLE_ELECTRON: ${{ inputs.electron }}
+          ENABLE_MONOREPO: ${{ inputs.monorepo }}
+          ENABLE_MOBILE: ${{ inputs.mobile }}
+          ENABLE_FREE_PLUGIN: ${{ inputs.free_plugin }}
+          ENABLE_PRO_PLUGIN: ${{ inputs.pro_plugin }}
+        run: bash scripts/release/resolve-versions.sh
+
+      - name: Create tracking issue
+        id: issue
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          ROADMAP_REPO: ${{ github.repository }}
+        run: |
+          bash scripts/release/create-tracking-issue.sh
+          echo "issue_number=$(cat release-issue.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload release plan
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: release-plan
+          path: |
+            release-plan.json
+            release-issue.txt
+
+  prepare:
+    name: Dispatch prepare workflows
+    needs: plan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Roadmap
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Download release plan
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v6.0.0
+        with:
+          name: release-plan
+
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
+        with:
+          app-id: ${{ secrets.PROJECT_BOT_APP_ID }}
+          private-key: ${{ secrets.PROJECT_BOT_PRIVATE_KEY }}
+          owner: wcpos
+
+      - name: Dispatch enabled prepare lanes
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          SOURCE_ISSUE: ${{ needs.plan.outputs.issue_number }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          jq -r '["web_bundle","electron","monorepo","mobile","free_plugin","pro_plugin"][] as $lane | select(.lanes[$lane]) | $lane' release-plan.json | while read -r lane; do
+            bash scripts/release/dispatch-workflow.sh prepare "$lane"
+          done
+
+      - name: Mark prepare dispatched
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          ROADMAP_REPO: ${{ github.repository }}
+        run: bash scripts/release/update-tracking-issue.sh "Prepare workflows dispatched"
+
+      - name: Upload release plan
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: release-plan-prepared
+          path: |
+            release-plan.json
+            release-issue.txt
+
+  approve_publish:
+    name: Approve publish gate
+    needs: [plan, prepare]
+    runs-on: ubuntu-latest
+    environment: wcpos-release-publish
+    steps:
+      - run: echo "Publish gate approved for release ${{ needs.plan.outputs.release_id }}"
+
+  publish:
+    name: Dispatch publish workflows
+    needs: [plan, approve_publish]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Roadmap
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Download release plan
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v6.0.0
+        with:
+          name: release-plan-prepared
+
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2.2.1
+        with:
+          app-id: ${{ secrets.PROJECT_BOT_APP_ID }}
+          private-key: ${{ secrets.PROJECT_BOT_PRIVATE_KEY }}
+          owner: wcpos
+
+      - name: Dispatch enabled publish lanes
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          SOURCE_ISSUE: ${{ needs.plan.outputs.issue_number }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          jq -r '["web_bundle","electron","monorepo","mobile","free_plugin","pro_plugin"][] as $lane | select(.lanes[$lane]) | $lane' release-plan.json | while read -r lane; do
+            bash scripts/release/dispatch-workflow.sh publish "$lane"
+          done
+
+      - name: Mark publish dispatched
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          ROADMAP_REPO: ${{ github.repository }}
+        run: bash scripts/release/update-tracking-issue.sh "Publish workflows dispatched"

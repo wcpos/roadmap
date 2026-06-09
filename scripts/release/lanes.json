@@ -1,0 +1,61 @@
+{
+  "web_bundle": {
+    "label": "Web Bundle",
+    "repository": "wcpos/web-bundle",
+    "prepare_workflow": "prepare-release.yml",
+    "publish_workflow": "publish-release.yml",
+    "fallback_file": "package.json",
+    "fallback_type": "package_json",
+    "depends_on": []
+  },
+  "electron": {
+    "label": "Electron",
+    "repository": "wcpos/electron",
+    "prepare_workflow": "prepare-release.yml",
+    "publish_workflow": "publish-release.yml",
+    "fallback_file": "package.json",
+    "fallback_type": "package_json",
+    "depends_on": ["web_bundle"]
+  },
+  "monorepo": {
+    "label": "Monorepo Submodules",
+    "repository": "wcpos/monorepo",
+    "prepare_workflow": "prepare-release.yml",
+    "publish_workflow": "publish-release.yml",
+    "fallback_file": "apps/main/package.json",
+    "fallback_type": "package_json",
+    "depends_on": ["web_bundle", "electron"]
+  },
+  "mobile": {
+    "label": "Mobile App Store Build",
+    "repository": "wcpos/monorepo",
+    "prepare_workflow": "prepare-release.yml",
+    "publish_workflow": "build.yml",
+    "fallback_file": "apps/main/package.json",
+    "fallback_type": "package_json",
+    "publish_inputs": {
+      "platform": "all",
+      "profile": "production",
+      "submit": "true"
+    },
+    "depends_on": ["monorepo"]
+  },
+  "free_plugin": {
+    "label": "Free WordPress Plugin",
+    "repository": "wcpos/woocommerce-pos",
+    "prepare_workflow": "prepare-release.yml",
+    "publish_workflow": "publish-release.yml",
+    "fallback_file": "woocommerce-pos.php",
+    "fallback_type": "wp_plugin_header",
+    "depends_on": []
+  },
+  "pro_plugin": {
+    "label": "Pro WordPress Plugin",
+    "repository": "wcpos/woocommerce-pos-pro",
+    "prepare_workflow": "prepare-release.yml",
+    "publish_workflow": "publish-release.yml",
+    "fallback_file": "woocommerce-pos-pro.php",
+    "fallback_type": "wp_plugin_header",
+    "depends_on": ["free_plugin"]
+  }
+}

@@ -21,5 +21,6 @@ This repo contains no code — only issues for tracking features and initiatives
 
 ## Links
 
+- [Release orchestration](docs/releases/wcpos-release-orchestration.md)
 - [Public Roadmap](https://wcpos.com/roadmap)
 - [Project Board](https://github.com/orgs/wcpos/projects/4)
