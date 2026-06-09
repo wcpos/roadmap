@@ -129,6 +129,14 @@ Actions performed:
    - CodeQL
    - Dependency Review
 9. Merged PR #568.
+10. Follow-up correction: the monorepo GitHub release/tag was initially missed.
+11. Created `wcpos/monorepo` release `v1.9.2` from merge commit `089375653265ce4d6a2389e0e2620b2281e64585` with app release notes.
+
+Release:
+
+- https://github.com/wcpos/monorepo/releases/tag/v1.9.2
+
+Monorepo release notes must exist because they are the canonical app changelog for downstream Free/Pro plugin notes, Electron release notes, and mobile release context. They should include the app-facing changes from the monorepo, not just the version/submodule bump.
 
 Important issue fixed:
 
@@ -311,7 +319,7 @@ Use this checklist until automation replaces it.
 - [ ] Run monorepo validation.
 - [ ] Open/update monorepo release PR.
 - [ ] Merge monorepo release PR.
-- [ ] Create/publish monorepo GitHub release/tag.
+- [ ] Create/publish monorepo GitHub release/tag with app-facing release notes.
 - [ ] Trigger Electron Publish workflow.
 - [ ] Publish Electron release notes and release.
 - [ ] Trigger mobile `build.yml` with `platform=all`, `profile=production`, `submit=true`.
@@ -338,14 +346,15 @@ The Roadmap release conductor should support these requirements:
 
 1. **Independent lane versions.** Each repository has its own version stream. The conductor should default to latest release/tag patch `+1`, with explicit overrides.
 2. **Merge-before-release invariant.** No GitHub release/tag should be created before the PR containing the release files is merged.
-3. **Submodule awareness.** Monorepo must update submodules to merged `main` commits, not PR branch commits.
-4. **Release-note aggregation.** Free and Pro plugin notes must include main app changes, not just PHP plugin changes.
-5. **Stale draft detection.** If a release workflow creates a draft from stale content, the conductor should detect/delete/rebuild or fail with a clear recovery step.
-6. **CDN purge/verify.** Web-bundle release should automatically purge jsDelivr and verify the production URL style used by the plugin.
-7. **Platform-specific Electron resilience.** Flatpak/Flathub should not block Windows/macOS release. Linux `.deb`/`.rpm` should not be coupled to Flathub submission if avoidable.
-8. **Mobile build gating.** Mobile production submit should only run after monorepo `main` has the release version and expected submodule refs.
-9. **Status tracking.** The conductor should write a tracking issue/comment with every PR, workflow run, release URL, validation result, and manual gate.
-10. **Recovery commands.** Every failure mode should have an explicit next action: rerun workflow, delete stale draft, update submodule, publish notes, or defer a platform.
+3. **Monorepo release is required.** The monorepo GitHub release/tag and app-facing release notes are not optional; downstream plugin, Electron, and mobile notes depend on this canonical app changelog.
+4. **Submodule awareness.** Monorepo must update submodules to merged `main` commits, not PR branch commits.
+5. **Release-note aggregation.** Free and Pro plugin notes must include main app changes, not just PHP plugin changes.
+6. **Stale draft detection.** If a release workflow creates a draft from stale content, the conductor should detect/delete/rebuild or fail with a clear recovery step.
+7. **CDN purge/verify.** Web-bundle release should automatically purge jsDelivr and verify the production URL style used by the plugin.
+8. **Platform-specific Electron resilience.** Flatpak/Flathub should not block Windows/macOS release. Linux `.deb`/`.rpm` should not be coupled to Flathub submission if avoidable.
+9. **Mobile build gating.** Mobile production submit should only run after monorepo `main` has the release version and expected submodule refs.
+10. **Status tracking.** The conductor should write a tracking issue/comment with every PR, workflow run, release URL, validation result, and manual gate.
+11. **Recovery commands.** Every failure mode should have an explicit next action: rerun workflow, delete stale draft, update submodule, publish notes, or defer a platform.
 
 
 ## Automation Direction Agreed After This Release

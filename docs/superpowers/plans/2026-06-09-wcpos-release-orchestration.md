@@ -35,7 +35,7 @@ Out of scope for the first version:
 | --- | --- | --- | --- | --- |
 | `web_bundle` | `wcpos/web-bundle` | `.github/workflows/prepare-release.yml` | `.github/workflows/publish-release.yml` | latest GitHub release/tag, fallback `package.json` |
 | `electron` | `wcpos/electron` | `.github/workflows/prepare-release.yml` | `.github/workflows/publish-release.yml` | latest GitHub release/tag, fallback `package.json` |
-| `monorepo` | `wcpos/monorepo` | `.github/workflows/prepare-release.yml` | `.github/workflows/publish-release.yml` | latest GitHub release/tag, fallback `apps/main/package.json` |
+| `monorepo` | `wcpos/monorepo` | `.github/workflows/prepare-release.yml` | `.github/workflows/publish-release.yml` | latest GitHub release/tag, fallback `apps/main/package.json`; requires app release notes |
 | `mobile` | `wcpos/monorepo` | same as monorepo or existing `build.yml` | existing `build.yml` | app release version from monorepo lane |
 | `free_plugin` | `wcpos/woocommerce-pos` | `.github/workflows/prepare-release.yml` | existing/new `.github/workflows/publish-release.yml` | latest GitHub release/tag, fallback plugin header |
 | `pro_plugin` | `wcpos/woocommerce-pos-pro` | `.github/workflows/prepare-release.yml` | existing/new `.github/workflows/publish-release.yml` | latest GitHub release/tag, fallback plugin header |
@@ -982,7 +982,7 @@ The workflow automatically detects the latest release/tag for each enabled lane 
 
 - `web_bundle`: releases `wcpos/web-bundle`.
 - `electron`: releases `wcpos/electron`; normally depends on web bundle.
-- `monorepo`: updates app release state and submodule references in `wcpos/monorepo`.
+- `monorepo`: updates app release state and submodule references in `wcpos/monorepo`, then creates the canonical app GitHub release with app-facing release notes.
 - `mobile`: triggers EAS build/submit through `wcpos/monorepo`.
 - `free_plugin`: releases `wcpos/woocommerce-pos` and prepares WordPress.org deploy.
 - `pro_plugin`: releases `wcpos/woocommerce-pos-pro`; normally depends on the Free plugin release.
@@ -1394,7 +1394,46 @@ Use the target repo’s existing build command. In `wcpos/web-bundle/.github/wor
           curl -fsS "https://purge.jsdelivr.net/gh/wcpos/web-bundle@v$version/" || true
 ```
 
-- [ ] **Step 5: Implement Electron publish workflow**
+- [ ] **Step 5: Implement monorepo publish workflow**
+
+In `wcpos/monorepo/.github/workflows/publish-release.yml`, publish the canonical app GitHub release after the monorepo release PR has merged. This release is required even when Electron, mobile, Free, and Pro are also being released, because it is the source of truth for app-facing release notes.
+
+```yaml
+      - name: Create monorepo app release notes
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="${{ inputs.release_version }}"
+          previous="$(gh release list --limit 1 --json tagName --jq '.[0].tagName // empty')"
+          notes_file="release-notes.md"
+          if [[ -n "$previous" ]]; then
+            gh api "repos/${{ github.repository }}/releases/generate-notes" \
+              -f tag_name="v$version" \
+              -f previous_tag_name="$previous" \
+              --jq '.body' > "$notes_file"
+          else
+            printf 'Release v%s\n' "$version" > "$notes_file"
+          fi
+
+      - name: Publish monorepo app GitHub release
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="${{ inputs.release_version }}"
+          if gh release view "v$version" >/dev/null 2>&1; then
+            gh release edit "v$version" --title "WCPOS App v$version" --notes-file release-notes.md --draft=false --latest
+          else
+            gh release create "v$version" --title "WCPOS App v$version" --notes-file release-notes.md --draft=false --latest
+          fi
+```
+
+Gate check: the release train must verify `gh release view v${{ inputs.release_version }} --repo wcpos/monorepo` succeeds before Electron publish and mobile submit are allowed to continue.
+
+- [ ] **Step 6: Implement Electron publish workflow**
 
 Use Electron’s existing publish command. In `wcpos/electron/.github/workflows/publish-release.yml`, add:
 
@@ -1408,7 +1447,7 @@ Use Electron’s existing publish command. In `wcpos/electron/.github/workflows/
           pnpm publish-app
 ```
 
-- [ ] **Step 6: Implement mobile publish by dispatching existing EAS workflow**
+- [ ] **Step 7: Implement mobile publish by dispatching existing EAS workflow**
 
 For mobile lane, Roadmap can dispatch existing `wcpos/monorepo` `build.yml` directly with:
 
@@ -1526,7 +1565,7 @@ Run:
 gh release view --repo wcpos/woocommerce-pos "v<computed-version>"
 ```
 
-Expected: GitHub release exists. If approved for production, WordPress.org deploy workflow should also have run from the release event.
+Expected: GitHub releases exist for every enabled release lane, including `wcpos/monorepo`. If approved for production, WordPress.org deploy workflow should also have run from the release event.
 
 ---
 
