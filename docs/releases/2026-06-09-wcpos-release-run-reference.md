@@ -347,3 +347,70 @@ The Roadmap release conductor should support these requirements:
 9. **Status tracking.** The conductor should write a tracking issue/comment with every PR, workflow run, release URL, validation result, and manual gate.
 10. **Recovery commands.** Every failure mode should have an explicit next action: rerun workflow, delete stale draft, update submodule, publish notes, or defer a platform.
 
+
+## Automation Direction Agreed After This Release
+
+The Roadmap repo should become the release **conductor**, not a replacement build system.
+
+Existing repository workflows remain the execution source of truth because they already contain the repo-specific build, signing, package, and deploy knowledge:
+
+- `wcpos/web-bundle` owns web bundle build/release mechanics.
+- `wcpos/electron` owns Electron Forge publishing, signing, and desktop release assets.
+- `wcpos/monorepo` owns app package builds and mobile `build.yml` EAS submission.
+- `wcpos/woocommerce-pos` owns free plugin packaging and WordPress.org deployment.
+- `wcpos/woocommerce-pos-pro` owns Pro plugin packaging and private release publishing.
+
+Roadmap should orchestrate these workflows by:
+
+1. Resolving versions per lane.
+2. Creating release plans and tracking issues.
+3. Opening or updating release PRs.
+4. Waiting for checks and merges.
+5. Detecting stale drafts/tags.
+6. Dispatching existing repo workflows with the correct inputs.
+7. Recording release URLs, workflow runs, and recovery actions.
+
+The old first-pass draft workflow-contract PRs were closed because the real release showed that we should adapt the existing workflows incrementally instead of replacing them with parallel contracts.
+
+## Partial Release Lanes
+
+A release train does not always include every repository. The conductor must support lane selection.
+
+Examples:
+
+| Scenario | Enabled lanes | Notes |
+| --- | --- | --- |
+| Full app/plugin release | `web_bundle`, `electron`, `monorepo`, `free_plugin`, `pro_plugin`, `mobile` | Full dependency order applies. |
+| PHP plugin patch only | `free_plugin`, optionally `pro_plugin` | No web bundle or mobile build needed unless app-facing changes exist. |
+| Web bundle hotfix | `web_bundle`, optionally `monorepo` if submodule ref must be tracked | Publish web bundle after merge, purge jsDelivr, verify CDN. |
+| Electron-only patch | `electron` | Bump Electron version, publish desktop apps, optionally update monorepo submodule later for traceability. |
+| Mobile-only rebuild | `mobile` | Requires monorepo `main` already contains desired app version/source. |
+
+### Electron-only patch flow
+
+An Electron-only patch affects only `wcpos/electron`. It should not force a monorepo app version bump, web-bundle build, free plugin release, Pro release, or mobile submission unless the patch changes shared app code or requires a new Expo build from monorepo.
+
+Automated conductor flow:
+
+1. Operator dispatches Roadmap release conductor with lane `electron` only.
+2. Conductor resolves latest Electron release/tag and proposes the next Electron patch version, e.g. `v1.9.2 -> v1.9.3`.
+3. Conductor creates a tracking issue for the Electron-only release.
+4. Conductor opens an Electron release PR that bumps Electron package metadata and includes release notes scoped to the desktop fix.
+5. Conductor waits for Electron PR checks.
+6. Conductor merges the Electron PR only after checks pass and approval gates are satisfied.
+7. Conductor dispatches the existing Electron Publish workflow.
+8. Conductor monitors platform jobs independently:
+   - macOS Intel
+   - macOS Apple Silicon
+   - Windows
+   - Linux, if enabled and healthy
+9. Conductor publishes the Electron GitHub release after assets are present.
+10. Conductor records any deferred platforms, such as Linux/Flatpak, without blocking already-built desktop assets.
+
+Optional follow-up:
+
+- If the monorepo tracks Electron as a submodule for traceability, the conductor can open a low-risk monorepo PR to update `apps/electron` to the merged Electron commit. This should be a separate optional `monorepo_submodule_sync` lane, not part of the required Electron patch release.
+
+Important invariant:
+
+- If the Electron publish workflow checks out `wcpos/monorepo` `main`, an Electron-only patch is safe only when it does not require changes to monorepo app code. If the Electron patch depends on app code changes, enable the `monorepo` lane first and run Electron publish only after monorepo `main` is updated.
