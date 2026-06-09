@@ -1406,11 +1406,13 @@ In `wcpos/monorepo/.github/workflows/publish-release.yml`, publish the canonical
         run: |
           set -euo pipefail
           version="${{ inputs.release_version }}"
+          target_commitish="${{ github.sha }}"
           previous="$(gh release list --limit 1 --json tagName --jq '.[0].tagName // empty')"
           notes_file="release-notes.md"
           if [[ -n "$previous" ]]; then
             gh api "repos/${{ github.repository }}/releases/generate-notes" \
               -f tag_name="v$version" \
+              -f target_commitish="$target_commitish" \
               -f previous_tag_name="$previous" \
               --jq '.body' > "$notes_file"
           else
@@ -1424,10 +1426,11 @@ In `wcpos/monorepo/.github/workflows/publish-release.yml`, publish the canonical
         run: |
           set -euo pipefail
           version="${{ inputs.release_version }}"
+          target_commitish="${{ github.sha }}"
           if gh release view "v$version" >/dev/null 2>&1; then
             gh release edit "v$version" --title "WCPOS App v$version" --notes-file release-notes.md --draft=false --latest
           else
-            gh release create "v$version" --title "WCPOS App v$version" --notes-file release-notes.md --draft=false --latest
+            gh release create "v$version" --target "$target_commitish" --title "WCPOS App v$version" --notes-file release-notes.md --draft=false --latest
           fi
 ```
 
