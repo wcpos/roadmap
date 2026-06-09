@@ -40,6 +40,8 @@ Out of scope for the first version:
 | `free_plugin` | `wcpos/woocommerce-pos` | `.github/workflows/prepare-release.yml` | existing/new `.github/workflows/publish-release.yml` | latest GitHub release/tag, fallback plugin header |
 | `pro_plugin` | `wcpos/woocommerce-pos-pro` | `.github/workflows/prepare-release.yml` | existing/new `.github/workflows/publish-release.yml` | latest GitHub release/tag, fallback plugin header |
 
+Lane config must support phase-specific input maps because existing workflows do not all share the same dispatch contract. For example, the `mobile` publish lane calls `wcpos/monorepo` `build.yml` with `platform=all`, `profile=production`, and `submit=true`, while plugin release workflows use version-style inputs.
+
 ## File Structure
 
 ### Roadmap repo: `/Users/kilbot/Projects/roadmap`
@@ -159,7 +161,12 @@ Write:
     "publish_workflow": "build.yml",
     "fallback_file": "apps/main/package.json",
     "fallback_type": "package_json",
-    "depends_on": ["monorepo"]
+    "depends_on": ["monorepo"],
+    "publish_inputs": {
+      "platform": "all",
+      "profile": "production",
+      "submit": "true"
+    }
   },
   "free_plugin": {
     "label": "Free WordPress Plugin",
@@ -542,10 +549,11 @@ Expected: commit succeeds.
 
 ---
 
-## Task 5: Implement workflow dispatch helper
+## Task 5: Implement workflow dispatch and run-monitoring helpers
 
 **Files:**
 - Create: `scripts/release/dispatch-workflow.sh`
+- Create: `scripts/release/wait-for-workflow.sh`
 
 - [ ] **Step 1: Create dispatch helper**
 
@@ -581,26 +589,88 @@ fi
 
 echo "Dispatching $workflow in $repo for $LANE v$version ($PHASE)"
 
-gh workflow run "$workflow" \
-  --repo "$repo" \
-  -f release_id="$release_id" \
-  -f lane="$LANE" \
-  -f release_version="$version" \
-  -f source_issue="${SOURCE_ISSUE:-}" \
-  -f dry_run="${DRY_RUN:-false}"
+inputs_json="$(jq -c \
+  --arg lane "$LANE" \
+  --arg phase "$PHASE" \
+  --arg version "$version" \
+  --arg release_id "$release_id" \
+  --arg source_issue "${SOURCE_ISSUE:-}" \
+  --arg dry_run "${DRY_RUN:-false}" '
+  .[$lane][($phase + "_inputs")] // {}
+  | with_entries(.value = (.value | tostring | gsub("\\$version"; $version)))
+  | . + {
+      release_id: $release_id,
+      lane: $lane,
+      release_version: $version,
+      source_issue: $source_issue,
+      dry_run: $dry_run
+    }
+' "$LANES_FILE")"
+
+args=(workflow run "$workflow" --repo "$repo")
+while IFS='=' read -r key value; do
+  args+=(-f "$key=$value")
+done < <(jq -r 'to_entries[] | "\(.key)=\(.value)"' <<<"$inputs_json")
+
+"${args[@]}"
 ```
 
-- [ ] **Step 2: Make helper executable**
+- [ ] **Step 2: Create workflow wait helper**
+
+Write `scripts/release/wait-for-workflow.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO="${1:?Usage: wait-for-workflow.sh <repo> <workflow> <branch> <after-iso8601>}"
+WORKFLOW="${2:?Usage: wait-for-workflow.sh <repo> <workflow> <branch> <after-iso8601>}"
+BRANCH="${3:?Usage: wait-for-workflow.sh <repo> <workflow> <branch> <after-iso8601>}"
+AFTER="${4:?Usage: wait-for-workflow.sh <repo> <workflow> <branch> <after-iso8601>}"
+
+for attempt in {1..90}; do
+  run_json="$(gh run list \
+    --repo "$REPO" \
+    --workflow "$WORKFLOW" \
+    --branch "$BRANCH" \
+    --created ">=$AFTER" \
+    --limit 1 \
+    --json databaseId,status,conclusion,url \
+    --jq '.[0] // empty')"
+
+  if [[ -n "$run_json" ]]; then
+    status="$(jq -r '.status' <<<"$run_json")"
+    conclusion="$(jq -r '.conclusion // ""' <<<"$run_json")"
+    url="$(jq -r '.url' <<<"$run_json")"
+    echo "Found $WORKFLOW run: $url status=$status conclusion=$conclusion"
+
+    if [[ "$status" == "completed" ]]; then
+      if [[ "$conclusion" == "success" ]]; then
+        exit 0
+      fi
+      echo "::error::$WORKFLOW in $REPO completed with conclusion=$conclusion" >&2
+      exit 1
+    fi
+  fi
+
+  sleep 20
+done
+
+echo "::error::Timed out waiting for $WORKFLOW in $REPO after $AFTER" >&2
+exit 1
+```
+
+- [ ] **Step 3: Make helpers executable**
 
 Run:
 
 ```bash
-chmod +x scripts/release/dispatch-workflow.sh
+chmod +x scripts/release/dispatch-workflow.sh scripts/release/wait-for-workflow.sh
 ```
 
 Expected: command exits with status `0`.
 
-- [ ] **Step 3: Test helper in dry-run mode after target workflows exist**
+- [ ] **Step 4: Test helper in dry-run mode after target workflows exist**
 
 Run after at least one target repo has a matching workflow:
 
@@ -611,13 +681,13 @@ DRY_RUN=true bash scripts/release/dispatch-workflow.sh prepare free_plugin
 
 Expected: `gh workflow run` exits with `0` and a run appears in the target repository.
 
-- [ ] **Step 4: Commit helper**
+- [ ] **Step 5: Commit helpers**
 
 Run:
 
 ```bash
-git add scripts/release/dispatch-workflow.sh
-git commit -m "feat(release): dispatch target release workflows"
+git add scripts/release/dispatch-workflow.sh scripts/release/wait-for-workflow.sh
+git commit -m "feat(release): dispatch and monitor target release workflows"
 ```
 
 Expected: commit succeeds.
@@ -774,16 +844,28 @@ jobs:
           private-key: ${{ secrets.PROJECT_BOT_PRIVATE_KEY }}
           owner: wcpos
 
-      - name: Dispatch enabled prepare lanes
+      - name: Dispatch enabled prepare lanes and wait for completion
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           SOURCE_ISSUE: ${{ needs.plan.outputs.issue_number }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: |
           set -euo pipefail
+          dispatch_started_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           jq -r '.lanes | keys[]' release-plan.json | while read -r lane; do
             bash scripts/release/dispatch-workflow.sh prepare "$lane"
           done
+
+          jq -r '.lanes | keys[]' release-plan.json | while read -r lane; do
+            repo="$(jq -r --arg lane "$lane" '.[$lane].repository' scripts/release/lanes.json)"
+            workflow="$(jq -r --arg lane "$lane" '.[$lane].prepare_workflow' scripts/release/lanes.json)"
+            branch="$(jq -r --arg lane "$lane" '.[$lane].prepare_branch // "main"' scripts/release/lanes.json)"
+            bash scripts/release/wait-for-workflow.sh "$repo" "$workflow" "$branch" "$dispatch_started_at"
+          done
+
+          # Prepare workflows are responsible for opening/merging release PRs or
+          # returning failure. The publish gate is only reachable after all
+          # enabled prepare runs have completed successfully.
 
       - name: Upload release plan
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
@@ -881,7 +963,7 @@ Expected: command exits with status `0`.
 
 Create `docs/releases/wcpos-release-orchestration.md`:
 
-```markdown
+````markdown
 # WCPOS Release Orchestration
 
 The Roadmap repo acts as the release conductor for coordinated WCPOS releases.
@@ -924,7 +1006,7 @@ Example:
 ```json
 {"web_bundle":"1.9.99","free_plugin":"1.10.3"}
 ```
-```
+````
 
 - [ ] **Step 3: Link docs from README**
 
