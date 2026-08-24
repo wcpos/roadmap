@@ -19,17 +19,19 @@ Critical issues that jump the queue (`priority/P0`):
 
 ## Now
 
+**v1.10.0 — releasing 2026-08-24** · *Offline & stock-state correctness*:
+offline queues (email/order/customer sync), overselling prevention,
+server-side stock validation, barcode reliability.
+
 **v1.9.x** — rolling stabilization patches for the 1.9 line (no fixed date).
 
 ## Next
 
-**v1.10.0 — due 2026-06-30** · *Offline & stock-state correctness*:
-offline queues (email/order/customer sync), overselling prevention,
-server-side stock validation, barcode reliability.
+**v1.11.0 — targeting mid-September 2026** · *Checkout & payments*:
+split payments, and a quick discount at the till via an on-the-fly coupon
+(#91) — which retires negative fees.
 
 ## Later
-
-**v1.11.0 — due 2026-07-31** · *Checkout & payments.*
 
 **v2.0.0** — tablet-first UI refresh (vision; not yet scheduled).
 
