@@ -64,7 +64,7 @@
 <body>
 <header>
   <h1>Printer setup — design pass</h1>
-  <p>The scan-first "Add printer" (Variant C from 2 Sep) as it should look, one dialog, one status line, lists only when there is a choice or a problem. Static mockup; the copy is the shipped M1 copy where it exists. Sources: USB and paired-Bluetooth printers appear on their own; BLE is added from Options.</p>
+  <p>The scan-first "Add printer" (Variant C from 2 Sep) as it should look, one dialog, one status line, lists only when there is a choice or a problem. Static mockup; the copy is the shipped M1 copy where it exists. Sources: USB and paired-Bluetooth printers appear on their own; BLE printers use the visible "Find a Bluetooth printer" entry point, including while scanning.</p>
 </header>
 <div class="grid">
 
@@ -145,8 +145,8 @@
       <div><p class="headline">BlueTooth Printer</p><div class="meta">Bluetooth · Generic ESC/POS</div></div>
       <h3>Which paper is in the printer?</h3>
       <div class="answers">
-        <button class="btn">32 — 58 mm paper</button>
-        <button class="btn primary">42 — 80 mm, older printers</button>
+        <button class="btn primary">32 — 58 mm paper</button>
+        <button class="btn">42 — 80 mm, older printers</button>
         <button class="btn">48 — 80 mm, most Epson &amp; Star</button>
         <button class="btn">64 — 80 mm, small font</button>
       </div>
@@ -181,6 +181,7 @@
       <div class="title"><h2>Add printer</h2><span class="x">×</span></div>
       <div><p class="headline">Receipt Printer</p><div class="meta">192.168.1.150 · port 9100 <span class="src">Wi-Fi</span></div></div>
       <h3>Nothing printed</h3><p class="lede" style="margin-top:-8px">Check the printer is on and on the same Wi-Fi as this computer, then try again.</p>
+      <div class="err"><strong>Having trouble?</strong> We could not confirm that the printer received the test page. Try the steps above or open the printer guide.</div>
       <p class="foot">Bluetooth printers say: "Turn the printer off and on again, then try again." USB: "Check the cable and that the printer is switched on, then try again."</p>
       <div class="row"><button class="btn primary sm">Try again</button><button class="btn sm">Save without testing</button><button class="btn sm" style="border:0;color:var(--blue);padding-left:0">Open the printer guide</button></div>
       <details><summary>Options</summary></details>
@@ -200,8 +201,7 @@
   <div class="screen"><div class="cap">8 · "Enter an address" stops the scan and opens the address form right there</div>
     <div class="dialog">
       <div class="title"><h2>Add printer</h2><span class="x">×</span></div>
-      <div class="status"><span class="spin"></span><span class="t" style="flex:1">Looking for printers on USB, Bluetooth and Wi-Fi…</span><button class="btn sm" style="border:0;color:var(--muted)">Stop</button></div>
-      <div class="row"><button class="btn sm">Find a Bluetooth printer</button></div>
+      <h3>Enter the printer address</h3>
       <div style="border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px">
         <div class="fields"><div><label>IP address</label><input value="192.168.1.131"></div><div style="max-width:110px"><label>Port</label><input value="8008"></div></div>
         <div class="row"><button class="btn primary sm">Check this address</button><button class="btn sm" style="border:0;color:var(--muted)">Cancel</button></div>
@@ -209,7 +209,7 @@
       <details open><summary>Options</summary>
         <div class="fields">
           <div class="full"><label>Printer name</label><input value="Receipt printer"></div>
-          <div><label>Vendor</label><select><option>Epson</option><option>Star Micronics</option><option selected>Generic (ESC/POS)</option></select></div>
+          <div><label>Vendor</label><select><option selected>Epson</option><option>Star Micronics</option><option>Generic (ESC/POS)</option></select></div>
           <div><label>Characters per line</label><select><option>32 — 58 mm paper</option><option selected>42 — 80 mm, older printers</option><option>48 — 80 mm, most Epson &amp; Star</option><option>64 — 80 mm, small font</option></select></div>
         </div>
         <div class="toggles">
@@ -228,7 +228,7 @@
       One large status line while the app works; the printer name becomes the headline once found; everything else is secondary.<br><br>
       Candidates are cards, the whole card is the tap target and selects; the test page is always its own tap ("Print a test page"), never automatic (Paul, 2026-09-05). Status is a coloured pill, the source a small tag.<br><br>
       The question has three full-width answers, the affirmative primary. The finish screen has one tick, one name, one sentence, one button.<br><br>
-      Options (name, vendor, width, toggles) is a quiet disclosure on the scan screens only, closed by default; the address form lives beside its Check button; once a test page is on its way the screen holds nothing but the question. No progress bar unless the scan runs long. The app never explains: one line, the actions, and a link to the printer guide on docs.wcpos.com.
+      Options (name, vendor, width, toggles) is a quiet disclosure on every screen except Saved, closed by default; the address form lives beside its Check button; once a test page is on its way the screen holds nothing but the question. No progress bar unless the scan runs long. The app never explains: one line, the actions, and a link to the printer guide on docs.wcpos.com.
     </div>
   </div>
 

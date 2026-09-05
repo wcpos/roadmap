@@ -2,7 +2,7 @@
 
 **Task:** wcpos/roadmap#136 (gotcha catalogue) → #135 (scan-first wizard flow, prototype `docs/prototypes/2026-09-02-printer-scan-first-flow.html`) → #134 (in-app wizard). Specs on wcpos/monorepo#1597 (Spec G, G9, H/H2/H3, I, J, K this session). Lane `main`, 1.10.x.
 **Mode:** HITL; doctrine in `packages/printer/README.md` (monorepo) — research gate first, log everything, one printer = one row, transport is a routing choice. Pre-flight with the research answers: `docs/handoffs/2026-09-04-printer-mobile-preflight.md`; research files under `docs/research/2026-09-04-printer-mobile-research/`.
-**Safeguards unchanged** (see `2026-09-03-printer-setup-handoff.md`): no device credentials, no admin logins, no probing the Epson beyond the app's own status checks, never bytes to raw 9100 on the Epson, shell jobs on the Netum only with Paul's yes for that job.
+**Safeguards unchanged** (see `2026-09-03-printer-setup-handoff.md`): no device credentials, no admin logins, no probing the Epson beyond the app's own status checks, never bytes to raw 9100 on the Epson, shell jobs on the Netum only with Paul's yes for that job. The SP-OFF raw-9100 rows below are historical observations from the app run, **not an approved exception and not a test to repeat**; all future Epson tests use an acknowledged ePOS/SDK lane.
 
 ## Matrix (state at 19:35 on 09-05; "Verified" = printed from the app on paper)
 
@@ -20,7 +20,7 @@ Merged: wcpos/monorepo#1860 (Spec G1–G8), #1853 (dev-client cleartext), #1861 
 
 ## Gotchas added this session (all on #136 with timestamps)
 
-#21 DOMParser on Hermes · #22 SDK-discovered Epson relabelled generic · #23 native raw print logged nothing · #24/#25 phone-width layout · #26 logo needs canvas (native raster in G8) · #27 barcode HRI off · #28 TCPS/sub-device targets in the Bluetooth picker · #29 `BT:` row only while in pairing mode (open) · #30/#33/#37 width defaults on Bluetooth/USB/generic (G7 for Epson SDK lanes; Spec K for generic) · #31 width query has no pending state (Spec G9, open) · #32 image src entities on the regex path · #34 32-column footer (I1) — dotted rule/amount shift not reproduced offline, compare the hex capture next time · #35 Electron BLE print used the library's `getDevices()` reconnect · #36 premature address error · #38 BLE tail cut off (acknowledged last chunk).
+`#21` DOMParser on Hermes · `#22` SDK-discovered Epson relabelled generic · `#23` native raw print logged nothing · `#24`/`#25` phone-width layout · `#26` logo needs canvas (native raster in G8) · `#27` barcode HRI off · `#28` TCPS/sub-device targets in the Bluetooth picker · `#29` `BT:` row only while in pairing mode (open) · `#30`/`#33`/`#37` width defaults on Bluetooth/USB/generic (G7 for Epson SDK lanes; Spec K for generic) · `#31` width query has no pending state (Spec G9, open) · `#32` image src entities on the regex path · `#34` 32-column footer (I1) — dotted rule/amount shift not reproduced offline, compare the hex capture next time · `#35` Electron BLE print used the library's `getDevices()` reconnect · `#36` premature address error · `#38` BLE tail cut off (acknowledged last chunk).
 
 Dev-client lessons (not merchant-facing): `wcpos-dev://` is the dev scheme now; Metro over Wi-Fi needs `EXPO_NO_METRO_LAZY=true` or the first lazy import dies with "Cannot read property 'reload' of undefined" (Expo's async-require reload path); a connected BLE peripheral stops advertising until power-cycled; `system_profiler SPBluetoothDataType` shows who holds the link.
 

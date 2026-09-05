@@ -57,7 +57,7 @@ The BLE plugin also injects `BLUETOOTH`, `BLUETOOTH_ADMIN`, `BLUETOOTH_CONNECT`,
 - Star: `react-native-star-io10`; exact interfaces:
   `InterfaceType.Lan`, `InterfaceType.Bluetooth`, `InterfaceType.BluetoothLE`, `InterfaceType.Usb`: `packages/printer/src/discovery/star-native-discovery.ts:38-59`.
 - Exact DNS-SD/Bonjour service types passed to discovery: **NOT FOUND**. WCPOS passes no service-name list; the three `NSBonjourServices` entries are declarations, not browse calls. Vendor SDK internals are compiled/opaque.
-- Android multicast lock (`createMulticastLock`/`MulticastLock`): **NOT FOUND** in WCPOS or wrapper source. The required Wi-Fi/multicast permissions are also absent.
+- Android multicast lock (`createMulticastLock`/`MulticastLock`): **NOT FOUND** in the inspected WCPOS-owned declarations or source. The Wi-Fi/multicast permissions are likewise not present in those declarations; the generated merged manifest was not inspected, so their absence from the final manifest is **UNVERIFIED**.
 
 ## 4. Native network printing
 
