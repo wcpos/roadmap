@@ -199,3 +199,57 @@ Pre-existing and unrelated to the design question. Each needs a fix or a decisio
 4. **Defects above.** Fix now in each plugin, or fold each into that plugin's migration? The Stripe fatal path and REST permissions should not wait.
 
 Sources: the five per-plugin audit reports in this folder; the drift and census measurements; woocommerce-pos `includes/Payments/*` and `includes/API/V1/Checkout_Controller.php`; monorepo-v2 `use-checkout-session.ts`; woocommerce-pos issues #828 and #830.
+
+## Addendum: how this lands in the 1.11.0 payments contract (#97)
+
+Written after reading roadmap #97, the Payments Contract v1 spec (wcpos/wiki#1090: hub, descriptor, ledger, routes, tender-flows, extensions) and what has landed on `next` in woocommerce-pos#1839. This supersedes the "host already started" section and option A above: the adapter contract that section describes is **deleted in the 1.11 batch** (#108, spec §10). The recommendation survives; its home is now the contract's `server` capture mode.
+
+### What #97 already settles for #95
+
+| Audit proposal | Contract v1 | Landed on `next`? |
+|---|---|---|
+| Kit lives in the host, one copy, no version collision | Free owns the capture-mode **registry** (`wcpos_register_capture_mode`) and the **route family** `intent / capture / status / void / refund` keyed by the row UUID; extensions register a handler per provider (§4.5, §10) | yes: `Capture_Mode_Registry`, `Capture_Mode_Handler_Interface`, `Abstract_Capture_Mode_Handler`, `manual` + `webview` handlers |
+| Delete the order-authorisation gate | Routes use the plugin's JWT + `X-WCPOS` gate and `publish_shop_orders`; the app is the cashier (§4.5) | yes |
+| Attempt store: current pointer, history, abandoned ids | The **ledger row** is the attempt: client-minted UUID, snapshots, one-way lifecycle, **retry = new row** (§3.4), `provider_refs` | yes: `Contract/Ledger.php` |
+| "Indeterminate create: keep the attempt, reuse the idempotency key" (Square) | Built in: handlers receive a row that already exists; provider calls carry the row id as idempotency header and `metadata.wcpos_payment_id` (§4.3) | yes for the route family |
+| Webhook frame: refetch then reconcile | `wcpos_settle_payment( $payment_id, $patch )` finds the row across orders by `metadata.wcpos_payment_id` and applies the patch under §3.4 (§4.5) | **no** (specified, not landed) |
+| Money: exact leg amount, currency exponent | Handlers receive the **leg amount, never `get_total()`** (#108); `Contract/Money.php` | yes |
+| Tips | `on_reader`: confirmed − leg written as a fee on `capture` (§9) | no |
+| Enable checkbox is web-only | Descriptor `pos_enabled` comes from POS settings (#104) | yes |
+| Provider adapter interface | `describe / bootstrap / intent / capture / status / void / refund` maps one-to-one onto the audit's `create / fetch / cancel / list_terminals / verify_webhook / refund` | yes |
+
+So the "kit" is smaller than the audit estimated: ledger, idempotency, auth and the row model already exist in Free. What remains is exactly the **`server` capture mode**, which §14 lists as not yet done, plus the app's `server` flow screen.
+
+### Gaps the audit adds to the spec for `server` mode
+
+Each of these is a lesson one plugin paid for (the "lessons that did not travel" table). The spec currently leaves them to "the handler", which means five re-implementations again. Proposed placement in brackets.
+
+1. **Per-order lock around every handler call** [Free, route family]. The app's `status` poll, a `void`, and the webhook writer can run concurrently on one row. §4.5 says Free persists and derives; it should also serialise. Square's `OrderLock` (MySQL `GET_LOCK`, option fallback) is the only atomic lock in the family; Mollie's transient lock and PayArc's option lock both document that they are advisory.
+2. **Stale-row sweeper** [Free, cron]. A `server` row only advances when the app calls `status`. If the app dies, the row stays `pending`/`authorized` and the order stays `pending` forever. Square and Mollie both learned this and run a ten-minute cron; Mollie also voids on `woocommerce_order_status_changed` to cancelled/failed. Free should call `status()` on live rows older than a threshold and `void` past a deadline, for every mode that has a handler.
+3. **Amount and currency verification on the way in** [Free, route family]. A handler returns "the row's new state"; Free should refuse `captured` where the provider's confirmed amount or currency differs from the row (outside the `on_reader` tip rule). Square's undercollection case (customer pays less than the leg) needs a ruling: the money moved, so it is neither `captured` nor cleanly `failed`. Proposed: `failed` with `failure_reason: amount_mismatch` plus a needs-attention item, matching the overpaid-offline pattern in §7.
+4. **Webhook dedupe by provider event id** [Free, `wcpos_settle_payment`]. Row idempotency covers replays of the same state; providers also deliver the same event twice and out of order. Square keeps the last 50 event ids per order; PayArc keeps trace+status pairs. A small per-row `seen_events[]` closes it; the one-way lifecycle already refuses regressions.
+5. **Reader curation** [descriptor + POS settings]. Five plugins, five reader pickers. The spec has `hardware.discovery: sdk|manual` and "bootstrap if the handler asks (reader identity)". Mollie's default / allowlist / lock-to-default and Square's cached list with last-known-good fallback are the merchant-facing features; both belong in Free's POS settings per method, with the handler supplying `list_readers()` through `describe()` or `bootstrap`, so the app renders **one** picker for every `server` provider and Free stores the choice.
+6. **Cashier event log** [ledger row]. All five plugins keep the log browser-side, which is why support asks for screenshots. Proposed `row.events[]`: timestamped, redacted, capped, written by Free on every transition and by handlers through a helper, returned on `status`. The app's checkout logger shows it; five log panels retire.
+7. **Deadline and cancel semantics** [app `server` flow, once]. Square's state machine is the reference: idle → creating → polling → cancelling → final; ~300 s deadline; backoff on transport errors; forced read then `void` at the deadline; **cancel is a request, not a result** (keep polling until the provider confirms; Stripe and Mollie get this wrong today); resume on reopen from the live row. Its 45 JS tests port to the app.
+8. **Version gate** [extensions]. §14 already lists "minimum-POS-version declaration". A migrated extension on an old host must fail loud at activation, not on the first sale.
+
+Items 1, 3 and 4 are correctness of Free's route family and belong in Free regardless of the Pro question below. Items 2, 5, 6 and 7 are the shared `server`-mode machinery.
+
+### Free or Pro for the shared `server`-mode base
+
+Paul's framing was "part of the core Pro plugin". The spec's boundary table gives Pro the `server` / `device` / `stored_value` handlers **for its own integrations** and says extensions register handlers with Free's registry, with "which provider's handler lives in Pro versus its extension decided per provider at landing". The shared machinery above is not any provider's handler; it is where an extension's handler runs.
+
+- **In Free:** an `Abstract_Server_Handler` next to `Abstract_Capture_Mode_Handler`; every extension can offer a `server` tile without Pro.
+- **In Pro:** the same class ships in Pro; an extension's tile appears only with Pro active, and without Pro the extension has the Legacy tab only. This matches #102's original boundary ("Pro = terminals") and is a legitimate business choice.
+
+Same code either way; the difference is whether the new tiles are a Pro feature. Note Pro vendors Free via Composer and shadows it at runtime (the pipeline finding on #97), so "core Pro plugin" already contains both; the only question is what an extension can do standalone. This needs Paul's ruling before the `server`-mode landing ticket is written.
+
+### Migration order versus "Stripe Terminal first"
+
+Spec §10 says Stripe Terminal first; that is the `device` driver (the only provider with an official React Native SDK, #114). The five audited plugins are all `server`-driven today. For proving the `server` mode, Mollie remains the cheapest proof (smallest, newest, already has attempt/lock/reconciler/sweeper concepts); Stripe's server-driven smart readers can follow. The two can run in parallel: Stripe `device` driver, Mollie `server` handler.
+
+### Effort, revised
+
+The host-side estimate in the audit (2,500 to 3,500 lines) assumed ledger, idempotency and auth had to be built. They exist. What remains: lock, sweeper, verification, event log, `Abstract_Server_Handler`, reader curation settings, `wcpos_settle_payment`, roughly 1,200 to 1,800 lines with tests, plus the app's `server` flow screen. Per-plugin migration is unchanged: each extension keeps its legacy gateway (Legacy tab) and adds a handler of a few hundred lines over its existing provider layer, then deletes its own AJAX handler, token, poll loop, lock, reconciler and sweeper once the Legacy tab is no longer needed.
+
+The defects table above stands and is unaffected by #97.
