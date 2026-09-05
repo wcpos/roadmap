@@ -93,7 +93,7 @@ WooCommerce POS 1.10.x ships a POS payment-gateway contract, added 2026-04-23 un
 
 ## What the shared layer is
 
-```
+```text
 POS app (monorepo)          woocommerce-pos: terminal kit         Provider plugin (×5)
 ─────────────────────       ─────────────────────────────         ────────────────────
 Terminal checkout screen    Terminal_Gateway base class           Adapter interface:

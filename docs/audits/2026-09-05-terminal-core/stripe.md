@@ -10,6 +10,7 @@
 - Gateway ID: `stripe_terminal_for_woocommerce`. Runtime text domain: `stripe-terminal-for-woocommerce`; the header literally declares `stripe-terminal-for-woocommerce.` with a trailing period. (`includes/Gateway.php:20`, `includes/Gateway.php:47-49`, `stripe-terminal-for-woocommerce.php:10`)
 
 ## 1. Settings
+
 | Field key | Type | Default | Evidence |
 |---|---|---|---|
 | `enabled` | checkbox | `no` | `includes/Gateway.php:77-87` |
@@ -84,6 +85,7 @@
 - **Refund:** `Gateway::process_refund(order_id,amount?,reason)` chooses original test/live mode using `_stripe_terminal_livemode`; resolves `_transaction_id`, `_stripe_terminal_charge_id`, `_stripe_intent_id`, then terminal intent ID. Service calls Stripe refunds API; idempotency key is `stwc_refund_<order>_<minor-amount|full>_<refund-count>`. Adds a note and returns true except failed/canceled/provider errors; pending is accepted. No custom refund meta/cron. (`includes/Gateway.php:434-546`, `includes/StripeTerminalService.php:92-113`)
 
 ## 5. Checkout front end (assets/js)
+
 | File | Physical lines; role | Evidence |
 |---|---|---|
 | `assets/js/payment.js` | 1 unterminated minified line; active jQuery bundle | `assets/js/payment.js:1`, `includes/Gateway.php:676-681` |

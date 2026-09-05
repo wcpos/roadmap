@@ -1,7 +1,7 @@
 # payarc-terminal-for-woocommerce audit
 
 ## 0. Identity
-- **Observed:** static inspection only; no files modified. Tests, browser flows, physical terminals and provider calls were **Not evaluated**.
+- **Observed:** static inspection only; no files modified. Tests were inspected (coverage and the regression harness) but not executed; test outcomes, browser flows, physical terminals, provider calls and runtime compatibility were **Not evaluated**.
 - Main file: `payarc-terminal-for-woocommerce.php`; header version **0.1.15**; PHP minimum **7.4**, WooCommerce minimum **7.0**, tested through **10.0**. Minimum WordPress version and header Text Domain are not declared. Translation calls use `payarc-terminal-for-woocommerce`. (`payarc-terminal-for-woocommerce.php:3-11`, `payarc-terminal-for-woocommerce.php:47`)
 - Namespaces: `WCPOS\WooCommercePOS\PayArcTerminal`, plus `\Services` and `\Utils`. (`includes/Gateway.php:3`, `includes/Services/PayArcClient.php:3`, `includes/Utils/Money.php:3`)
 - Runtime autoloading: custom `spl_autoload_register`, mapping the namespace prefix to `includes/<relative-class>.php`; Composer also declares the same PSR-4 mapping, but bootstrap does not load Composer’s autoloader. (`payarc-terminal-for-woocommerce.php:21-34`, `composer.json:14`)
