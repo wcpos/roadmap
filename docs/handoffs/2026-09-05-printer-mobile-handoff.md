@@ -11,7 +11,7 @@
 | Epson network | Verified 09-03 (logo missing #14) | Verified 09-03 | Verified 09-04, simulator only, SP OFF (raw 9100); permission/entitlement signatures need a real iPad | Verified 09-04 SP OFF (raw 9100). SDK `TCPS:` TLS lane prints SP OFF; **SP ON untested** (candidate acknowledged lane for RED printers). Port-80 ePOS probe now succeeds on the new dev client (identify sees the lane) |
 | Epson Bluetooth | untested | untested (macOS pairing → "Paired Bluetooth printers" serial lane) | needs device (MFi `com.epson.escpos` declared) | **Verified 09-04/05** (SDK; pairing needs the Bluetooth Status Sheet; width from the printer, 48) |
 | Epson USB | untested | untested | n/a (Epson: no iOS USB for this model) | **Verified 09-05** (SDK `USB:/dev/bus/usb/001/002`, width from the printer, 48) |
-| Netum Bluetooth (BLE) | untested | **Verified 09-05** (Spec H2, GATT 18F0/2AF1; tail fix #38 pending paper re-check) | unsupported (generic refusal, copy not yet captured) | unsupported (same) |
+| Netum Bluetooth (BLE) | untested | **Verified 09-05, receipt-grade** (Spec H2, GATT 18F0/2AF1; #38 tail fix confirmed on a 7.4 KB receipt) | unsupported (generic refusal, copy not yet captured) | unsupported (same) |
 | Netum USB | untested | **Verified 09-05** (class 7, found at once; width defaults to 42 → Spec K) | n/a | unsupported |
 
 ## PRs
@@ -26,7 +26,7 @@ Dev-client lessons (not merchant-facing): `wcpos-dev://` is the dev scheme now; 
 
 ## Next session, first taps
 
-1. Full receipt over BLE on Electron with #1869's tail fix, width 32 → confirms #38; then the detailed receipt again on the Netum over USB and compare `Raw job dispatched` hex (#1868) against the 32-column render for the dotted rule and amount shift (#34).
+1. Work through the six review threads on #1869 (Codex connector P1/P2 + CodeRabbit) and merge it; then the detailed receipt again on the Netum over USB and compare `Raw job dispatched` hex (#1868) against the 32-column render for the dotted rule and amount shift (#34).
 2. One TCPS test print with Secure Printing ON (Paul flips it in Web Config; ~30 s services restart), then back OFF.
 3. Android Netum: capture the "nothing found" state on the Bluetooth tab and the generic refusal copy.
 4. Desktop Epson Bluetooth via macOS pairing + the serial lane; desktop Epson USB.
