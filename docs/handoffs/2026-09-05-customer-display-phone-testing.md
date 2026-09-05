@@ -44,40 +44,58 @@ Previous handoff (pairing button, now closed): `2026-09-04-customer-display-pair
 
 ## Open follow-ups (in the order Paul is likely to hit them)
 
-1. **"Hi Max!" by first name** — the canonical receipt data has `customer.name` only. Add
+Paul's close of the day (~14:00 UTC): "that's it for bugs now". Nothing from today is half-done.
+
+1. **Sync `next` from `main`** — `next` is now BEHIND `main` in all three repos (monorepo 82 ahead /
+   20 behind, free 22 / 74, pro 31 / 13). Sync PR, not a push; the free plugin's 74 are the 1.10.x
+   stream and may collide with the payments work. Do it as its own session before the gap grows.
+2. **Put wcpos/roadmap#129 on the 1.11.0 milestone.** It has none. It stays OPEN until the release
+   train ships (standing rule), so the milestone is what stops it getting lost.
+3. **"Hi Max!" by first name** — the canonical receipt data has `customer.name` only. Add
    `customer.first_name` to BOTH builders (JS `buildReceiptData`, PHP `Receipt_Data_Builder` +
-   `Receipt_Data_Schema` field tree) and switch the greeting.
-2. **Money precision** (Codex on #1863) — `formatReceiptData` formats at the currency's default
+   `Receipt_Data_Schema` field tree) and switch the greeting. #1866 touched exactly those spots
+   for `customer.id`, so the path is warm. Full name reads formal on a customer-facing screen.
+4. **Money precision** (Codex on #1863) — `formatReceiptData` formats at the currency's default
    decimals, ignoring the store's `wc_price_decimals`. Printed receipts have the same behaviour;
    fix in `@wcpos/printer` for both consumers, thread `dp` through.
-3. **Mixed-language labels** ("Impuestos totales" on the UK store) — `i18n` comes from the
+5. **Mixed-language labels** ("Impuestos totales" on the UK store) — `i18n` comes from the
    store's `receipt_i18n`. Template-system concern, not a bug in the display.
-4. **Template system + phone mockup** — deferred by Paul. Wants: a real "new line" cue
+6. **Template system + phone mockup** — deferred by Paul. Wants: a real "new line" cue
    (engine-driven, e.g. `data-wcpos-line-key`), narrow-viewport design, i18n.
-5. Still open from before: on-device native verification (needs an EAS dev-client build).
+7. Still open from before: on-device native verification (needs an EAS dev-client build).
+8. Housekeeping: two orphaned wp-env Docker volumes (~1.6 GB) from old free-plugin worktrees;
+   `bash ~/.claude/scripts/cleanup-worktrees.sh` removes them when Docker is running.
 
 ## Process notes for the next session
 
 - **Lane:** everything here is 1.11 on `next` (monorepo, free, pro). Worktree from `origin/next`,
-  PR base `next`. `next` is ahead of `main` (7 ahead / 74 behind at 10:00 UTC), so syncing is a
-  sync PR, not a push.
+  PR base `next`. See follow-up 1 for the current `next`/`main` drift.
 - **Publishing the web bundle to dev-next is manual:** wait for the merge commit's push `Test`
-  run on `next` to be green, then dispatch `publish-web-bundle.yml` with `monorepo_ref=next`,
-  `bundle_branch=next`, `override_release_gate="I accept a red main"`. The workflow purges
-  jsDelivr itself. Verify: `curl https://cdn.jsdelivr.net/gh/wcpos/web-bundle@next/build/metadata.json`.
+  run on `next` to be green (Lint + Unit; web E2E is path-filtered and may skip), then
+  `gh workflow run publish-web-bundle.yml -R wcpos/monorepo --ref next -f monorepo_ref=next
+  -f bundle_branch=next -f override_release_gate="I accept a red main"`. The workflow purges
+  jsDelivr itself. Verify: `curl https://cdn.jsdelivr.net/gh/wcpos/web-bundle@next/build/metadata.json`
+  and check the entry hash changed (today: `bfa104f6` → `c08862bf`).
 - **Pro deploys itself:** push to `next` runs `deploy-dev.yml` (`DEV_NEXT_SITES=dev-next`).
   The display page is `Cache-Control: no-store`, but `display.js?ver=` only changes with the
   plugin version, so the phone may cache an old `display.js` — hard reload after an engine change.
+  Template-only changes need no reload of `display.js`.
 - **Merging:** `gh pr merge` as its own Bash call with `-R`. The `merge-thread-walk` hook blocks a
   merge until every Codex thread has a reply; Codex reviewed every PR today within ~10 min
-  (P1/P2 findings, all legitimate) — reply or fix before merging.
-- **Rendering the Ledger template locally** (no wp-env needed): Mustache + Playwright from the
-  monorepo worktree's node_modules; a script is in this session's scratchpad only — rebuild it
-  from `packages/display/src/preview.ts`'s `previewContext` if needed (10 lines).
+  (P1/P2 findings, all legitimate) — reply or fix before merging. Reply with
+  `gh api graphql` and `-F body=` variables; inline `×`/backticks in the query string break parsing.
+- **Hook trap:** `git worktree add -B <branch>` in the same command as `gh pr create` trips the
+  stacked-PR hook (it reads `-B` as the PR base). Create the worktree in one call, the PR in another.
+- **Rendering the Ledger template locally** (no wp-env needed): `docs/handoffs/scripts/ledger-layout-check.cjs`
+  renders the real template with Mustache in headless Chromium at 1280×800 and 390×844 and prints
+  page/list overflow, greeting position and panel visibility per state. Run from a monorepo
+  worktree (it has playwright + mustache):
+  `NODE_PATH="$PWD/node_modules:$PWD/packages/printer/node_modules" PRO=<pro worktree> node <script>`.
 - **Pro worktree `pnpm install --frozen-lockfile` fails**; plain `pnpm install` works and does not
   change the lockfile. `packages/display` tests: `npx vitest run --maxWorkers=2`.
-- **Worktrees left on disk** (cleanup script should have removed the merged ones; check with
-  `git worktree list`): `~/Projects/monorepo-v2-worktrees/fix-display-settings-cold-mount`,
+- **Worktrees on disk** (the cleanup script does NOT flag them; reuse them by checking out a new
+  branch from `origin/next`, node_modules are already installed):
+  `~/Projects/monorepo-v2-worktrees/fix-display-settings-cold-mount`,
   `~/Projects/monorepo-v2-worktrees/fix-display-snapshot-format` (last branch
-  `fix/display-variation-attributes`), `~/Projects/woocommerce-pos-pro-worktrees/display-template-phone`
-  (last branch `fix/display-engine-noop-render`).
+  `fix/display-customer-id`, merged), `~/Projects/woocommerce-pos-pro-worktrees/display-template-phone`
+  (last branch `fix/display-greeting-guest`, merged).
