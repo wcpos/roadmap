@@ -1,7 +1,7 @@
 # Customer display — phone testing on dev-next (2026-09-05)
 
 Handoff after a day of live-testing the customer display v1 on `dev-next.wcpos.com` with
-Paul's phone. Five bugs found and fixed, all merged on `next` and deployed. Paul's ruling for
+Paul's phone. Seven bugs found and fixed across two rounds, all merged on `next` and deployed. Paul's ruling for
 this phase: **"just let me see the cart on the phone so I can test"** — a phone mockup and the
 full template system come later. Ticket wcpos/roadmap#129 carries every finding.
 
@@ -11,10 +11,10 @@ Previous handoff (pairing button, now closed): `2026-09-04-customer-display-pair
 
 ## State of dev-next right now
 
-- **Web bundle `web-bundle@next`** carries monorepo#1862, #1863, #1864 (entry published 12:18 UTC,
-  jsDelivr purged). Reload the POS to pick it up.
-- **Pro on dev-next** is `next` at pro#528 (deploy-dev runs on push to `next`; verified the served
-  display page has the greeting markup and no flash rule).
+- **Web bundle `web-bundle@next`** carries monorepo#1862, #1863, #1864, #1866 (entry `c08862bf`,
+  published ~13:40 UTC, jsDelivr purged). Reload the POS to pick it up.
+- **Pro on dev-next** is `next` at pro#529 (deploy-dev runs on push to `next`; verified the served
+  display page keys the greeting on `customer.id` in all five states).
 - Login demo/demo, store "UK Store" (id 578). Display page: `https://dev-next.wcpos.com/?wcpos-display=1`.
 
 ## What was fixed today (root causes, not symptoms)
@@ -27,6 +27,8 @@ Previous handoff (pairing button, now closed): `2026-09-04-customer-display-pair
 | Variation attributes missing (and `": "` on local receipts) | Every add-variation path writes attributes with only `display_key`/`display_value`; `buildReceiptData` read `key`/`value`. | monorepo#1864: prefer the display pair (WC `get_formatted_meta_data` rule). |
 | Last row pulses green on customer change / cart switch | Template animated `:last-child`; engine rebuilt the DOM on every `cart.updated`. | pro#528: engine skips unchanged markup (and still re-renders after an overlay replaced the mount); flash removed from the template. |
 | (Request) greet a selected customer | — | pro#528: `Hi {{customer.name}}!` under the store name, hidden for guests. Full name only. |
+| **Round 2 (afternoon):** "Hi Guest!" on guest sales | Greeting keyed on `customer.name`, but the POS writes the guest customer onto the order with a real billing first name (`t('common.guest')`); the PHP builder does the same. The canonical schema already had `customer.id` (null/0 = guest) and PHP emits it, but `buildReceiptData` omitted it and `mapReceiptData` hardcoded `id: 0`. | monorepo#1866 (builder + mapper emit the id, null for guests); pro#529 (greeting wrapped in `{{#customer.id}}`) |
+| Greeting under the totals at the bottom of the phone | It lived in the totals panel, which stacks below the list on narrow viewports. The list also had a fixed `min-height: calc(100vh - 114px)` that a greeting would overflow (Codex P2). | pro#529: greeting is the first child of the list column in all five non-idle states; the list column is a flex column and the items flex-fill. Measured in Chromium at 1280×800 and 390×844: no overflow for short/empty carts. |
 
 ### Contract facts worth keeping
 - The display broadcast is the **canonical receipt data**: numeric money + `_display` strings +
@@ -35,6 +37,8 @@ Previous handoff (pairing button, now closed): `2026-09-04-customer-display-pair
   `ledger` + `payment`.
 - `formatMoney` falls back to `"<code> <amount>"` without Intl, so formatting cannot throw.
 - Local variation lines carry attributes ONLY as `display_key`/`display_value`.
+- **`customer.id` is the guest discriminator, never `customer.name`**: the guest customer carries a
+  real billing name ("Guest", localised) on both the JS and PHP paths.
 - The display engine (`packages/display/src/engine.ts`) no longer rebuilds on identical markup;
   a template cannot rely on re-render animations.
 
