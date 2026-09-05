@@ -7,7 +7,7 @@ Paul, 2026-09-05 23:5x: *"keep going! do everything that needs to be done!!! don
 | Repo / PR | What | State |
 |---|---|---|
 | wcpos/monorepo#1884 (`codex/spec-m1`) | the scan-first setup dialog on **every platform** (Electron, web, iOS/Android) + P0, P1, P2, the native Secure Printing lane, the width pending state, the USB model query, the code-page setting, the BLE lane on phones, the simulator scenarios and integration tests | open; all CodeRabbit threads answered and confirmed; CI green per push; **Paul merges** ("finish all the work first") |
-| wcpos/electron#411 | USB rows named by the product string; `usb-query-model` (GS I 67); preload allowlists the channel ahead of its typed entry | open; CI fought import/order and the preload allowlist test for five pushes — check the last run |
+| wcpos/electron#411 | USB rows named by the product string; `usb-query-model` (GS I 67); preload allowlists the channel ahead of its typed entry | open; CI green at 09d6d9e (after five pushes against import/order and the preload allowlist test) |
 | wcpos/docs#413 | printers guide rewritten around the new flow + 14 troubleshooting pages, one per in-app line; Receipt language setting | open, build green; **Paul merges** (publishes to docs.wcpos.com) |
 | wcpos/roadmap#147 | audit, cashier map, mockups, this handoff | open |
 | wcpos/roadmap#161 | the plan, boxes ticked as things landed | open |
