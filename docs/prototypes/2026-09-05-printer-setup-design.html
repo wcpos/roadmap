@@ -197,16 +197,18 @@
     </div>
   </div>
 
-  <div class="screen"><div class="cap">8 · Options open (manual path, never required)</div>
+  <div class="screen"><div class="cap">8 · "Enter an address" stops the scan and opens the address form right there</div>
     <div class="dialog">
       <div class="title"><h2>Add printer</h2><span class="x">×</span></div>
-      <div class="status"><span class="spin"></span>Looking for printers on USB, Bluetooth and Wi-Fi…</div>
-      <div class="row"><button class="btn sm">Find a Bluetooth printer</button><button class="btn sm">Enter an address</button></div>
+      <div class="status"><span class="spin"></span><span class="t" style="flex:1">Looking for printers on USB, Bluetooth and Wi-Fi…</span><button class="btn sm" style="border:0;color:var(--muted)">Stop</button></div>
+      <div class="row"><button class="btn sm">Find a Bluetooth printer</button></div>
+      <div style="border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px">
+        <div class="fields"><div><label>IP address</label><input value="192.168.1.131"></div><div style="max-width:110px"><label>Port</label><input value="8008"></div></div>
+        <div class="row"><button class="btn primary sm">Check this address</button><button class="btn sm" style="border:0;color:var(--muted)">Cancel</button></div>
+      </div>
       <details open><summary>Options</summary>
         <div class="fields">
           <div class="full"><label>Printer name</label><input value="Receipt printer"></div>
-          <div><label>IP address</label><input placeholder="192.168.1.100"></div>
-          <div><label>Port</label><input value="9100"></div>
           <div><label>Vendor</label><select><option>Epson</option><option>Star Micronics</option><option selected>Generic (ESC/POS)</option></select></div>
           <div><label>Characters per line</label><select><option>32 — 58 mm paper</option><option selected>42 — 80 mm, older printers</option><option>48 — 80 mm, most Epson &amp; Star</option><option>64 — 80 mm, small font</option></select></div>
         </div>
@@ -215,7 +217,7 @@
           <label><span class="sw off"></span>Auto-open cash drawer</label>
           <label><span class="sw"></span>Set as default printer</label>
         </div>
-        <div class="row" style="margin-top:12px"><button class="btn primary sm">Check this address</button><button class="btn sm">Scan again</button></div>
+
       </details>
     </div>
   </div>
@@ -226,7 +228,7 @@
       One large status line while the app works; the printer name becomes the headline once found; everything else is secondary.<br><br>
       Candidates are cards, the whole card is the tap target and selects; the test page is always its own tap ("Print a test page"), never automatic (Paul, 2026-09-05). Status is a coloured pill, the source a small tag.<br><br>
       The question has three full-width answers, the affirmative primary. The finish screen has one tick, one name, one sentence, one button.<br><br>
-      Options is a quiet disclosure at the bottom, closed by default, fields in a two-column grid. No progress bar unless the scan runs long. The app never explains: one line, the actions, and a link to the printer guide on docs.wcpos.com.
+      Options (name, vendor, width, toggles) is a quiet disclosure on the scan screens only, closed by default; the address form lives beside its Check button; once a test page is on its way the screen holds nothing but the question. No progress bar unless the scan runs long. The app never explains: one line, the actions, and a link to the printer guide on docs.wcpos.com.
     </div>
   </div>
 
