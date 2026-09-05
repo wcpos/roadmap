@@ -2,7 +2,7 @@
 
 Audit of the five card-terminal gateway plugins (square, stripe, sumup, mollie, payarc), what they actually share, and a judgement on whether one core library can carry the settings, polling, authorisation, reconciliation and logging they each reinvent. Design ticket: wcpos/roadmap#95.
 
-Audited 2026-09-05. Versions: square 0.8.1, stripe 0.0.30, sumup 0.0.12, mollie 0.5.3, payarc 0.1.15. Host: woocommerce-pos 1.10.7, app 1.10.6. Per-plugin reports are in this folder.
+Audited 2026-09-05 at these revisions (every file:line citation refers to them): square 0.8.1 `8e9d4f8`, stripe 0.0.30 `d5691b9`, sumup 0.0.12 `2b53c72`, mollie 0.5.3 `fa89ef7`, payarc 0.1.15 `104fab8`; host woocommerce-pos 1.10.7 `b0eaf82f` (main), app monorepo-v2 1.10.6 `4ba128d335` (main). Per-plugin reports are in this folder.
 
 ## Verdict
 
@@ -66,8 +66,8 @@ Each row is a fix one plugin paid for, with a code comment explaining why the na
 |---|---|---|
 | POS renders order-pay as the customer, the cashier submits, so a plain nonce fails | all five, five different ways | none, but no two agree |
 | Cancel is a request, not a result; keep polling until the provider confirms | Square, SumUp, PayArc | Stripe, Mollie |
-| An indeterminate create may have succeeded; keep the attempt and reuse the idempotency key | Square | Mollie, SumUp, Stripe (no idempotency key at all) |
-| Deduplicate webhook deliveries by event id | Square, PayArc | Stripe, SumUp, Mollie |
+| An indeterminate create may have succeeded; keep the attempt and reuse the idempotency key | Square | Mollie, SumUp, Stripe (no idempotency key at all); PayArc (sends a key but never stores it, and a thrown sale clears the in-flight index, so a retry mints a new key and can collect twice) |
+| Deduplicate webhook deliveries by event id | Square (last 50 event ids) | Stripe, SumUp, Mollie; PayArc dedupes by trace+status pair, not event id, so a repeated delivery with a different status is not caught |
 | A stale failed event can arrive after success; order by timestamp or attempt | Stripe, Square, SumUp, Mollie | PayArc (partial, via status pairs) |
 | Browsers die; a cron sweeper must reconcile lingering payments | Square, Mollie | Stripe, SumUp, PayArc |
 | Re-submitting order-pay after payment hits the "already paid" guard; navigate to the receipt directly | Stripe, Mollie | SumUp, PayArc (Square handles via redirect_url) |
@@ -114,12 +114,12 @@ Legacy webview stays for un-migrated gateways and web checkout
 What each piece is built from:
 
 - **Attempt store** from Square's `OrderMeta` and Mollie's `PaymentAttempt`: current pointer, history, abandoned ids kept separately so the sweeper can still see them.
-- **Lock** from Square's `OrderLock`. It is the only atomic one; Mollie's transient lock and PayArc's option lock both document that they are advisory.
+- **Lock** from Square's `OrderLock`. Its MySQL `GET_LOCK` driver is the only atomic lock in the family; its option-driver fallback is best-effort, as Square's own comment says. The shared layer must not carry that fallback as if it were atomic: where `GET_LOCK` is unavailable the fallback has to be a real mutual exclusion (an `INSERT … ON DUPLICATE KEY` claim row or `add_option` with a unique key, released in `finally`), not a read-then-write on an option.
 - **Reconciler** from Square (tip, undercollection to on-hold, duplicate capture) and Mollie (attempt ownership, mode check, idempotent paid, conflict). The provider maps its statuses to the kit's enum: pending, in progress, completed, cancelled, failed, expired.
 - **Webhook frame** from Square and PayArc: dedupe, lock, refetch from the provider, then reconcile. Signature verification is provider-specific and stays local.
 - **Sweeper** from Square and Mollie, plus Mollie's cancel-on-status-change hook.
 - **Terminal registry** from Mollie's settings set (default, allowlist, lock) and Square's cache with last-known-good fallback.
-- **Money** from Stripe and Square's exponent tables with PayArc's exact-match and overflow checks.
+- **Money** from Square's zero-decimal table with PayArc's exact-match and overflow checks. Not Stripe's converter as-is: it maps HUF and TWD to zero decimals, which is Stripe's manual-payout rule, while charges in both are two-decimal; importing it would undercharge those currencies 100×. Charge exponents must be defined independently of payout rules.
 - **Checkout loop in the app** from Square's tested state machine: idle, creating, polling, cancelling, final; deadline around 300 s; backoff on transport errors; forced read then cancel at deadline; cancel is a request; resume on reopen. Ships once, in the app, instead of five times.
 - **Cashier log** becomes a per-order event log the kit writes and the app reads. Today every plugin's panel shows only what the browser saw, which is why support asks for screenshots.
 
@@ -150,7 +150,7 @@ Un-migrated plugins keep working throughout. The app already decides per gateway
 1. **Host kit and app terminal screen.** Extend the contract with cancel, a hardware-grade deadline, terminal selection, the state enum and the per-order event log; build the kit in the host from Square and Mollie; build the app screen from Square's state machine and tests. Nothing ships to merchants yet except inert code in the host.
 2. **Mollie first.** Smallest codebase (1.9K lines PHP), newest, already has attempt, lock, reconciler, sweeper and curation concepts. QR stays local as a second channel.
 3. **Square second.** The reference for hardening. Migrating it proves the kit lost nothing: tips, undercollection, duplicate capture, webhook dedupe. Its Square-app handoff stays a local channel.
-4. **PayArc, then SumUp.** Both gain lock, reconciler, sweeper and resume they do not have.
+4. **PayArc, then SumUp.** SumUp gains lock, reconciler, sweeper and resume from nothing. PayArc already has an advisory lock, a reconciler with exact-amount verification, trace+status dedupe and Start-driven resume; its migration must reach parity with those (exact minor-unit matching, the processor-response fields on the row, the in-flight settings guard) before deleting them, and only atomic locking, scheduled sweeping and page-load resume are net new.
 5. **Stripe last.** Largest and oldest, with a disabled React frontend, Blocks support, MOTO and keep-warm to carry over, and a second webhook implementation to retire.
 
 Each migration is a major version of that plugin that deletes its AJAX handler, token, poll loop, lock, reconciler and sweeper in favour of an adapter of a few hundred lines.
@@ -190,13 +190,20 @@ Pre-existing and unrelated to the design question. Each needs a fix or a decisio
 | PayArc | Admin JS populates a select for a field that is now a text input; settings help says transactions use the Login token while the accessor defaults to SecretKey | admin.js:67-98, Gateway.php:87-104, Settings.php:142-147 | UX / docs |
 | PayArc | Diagnostics rows read options nothing writes | Gateway.php:643-700 | dead code |
 | Square, Stripe, PayArc | AJAX actions registered on every request, not only under `wp_doing_ajax()` | Plugin.php:64-85 / AjaxHandler.php:30-83 / AjaxHandler.php:37-52 | hygiene |
+| SumUp | `process_payment()` completes any order that has a transaction id, and the id is stored at checkout creation before the reader acts, so submitting the pay form after Start marks an unpaid order paid | Gateway.php:236-255, AjaxHandler.php:187-218 | payment integrity |
+| Stripe | The registered `payment_intent.succeeded` webhook saves metadata but never calls `payment_complete()`, and there is no sweeper; a captured charge stays on an unpaid order if the browser closes | API.php:477-524, stripe.md §4 | money taken, order unpaid |
+| Stripe | `get_readers` and `validate_service` are `nopriv` with no order gate and no nonce; anyone can enumerate readers and force Stripe calls | AjaxHandler.php:408-470 | auth |
+| Stripe | Currency converter treats HUF and TWD as zero-decimal (the payout rule); charges are two-decimal, so those currencies are undercharged 100× | Utils/CurrencyConverter.php:44-49 | money |
+| Mollie | `process_refund()` calls `wc_create_refund()` after WooCommerce has already created the refund, so every refund creates a second refund record and double-counts the refunded total (confirmed in code) | RefundHandler.php:10-16 | data integrity |
+| Square | OAuth connection stores expiry and a refresh token and has `needs_refresh()`/`refresh()`, but nothing calls them; an expired token fails until the merchant reconnects | Services/SquareOAuth.php:289-305, square.md §11 | service lifetime |
+| PayArc | Indeterminate create replays with a fresh idempotency key (see the lessons table) | PaymentAttempt.php:127-171, Services/PayArcPaymentService.php:71-95 | duplicate collection |
 
-## Decisions needed
+## Rulings (Paul, 2026-09-05)
 
-1. **Hard dependency.** May terminal plugins require WooCommerce POS? Yes unlocks option A. No means option B and the iframe stays.
-2. **Checkout moves into the app.** Is the terminal screen a POS app feature, driven over REST, rather than a page each plugin renders? This is the step that deletes the order gate and the five poll loops.
-3. **Web checkout for terminals.** Keep it through the legacy path, or drop it and simplify further? The enable-box labels suggest it is rarely used, but that is inference, not data.
-4. **Defects above.** Fix now in each plugin, or fold each into that plugin's migration? The Stripe fatal path and REST permissions should not wait.
+1. **Hard dependency and home.** The shared layer is the `server` capture mode of the 1.11 payments contract (roadmap #97); the contract lives in Free, the terminal mechanisms in Pro, and a migrated extension's server tile requires Pro. See the addendum below and the boundary in the spec hub §1.
+2. **Checkout moves into the app.** Yes: the POS app drives `server` and `device` legs over the cashier's REST session (tickets #152–#155).
+3. **Web checkout for terminals.** Keep it via the legacy order-pay path; each extension's legacy gateway survives the migration, so this costs nothing now.
+4. **Defects.** Fix now on `main`: Stripe fatal webhook path and open REST routes (shipped, 0.0.31); Stripe webhook completion, anonymous AJAX and HUF/TWD exponents (0.0.32); SumUp `process_payment` integrity (0.0.13); Mollie duplicate refund (0.5.4). Fold into the migration: Square OAuth refresh (second in line, clean reconnect failure), PayArc indeterminate-create replay (solved structurally by row-UUID idempotency in #152). The remaining hygiene items ride each plugin's migration.
 
 Sources: the five per-plugin audit reports in this folder; the drift and census measurements; woocommerce-pos `includes/Payments/*` and `includes/API/V1/Checkout_Controller.php`; monorepo-v2 `use-checkout-session.ts`; woocommerce-pos issues #828 and #830.
 
