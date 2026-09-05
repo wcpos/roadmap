@@ -64,7 +64,7 @@
 <body>
 <header>
   <h1>Printer setup — design pass</h1>
-  <p>The scan-first "Add printer" (Variant C from 2 Sep) as it should look, one dialog, one status line, lists only when there is a choice or a problem. Static mockup; the copy is the shipped M1 copy where it exists. Sources: USB and paired-Bluetooth printers appear on their own; BLE is added from Options.</p>
+  <p>The scan-first "Add printer" (Variant C from 2 Sep) as it should look, one dialog, one status line, lists only when there is a choice or a problem. Static mockup; the copy is the shipped M1 copy where it exists. Sources: USB and paired-Bluetooth printers appear on their own; BLE printers use the visible "Find a Bluetooth printer" entry point, including while scanning.</p>
 </header>
 <div class="grid">
 
@@ -145,8 +145,8 @@
       <div><p class="headline">BlueTooth Printer</p><div class="meta">Bluetooth · Generic ESC/POS</div></div>
       <h3>Which paper is in the printer?</h3>
       <div class="answers">
-        <button class="btn">32 — 58 mm paper</button>
-        <button class="btn primary">42 — 80 mm, older printers</button>
+        <button class="btn primary">32 — 58 mm paper</button>
+        <button class="btn">42 — 80 mm, older printers</button>
         <button class="btn">48 — 80 mm, most Epson &amp; Star</button>
         <button class="btn">64 — 80 mm, small font</button>
       </div>
@@ -181,6 +181,7 @@
       <div class="title"><h2>Add printer</h2><span class="x">×</span></div>
       <div><p class="headline">Receipt Printer</p><div class="meta">192.168.1.150 · port 9100 <span class="src">Wi-Fi</span></div></div>
       <h3>Nothing printed</h3><p class="lede" style="margin-top:-8px">Check the printer is on and on the same Wi-Fi as this computer, then try again.</p>
+      <div class="err"><strong>Having trouble?</strong> We could not confirm that the printer received the test page. Try the steps above or open the printer guide.</div>
       <p class="foot">Bluetooth printers say: "Turn the printer off and on again, then try again." USB: "Check the cable and that the printer is switched on, then try again."</p>
       <div class="row"><button class="btn primary sm">Try again</button><button class="btn sm">Save without testing</button><button class="btn sm" style="border:0;color:var(--blue);padding-left:0">Open the printer guide</button></div>
       <details><summary>Options</summary></details>
