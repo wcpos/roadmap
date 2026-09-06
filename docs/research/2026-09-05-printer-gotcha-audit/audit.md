@@ -1,14 +1,13 @@
 # Printer gotcha audit — catalogue #1–#43 against the code, plus new gotchas
 
-Code read: worktree `/Users/kilbot/Projects/monorepo-v2/.claude/worktrees/codex-spec-m1` (branch `codex/spec-m1`,
-HEAD `211950c6bb`) and Electron worktree `/Users/kilbot/Projects/monorepo-v2/.worktrees/printer-gotchas-electron`
-(`apps/electron/src/main`). Paths below are relative to those two roots.
+Code read: wcpos/monorepo at `211950c6bb` (branch `codex/spec-m1`, PR #1884) and wcpos/electron at `f8ccd4f`
+(`src/main`). Paths below are repository-relative.
 
 House rules applied to every "Explained?" judgement: one line + actions + `https://docs.wcpos.com/hardware/printers`
 (`packages/core/src/screens/main/settings/printer/printer-docs.ts`, `PRINTER_DOCS_URL`); a missing log line is itself
 the defect; a printer-side setting is a one-line remedy + guide link, not an engineering problem.
 
-**Numbering note.** The supplied catalogue file (947 lines, last comment 2026-09-05T18:09) contains gotchas
+**Numbering note.** The supplied catalogue file (947 lines, last comment 2026-09-05T18:09Z, i.e. 20:09 local) contains gotchas
 **#1 and #4–#39 only**. There is no #2 or #3 — the original 2026-09-02 comment was rewritten in place
 ("Corrected 2026-09-02 15:55… Everything below supersedes my earlier table"), absorbing the two numbers it had
 issued. There is no #40–#43 in the file supplied; if they exist they were filed after that snapshot. Rows for the
@@ -59,7 +58,7 @@ missing numbers are kept as placeholders rather than invented.
 | **37** | 58 mm BLE Netum defaults to 42 columns | Same as #33 — no width source on generic lanes; `GS I` gets no reply from this printer | Partial (as #33) | **Yes** (`Printer columns resolved … source: default`) | **Yes** (the width toggle / ruler question) | folded into Spec K, **open** | **fix**: the self-measuring ruler (marks at 32/42/48) is not built; see #33 |
 | **38** | The bottom of a receipt is cut off over Bluetooth but not over USB | Write-without-response gives no delivery confirmation; the link dropped with the tail in flight | **Yes** | **Yes** — `BLE GATT print job written {bytes,chunks}` after the settle | n/a | monorepo#1869 — last chunk is `writeValueWithResponse`, `TAIL_SETTLE_MS = 300`, plus `BLE_KEEP_ALIVE_MS = 60_000` (`transport/ble-gatt.ts:44-52,168-181`) | none |
 | **39** | After the browser picker the device is listed but not selected; Test Print fails with "Web device profile is missing its device key for Receipt Printer" | The picker's return value was not applied to the form | **Yes** — the chooser effect calls `select(device)` and marks the card selected (`use-printer-setup-flow.ts`, pendingPicker effect) | **Yes** — `Printer setup phase {phase, selected}` | **Yes** in the setup flow (the card is highlighted, the print button is primary) | monorepo#1877 (Spec J4) for the add flow | **fix**: the internal string still exists and reaches the edit dialog (`transport/device-adapter.web.ts:9`, `device-adapter.electron.ts:15`) |
-| **40–43** | — | not present in the supplied catalogue (last comment 2026-09-05 20:15) | — | — | — | — | — |
+| **40–43** | — | not present in the supplied catalogue (its last comment is 2026-09-05T18:09Z; #40–#43 were filed after that snapshot — see roadmap#136) | — | — | — | — | — |
 
 ---
 

@@ -41,7 +41,7 @@ Dev builds: `~/Projects/monorepo-v2/.worktrees/printer-gotchas-electron` on bran
 
 ## Gotchas added tonight (roadmap#136)
 
-#40 scan read as Wi-Fi-only · #41 BLE "no longer in range" and the forgotten device · #42 ruler answer silently cycled widths · #43 chooser lists the whole shop floor · #44 Electron USB rows never carried the product string.
+- `#40` scan read as Wi-Fi-only · `#41` BLE "no longer in range" and the forgotten device · `#42` ruler answer silently cycled widths · `#43` chooser lists the whole shop floor · `#44` Electron USB rows never carried the product string.
 
 ## Final counts at handoff
 
