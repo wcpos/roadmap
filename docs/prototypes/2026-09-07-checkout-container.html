@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Checkout container · 1.11.0 prototype (2026-09-07)</title>
+<!-- PROTOTYPE — throwaway. Four views of the same fake POS and the same tender state machine,
+     switchable from the bottom bar or ←/→: A column swap (recommended), B right slide-over,
+     C full-screen takeover, P phone. Two open orders let you play the "terminal is busy,
+     serve the next customer" scenario in every view. -->
+<style>
+  :root{--bg:#eef0f3;--panel:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--blue:#0b6bcb;--blue-soft:#e8f1fb;--ok:#15803d;--ok-soft:#e6f4ea;--warn:#b45309;--warn-soft:#fdf3e1;--bad:#b91c1c;--bad-soft:#fdecec;--r:10px}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,sans-serif;color:var(--ink)}
+  button{font:inherit;cursor:pointer}
+  .explain{max-width:1180px;margin:18px auto 0;padding:0 20px;display:grid;grid-template-columns:1.2fr 1fr;gap:24px;align-items:start}
+  .explain h1{margin:0;font-size:19px}
+  .explain h1 small{color:var(--muted);font-weight:500;font-size:13px;margin-left:8px}
+  .explain p{margin:6px 0 0;color:#334155;max-width:70ch}
+  .explain .verdict{display:inline-block;background:var(--ok-soft);color:var(--ok);font-weight:650;font-size:12px;border-radius:999px;padding:2px 9px;margin-left:8px;vertical-align:2px}
+  .steps{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:10px 14px;font-size:13px}
+  .steps b{display:block;margin-bottom:4px}
+  .steps ol{margin:0;padding-left:18px;color:#334155}
+  .steps li.done{color:var(--muted);text-decoration:line-through}
+  .steps li.now{color:var(--blue);font-weight:650}
+  .demo{margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .demo button{border:1px dashed var(--warn);background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:5px 10px;font-weight:600;font-size:12px}
+  .demo button:disabled{opacity:.4;cursor:default}
+  .demo span{color:var(--muted);font-size:12px}
+
+  /* device frame */
+  .stage{display:flex;justify-content:center;padding:16px 20px 90px}
+  .device{width:1140px;height:700px;background:#fff;border:1px solid #cbd5e1;border-radius:14px;box-shadow:0 20px 50px rgba(15,23,42,.12);overflow:hidden;position:relative;display:flex;flex-direction:column}
+  .device.phone{width:390px;height:760px;border-radius:32px;border:8px solid #111827}
+  .appbar{height:48px;background:#1e293b;color:#fff;display:flex;align-items:center;gap:16px;padding:0 16px;flex:none}
+  .appbar .brand{font-weight:700;letter-spacing:.02em}
+  .appbar .nav{display:flex;gap:14px;color:#cbd5e1;font-size:13px}
+  .appbar .nav span.on{color:#fff;font-weight:600}
+  .appbar .sp{flex:1}
+  .body{flex:1;display:flex;min-height:0;position:relative}
+
+  /* columns */
+  .col{display:flex;flex-direction:column;min-width:0;min-height:0}
+  .col.products{flex:1;background:#f8fafc;border-right:1px solid var(--line)}
+  .col.cart{width:380px;flex:none}
+  .search{margin:12px 14px 6px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--muted);background:#fff}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:8px 14px;overflow:auto}
+  .tile{background:#fff;border:1px solid var(--line);border-radius:8px;height:92px;padding:10px;display:flex;flex-direction:column;justify-content:space-between}
+  .tile .n{font-weight:600;font-size:13px}
+  .tile .p{color:var(--muted);font-size:12px}
+  .tabs{display:flex;gap:4px;padding:8px 8px 0;border-bottom:1px solid var(--line);background:#fff;overflow:auto}
+  .tab{border:1px solid var(--line);border-bottom:none;border-radius:8px 8px 0 0;padding:7px 10px;background:#f1f5f9;font-size:13px;display:flex;flex-direction:column;gap:2px;min-width:110px;text-align:left}
+  .tab.on{background:#fff;font-weight:650;box-shadow:0 1px 0 #fff}
+  .tab .who{white-space:nowrap}
+  .tab .chip{font-size:11px;font-weight:600;border-radius:999px;padding:1px 7px;display:inline-flex;align-items:center;gap:5px;width:max-content}
+  .tab.add{min-width:0;font-weight:700;color:var(--muted);justify-content:center}
+  .chip.wait{background:var(--warn-soft);color:var(--warn)}
+  .chip.paid{background:var(--ok-soft);color:var(--ok)}
+  .chip.part{background:var(--blue-soft);color:var(--blue)}
+  .chip .dot{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
+  .chip.wait .dot{animation:pulse 1s ease-in-out infinite}
+  @keyframes pulse{50%{opacity:.3}}
+  .lines{flex:1;overflow:auto;padding:6px 0}
+  .line{display:flex;justify-content:space-between;padding:8px 14px;border-bottom:1px solid #f1f5f9;font-size:13px}
+  .line .q{color:var(--muted);margin-right:6px}
+  .totals{border-top:1px solid var(--line);padding:10px 14px;font-size:13px}
+  .totals div{display:flex;justify-content:space-between;padding:2px 0}
+  .totals .big{font-size:17px;font-weight:700;padding-top:6px}
+  .totals .paid{color:var(--ok)} .totals .due{color:var(--warn);font-weight:700}
+  .cta{margin:10px 14px 14px;background:var(--blue);color:#fff;border:0;border-radius:10px;padding:14px;font-size:16px;font-weight:700;display:flex;justify-content:space-between}
+  .cta.ghost{background:#fff;color:var(--blue);border:1px solid var(--blue)}
+
+  /* tender pane */
+  .tender{display:flex;flex-direction:column;min-width:0;min-height:0;background:#fff}
+  .thead{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--line)}
+  .back{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 10px;font-weight:600}
+  .thead .t{font-weight:700;font-size:15px}
+  .thead .sp{flex:1}
+  .thead .link{color:var(--blue);background:none;border:0;font-weight:600}
+  .balance{padding:14px 16px 6px;display:flex;align-items:baseline;gap:10px}
+  .balance .lbl{color:var(--muted);font-size:13px}
+  .balance .amt{font-size:30px;font-weight:800;letter-spacing:-.02em}
+  .balance .split{margin-left:auto;border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 10px;font-weight:600;font-size:13px}
+  .ttabs{display:flex;gap:16px;padding:4px 16px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .ttabs span{padding:6px 0;color:var(--muted)} .ttabs span.on{color:var(--ink);font-weight:650;border-bottom:2px solid var(--blue)}
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 16px}
+  .tiles.two{grid-template-columns:repeat(2,1fr)}
+  .ptile{border:1px solid var(--line);border-radius:10px;padding:14px;text-align:left;background:#fff;min-height:74px;display:flex;flex-direction:column;gap:3px}
+  .ptile .n{font-weight:700;font-size:15px}
+  .ptile .s{font-size:12px;color:var(--muted)}
+  .ptile.on{border-color:var(--blue);background:var(--blue-soft)}
+  .ptile:disabled{opacity:.55;cursor:not-allowed;background:#f8fafc}
+  .ptile:disabled .s{color:var(--bad)}
+  .keypad{padding:0 16px 16px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .keypad .quick{display:flex;gap:8px;flex-wrap:wrap;grid-column:1/-1}
+  .quick button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font-weight:600}
+  .quick button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+  .amt-in{grid-column:1/-1;border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:22px;font-weight:700;display:flex;justify-content:space-between}
+  .amt-in span{color:var(--muted);font-size:13px;font-weight:500;align-self:center}
+  .keys{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .keys button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:12px;font-weight:600;font-size:16px}
+  .confirm{display:flex;flex-direction:column;gap:8px;justify-content:flex-end}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:12px 14px;font-weight:650}
+  .btn.primary{background:var(--blue);border-color:var(--blue);color:#fff;font-size:15px}
+  .btn.danger{color:var(--bad);border-color:#fecaca}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .waiting{margin:14px 16px;border:1px solid var(--line);border-radius:12px;padding:22px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+  .spin{width:26px;height:26px;border:3px solid var(--line);border-top-color:var(--blue);border-radius:50%;animation:s 1s linear infinite}
+  @keyframes s{to{transform:rotate(360deg)}}
+  .waiting .h{font-weight:700;font-size:17px}
+  .waiting .m{color:var(--muted)}
+  .waiting .hint{font-size:12px;color:var(--muted);background:#f8fafc;border-radius:8px;padding:6px 10px}
+  .done{margin:14px 16px;border:1px solid #bbf7d0;background:var(--ok-soft);border-radius:12px;padding:22px;display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center}
+  .done .h{font-weight:800;font-size:20px;color:var(--ok)}
+  .done .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .ledger-lines .line.pay{color:var(--ok)}
+  .ledger-lines .line.pay.wait{color:var(--warn)}
+  .note{font-size:12px;color:var(--muted);padding:8px 14px}
+
+  /* B slide-over */
+  .scrim{position:absolute;inset:0;background:rgba(15,23,42,.45);z-index:5}
+  .sheet{position:absolute;top:0;right:0;bottom:0;width:75%;background:#fff;z-index:6;box-shadow:-12px 0 40px rgba(15,23,42,.25);display:flex;animation:slide .25s ease-out}
+  @keyframes slide{from{transform:translateX(100%)}to{transform:translateX(0)}}
+  .sheet .ledger{width:300px;flex:none;border-right:1px solid var(--line);display:flex;flex-direction:column;background:#fafafa}
+  .ledger .lh{padding:12px 14px;font-weight:700;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .ledger .lh small{color:var(--muted);font-weight:500}
+  .dead{position:absolute;left:0;top:0;bottom:0;width:25%;display:flex;align-items:flex-end;justify-content:center;padding:14px;z-index:7;pointer-events:none}
+  .dead span{background:var(--bad-soft);color:var(--bad);font-size:12px;font-weight:600;border-radius:8px;padding:6px 10px;text-align:center}
+
+  /* C full-screen */
+  .full{position:absolute;inset:0;background:#fff;z-index:6;display:flex;flex-direction:column;animation:fade .2s ease-out}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .full .fbar{height:48px;display:flex;align-items:center;gap:12px;padding:0 14px;border-bottom:1px solid var(--line);flex:none}
+  .full .fbody{flex:1;display:flex;min-height:0}
+  .menu{position:absolute;top:44px;left:14px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(15,23,42,.15);z-index:9;min-width:240px;padding:6px}
+  .menu button{display:flex;justify-content:space-between;gap:10px;width:100%;border:0;background:none;padding:10px;border-radius:8px;text-align:left;font-weight:600}
+  .menu button:hover{background:#f1f5f9}
+
+  /* phone */
+  .phone .body{flex-direction:column}
+  .phone .pbar{display:flex;gap:6px;padding:8px;border-bottom:1px solid var(--line);overflow:auto}
+  .phone .ptab{border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:12px;background:#f1f5f9;display:flex;gap:6px;align-items:center;white-space:nowrap}
+  .phone .ptab.on{background:#fff;font-weight:700;border-color:#94a3b8}
+  .phone .plist{flex:1;overflow:auto}
+  .phone .pfoot{border-top:1px solid var(--line);padding:10px}
+  .bbar{background:#fff;border-bottom:1px solid var(--line);padding:10px 14px;display:flex;align-items:center;gap:10px}
+  .bbar .amt{font-weight:800;font-size:18px}
+  .bbar .sub{color:var(--muted);font-size:12px}
+  .bbar .sp{flex:1}
+  .bbar button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 10px;font-weight:600;font-size:12px}
+  .phone .ttabs{padding-left:14px}
+  .phone .tiles{padding:12px}
+  .phone .keypad{grid-template-columns:1fr;padding:0 12px 12px}
+  .phone .keys button{padding:14px}
+  .phone .balance .amt{font-size:26px}
+  .phone .ledger-expand{background:#fafafa;border-bottom:1px solid var(--line);font-size:13px}
+
+  /* switcher */
+  .switch{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#111827;color:#fff;border-radius:999px;padding:8px 10px;display:flex;align-items:center;gap:8px;box-shadow:0 10px 30px rgba(0,0,0,.35);z-index:50;font-size:13px}
+  .switch button{background:#374151;color:#fff;border:0;border-radius:999px;width:32px;height:32px;font-size:16px}
+  .switch .keys{display:flex;gap:4px}
+  .switch .k{background:#1f2937;border:1px solid #374151;color:#9ca3af;border-radius:999px;padding:4px 10px;font-weight:700;cursor:pointer}
+  .switch .k.on{background:#fff;color:#111827;border-color:#fff}
+  .switch .lbl{padding:0 6px;min-width:190px;text-align:center;font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="explain">
+  <div>
+    <h1 id="ttl"></h1>
+    <p id="desc"></p>
+    <div class="demo">
+      <button id="tapCard" disabled>Demo: customer taps card on the terminal</button>
+      <button id="reset">Reset orders</button>
+      <span>The card tap is simulated so you control the timing.</span>
+    </div>
+  </div>
+  <div class="steps">
+    <b>Two-cart walkthrough (same in every view)</b>
+    <ol id="steps">
+      <li>Order #1001 (Sam): press Checkout, tap Stripe Terminal, send $42.95 to the reader.</li>
+      <li>Sam is slow. Switch to order #1002 (walk-in).</li>
+      <li>Take #1002 in cash, exact amount, receipt, New sale.</li>
+      <li>Now press the demo button: Sam finally taps.</li>
+      <li>Return to #1001: it is paid, receipt is waiting.</li>
+    </ol>
+  </div>
+</div>
+
+<div class="stage"><div id="device" class="device"></div></div>
+
+<div class="switch">
+  <button id="prev">←</button>
+  <div class="keys">
+    <span class="k" data-v="A">A</span><span class="k" data-v="B">B</span><span class="k" data-v="C">C</span><span class="k" data-v="P">Phone</span>
+  </div>
+  <div class="lbl" id="lbl"></div>
+  <button id="next">→</button>
+</div>
+
+<script>
+// ---------- state (one tender state machine shared by every view) ----------
+const VIEWS = {
+  A:{name:'A — Column swap (recommended)',
+     desc:'Checkout keeps the two POS columns. The cart column stays where it is and becomes the ledger pane; the tender pane slides in from the right over the products column. The open-order tabs stay where they always are, so switching customers is the same tap it is on the cart, and a waiting terminal shows as a chip on its tab. What Lightspeed, Toast and Loyverse do.'},
+  B:{name:'B — Right slide-over, 3/4 width',
+     desc:'Checkout is a sheet sliding in from the right over the POS. The visible quarter behind it is dimmed and dead: it shows a stale slice of the products grid, not the tabs, so to serve another customer the cashier needs a new "Park payment" verb to close the sheet, then the tab, then the tab again to come back. No vendor ships this shape.'},
+  C:{name:'C — Full-screen takeover',
+     desc:'Checkout replaces the whole screen, Square and Clover style. The tabs and app chrome are gone, so switching customers needs an "Open orders" menu inside checkout, and the cashier loses the cart column for nothing the ledger pane does not already show. Native presentation on every platform, but the least context.'},
+  P:{name:'Phone — full-screen sheet (all variants)',
+     desc:'Below tablet width every variant collapses to the same thing, as every vendor and design system does: a full-screen sheet, the ledger folded into a balance bar at the top that expands on tap, tiles two-up with the keypad beneath, and the open orders reachable from the bar.'}
+};
+const PRODUCTS=['Flat white','Latte','Croissant','Sourdough','Oat milk','Espresso','Bagel','Cold brew','Muffin','Tea','Juice','Cookie'].map((n,i)=>({n,p:(2.5+i*0.75).toFixed(2)}));
+const READER='Reader M2 · counter';
+let state, view = new URLSearchParams(location.search).get('variant') || 'A';
+let ui = {}; // per-view transient ui state (keypad, menus)
+
+function fresh(){
+  return {
+    current:'1001',
+    orders:{
+      '1001':{id:'1001',who:'Sam K.',lines:[['2','Flat white',9.00],['1','Croissant',5.75],['3','Cookie',28.20]],total:42.95,mode:'cart',legs:[],pending:null},
+      '1002':{id:'1002',who:'Walk-in',lines:[['1','Sourdough',12.50]],total:12.50,mode:'cart',legs:[],pending:null}
+    },
+    readerHeldBy:null,
+    step:0
+  };
+}
+const money=n=>'$'+n.toFixed(2);
+const paid=o=>o.legs.reduce((s,l)=>s+l.amount,0);
+const due=o=>Math.max(0,o.total-paid(o));
+const isPaid=o=>o.legs.length>0 && due(o)<0.005;
+
+// ---------- actions ----------
+const act = {
+  switchOrder(id){ state.current=id; ui={}; bump(id==='1002'?2:5); render(); },
+  checkout(id){ state.orders[id].mode='checkout'; ui={}; render(); },
+  backToCart(id){ state.orders[id].mode='cart'; ui={}; render(); },
+  pick(tile){ ui.tile=tile; ui.amount=null; render(); },
+  quick(v){ ui.amount=v; render(); },
+  takeCash(){ const o=cur(); const t=ui.amount??due(o); const applied=Math.min(t,due(o));
+    o.legs.push({kind:'Cash',amount:applied,tendered:t}); ui={}; bump(3); render(); },
+  sendToReader(){ const o=cur(); if(state.readerHeldBy) return; o.pending={kind:'Stripe Terminal',amount:due(o),reader:READER}; state.readerHeldBy=o.id; bump(1); ui={}; render(); },
+  cancelReader(){ const o=cur(); o.pending=null; state.readerHeldBy=null; ui={}; render(); },
+  tapCard(){ const id=state.readerHeldBy; if(!id) return; const o=state.orders[id]; o.legs.push({kind:o.pending.kind,amount:o.pending.amount}); o.pending=null; state.readerHeldBy=null; bump(4); render(); },
+  newSale(id){ delete state.orders[id]; const ids=Object.keys(state.orders); if(!ids.length){ state.orders['1003']={id:'1003',who:'New sale',lines:[],total:0,mode:'cart',legs:[],pending:null}; }
+    state.current=state.orders[state.current]?state.current:Object.keys(state.orders)[0]; ui={}; render(); },
+  park(id){ state.orders[id].mode='cart'; ui={}; render(); }
+};
+const cur=()=>state.orders[state.current];
+function bump(n){ if(n===state.step+1) state.step=n; }
+
+// ---------- shared pieces ----------
+function h(s){ return s; }
+function tabChip(o){
+  if(o.pending) return `<span class="chip wait"><i class="dot"></i>Waiting for terminal · ${money(o.pending.amount)}</span>`;
+  if(isPaid(o)) return `<span class="chip paid"><i class="dot"></i>Paid · receipt</span>`;
+  if(o.legs.length) return `<span class="chip part">Partly paid · ${money(due(o))} due</span>`;
+  if(o.mode==='checkout') return `<span class="chip part">In checkout</span>`;
+  return `<span class="chip" style="color:var(--muted)">${o.lines.length} item${o.lines.length===1?'':'s'} · ${money(o.total)}</span>`;
+}
+function tabsHtml(){
+  return `<div class="tabs">${Object.values(state.orders).map(o=>`
+    <button class="tab ${o.id===state.current?'on':''}" onclick="act.switchOrder('${o.id}')">
+      <span class="who">#${o.id} · ${o.who}</span>${tabChip(o)}</button>`).join('')}
+    <button class="tab add">+</button></div>`;
+}
+function linesHtml(o, withLedger){
+  const items=o.lines.map(l=>`<div class="line"><span><span class="q">${l[0]}×</span>${l[1]}</span><span>${money(l[2])}</span></div>`).join('');
+  if(!withLedger) return `<div class="lines">${items||'<div class="note">Empty cart</div>'}</div>`;
+  const legs=o.legs.map(l=>`<div class="line pay"><span>${l.kind}${l.tendered&&l.tendered>l.amount?` · tendered ${money(l.tendered)}, change ${money(l.tendered-l.amount)}`:''}</span><span>− ${money(l.amount)}</span></div>`).join('');
+  const pend=o.pending?`<div class="line pay wait"><span>${o.pending.kind} · waiting on reader</span><span>${money(o.pending.amount)}</span></div>`:'';
+  return `<div class="lines ledger-lines">${items}${(legs||pend)?`<div class="note" style="padding-top:10px">Payments</div>`:''}${legs}${pend}</div>`;
+}
+function totalsHtml(o, ledger){
+  return `<div class="totals"><div><span>Subtotal</span><span>${money(o.total/1.1)}</span></div><div><span>Tax</span><span>${money(o.total-o.total/1.1)}</span></div>
+    <div class="big"><span>Total</span><span>${money(o.total)}</span></div>
+    ${ledger&&o.legs.length?`<div class="paid"><span>Paid</span><span>${money(paid(o))}</span></div>`:''}
+    ${ledger?`<div class="due"><span>Remaining</span><span>${money(due(o))}</span></div>`:''}</div>`;
+}
+function cartColumn(o){
+  return `<div class="col cart">${tabsHtml()}${linesHtml(o,false)}${totalsHtml(o,false)}
+    ${o.pending||isPaid(o)||o.legs.length
+      ?`<button class="cta" onclick="act.checkout('${o.id}')"><span>${isPaid(o)?'Receipt':'Resume checkout'}</span><span>${money(due(o))}</span></button>`
+      :`<button class="cta" onclick="act.checkout('${o.id}')"><span>Checkout</span><span>${money(o.total)}</span></button>`}</div>`;
+}
+function productsColumn(){
+  return `<div class="col products"><div class="search">Search products…</div><div class="grid">${PRODUCTS.map(p=>`<div class="tile"><span class="n">${p.n}</span><span class="p">$${p.p}</span></div>`).join('')}</div></div>`;
+}
+function ledgerPane(o, extraHeader){
+  return `<div class="col cart" style="background:#fafafa">${extraHeader??tabsHtml()}${linesHtml(o,true)}${totalsHtml(o,true)}</div>`;
+}
+// The tender pane: identical in every view. `opts.back` is the label of the leading control.
+function tenderPane(o, opts={}){
+  const busy = state.readerHeldBy && state.readerHeldBy!==o.id;
+  let body;
+  if(isPaid(o)){
+    body=`<div class="done"><div class="h">Paid ${money(o.total)}</div><div>${o.legs.map(l=>l.kind+' '+money(l.amount)).join(' + ')}${o.legs.some(l=>l.tendered>l.amount)?` · change ${money(o.legs.reduce((s,l)=>s+Math.max(0,(l.tendered||0)-l.amount),0))}`:''}</div>
+      <div class="row"><button class="btn">Print receipt</button><button class="btn">Email</button><button class="btn">No receipt</button></div>
+      <button class="btn primary" style="min-width:220px" onclick="act.newSale('${o.id}')">New sale</button></div>`;
+  } else if(o.pending){
+    body=`<div class="waiting"><div class="spin"></div><div class="h">Waiting for customer · ${money(o.pending.amount)}</div><div class="m">${o.pending.reader}</div>
+      <div class="hint">You can switch to another order while you wait. This payment stays on the reader and on order #${o.id}.</div>
+      <button class="btn danger" onclick="act.cancelReader()">Cancel payment</button></div>`;
+  } else {
+    const tile=ui.tile;
+    const tiles=`<div class="tiles ${opts.two?'two':''}">
+      <button class="ptile ${tile==='cash'?'on':''}" onclick="act.pick('cash')"><span class="n">Cash</span><span class="s">Works offline</span></button>
+      <button class="ptile ${tile==='card'?'on':''}" onclick="act.pick('card')"><span class="n">Card (manual)</span><span class="s">Record a card taken elsewhere</span></button>
+      <button class="ptile ${tile==='terminal'?'on':''}" ${busy?'disabled':''} onclick="act.pick('terminal')"><span class="n">Stripe Terminal</span><span class="s">${busy?`In use by order #${state.readerHeldBy}`:READER}</span></button>
+      <button class="ptile ${tile==='gift'?'on':''}" onclick="act.pick('gift')"><span class="n">Gift card</span><span class="s">Applied first</span></button>
+      <button class="ptile" disabled><span class="n">Square Terminal</span><span class="s">Needs WCPOS Pro</span></button>
+      <button class="ptile" disabled><span class="n">Tap to Pay</span><span class="s">Coming in a later build</span></button></div>`;
+    let pad='';
+    if(tile==='cash'){
+      const d=due(o); const amt=ui.amount??d; const change=Math.max(0,amt-d);
+      const quicks=[d, Math.ceil(d/5)*5, Math.ceil(d/10)*10, Math.ceil(d/20)*20].filter((v,i,a)=>a.indexOf(v)===i);
+      pad=`<div class="keypad"><div class="quick">${quicks.map(v=>`<button class="${Math.abs(v-amt)<0.005?'on':''}" onclick="act.quick(${v})">${money(v)}</button>`).join('')}</div>
+        <div class="amt-in"><span>Tendered</span>${money(amt)}</div>
+        <div class="keys">${[1,2,3,4,5,6,7,8,9,'.',0,'⌫'].map(k=>`<button>${k}</button>`).join('')}</div>
+        <div class="confirm"><div class="note" style="padding:0">Change due <b>${money(change)}</b></div><button class="btn primary" onclick="act.takeCash()">Take ${money(amt)} cash</button></div></div>`;
+    } else if(tile==='terminal'){
+      pad=`<div class="keypad"><div class="amt-in"><span>Amount</span>${money(due(o))}</div><div class="confirm" style="grid-column:1/-1"><button class="btn primary" onclick="act.sendToReader()">Send ${money(due(o))} to ${READER.split(' ·')[0]}</button></div></div>`;
+    } else if(tile){
+      pad=`<div class="keypad"><div class="amt-in"><span>Amount</span>${money(due(o))}</div><div class="confirm" style="grid-column:1/-1"><button class="btn primary" onclick="act.quick(${due(o)});act.takeCash()">Record ${money(due(o))}</button></div></div>`;
+    }
+    body=`<div class="balance"><span class="lbl">Remaining</span><span class="amt">${money(due(o))}</span><button class="split">Split payment ▾</button></div>
+      <div class="ttabs"><span class="on">Payment methods</span><span>Legacy (order-pay)</span></div>${tiles}${pad}`;
+  }
+  return `<div class="tender" style="flex:1">
+    <div class="thead">${opts.leading??`<button class="back" onclick="act.backToCart('${o.id}')">← Cart</button>`}<span class="t">Checkout #${o.id} · ${o.who}</span><span class="sp"></span>${opts.trailing??''}</div>${body}</div>`;
+}
+function appbar(extra=''){ return `<div class="appbar"><span class="brand">WCPOS</span><div class="nav"><span class="on">POS</span><span>Orders</span><span>Products</span><span>Customers</span></div><span class="sp"></span>${extra}<span style="color:#94a3b8;font-size:12px">Front till</span></div>`; }
+
+// ---------- views ----------
+function viewA(){
+  const o=cur();
+  if(o.mode!=='checkout') return appbar()+`<div class="body">${productsColumn()}${cartColumn(o)}</div>`;
+  return appbar()+`<div class="body"><div class="tender" style="flex:1;animation:slide .25s ease-out;border-right:1px solid var(--line)">${tenderPane(o).replace('<div class="tender" style="flex:1">','<div>')}</div>${ledgerPane(o)}</div>`;
+}
+function viewB(){
+  const o=cur();
+  let s=appbar()+`<div class="body">${productsColumn()}${cartColumn(o)}`;
+  if(o.mode==='checkout'){
+    s+=`<div class="scrim" onclick="act.park('${o.id}')"></div><div class="dead"><span>Dead quarter: dimmed, stale, not tappable. The tabs are under the sheet.</span></div>
+      <div class="sheet"><div class="ledger"><div class="lh">Order #${o.id} <small>${o.who}</small></div>${linesHtml(o,true)}${totalsHtml(o,true)}</div>
+      ${tenderPane(o,{leading:`<button class="back" onclick="act.park('${o.id}')">${o.pending?'Park payment':'✕ Close'}</button>`})}</div>`;
+  }
+  return s+`</div>`;
+}
+function viewC(){
+  const o=cur();
+  let s=appbar()+`<div class="body">${productsColumn()}${cartColumn(o)}`;
+  if(o.mode==='checkout'){
+    const menu = ui.menu?`<div class="menu">${Object.values(state.orders).map(x=>`<button onclick="act.switchOrder('${x.id}');state.orders['${x.id}'].mode=state.orders['${x.id}'].mode;">#${x.id} · ${x.who}${tabChip(x)}</button>`).join('')}</div>`:'';
+    s+=`<div class="full"><div class="fbar"><button class="back" onclick="act.backToCart('${o.id}')">← Cart</button><button class="back" onclick="ui.menu=!ui.menu;render()">Open orders (${Object.keys(state.orders).length}) ▾</button><span style="font-weight:700">Checkout #${o.id} · ${o.who}</span></div>${menu}
+      <div class="fbody">${ledgerPane(o,`<div class="lh" style="padding:12px 14px;font-weight:700;border-bottom:1px solid var(--line)">Order #${o.id}</div>`)}${tenderPane(o,{leading:''}).replace(/<div class="thead">[\s\S]*?<\/div>/,'')}</div></div>`;
+  }
+  return s+`</div>`;
+}
+function viewP(){
+  const o=cur();
+  const ptabs=`<div class="pbar">${Object.values(state.orders).map(x=>`<button class="ptab ${x.id===state.current?'on':''}" onclick="act.switchOrder('${x.id}')">#${x.id}${x.pending?' <span class="chip wait"><i class="dot"></i></span>':isPaid(x)?' <span class="chip paid"><i class="dot"></i></span>':''}</button>`).join('')}<button class="ptab">+</button></div>`;
+  if(o.mode!=='checkout'){
+    return `<div class="appbar"><span class="brand">WCPOS</span><span class="sp"></span><span style="font-size:12px;color:#cbd5e1">Products · <b style="color:#fff">Cart</b></span></div>
+      <div class="body">${ptabs}<div class="plist">${linesHtml(o,false)}${totalsHtml(o,false)}</div>
+      <div class="pfoot"><button class="cta" style="margin:0" onclick="act.checkout('${o.id}')"><span>${o.pending||o.legs.length?'Resume checkout':'Checkout'}</span><span>${money(due(o)||o.total)}</span></button></div></div>`;
+  }
+  const others=Object.values(state.orders).filter(x=>x.id!==o.id);
+  const orderMenu = ui.menu?`<div class="menu" style="left:auto;right:12px;top:96px">${Object.values(state.orders).map(x=>`<button onclick="act.switchOrder('${x.id}')">#${x.id} · ${x.who}${tabChip(x)}</button>`).join('')}</div>`:'';
+  return `<div class="appbar"><button class="back" style="background:none;color:#fff;border-color:#475569" onclick="act.backToCart('${o.id}')">← Cart</button><span class="brand" style="font-weight:600">Checkout #${o.id}</span></div>
+    <div class="body">
+      <div class="bbar" onclick="ui.ledger=!ui.ledger;render()"><div><div class="amt">${money(due(o))} remaining</div><div class="sub">${o.lines.length} item${o.lines.length===1?'':'s'} · ${o.legs.length} payment${o.legs.length===1?'':'s'}${o.pending?' · 1 waiting':''} ▾</div></div><span class="sp"></span>
+        <button onclick="event.stopPropagation();ui.menu=!ui.menu;render()">Orders (${Object.keys(state.orders).length})${others.some(x=>x.pending)?' <span class="chip wait"><i class="dot"></i></span>':others.some(isPaid)?' <span class="chip paid"><i class="dot"></i></span>':''}</button></div>
+      ${orderMenu}
+      ${ui.ledger?`<div class="ledger-expand">${linesHtml(o,true)}</div>`:''}
+      <div style="flex:1;overflow:auto">${tenderPane(o,{leading:'',two:true}).replace(/<div class="thead">[\s\S]*?<\/div>/,'')}</div>
+    </div>`;
+}
+
+// ---------- render ----------
+function render(){
+  const d=document.getElementById('device');
+  d.className='device'+(view==='P'?' phone':'');
+  d.innerHTML={A:viewA,B:viewB,C:viewC,P:viewP}[view]();
+  document.getElementById('ttl').innerHTML=VIEWS[view].name+(view==='A'?'<span class="verdict">Recommended</span>':'')+`<small>?variant=${view}</small>`;
+  document.getElementById('desc').textContent=VIEWS[view].desc;
+  document.getElementById('lbl').textContent=VIEWS[view].name;
+  document.querySelectorAll('.switch .k').forEach(k=>k.classList.toggle('on',k.dataset.v===view));
+  document.getElementById('tapCard').disabled=!state.readerHeldBy;
+  [...document.querySelectorAll('#steps li')].forEach((li,i)=>{li.className=i<state.step?'done':i===state.step?'now':'';});
+  const u=new URL(location); u.searchParams.set('variant',view); history.replaceState(null,'',u);
+}
+const order=['A','B','C','P'];
+function go(v){ view=v; ui={}; render(); }
+document.getElementById('prev').onclick=()=>go(order[(order.indexOf(view)+3)%4]);
+document.getElementById('next').onclick=()=>go(order[(order.indexOf(view)+1)%4]);
+document.querySelectorAll('.switch .k').forEach(k=>k.onclick=()=>go(k.dataset.v));
+document.getElementById('tapCard').onclick=()=>act.tapCard();
+document.getElementById('reset').onclick=()=>{state=fresh();ui={};render();};
+window.addEventListener('keydown',e=>{ if(e.target.matches('input,textarea,[contenteditable]')) return; if(e.key==='ArrowLeft') document.getElementById('prev').click(); if(e.key==='ArrowRight') document.getElementById('next').click(); });
+state=fresh(); render();
+</script>
+</body>
+</html>
