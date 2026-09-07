@@ -116,6 +116,17 @@
   .ledger-lines .line.pay.wait{color:var(--warn)}
   .note{font-size:12px;color:var(--muted);padding:8px 14px}
 
+  /* view A transitions */
+  .tr-slide{animation:slide .25s ease-out}
+  .tr-fade{animation:fade .18s ease-out}
+  .tr-rise{animation:rise .22s cubic-bezier(.2,.7,.2,1)}
+  .tr-none{animation:none}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .trpick{display:inline-flex;gap:4px;margin-left:10px;vertical-align:middle}
+  .trpick button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600;color:var(--muted)}
+  .trpick button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .ledger-lines .line.pay,.totals .paid,.totals .due{animation:fade .18s ease-out}
+
   /* B slide-over */
   .scrim{position:absolute;inset:0;background:rgba(15,23,42,.45);z-index:5}
   .sheet{position:absolute;top:0;right:0;bottom:0;width:75%;background:#fff;z-index:6;box-shadow:-12px 0 40px rgba(15,23,42,.25);display:flex;animation:slide .25s ease-out}
@@ -202,7 +213,7 @@
 // ---------- state (one tender state machine shared by every view) ----------
 const VIEWS = {
   A:{name:'A — Column swap (recommended)',
-     desc:'Checkout keeps the two POS columns. The cart column stays where it is and becomes the ledger pane; the tender pane slides in from the right over the products column. The open-order tabs stay where they always are, so switching customers is the same tap it is on the cart, and a waiting terminal shows as a chip on its tab. What Lightspeed, Toast and Loyverse do.'},
+     desc:'Checkout keeps the two POS columns. The cart column stays where it is and becomes the ledger pane; the tender pane replaces the products column in place. Pick the transition above: Fade (products fade out, tender fades in, 180 ms), Rise (fade plus a 10 px lift, Material\'s shared-axis feel), Instant (no animation, what Lightspeed R desktop does), or the original Slide. The open-order tabs stay where they always are, so switching customers is the same tap it is on the cart, and a waiting terminal shows as a chip on its tab. What Lightspeed, Toast and Loyverse do.'},
   B:{name:'B — Right slide-over, 3/4 width',
      desc:'Checkout is a sheet sliding in from the right over the POS. The visible quarter behind it is dimmed and dead: it shows a stale slice of the products grid, not the tabs, so to serve another customer the cashier needs a new "Park payment" verb to close the sheet, then the tab, then the tab again to come back. No vendor ships this shape.'},
   C:{name:'C — Full-screen takeover',
@@ -214,6 +225,7 @@ const PRODUCTS=['Flat white','Latte','Croissant','Sourdough','Oat milk','Espress
 const READER='Reader M2 · counter';
 let state, view = new URLSearchParams(location.search).get('variant') || 'A';
 let ui = {}; // per-view transient ui state (keypad, menus)
+let trans = new URLSearchParams(location.search).get('t') || 'fade'; // view A transition
 
 function fresh(){
   return {
@@ -336,7 +348,7 @@ function appbar(extra=''){ return `<div class="appbar"><span class="brand">WCPOS
 function viewA(){
   const o=cur();
   if(o.mode!=='checkout') return appbar()+`<div class="body">${productsColumn()}${cartColumn(o)}</div>`;
-  return appbar()+`<div class="body"><div class="tender" style="flex:1;animation:slide .25s ease-out;border-right:1px solid var(--line)">${tenderPane(o).replace('<div class="tender" style="flex:1">','<div>')}</div>${ledgerPane(o)}</div>`;
+  return appbar()+`<div class="body"><div class="tender tr-${trans}" style="flex:1;border-right:1px solid var(--line)">${tenderPane(o).replace('<div class="tender" style="flex:1">','<div>')}</div>${ledgerPane(o)}</div>`;
 }
 function viewB(){
   const o=cur();
@@ -383,13 +395,14 @@ function render(){
   const d=document.getElementById('device');
   d.className='device'+(view==='P'?' phone':'');
   d.innerHTML={A:viewA,B:viewB,C:viewC,P:viewP}[view]();
-  document.getElementById('ttl').innerHTML=VIEWS[view].name+(view==='A'?'<span class="verdict">Recommended</span>':'')+`<small>?variant=${view}</small>`;
+  const pick = view==='A' ? `<span class="trpick">${['fade','rise','none','slide'].map(t=>`<button class="${t===trans?'on':''}" onclick="trans='${t}';render()">${{fade:'Fade',rise:'Rise',none:'Instant',slide:'Slide'}[t]}</button>`).join('')}</span>` : '';
+  document.getElementById('ttl').innerHTML=VIEWS[view].name+(view==='A'?'<span class="verdict">Recommended</span>':'')+`<small>?variant=${view}${view==='A'?'&t='+trans:''}</small>`+pick;
   document.getElementById('desc').textContent=VIEWS[view].desc;
   document.getElementById('lbl').textContent=VIEWS[view].name;
   document.querySelectorAll('.switch .k').forEach(k=>k.classList.toggle('on',k.dataset.v===view));
   document.getElementById('tapCard').disabled=!state.readerHeldBy;
   [...document.querySelectorAll('#steps li')].forEach((li,i)=>{li.className=i<state.step?'done':i===state.step?'now':'';});
-  const u=new URL(location); u.searchParams.set('variant',view); history.replaceState(null,'',u);
+  const u=new URL(location); u.searchParams.set('variant',view); u.searchParams.set('t',trans); history.replaceState(null,'',u);
 }
 const order=['A','B','C','P'];
 function go(v){ view=v; ui={}; render(); }
