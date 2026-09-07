@@ -56,6 +56,10 @@ Why this over the 3/4 slide-over Paul was leaning to:
 
 Why not the pure full-screen takeover (Square/Clover style): it hides the app chrome and the cart for no gain, and the systems closest to WCPOS in shape (a web/tablet register with a persistent cart column) all keep the column. Full-screen remains the phone behaviour, where every vendor and every design system lands anyway.
 
+## Prototype
+
+Interactive mockup of the three containers plus the phone layout, each playing the same two-cart scenario (order A waiting on the terminal while order B is taken in cash): [`docs/prototypes/2026-09-07-checkout-container.html` on the `prototype/checkout-container` branch](https://github.com/wcpos/roadmap/blob/prototype/checkout-container/docs/prototypes/2026-09-07-checkout-container.html). Open the file locally; `?variant=A|B|C|P`, or the bottom bar and ←/→.
+
 ## Points the landing ticket must carry
 
 - **Back affordance:** a left-aligned `← Cart` (arrow or X) at the top of the tender pane, plus Escape on desktop and the hardware/predictive back on Android. No swipe-to-dismiss. Leaving with a live leg routes through the existing Cancel payment view, which lists what to return or void, so a navigation away (drawer, tabs, browser back) mid-split must be intercepted the same way.
