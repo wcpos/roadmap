@@ -41,13 +41,17 @@
   /* columns */
   .col{display:flex;flex-direction:column;min-width:0;min-height:0}
   .col.products{flex:1;background:#f8fafc;border-right:1px solid var(--line)}
+  .body[style*="row-reverse"] .col.products{border-right:none;border-left:1px solid var(--line)}
   .col.cart{width:380px;flex:none}
   .search{margin:12px 14px 6px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--muted);background:#fff}
   .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:8px 14px;overflow:auto}
   .tile{background:#fff;border:1px solid var(--line);border-radius:8px;height:92px;padding:10px;display:flex;flex-direction:column;justify-content:space-between}
   .tile .n{font-weight:600;font-size:13px}
   .tile .p{color:var(--muted);font-size:12px}
-  .tabs{display:flex;gap:4px;padding:8px 8px 0;border-bottom:1px solid var(--line);background:#fff;overflow:auto}
+  .tabs{display:flex;gap:4px;padding:8px 8px 0;border-bottom:1px solid var(--line);background:#fff;overflow:auto;flex:none}
+  .tabs.bottom{padding:0 8px 8px;border-bottom:none;border-top:1px solid var(--line);order:99}
+  .tabs.bottom .tab{border-radius:0 0 8px 8px;border-top:none;border-bottom:1px solid var(--line)}
+  .tabs.bottom .tab.on{box-shadow:0 -1px 0 #fff}
   .tab{border:1px solid var(--line);border-bottom:none;border-radius:8px 8px 0 0;padding:7px 10px;background:#f1f5f9;font-size:13px;display:flex;flex-direction:column;gap:2px;min-width:110px;text-align:left}
   .tab.on{background:#fff;font-weight:650;box-shadow:0 1px 0 #fff}
   .tab .who{white-space:nowrap}
@@ -180,6 +184,7 @@
   <div>
     <h1 id="ttl"></h1>
     <p id="desc"></p>
+    <div id="settings" style="margin-top:6px"></div>
     <div class="demo">
       <button id="tapCard" disabled>Demo: customer taps card on the terminal</button>
       <button id="reset">Reset orders</button>
@@ -226,6 +231,8 @@ const READER='Reader M2 · counter';
 let state, view = new URLSearchParams(location.search).get('variant') || 'A';
 let ui = {}; // per-view transient ui state (keypad, menus)
 let trans = new URLSearchParams(location.search).get('t') || 'fade'; // view A transition
+let side = new URLSearchParams(location.search).get('side') || 'left';   // products column side (merchant setting)
+let tabsPos = new URLSearchParams(location.search).get('tabs') || 'top'; // open-order tabs position (merchant setting)
 
 function fresh(){
   return {
@@ -272,7 +279,7 @@ function tabChip(o){
   return `<span class="chip" style="color:var(--muted)">${o.lines.length} item${o.lines.length===1?'':'s'} · ${money(o.total)}</span>`;
 }
 function tabsHtml(){
-  return `<div class="tabs">${Object.values(state.orders).map(o=>`
+  return `<div class="tabs ${tabsPos==='bottom'?'bottom':''}">${Object.values(state.orders).map(o=>`
     <button class="tab ${o.id===state.current?'on':''}" onclick="act.switchOrder('${o.id}')">
       <span class="who">#${o.id} · ${o.who}</span>${tabChip(o)}</button>`).join('')}
     <button class="tab add">+</button></div>`;
@@ -347,8 +354,10 @@ function appbar(extra=''){ return `<div class="appbar"><span class="brand">WCPOS
 // ---------- views ----------
 function viewA(){
   const o=cur();
-  if(o.mode!=='checkout') return appbar()+`<div class="body">${productsColumn()}${cartColumn(o)}</div>`;
-  return appbar()+`<div class="body"><div class="tender tr-${trans}" style="flex:1;border-right:1px solid var(--line)">${tenderPane(o).replace('<div class="tender" style="flex:1">','<div>')}</div>${ledgerPane(o)}</div>`;
+  const dir = side==='right' ? 'flex-direction:row-reverse' : '';
+  const bord = side==='right' ? 'border-left:1px solid var(--line)' : 'border-right:1px solid var(--line)';
+  if(o.mode!=='checkout') return appbar()+`<div class="body" style="${dir}">${productsColumn()}${cartColumn(o)}</div>`;
+  return appbar()+`<div class="body" style="${dir}"><div class="tender tr-${trans}" style="flex:1;${bord}">${tenderPane(o).replace('<div class="tender" style="flex:1">','<div>')}</div>${ledgerPane(o)}</div>`;
 }
 function viewB(){
   const o=cur();
@@ -396,13 +405,17 @@ function render(){
   d.className='device'+(view==='P'?' phone':'');
   d.innerHTML={A:viewA,B:viewB,C:viewC,P:viewP}[view]();
   const pick = view==='A' ? `<span class="trpick">${['fade','rise','none','slide'].map(t=>`<button class="${t===trans?'on':''}" onclick="trans='${t}';render()">${{fade:'Fade',rise:'Rise',none:'Instant',slide:'Slide'}[t]}</button>`).join('')}</span>` : '';
+  const settings = view!=='P' ? `<span class="trpick" style="margin-left:0"><span style="font-size:12px;color:var(--muted);align-self:center">Merchant settings:</span>
+    <button class="${side==='left'?'on':''}" onclick="side='left';render()">Products left</button><button class="${side==='right'?'on':''}" onclick="side='right';render()">Products right</button>
+    <button class="${tabsPos==='top'?'on':''}" onclick="tabsPos='top';render()">Tabs top</button><button class="${tabsPos==='bottom'?'on':''}" onclick="tabsPos='bottom';render()">Tabs bottom</button></span>` : '';
+  document.getElementById('settings').innerHTML=settings;
   document.getElementById('ttl').innerHTML=VIEWS[view].name+(view==='A'?'<span class="verdict">Recommended</span>':'')+`<small>?variant=${view}${view==='A'?'&t='+trans:''}</small>`+pick;
   document.getElementById('desc').textContent=VIEWS[view].desc;
   document.getElementById('lbl').textContent=VIEWS[view].name;
   document.querySelectorAll('.switch .k').forEach(k=>k.classList.toggle('on',k.dataset.v===view));
   document.getElementById('tapCard').disabled=!state.readerHeldBy;
   [...document.querySelectorAll('#steps li')].forEach((li,i)=>{li.className=i<state.step?'done':i===state.step?'now':'';});
-  const u=new URL(location); u.searchParams.set('variant',view); u.searchParams.set('t',trans); history.replaceState(null,'',u);
+  const u=new URL(location); u.searchParams.set('variant',view); u.searchParams.set('t',trans); u.searchParams.set('side',side); u.searchParams.set('tabs',tabsPos); history.replaceState(null,'',u);
 }
 const order=['A','B','C','P'];
 function go(v){ view=v; ui={}; render(); }
