@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Receipt stage · 1.11.0 prototype (2026-09-07)</title>
+<!-- PROTOTYPE — throwaway. View A (column swap, fade) is fixed; the question is what happens in the
+     moment the balance hits zero. Four options, ←/→ or the bottom bar. "Replay" restarts from the
+     terminal waiting state so the transition itself can be watched. -->
+<style>
+  :root{--bg:#eef0f3;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--blue:#0b6bcb;--blue-soft:#e8f1fb;--ok:#15803d;--ok-soft:#e6f4ea;--warn:#b45309;--warn-soft:#fdf3e1;--bad:#b91c1c}
+  *{box-sizing:border-box} button{font:inherit;cursor:pointer}
+  body{margin:0;background:var(--bg);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,sans-serif;color:var(--ink)}
+  .explain{max-width:1180px;margin:18px auto 0;padding:0 20px;display:grid;grid-template-columns:1.2fr 1fr;gap:24px;align-items:start}
+  .explain h1{margin:0;font-size:19px} .explain h1 small{color:var(--muted);font-weight:500;font-size:13px;margin-left:8px}
+  .explain p{margin:6px 0 0;color:#334155;max-width:70ch}
+  .demo{margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .demo button{border:1px dashed var(--warn);background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:5px 10px;font-weight:600;font-size:12px}
+  .demo button:disabled{opacity:.4;cursor:default} .demo span{color:var(--muted);font-size:12px}
+  .side{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:13px}
+  .side b{display:block;margin-bottom:4px} .side ul{margin:0;padding-left:18px;color:#334155}
+  .stage{display:flex;justify-content:center;padding:16px 20px 90px}
+  .device{width:1140px;height:700px;background:#fff;border:1px solid #cbd5e1;border-radius:14px;box-shadow:0 20px 50px rgba(15,23,42,.12);overflow:hidden;position:relative;display:flex;flex-direction:column}
+  .appbar{height:48px;background:#1e293b;color:#fff;display:flex;align-items:center;gap:16px;padding:0 16px;flex:none}
+  .appbar .brand{font-weight:700} .appbar .nav{display:flex;gap:14px;color:#cbd5e1;font-size:13px} .appbar .nav span.on{color:#fff;font-weight:600} .appbar .sp{flex:1}
+  .body{flex:1;display:flex;min-height:0;position:relative}
+  .col{display:flex;flex-direction:column;min-width:0;min-height:0}
+  .col.main{flex:1;border-right:1px solid var(--line);background:#fff}
+  .col.cart{width:380px;flex:none;background:#fafafa}
+  .fade{animation:fade .2s ease-out} @keyframes fade{from{opacity:0}to{opacity:1}}
+  .tabs{display:flex;gap:4px;padding:8px 8px 0;border-bottom:1px solid var(--line);background:#fff;flex:none}
+  .tab{border:1px solid var(--line);border-bottom:none;border-radius:8px 8px 0 0;padding:7px 10px;background:#f1f5f9;font-size:13px;display:flex;flex-direction:column;gap:2px;min-width:110px;text-align:left}
+  .tab.on{background:#fff;font-weight:650} .tab.add{min-width:0;color:var(--muted);font-weight:700}
+  .chip{font-size:11px;font-weight:600;border-radius:999px;padding:1px 7px;display:inline-flex;align-items:center;gap:5px;width:max-content}
+  .chip.wait{background:var(--warn-soft);color:var(--warn)} .chip.paid{background:var(--ok-soft);color:var(--ok)} .chip.dim{color:var(--muted)}
+  .chip .dot{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block} .chip.wait .dot{animation:pulse 1s infinite} @keyframes pulse{50%{opacity:.3}}
+  .lines{flex:1;overflow:auto;padding:6px 0}
+  .line{display:flex;justify-content:space-between;padding:8px 14px;border-bottom:1px solid #f1f5f9;font-size:13px} .line .q{color:var(--muted);margin-right:6px}
+  .line.pay{color:var(--ok)} .line.pay.wait{color:var(--warn)}
+  .note{font-size:12px;color:var(--muted);padding:8px 14px}
+  .totals{border-top:1px solid var(--line);padding:10px 14px;font-size:13px} .totals div{display:flex;justify-content:space-between;padding:2px 0}
+  .totals .big{font-size:17px;font-weight:700;padding-top:6px} .totals .paid{color:var(--ok)} .totals .due{color:var(--warn);font-weight:700} .totals .due.zero{color:var(--ok)}
+  .thead{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--line);flex:none}
+  .back{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 10px;font-weight:600} .thead .t{font-weight:700;font-size:15px}
+  .waiting{margin:14px 16px;border:1px solid var(--line);border-radius:12px;padding:22px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+  .spin{width:26px;height:26px;border:3px solid var(--line);border-top-color:var(--blue);border-radius:50%;animation:s 1s linear infinite} @keyframes s{to{transform:rotate(360deg)}}
+  .waiting .h{font-weight:700;font-size:17px} .waiting .m{color:var(--muted)}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:12px 14px;font-weight:650}
+  .btn.primary{background:var(--blue);border-color:var(--blue);color:#fff;font-size:15px} .btn.danger{color:var(--bad);border-color:#fecaca}
+  .btn.big{padding:16px 22px;font-size:16px}
+  .tick{width:56px;height:56px;border-radius:50%;background:var(--ok-soft);color:var(--ok);display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800}
+  .paidhead{display:flex;flex-direction:column;align-items:center;gap:6px;padding:26px 16px 10px;text-align:center}
+  .paidhead .h{font-size:24px;font-weight:800;color:var(--ok)} .paidhead .m{color:var(--muted)}
+  .actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:8px 16px}
+  .stack{display:flex;flex-direction:column;gap:10px;padding:8px 16px;max-width:420px;margin:0 auto;width:100%}
+  .foot{margin-top:auto;padding:14px 16px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px}
+  /* receipt paper */
+  .paper{width:300px;background:#fff;border:1px solid var(--line);box-shadow:0 8px 24px rgba(15,23,42,.10);font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;padding:18px 16px;color:#111;margin:0 auto}
+  .paper .c{text-align:center} .paper .row{display:flex;justify-content:space-between} .paper hr{border:0;border-top:1px dashed #cbd5e1;margin:8px 0}
+  .paper .b{font-weight:700}
+  .paperwrap{flex:1;overflow:auto;padding:16px;background:#f1f5f9}
+  .switchers{display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:12px;flex:none;background:#fff}
+  .switchers span{border:1px solid var(--line);border-radius:999px;padding:3px 9px;color:var(--muted)}
+  .split{flex:1;display:flex;min-height:0}
+  .split .l{flex:1;display:flex;flex-direction:column;min-height:0;background:#f1f5f9}
+  .split .r{width:320px;flex:none;border-left:1px solid var(--line);display:flex;flex-direction:column;background:#fff}
+  .cta{margin:10px 14px 14px;background:var(--blue);color:#fff;border:0;border-radius:10px;padding:14px;font-size:16px;font-weight:700;display:flex;justify-content:space-between}
+  .cta.ok{background:var(--ok)}
+  .search{margin:12px 14px 6px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--muted);background:#fff}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:8px 14px;overflow:auto}
+  .ptile{background:#fff;border:1px solid var(--line);border-radius:8px;height:92px;padding:10px;display:flex;flex-direction:column;justify-content:space-between} .ptile .n{font-weight:600;font-size:13px} .ptile .p{color:var(--muted);font-size:12px}
+  .toast{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);background:#111827;color:#fff;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:14px;box-shadow:0 12px 30px rgba(0,0,0,.3);z-index:8;animation:up .2s ease-out}
+  @keyframes up{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
+  .toast b{font-size:15px} .toast button{background:#374151;color:#fff;border:0;border-radius:8px;padding:8px 12px;font-weight:600} .toast button.p{background:#fff;color:#111827}
+  .switch{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#111827;color:#fff;border-radius:999px;padding:8px 10px;display:flex;align-items:center;gap:8px;box-shadow:0 10px 30px rgba(0,0,0,.35);z-index:50;font-size:13px}
+  .switch button{background:#374151;color:#fff;border:0;border-radius:999px;width:32px;height:32px;font-size:16px}
+  .switch .k{background:#1f2937;border:1px solid #374151;color:#9ca3af;border-radius:999px;padding:4px 10px;font-weight:700;cursor:pointer} .switch .k.on{background:#fff;color:#111827;border-color:#fff}
+  .switch .lbl{padding:0 6px;min-width:240px;text-align:center;font-weight:600}
+</style>
+</head>
+<body>
+<div class="explain">
+  <div>
+    <h1 id="ttl"></h1>
+    <p id="desc"></p>
+    <div class="demo"><button id="replay">Replay: back to "waiting for terminal"</button><button id="tap">Demo: customer taps card</button><span>Fade is fixed at 200 ms in every option.</span></div>
+  </div>
+  <div class="side"><b>What every option shares</b><ul>
+    <li>Balance zero is reached inside the tender pane; no modal opens.</li>
+    <li>The paid order keeps its tab ("Paid · receipt") until New sale.</li>
+    <li>Printing is the cashier's tap. New sale restores products + cart.</li>
+    <li>The Orders screen keeps its own receipt modal for reprints.</li></ul></div>
+</div>
+<div class="stage"><div id="device" class="device"></div></div>
+<div class="switch"><button id="prev">←</button>
+  <span class="k" data-v="1">1</span><span class="k" data-v="2">2</span><span class="k" data-v="3">3</span><span class="k" data-v="4">4</span>
+  <div class="lbl" id="lbl"></div><button id="next">→</button></div>
+
+<script>
+const V={
+ '1':{name:'1 — Confirmation card, preview on demand',
+  desc:'The moment the reader confirms, the tender pane fades to a green Paid card with the change line, three receipt choices and New sale. No preview: the receipt only renders if the cashier taps Print or Email. This is the Square / Toast / Zettle shape and the fastest tap-count for the common case, which Toast says is "no receipt".'},
+ '2':{name:'2 — Receipt preview fills the pane',
+  desc:'The tender pane fades to the rendered receipt itself, with the template and printer switchers above it and the actions in a footer. Closest to what the receipt modal shows today, so the least new UI, and the cashier sees exactly what will print. Costs a glance at a paper strip on every sale even when nobody wants one.'},
+ '3':{name:'3 — Ledger becomes the receipt',
+  desc:'The ledger column, which already reads like a receipt, fades into the real rendered receipt. The tender pane shows only the Paid card and the actions. The two columns keep their jobs: left is where you act, right is what the customer gets. Print and Email act on the column beside them.'},
+ '4':{name:'4 — Products return, receipt strip in the cart column',
+  desc:'On capture the tender pane fades straight back to the products grid, ready for the next customer, and the paid order sits in the cart column as a receipt strip with Print · Email · No receipt and New sale at the bottom. Zero taps between one sale and the next. The receipt actions are smaller and further from the eye, and the paid tab lingers until dismissed.'}
+};
+let view=new URLSearchParams(location.search).get('r')||'1';
+let phase='waiting'; // waiting | paid
+let ui={};
+const money=n=>'$'+n.toFixed(2);
+const O={id:'1001',who:'Sam K.',lines:[['2','Flat white',9.00],['1','Croissant',5.75],['3','Cookie',28.20]],total:42.95};
+const OTHER={id:'1002',who:'Walk-in',lines:[['1','Sourdough',12.50]],total:12.50};
+const PRODUCTS=['Flat white','Latte','Croissant','Sourdough','Oat milk','Espresso','Bagel','Cold brew','Muffin','Tea','Juice','Cookie'].map((n,i)=>({n,p:(2.5+i*0.75).toFixed(2)}));
+
+function appbar(){return `<div class="appbar"><span class="brand">WCPOS</span><div class="nav"><span class="on">POS</span><span>Orders</span><span>Products</span><span>Customers</span></div><span class="sp"></span><span style="color:#94a3b8;font-size:12px">Front till</span></div>`;}
+function tabs(){return `<div class="tabs"><button class="tab on"><span>#1001 · Sam K.</span>${phase==='paid'?'<span class="chip paid"><i class="dot"></i>Paid · receipt</span>':'<span class="chip wait"><i class="dot"></i>Waiting for terminal · $42.95</span>'}</button><button class="tab"><span>#1002 · Walk-in</span><span class="chip dim">1 item · $12.50</span></button><button class="tab add">+</button></div>`;}
+function items(){return O.lines.map(l=>`<div class="line"><span><span class="q">${l[0]}×</span>${l[1]}</span><span>${money(l[2])}</span></div>`).join('');}
+function ledger(){return `<div class="col cart">${tabs()}<div class="lines">${items()}<div class="note" style="padding-top:10px">Payments</div>${phase==='paid'?`<div class="line pay"><span>Stripe Terminal</span><span>− $42.95</span></div>`:`<div class="line pay wait"><span>Stripe Terminal · waiting on reader</span><span>$42.95</span></div>`}</div>
+  <div class="totals"><div><span>Subtotal</span><span>$39.05</span></div><div><span>Tax</span><span>$3.90</span></div><div class="big"><span>Total</span><span>$42.95</span></div>${phase==='paid'?`<div class="paid"><span>Paid</span><span>$42.95</span></div><div class="due zero"><span>Remaining</span><span>$0.00</span></div>`:`<div class="due"><span>Remaining</span><span>$42.95</span></div>`}</div></div>`;}
+function paper(){return `<div class="paper"><div class="c b">Kilbot Coffee</div><div class="c">12 High St · 09:41 · Front till</div><hr><div class="row"><span>2× Flat white</span><span>9.00</span></div><div class="row"><span>1× Croissant</span><span>5.75</span></div><div class="row"><span>3× Cookie</span><span>28.20</span></div><hr><div class="row"><span>Subtotal</span><span>39.05</span></div><div class="row"><span>Tax 10%</span><span>3.90</span></div><div class="row b"><span>TOTAL</span><span>42.95</span></div><hr><div class="row"><span>Stripe Terminal</span><span>42.95</span></div><div class="row"><span>Visa ···· 4242 · contactless</span><span></span></div><hr><div class="c">Order #1001 · Thank you, Sam</div><div class="c">wcpos.com/r/1001</div></div>`;}
+function switchers(){return `<div class="switchers"><span>Template: Default receipt ▾</span><span>Printer: Epson TM-m30 ▾</span></div>`;}
+function waiting(){return `<div class="col main"><div class="thead"><button class="back">← Cart</button><span class="t">Checkout #1001 · Sam K.</span></div><div class="waiting"><div class="spin"></div><div class="h">Waiting for customer · $42.95</div><div class="m">Reader M2 · counter</div><button class="btn danger">Cancel payment</button></div></div>`;}
+function paidHead(){return `<div class="paidhead"><div class="tick">✓</div><div class="h">Paid $42.95</div><div class="m">Stripe Terminal · Visa ···· 4242 · no change</div></div>`;}
+const acts=()=>`<div class="actions"><button class="btn big">Print receipt</button><button class="btn big">Email receipt</button><button class="btn big">No receipt</button></div>`;
+
+function v1(){ if(phase!=='paid') return waiting();
+ return `<div class="col main fade"><div class="thead"><span class="t">Checkout #1001 · Sam K.</span></div>${paidHead()}${acts()}<div class="note" style="text-align:center">Print and Email open the receipt preview here first.</div><div class="foot"><button class="btn primary big" onclick="newSale()">New sale</button></div></div>`;}
+function v2(){ if(phase!=='paid') return waiting();
+ return `<div class="col main fade"><div class="thead"><span class="t">Paid $42.95 · #1001 · Sam K.</span><span class="chip paid" style="margin-left:6px"><i class="dot"></i>Stripe Terminal</span></div>${switchers()}<div class="paperwrap">${paper()}</div><div class="foot" style="justify-content:space-between"><div style="display:flex;gap:10px"><button class="btn">Print</button><button class="btn">Email</button><button class="btn">No receipt</button></div><button class="btn primary big" onclick="newSale()">New sale</button></div></div>`;}
+function v3(){ if(phase!=='paid') return waiting();
+ return `<div class="col main fade"><div class="thead"><span class="t">Checkout #1001 · Sam K.</span></div>${paidHead()}<div class="stack"><button class="btn big">Print receipt</button><button class="btn big">Email receipt</button><button class="btn big">No receipt</button></div><div class="foot"><button class="btn primary big" onclick="newSale()">New sale</button></div></div>`;}
+function ledger3(){ if(phase!=='paid') return ledger();
+ return `<div class="col cart fade">${tabs()}${switchers()}<div class="paperwrap">${paper()}</div></div>`;}
+function products(){return `<div class="col main fade" style="background:#f8fafc"><div class="search">Search products…</div><div class="grid">${PRODUCTS.map(p=>`<div class="ptile"><span class="n">${p.n}</span><span class="p">$${p.p}</span></div>`).join('')}</div></div>`;}
+function ledger4(){ if(phase!=='paid') return ledger();
+ return `<div class="col cart fade">${tabs()}<div class="paperwrap" style="padding:12px">${paper()}</div><div style="display:flex;gap:6px;padding:10px 14px 0"><button class="btn" style="flex:1">Print</button><button class="btn" style="flex:1">Email</button><button class="btn" style="flex:1">No receipt</button></div><button class="cta ok" onclick="newSale()"><span>New sale</span><span>Paid $42.95</span></button></div>`;}
+
+function render(){
+ const d=document.getElementById('device');
+ let body;
+ if(view==='1') body=v1()+ledger();
+ else if(view==='2') body=v2()+ledger();
+ else if(view==='3') body=v3()+ledger3();
+ else body=(phase==='paid'?products():waiting())+ledger4();
+ d.innerHTML=appbar()+`<div class="body">${body}${ui.done?`<div class="toast fade"><b>Order #1001 closed</b><span style="color:#9ca3af">Prototype ends here — Replay to watch again.</span></div>`:''}</div>`;
+ document.getElementById('ttl').innerHTML=V[view].name+`<small>?r=${view}</small>`;
+ document.getElementById('desc').textContent=V[view].desc;
+ document.getElementById('lbl').textContent=V[view].name;
+ document.querySelectorAll('.switch .k').forEach(k=>k.classList.toggle('on',k.dataset.v===view));
+ document.getElementById('tap').disabled=phase==='paid';
+ const u=new URL(location); u.searchParams.set('r',view); history.replaceState(null,'',u);
+}
+function newSale(){ ui.done=true; render(); }
+const order=['1','2','3','4']; const go=v=>{view=v; ui={}; render();};
+document.getElementById('prev').onclick=()=>go(order[(order.indexOf(view)+3)%4]);
+document.getElementById('next').onclick=()=>go(order[(order.indexOf(view)+1)%4]);
+document.querySelectorAll('.switch .k').forEach(k=>k.onclick=()=>go(k.dataset.v));
+document.getElementById('tap').onclick=()=>{phase='paid'; ui={}; render();};
+document.getElementById('replay').onclick=()=>{phase='waiting'; ui={}; render();};
+window.addEventListener('keydown',e=>{ if(e.target.matches('input,textarea')) return; if(e.key==='ArrowLeft') document.getElementById('prev').click(); if(e.key==='ArrowRight') document.getElementById('next').click(); });
+render();
+</script>
+</body>
+</html>
