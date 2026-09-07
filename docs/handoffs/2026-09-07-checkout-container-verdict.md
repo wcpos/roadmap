@@ -10,6 +10,7 @@ container was ruled, prototyped and ticketed. **Lane: `next`.** Nothing has been
 | Artefact | Where | State |
 |---|---|---|
 | Research (13 vendors, design systems, UX evidence, synthesis) | `docs/research/2026-09-07-checkout-flow-research/` on PR [wcpos/roadmap#164](https://github.com/wcpos/roadmap/pull/164) | Ready for review; README carries the verdict at the top |
+| Receipt-stage prototype (options 1–4 after balance zero, auto-print and 58 mm mismatch toggles) | `docs/prototypes/2026-09-07-receipt-stage.html` on the same branch | Throwaway; **awaiting Paul's pick** |
 | Interactive prototype (views A/B/C/Phone, transition picker, merchant settings, two-cart walkthrough) | `docs/prototypes/2026-09-07-checkout-container.html` on branch [`prototype/checkout-container`](https://github.com/wcpos/roadmap/blob/prototype/checkout-container/docs/prototypes/2026-09-07-checkout-container.html); also untracked in the main tree | Throwaway; primary source for the ruling |
 | Ruling on the payments map | [#97 comment](https://github.com/wcpos/roadmap/issues/97#issuecomment-5569103735) | Recorded |
 | Landing ticket | [wcpos/roadmap#165](https://github.com/wcpos/roadmap/issues/165) | Filed, unclaimed, not started |
@@ -37,10 +38,14 @@ container was ruled, prototyped and ticketed. **Lane: `next`.** Nothing has been
    engineering change is moving the poll loop to an order-scoped background service.
 
 6. **Receipts stay inside the pane** (Paul, end of session). Today balance zero routes into the
-   receipt modal on top of the checkout. In A the receipt is the tender pane's final stage: preview,
-   Print · Email · No receipt, and New sale as the primary action that closes the tab. The ledger
-   stays beside it. The receipt component gets a second host (pane) beside its existing modal host
-   (Orders reprint, unchanged). Printing remains the cashier's tap; auto-print is a separate ruling.
+   receipt modal on top of the checkout. In A the receipt is the tender pane's final stage and it is
+   the **existing receipt screen re-hosted**, not a new strip: template select, printer select with
+   Auto, paper-width mismatch badge, zoomable preview, and the footer Email receipt · Download PDF ·
+   Print receipt, plus No receipt and New sale (closes the tab). The ledger stays beside it. The
+   `autoPrintReceipt` setting on the pos-cart UI settings already exists and keeps working: with it
+   on the stage prints once when the final data lands and says where. (An earlier note in this
+   session wrongly called auto-print a separate ruling.) **Which of the four receipt layouts is
+   still Paul's call** — see the receipt prototype below.
 
 ## Why (one line each, evidence in the research)
 
