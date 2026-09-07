@@ -10,7 +10,7 @@ container was ruled, prototyped and ticketed. **Lane: `next`.** Nothing has been
 | Artefact | Where | State |
 |---|---|---|
 | Research (13 vendors, design systems, UX evidence, synthesis) | `docs/research/2026-09-07-checkout-flow-research/` on PR [wcpos/roadmap#164](https://github.com/wcpos/roadmap/pull/164) | Ready for review; README carries the verdict at the top |
-| Receipt-stage prototype (options 1–4 after balance zero, auto-print and 58 mm mismatch toggles) | `docs/prototypes/2026-09-07-receipt-stage.html` on the same branch | Throwaway; option 2 picked |
+| Receipt-stage prototype (options 1–4 after balance zero, auto-print and 58 mm mismatch toggles) | `docs/prototypes/2026-09-07-receipt-stage.html` on `prototype/checkout-container` | Throwaway; option 2 picked |
 | Interactive prototype (views A/B/C/Phone, transition picker, merchant settings, two-cart walkthrough) | `docs/prototypes/2026-09-07-checkout-container.html` on branch [`prototype/checkout-container`](https://github.com/wcpos/roadmap/blob/prototype/checkout-container/docs/prototypes/2026-09-07-checkout-container.html); also untracked in the main tree | Throwaway; primary source for the ruling |
 | Ruling on the payments map | [#97 comment](https://github.com/wcpos/roadmap/issues/97#issuecomment-5569103735) | Recorded |
 | Landing ticket | [wcpos/roadmap#165](https://github.com/wcpos/roadmap/issues/165) | Filed, unclaimed, not started |
@@ -46,7 +46,7 @@ container was ruled, prototyped and ticketed. **Lane: `next`.** Nothing has been
    on the stage prints once when the final data lands and says where. (An earlier note in this
    session wrongly called auto-print a separate ruling.) **Layout ruled: option 2** — the receipt screen fills
    the tender pane, ledger column unchanged, plus a Paid banner above the selects with the change due
-   in large type. Options 1/3/4 stay on the prototype branch as the record of what was rejected.
+   in large type. Options 1/3/4 stay on `prototype/checkout-container` as the record of what was rejected.
 
 ## Why (one line each, evidence in the research)
 
