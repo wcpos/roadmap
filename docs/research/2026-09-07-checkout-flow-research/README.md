@@ -18,7 +18,7 @@ Two sourced companions sit beside this file:
 | Pattern | Who | Cart lines still visible? |
 |---|---|---|
 | **In-place column swap** — cart/check column stays, the product area becomes the tender pane | Lightspeed X-Series (Vend), Lightspeed R desktop, Toast, Loyverse | Yes, all four |
-| **Full-screen takeover** | Square (all editions), Clover, Odoo, SumUp POS Pro | Mostly no (SumUp Pro yes; Square unverified) |
+| **Full-screen takeover** | Square POS (unified app), Clover, Odoo, SumUp POS Pro | Mostly no (SumUp Pro yes; Square unverified) |
 | **Centred modal** | Zettle iPad, Erply | Zettle yes (cart rail beside it); Erply no |
 | **No transition** — Cash/Card live on the cart screen | SumUp app / POS Lite | Yes |
 | **Side drawer / slide-over** | **Nobody** | — |
@@ -28,33 +28,33 @@ Shopify POS moves to a separate "Select payments" screen with a `Split payment` 
 Other conventions that held across the set (details and URLs in the vendor file):
 
 - The running balance heads the tender pane, and the total rides the Charge/Pay button before that.
-- Cash is a keypad or field plus suggested amounts; several vendors add an exact-amount shortcut that skips the tender screen entirely (Toast `Fast cash`, Odoo 19 one-click, Lightspeed X card icon).
-- Split is a control on the tender screen; every tile pre-fills the balance.
-- Back is a left-aligned arrow or X, never a swipe. Clover makes a visible Cancel a requirement for custom tenders.
+- Cash commonly uses a keypad or amount field; some vendors add suggested amounts, and several add an exact-amount shortcut that skips the tender screen entirely (Toast `Fast cash`, Odoo 19 one-click, Lightspeed X card icon).
+- Split is usually a control on the tender screen; Square Restaurants and Zettle start it earlier, while SumUp opens it as a sheet from checkout. Tender controls pre-fill the balance where documented.
+- Back is usually a left-aligned arrow, X or text control, never a documented swipe; Erply's X is top-right. Clover makes a visible Cancel a requirement for custom tenders.
 - Post-payment is a receipt screen whose primary action starts the next sale; Toast and Zettle make "No receipt" primary.
 - Phones converge on one pane at a time: cart behind a bottom bar or badge, an extra `Charge` step tablets elide, fewer controls.
 
 ## What the design guidance says
 
-- **Every design system withdraws the centred modal once the task grows.** Polaris: "Don't use modals to display complex forms." Carbon: "A modal is not an alternative to page" and "Don't make modals full page." NN/g: "Avoid modal dialogs that interrupt high-stake processes such as checkout flows." "Too small" was the predicted failure, and simply enlarging the modal is the one fix Carbon explicitly forbids.
+- **The sources with explicit complexity guidance withdraw the centred modal once the task grows.** Polaris: "Don't use modals to display complex forms." Carbon: "A modal is not an alternative to page" and "Don't make modals full page." NN/g: "Avoid modal dialogs that interrupt high-stake processes such as checkout flows." "Too small" was the predicted failure, and simply enlarging the modal is the one fix Carbon explicitly forbids.
 - **A side sheet is justified only when the page behind it must be referenced.** Carbon reserves slide-in panels for when the user "needs to reference the page along with the panel"; Fluent's Drawer is for "when retaining context is beneficial." Two systems have deprecated the pattern outright: Polaris removed Sheet because it "blocks other parts of the UI, forces users to switch context, and adds complexity," and Atlassian is deprecating Drawer in favour of Modal.
 - **Full-screen is the named answer for multi-step tasks.** Apple: "Consider using a full-screen modal style for in-depth content or a complex task." Material's full-screen dialog is for "a series of tasks." NN/g: a multi-step flow "probably justifies dedicating a full page."
-- **Compact width is unanimous:** Polaris sheets enter from the bottom on small screens, Material moves supporting content into a bottom sheet, UIKit turns every sheet into a full-width card. A side panel degrades to full-screen on phones no matter what.
+- **Compact-width guidance converges on one pane or full width, but not one presentation:** Polaris sheets enter from the bottom on small screens, Material moves supporting content into a bottom sheet, and UIKit turns sheets into full-width cards with some background still visible. A regular-width side panel therefore needs a different compact layout.
 - **No platform offers a side-anchored native sheet.** iOS sheets are centred on iPad and bottom-anchored on iPhone; Android's `formSheet` is a bottom sheet; on web Expo Router renders modal routes as plain routes. A right slide-over has to be a custom animated view inside a `transparentModal` route on every platform, and if it traps focus it must meet the W3C modal-dialog contract (inert background, Escape, focus return).
 
 ## Recommendation
 
-**Use the in-place column swap, animated.** On tablet and desktop, pressing Checkout keeps the two-column POS layout: the cart column becomes the ledger pane (lines, total, payments taken, remaining balance) and the products column is replaced by the tender pane (tiles, keypad, Legacy tab). The tender pane may still slide in from the right over the products area, which keeps the feel Paul described, and Loyverse animates exactly this way (ticket panel slides to the edge, grid becomes the payment pane). Below tablet width, keep what already landed: a full-screen sheet with the ledger collapsed to a balance bar.
+**Use the in-place column swap, animated.** On tablet and desktop, pressing Checkout keeps the two-column POS layout: the right cart column becomes the ledger pane (lines, total, payments taken, remaining balance) and the left products column is replaced by the tender pane (tiles, keypad, Legacy tab). This deliberately places tender left and ledger right, reversing their order inside the current modal so the cart/check column stays anchored where it was. The tender pane may still slide in from the right over the products area, which keeps the feel Paul described, and Loyverse animates exactly this way (ticket panel slides to the edge, grid becomes the payment pane). Below tablet width, keep what already landed: a full-screen sheet with the ledger collapsed to a balance bar.
 
 Why this over the 3/4 slide-over Paul was leaning to:
 
-1. **It is the convention.** Of the systems Paul's tie-breaker names, Lightspeed does it, and so do Toast and Loyverse; Square goes full-screen; no vendor uses a side drawer. The standing principle on the payments map is to follow what a Square/Shopify/Lightspeed cashier expects and deviate only with a stated reason. There is no stated reason for a drawer.
+1. **It is an established convention.** Of the systems Paul's tie-breaker names, Lightspeed does it, and so do Toast and Loyverse; the unified Square POS app goes full-screen; no vendor uses a side drawer. The standing principle on the payments map is to follow what a Square/Shopify/Lightspeed cashier expects and deviate only with a stated reason. There is no stated reason for a drawer.
 2. **It uses the whole screen.** A 3/4 slide-over leaves a dimmed, dead quarter showing a stale cart while the ledger pane shows the same lines. The design-system case for a side sheet, referencing the page behind, is already satisfied by the ledger pane inside the checkout, so the strip behind buys nothing and costs a quarter of the tender pane, including the Legacy tab's gateway form ([#85](https://github.com/wcpos/roadmap/issues/85) is exactly a complaint about that form being cramped).
-3. **It is the same two panes already built.** The #111 layout maps one-to-one onto the POS columns, so this is a container change: the tender checkout moves from the `(modals)` group into the `(columns)` layout, and the `(tabs)` phone route keeps the full-screen sheet. Nothing in the tender state machine changes.
+3. **It is the same two panes already built.** The #111 pane roles map onto the POS columns, while their spatial order changes: ledger moves from the modal's left side to the right cart column, and tender moves from the modal's right side to the left products column. This is a container change: the tender checkout moves from the `(modals)` group into the `(columns)` layout, and the `(tabs)` phone route keeps the full-screen sheet. Nothing in the tender state machine changes.
 4. **It needs no custom sheet.** The slide-over has no native presentation on iOS, Android or web and would be a hand-rolled overlay carrying the full modal-dialog accessibility contract on each. A column swap is ordinary layout plus a reanimated transition, which is already a dependency.
 5. **The guidance agrees.** Full-page for multi-step, context kept by re-rendering the summary inside the flow, no enlarged modal.
 
-Why not the pure full-screen takeover (Square/Clover style): it hides the app chrome and the cart for no gain, and the systems closest to WCPOS in shape (a web/tablet register with a persistent cart column) all keep the column. Full-screen remains the phone behaviour, where every vendor and every design system lands anyway.
+Why not the pure full-screen takeover (Square/Clover style): it hides the app chrome and the cart for no gain, and the systems closest to WCPOS in shape (a web/tablet register with a persistent cart column) all keep the column. Full-screen remains WCPOS's phone choice; the evidence also includes single-column vendor layouts and bottom-sheet design-system guidance rather than a universal full-screen pattern.
 
 ## Prototype
 
