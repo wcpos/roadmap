@@ -58,8 +58,17 @@
   .paper .c{text-align:center} .paper .row{display:flex;justify-content:space-between} .paper hr{border:0;border-top:1px dashed #cbd5e1;margin:8px 0}
   .paper .b{font-weight:700}
   .paperwrap{flex:1;overflow:auto;padding:16px;background:#f1f5f9}
-  .switchers{display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:12px;flex:none;background:#fff}
-  .switchers span{border:1px solid var(--line);border-radius:999px;padding:3px 9px;color:var(--muted)}
+  .rp{display:flex;flex-direction:column;min-height:0;flex:1}
+  .sel{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:13px;background:#fff}
+  .sel .l{color:var(--muted);margin-right:8px} .sel b{font-weight:600} .sel .car{color:var(--muted)}
+  .selrow{display:flex;flex-direction:column;gap:8px;padding:10px 14px;flex:none}
+  .selrow.h{flex-direction:row} .selrow.h .sel{flex:1}
+  .badge{font-size:12px;border-radius:8px;padding:6px 10px;margin:0 14px 8px;flex:none}
+  .badge.warn{background:var(--warn-soft);color:var(--warn)} .badge.ok{background:var(--ok-soft);color:var(--ok)}
+  .vp{position:relative;flex:1;min-height:0;overflow:auto;background:#e9edf2;padding:16px}
+  .zoom{position:absolute;right:12px;top:12px;display:flex;gap:4px} .zoom button{width:28px;height:28px;border:1px solid var(--line);background:#fff;border-radius:6px;font-weight:700}
+  .paper.narrow{width:220px;font-size:11px}
+  .printed{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ok);font-weight:600;justify-content:center;padding:4px 16px}
   .split{flex:1;display:flex;min-height:0}
   .split .l{flex:1;display:flex;flex-direction:column;min-height:0;background:#f1f5f9}
   .split .r{width:320px;flex:none;border-left:1px solid var(--line);display:flex;flex-direction:column;background:#fff}
@@ -82,12 +91,12 @@
   <div>
     <h1 id="ttl"></h1>
     <p id="desc"></p>
-    <div class="demo"><button id="replay">Replay: back to "waiting for terminal"</button><button id="tap">Demo: customer taps card</button><span>Fade is fixed at 200 ms in every option.</span></div>
+    <div class="demo"><button id="replay">Replay: back to "waiting for terminal"</button><button id="tap">Demo: customer taps card</button><button id="auto">Setting: auto-print receipt OFF</button><button id="tmpl">Template: 80 mm</button><span>Fade is fixed at 200 ms.</span></div>
   </div>
   <div class="side"><b>What every option shares</b><ul>
     <li>Balance zero is reached inside the tender pane; no modal opens.</li>
     <li>The paid order keeps its tab ("Paid · receipt") until New sale.</li>
-    <li>Printing is the cashier's tap. New sale restores products + cart.</li>
+    <li>Template select, printer select (Auto or a named printer), paper-width mismatch badge and the zoomable preview are the existing receipt screen, re-hosted. Email receipt · Download PDF · Print receipt are its footer.</li><li>The existing auto-print-on-checkout setting keeps working: with it on, the stage prints once when the final data lands and says where it printed. New sale restores products + cart.</li>
     <li>The Orders screen keeps its own receipt modal for reprints.</li></ul></div>
 </div>
 <div class="stage"><div id="device" class="device"></div></div>
@@ -98,17 +107,17 @@
 <script>
 const V={
  '1':{name:'1 — Confirmation card, preview on demand',
-  desc:'The moment the reader confirms, the tender pane fades to a green Paid card with the change line, three receipt choices and New sale. No preview: the receipt only renders if the cashier taps Print or Email. This is the Square / Toast / Zettle shape and the fastest tap-count for the common case, which Toast says is "no receipt".'},
+  desc:'The moment the reader confirms, the tender pane fades to a green Paid card with the change line, three receipt choices and New sale. The template, printer and preview are folded away behind one button and expand in place when a receipt is wanted. This is the Square / Toast / Zettle shape and the fewest taps for the common case, which Toast says is "no receipt". With auto-print on, the card just reports where it printed.'},
  '2':{name:'2 — Receipt preview fills the pane',
-  desc:'The tender pane fades to the rendered receipt itself, with the template and printer switchers above it and the actions in a footer. Closest to what the receipt modal shows today, so the least new UI, and the cashier sees exactly what will print. Costs a glance at a paper strip on every sale even when nobody wants one.'},
+  desc:'The tender pane fades to the existing receipt screen: template select, printer select, mismatch badge, zoomable preview, and its footer actions. Closest to what the receipt modal shows today, so the least new UI, and the cashier sees exactly what will print. Costs a glance at a paper strip on every sale even when nobody wants one.'},
  '3':{name:'3 — Ledger becomes the receipt',
-  desc:'The ledger column, which already reads like a receipt, fades into the real rendered receipt. The tender pane shows only the Paid card and the actions. The two columns keep their jobs: left is where you act, right is what the customer gets. Print and Email act on the column beside them.'},
+  desc:'The ledger column, which already reads like a receipt, fades into the existing receipt screen (selects, badge, preview). The tender pane shows only the Paid card and the actions. The two columns keep their jobs: left is where you act, right is what the customer gets. Print and Email act on the column beside them.'},
  '4':{name:'4 — Products return, receipt strip in the cart column',
-  desc:'On capture the tender pane fades straight back to the products grid, ready for the next customer, and the paid order sits in the cart column as a receipt strip with Print · Email · No receipt and New sale at the bottom. Zero taps between one sale and the next. The receipt actions are smaller and further from the eye, and the paid tab lingers until dismissed.'}
+  desc:'On capture the tender pane fades straight back to the products grid, ready for the next customer, and the paid order sits in the cart column as the receipt screen (selects, preview) with the actions and New sale at the bottom. Zero taps between one sale and the next. The receipt actions are smaller and further from the eye, and the paid tab lingers until dismissed.'}
 };
 let view=new URLSearchParams(location.search).get('r')||'1';
 let phase='waiting'; // waiting | paid
-let ui={};
+let ui={}; let autoPrint=false; let tmpl='80';
 const money=n=>'$'+n.toFixed(2);
 const O={id:'1001',who:'Sam K.',lines:[['2','Flat white',9.00],['1','Croissant',5.75],['3','Cookie',28.20]],total:42.95};
 const OTHER={id:'1002',who:'Walk-in',lines:[['1','Sourdough',12.50]],total:12.50};
@@ -120,22 +129,33 @@ function items(){return O.lines.map(l=>`<div class="line"><span><span class="q">
 function ledger(){return `<div class="col cart">${tabs()}<div class="lines">${items()}<div class="note" style="padding-top:10px">Payments</div>${phase==='paid'?`<div class="line pay"><span>Stripe Terminal</span><span>− $42.95</span></div>`:`<div class="line pay wait"><span>Stripe Terminal · waiting on reader</span><span>$42.95</span></div>`}</div>
   <div class="totals"><div><span>Subtotal</span><span>$39.05</span></div><div><span>Tax</span><span>$3.90</span></div><div class="big"><span>Total</span><span>$42.95</span></div>${phase==='paid'?`<div class="paid"><span>Paid</span><span>$42.95</span></div><div class="due zero"><span>Remaining</span><span>$0.00</span></div>`:`<div class="due"><span>Remaining</span><span>$42.95</span></div>`}</div></div>`;}
 function paper(){return `<div class="paper"><div class="c b">Kilbot Coffee</div><div class="c">12 High St · 09:41 · Front till</div><hr><div class="row"><span>2× Flat white</span><span>9.00</span></div><div class="row"><span>1× Croissant</span><span>5.75</span></div><div class="row"><span>3× Cookie</span><span>28.20</span></div><hr><div class="row"><span>Subtotal</span><span>39.05</span></div><div class="row"><span>Tax 10%</span><span>3.90</span></div><div class="row b"><span>TOTAL</span><span>42.95</span></div><hr><div class="row"><span>Stripe Terminal</span><span>42.95</span></div><div class="row"><span>Visa ···· 4242 · contactless</span><span></span></div><hr><div class="c">Order #1001 · Thank you, Sam</div><div class="c">wcpos.com/r/1001</div></div>`;}
-function switchers(){return `<div class="switchers"><span>Template: Default receipt ▾</span><span>Printer: Epson TM-m30 ▾</span></div>`;}
+function tmplSel(){return `<div class="sel"><span><span class="l">Template</span><b>${tmpl==='80'?'Default receipt · 80 mm':'Compact receipt · 58 mm'}</b></span><span class="car">▾</span></div>`;}
+function prnSel(){return `<div class="sel"><span><span class="l">Printer</span><b>Auto · Epson TM-m30III (Wi-Fi)</b></span><span class="car">▾</span></div>`;}
+function mismatch(){return tmpl==='58'?`<div class="badge warn">This template is 58 mm but Epson TM-m30III is set up for 80 mm paper. Pick another printer or template.</div>`:'';}
+function printedLine(){return autoPrint?`<div class="printed">✓ Printed to Epson TM-m30III</div>`:'';}
+function paper(){return `<div class="paper ${tmpl==='58'?'narrow':''}"><div class="c b">Kilbot Coffee</div><div class="c">12 High St · 09:41 · Front till</div><hr><div class="row"><span>2× Flat white</span><span>9.00</span></div><div class="row"><span>1× Croissant</span><span>5.75</span></div><div class="row"><span>3× Cookie</span><span>28.20</span></div><hr><div class="row"><span>Subtotal</span><span>39.05</span></div><div class="row"><span>Tax 10%</span><span>3.90</span></div><div class="row b"><span>TOTAL</span><span>42.95</span></div><hr><div class="row"><span>Stripe Terminal</span><span>42.95</span></div><div class="row"><span>Visa ···· 4242 · contactless</span><span></span></div><hr><div class="c">Order #1001 · Thank you, Sam</div><div class="c">wcpos.com/r/1001</div></div>`;}
+function viewport(){return `<div class="vp"><div class="zoom"><button>−</button><button>+</button></div>${paper()}</div>`;}
+// The real receipt screen, minus the modal chrome: template select, printer select, mismatch badge, zoomable preview.
+function receiptPanel(opts={}){return `<div class="rp"><div class="selrow ${opts.row?'h':''}">${tmplSel()}${prnSel()}</div>${mismatch()}${viewport()}</div>`;}
+const rActs=(size='')=>`<button class="btn ${size}">Email receipt</button><button class="btn ${size}">Download PDF</button><button class="btn ${size}">${autoPrint?'Print again':'Print receipt'}</button>`;
 function waiting(){return `<div class="col main"><div class="thead"><button class="back">← Cart</button><span class="t">Checkout #1001 · Sam K.</span></div><div class="waiting"><div class="spin"></div><div class="h">Waiting for customer · $42.95</div><div class="m">Reader M2 · counter</div><button class="btn danger">Cancel payment</button></div></div>`;}
-function paidHead(){return `<div class="paidhead"><div class="tick">✓</div><div class="h">Paid $42.95</div><div class="m">Stripe Terminal · Visa ···· 4242 · no change</div></div>`;}
-const acts=()=>`<div class="actions"><button class="btn big">Print receipt</button><button class="btn big">Email receipt</button><button class="btn big">No receipt</button></div>`;
+function paidHead(){return `<div class="paidhead"><div class="tick">✓</div><div class="h">Paid $42.95</div><div class="m">Stripe Terminal · Visa ···· 4242 · no change</div></div>${printedLine()}`;}
 
 function v1(){ if(phase!=='paid') return waiting();
- return `<div class="col main fade"><div class="thead"><span class="t">Checkout #1001 · Sam K.</span></div>${paidHead()}${acts()}<div class="note" style="text-align:center">Print and Email open the receipt preview here first.</div><div class="foot"><button class="btn primary big" onclick="newSale()">New sale</button></div></div>`;}
+ const open=ui.preview;
+ return `<div class="col main fade"><div class="thead"><span class="t">Checkout #1001 · Sam K.</span></div>${paidHead()}
+   <div class="actions"><button class="btn big" onclick="ui.preview=!ui.preview;render()">${open?'Hide receipt':(autoPrint?'Receipt options':'Print or email receipt')}</button>${open?'':'<button class="btn big">No receipt</button>'}</div>
+   ${open?`<div style="display:flex;flex-direction:column;min-height:0;flex:1;border-top:1px solid var(--line);margin-top:8px">${receiptPanel({row:true})}<div class="actions" style="border-top:1px solid var(--line);padding-top:12px">${rActs()}</div></div>`:'<div class="note" style="text-align:center">The template, printer and preview stay out of the way until a receipt is wanted.</div>'}
+   <div class="foot"><button class="btn primary big" onclick="newSale()">New sale</button></div></div>`;}
 function v2(){ if(phase!=='paid') return waiting();
- return `<div class="col main fade"><div class="thead"><span class="t">Paid $42.95 · #1001 · Sam K.</span><span class="chip paid" style="margin-left:6px"><i class="dot"></i>Stripe Terminal</span></div>${switchers()}<div class="paperwrap">${paper()}</div><div class="foot" style="justify-content:space-between"><div style="display:flex;gap:10px"><button class="btn">Print</button><button class="btn">Email</button><button class="btn">No receipt</button></div><button class="btn primary big" onclick="newSale()">New sale</button></div></div>`;}
+ return `<div class="col main fade"><div class="thead"><span class="t">Paid $42.95 · #1001 · Sam K.</span><span class="chip paid" style="margin-left:6px"><i class="dot"></i>Stripe Terminal</span>${autoPrint?'<span class="chip ok" style="color:var(--ok)">Printed</span>':''}</div>${receiptPanel({row:true})}<div class="foot" style="justify-content:space-between"><div style="display:flex;gap:10px"><button class="btn">No receipt</button>${rActs()}</div><button class="btn primary big" onclick="newSale()">New sale</button></div></div>`;}
 function v3(){ if(phase!=='paid') return waiting();
- return `<div class="col main fade"><div class="thead"><span class="t">Checkout #1001 · Sam K.</span></div>${paidHead()}<div class="stack"><button class="btn big">Print receipt</button><button class="btn big">Email receipt</button><button class="btn big">No receipt</button></div><div class="foot"><button class="btn primary big" onclick="newSale()">New sale</button></div></div>`;}
+ return `<div class="col main fade"><div class="thead"><span class="t">Checkout #1001 · Sam K.</span></div>${paidHead()}<div class="stack">${rActs('big')}<button class="btn big">No receipt</button></div><div class="foot"><button class="btn primary big" onclick="newSale()">New sale</button></div></div>`;}
 function ledger3(){ if(phase!=='paid') return ledger();
- return `<div class="col cart fade">${tabs()}${switchers()}<div class="paperwrap">${paper()}</div></div>`;}
+ return `<div class="col cart fade">${tabs()}${receiptPanel()}</div>`;}
 function products(){return `<div class="col main fade" style="background:#f8fafc"><div class="search">Search products…</div><div class="grid">${PRODUCTS.map(p=>`<div class="ptile"><span class="n">${p.n}</span><span class="p">$${p.p}</span></div>`).join('')}</div></div>`;}
 function ledger4(){ if(phase!=='paid') return ledger();
- return `<div class="col cart fade">${tabs()}<div class="paperwrap" style="padding:12px">${paper()}</div><div style="display:flex;gap:6px;padding:10px 14px 0"><button class="btn" style="flex:1">Print</button><button class="btn" style="flex:1">Email</button><button class="btn" style="flex:1">No receipt</button></div><button class="cta ok" onclick="newSale()"><span>New sale</span><span>Paid $42.95</span></button></div>`;}
+ return `<div class="col cart fade">${tabs()}${receiptPanel()}${printedLine()}<div style="display:flex;gap:6px;padding:8px 14px 0;flex-wrap:wrap">${rActs()}<button class="btn">No receipt</button></div><button class="cta ok" onclick="newSale()"><span>New sale</span><span>Paid $42.95</span></button></div>`;}
 
 function render(){
  const d=document.getElementById('device');
@@ -150,6 +170,8 @@ function render(){
  document.getElementById('lbl').textContent=V[view].name;
  document.querySelectorAll('.switch .k').forEach(k=>k.classList.toggle('on',k.dataset.v===view));
  document.getElementById('tap').disabled=phase==='paid';
+ document.getElementById('auto').textContent='Setting: auto-print receipt '+(autoPrint?'ON':'OFF');
+ document.getElementById('tmpl').textContent='Template: '+(tmpl==='80'?'80 mm':'58 mm (mismatch)');
  const u=new URL(location); u.searchParams.set('r',view); history.replaceState(null,'',u);
 }
 function newSale(){ ui.done=true; render(); }
@@ -159,6 +181,8 @@ document.getElementById('next').onclick=()=>go(order[(order.indexOf(view)+1)%4])
 document.querySelectorAll('.switch .k').forEach(k=>k.onclick=()=>go(k.dataset.v));
 document.getElementById('tap').onclick=()=>{phase='paid'; ui={}; render();};
 document.getElementById('replay').onclick=()=>{phase='waiting'; ui={}; render();};
+document.getElementById('auto').onclick=()=>{autoPrint=!autoPrint; render();};
+document.getElementById('tmpl').onclick=()=>{tmpl=tmpl==='80'?'58':'80'; render();};
 window.addEventListener('keydown',e=>{ if(e.target.matches('input,textarea')) return; if(e.key==='ArrowLeft') document.getElementById('prev').click(); if(e.key==='ArrowRight') document.getElementById('next').click(); });
 render();
 </script>
