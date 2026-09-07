@@ -36,6 +36,12 @@ container was ruled, prototyped and ticketed. **Lane: `next`.** Nothing has been
    on #154 rule 4 (leaving keeps the row live, reopening resumes, no second intent). The one real
    engineering change is moving the poll loop to an order-scoped background service.
 
+6. **Receipts stay inside the pane** (Paul, end of session). Today balance zero routes into the
+   receipt modal on top of the checkout. In A the receipt is the tender pane's final stage: preview,
+   Print · Email · No receipt, and New sale as the primary action that closes the tab. The ledger
+   stays beside it. The receipt component gets a second host (pane) beside its existing modal host
+   (Orders reprint, unchanged). Printing remains the cashier's tap; auto-print is a separate ruling.
+
 ## Why (one line each, evidence in the research)
 
 No vendor uses a side drawer. Lightspeed X/R, Toast and Loyverse do the column swap; Square,
@@ -49,7 +55,8 @@ side-anchored native sheet. The two-pane tender flow already built maps one-to-o
    it was rebased onto, not overwritten. Check for another bot commit before pushing anything else.
 2. Claim #165 (comment Claimed + assign) before the first worktree. Base `origin/next`.
 3. Build order: container move and fade (Codex, worktree) → settings and the tab-strip slot entry →
-   two-cart chips and reader-busy rule → background poll service → Legacy tab width check (#85).
+   two-cart chips and reader-busy rule → receipt stage in the pane (second host for `receipt.tsx`) →
+   background poll service → Legacy tab width check (#85).
    Layout, transition timing, chip copy and the cashier walk-through are Claude's, not Codex's.
 4. Follow-up to file when the swap lands: exact-amount cash shortcut that skips the tender screen.
 
