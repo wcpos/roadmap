@@ -50,9 +50,10 @@ container was ruled, prototyped and ticketed. **Lane: `next`.** Nothing has been
 ## Why (one line each, evidence in the research)
 
 No vendor uses a side drawer. Lightspeed X/R, Toast and Loyverse do the column swap; Square,
-Clover and Odoo go full-screen; centred modals are the minority. Every design system withdraws
-the centred modal for complex tasks, two deprecated the side sheet, and no platform offers a
-side-anchored native sheet. The two-pane tender flow already built maps one-to-one onto the columns.
+Clover and Odoo go full-screen; centred modals are the minority. Several cited design systems steer
+complex tasks away from centred modals; Polaris removed Sheet, Atlassian says Drawer is being
+deprecated, and no cited platform offers a side-anchored native sheet. The two-pane tender flow
+already built maps one-to-one onto the columns.
 
 ## Next steps
 
