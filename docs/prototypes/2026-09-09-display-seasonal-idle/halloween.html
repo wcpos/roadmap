@@ -1,0 +1,19 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Halloween — Night</title></head><body>
+<style>html,body{margin:0;height:100%}.s{position:relative;height:100vh;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+.s{background:radial-gradient(circle at 70% 30%,#2a1a3a,#0d0a12 70%);display:flex;align-items:center;justify-content:center;color:#ffb347}
+.moon{position:absolute;right:10vw;top:10vh;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#ffd88a,#ff8c1a);box-shadow:0 0 80px 20px rgba(255,140,26,.35)}
+.bat{position:absolute;width:80px;height:30px}
+.bat i{position:absolute;bottom:0;width:36px;height:22px;background:#000;border-radius:60% 60% 0 0/100% 100% 0 0}
+.bat i:first-child{left:0} .bat i:last-child{right:0}
+.bat b{position:absolute;left:50%;top:2px;width:14px;height:22px;margin-left:-7px;background:#000;border-radius:50%}
+.grass{position:absolute;left:0;right:0;bottom:0;height:70px;background:linear-gradient(135deg,#000 50%,transparent 50%) 0 0/40px 70px repeat-x,linear-gradient(45deg,#000 50%,transparent 50%) 20px 0/40px 70px repeat-x}
+.inner{position:relative;text-align:center;margin-bottom:6vh}
+.brand{height:84px;width:auto;object-fit:contain;display:block;margin:0 auto 14px;background:#fff;border-radius:12px;padding:8px 14px}
+h1{margin:0 0 10px;font-size:clamp(48px,8vw,110px);font-weight:900;letter-spacing:-.03em;line-height:.95;color:#ff8c1a;text-shadow:0 8px 0 rgba(0,0,0,.6)}
+p{margin:0;font-size:clamp(17px,2vw,25px);color:#ffd8a8}
+@media (max-width:600px){.moon{width:120px;height:120px}}
+@keyframes hw-flap{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.55)}}@keyframes hw-fly{0%,100%{margin-top:0}50%{margin-top:-14px}}@media (prefers-reduced-motion:no-preference){.bat i{transform-origin:50% 100%;animation:hw-flap .7s ease-in-out infinite}.bat{animation:hw-fly 3.8s ease-in-out infinite}.bat:nth-child(3){animation-delay:-1.2s}.bat:nth-child(4){animation-delay:-2.1s}}
+</style>
+<section class="s"><div class="moon"></div><div class="bat" style="left:12%;top:18%;transform:scale(1)"><i></i><b></b><i></i></div><div class="bat" style="left:28%;top:30%;transform:scale(0.7)"><i></i><b></b><i></i></div><div class="bat" style="left:62%;top:14%;transform:scale(0.8)"><i></i><b></b><i></i></div><div class="bat" style="left:80%;top:42%;transform:scale(0.6)"><i></i><b></b><i></i></div>
+<div class="inner"><img class="brand" src="https://dev-next.wcpos.com/wp-content/plugins/woocommerce-pos-pro/vendor/wcpos/woocommerce-pos/assets/img/template-gallery/preview-assets/coffee-monster.png" alt="Coffee Monster"><h1>Happy Halloween</h1><p>Treats inside. Tricks extra.</p></div><div class="grass"></div></section>
+</body></html>

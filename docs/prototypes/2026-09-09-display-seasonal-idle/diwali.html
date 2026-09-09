@@ -1,0 +1,24 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Diwali — Diyas</title></head><body>
+<style>
+html,body{margin:0;height:100%}
+.s{position:relative;height:100vh;overflow:hidden;background:linear-gradient(180deg,#2a0a3a 0%,#4a0f3b 60%,#7a1f2b 100%);color:#ffe7b3;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;display:grid;grid-template-columns:1.1fr 1fr;align-items:center}
+.left{padding:0 6vw;position:relative;z-index:2}
+.brand{height:84px;width:auto;object-fit:contain;background:#fff;border-radius:14px;padding:10px 16px;box-shadow:0 10px 26px rgba(0,0,0,.35);margin-bottom:28px;display:block}
+h1{margin:0 0 14px;font-size:clamp(52px,8vw,116px);font-weight:900;line-height:.92;letter-spacing:-.03em;color:#ffcc4d}
+h1 small{display:block;font-size:.42em;font-weight:600;color:#ffe7b3;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px}
+p{margin:0;font-size:clamp(17px,2vw,25px);opacity:.92;max-width:28ch;text-wrap:balance}
+.rangoli{position:relative;justify-self:center;width:min(46vw,520px);aspect-ratio:1;border-radius:50%;background:repeating-radial-gradient(circle,#ff8a3d 0 6px,transparent 6px 22px,#ff3d8a 22px 28px,transparent 28px 46px,#ffcc4d 46px 52px,transparent 52px 72px);opacity:.85;filter:drop-shadow(0 0 40px rgba(255,138,61,.35))}
+.rangoli:after{content:"";position:absolute;inset:26%;border-radius:50%;background:radial-gradient(circle,#ffcc4d 0 30%,#ff8a3d 31% 55%,transparent 56%)}
+.diyas{position:absolute;left:0;right:0;bottom:22px;display:flex;justify-content:space-evenly;z-index:3}
+.diya{position:relative;width:72px;height:56px}
+.bowl{position:absolute;bottom:0;left:0;right:0;height:26px;border-radius:0 0 36px 36px;background:linear-gradient(180deg,#d2691e,#8b3a0f)}
+.flame{position:absolute;bottom:22px;left:50%;width:18px;height:30px;margin-left:-9px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(circle at 50% 70%,#fff4c2,#ffb01f 45%,#ff6a00 80%,transparent 100%);box-shadow:0 0 26px 8px rgba(255,176,31,.45)}
+@media (max-width:700px){.s{grid-template-columns:1fr;align-content:center;gap:24px;padding-top:6vh}.left{text-align:center}.brand{margin-inline:auto}p{margin-inline:auto}.rangoli{width:56vw}}
+@keyframes dw-flame{0%,100%{transform:scaleY(1) translateX(0)}30%{transform:scaleY(1.12) translateX(-1px)}60%{transform:scaleY(.94) translateX(1px)}}@keyframes dw-spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}@media (prefers-reduced-motion:no-preference){.flame{transform-origin:50% 100%;animation:dw-flame 1.6s ease-in-out infinite}.diya:nth-child(2n) .flame{animation-delay:-.5s}.diya:nth-child(3n) .flame{animation-delay:-1.1s}.rangoli{animation:dw-spin 120s linear infinite}}
+</style>
+<section class="s">
+  <div class="left"><img class="brand" src="https://dev-next.wcpos.com/wp-content/plugins/woocommerce-pos-pro/vendor/wcpos/woocommerce-pos/assets/img/template-gallery/preview-assets/coffee-monster.png" alt="Coffee Monster"><h1><small>Wishing you</small>Happy Diwali</h1><p>Light, joy and prosperity to you and yours.</p></div>
+  <div class="rangoli"></div>
+  <div class="diyas"><div class="diya"><span class="flame"></span><span class="bowl"></span></div><div class="diya"><span class="flame"></span><span class="bowl"></span></div><div class="diya"><span class="flame"></span><span class="bowl"></span></div><div class="diya"><span class="flame"></span><span class="bowl"></span></div><div class="diya"><span class="flame"></span><span class="bowl"></span></div><div class="diya"><span class="flame"></span><span class="bowl"></span></div><div class="diya"><span class="flame"></span><span class="bowl"></span></div></div>
+</section>
+</body></html>

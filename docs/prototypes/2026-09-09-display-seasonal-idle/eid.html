@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Eid Mubarak — Night arch</title></head><body>
+<style>
+html,body{margin:0;height:100%}
+.s{position:relative;height:100vh;overflow:hidden;background:radial-gradient(circle at 80% 10%,#1f4a6e 0%,#0d2238 40%,#071628 100%);color:#f7ecd2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;display:flex;align-items:center;justify-content:center}
+.stars{position:absolute;inset:0;background-image:radial-gradient(circle,#f7d774 0 1.5px,transparent 2.5px),radial-gradient(circle,rgba(247,215,116,.6) 0 1px,transparent 2px);background-size:170px 130px,110px 90px;background-position:30px 20px,70px 50px;opacity:.8}
+.moon{position:absolute;top:8vh;right:9vw;width:150px;height:150px;border-radius:50%;box-shadow:34px -10px 0 0 #f2c14e;filter:drop-shadow(0 0 30px rgba(242,193,78,.45))}
+.arch{position:relative;width:min(560px,78vw);padding:46px 40px 44px;border:2px solid #d8b45a;border-radius:280px 280px 24px 24px/360px 360px 24px 24px;background:rgba(7,22,40,.55);text-align:center;box-shadow:inset 0 0 0 10px rgba(7,22,40,.6),inset 0 0 0 12px rgba(216,180,90,.5)}
+.brand{height:96px;width:auto;object-fit:contain;background:#fff;border-radius:50%;padding:14px;box-shadow:0 10px 28px rgba(0,0,0,.35);margin:6px auto 22px;display:block}
+h1{font-family:'Iowan Old Style','Palatino Linotype','Book Antiqua',Georgia,serif;margin:0 0 12px;font-size:clamp(46px,6.6vw,88px);font-weight:600;letter-spacing:.02em;line-height:1;color:#f7d774}
+p{margin:0;font-size:clamp(17px,2vw,24px);opacity:.92;text-wrap:balance;max-width:30ch;margin-inline:auto}
+.band{position:absolute;left:0;right:0;bottom:0;height:56px;background:conic-gradient(from 45deg at 50% 50%,#d8b45a 0 12.5%,transparent 0 25%,#d8b45a 0 37.5%,transparent 0 50%,#d8b45a 0 62.5%,transparent 0 75%,#d8b45a 0 87.5%,transparent 0);background-size:56px 56px;opacity:.55}
+@media (max-width:600px){.moon{width:90px;height:90px;box-shadow:22px -6px 0 0 #f2c14e;top:5vh;right:6vw}.arch{padding:34px 22px}}
+@keyframes eid-twinkle{0%,100%{opacity:.55}50%{opacity:.95}}@keyframes eid-moon{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}@media (prefers-reduced-motion:no-preference){.stars{animation:eid-twinkle 4.5s ease-in-out infinite}.moon{animation:eid-moon 7s ease-in-out infinite}}
+</style>
+<section class="s">
+  <div class="stars"></div>
+  <div class="moon"></div>
+  <div class="arch">
+    <img class="brand" src="https://dev-next.wcpos.com/wp-content/plugins/woocommerce-pos-pro/vendor/wcpos/woocommerce-pos/assets/img/template-gallery/preview-assets/coffee-monster.png" alt="Coffee Monster">
+    <h1>Eid Mubarak</h1>
+    <p>Wishing you and your family a blessed Eid.</p>
+  </div>
+  <div class="band"></div>
+</section>
+</body></html>

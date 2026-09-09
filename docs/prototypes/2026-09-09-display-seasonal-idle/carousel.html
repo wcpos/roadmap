@@ -1,0 +1,21 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Carousel — your own images, rotating</title></head><body>
+<style>html,body{margin:0;height:100%}.s{position:relative;height:100vh;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+.s{background:#0f172a;color:#fff}
+.slide{position:absolute;inset:0;margin:0;opacity:0;animation:car-fade 18s infinite both}
+.slide:first-of-type{animation-name:car-fade-first} .slide:nth-of-type(2){animation-delay:6s} .slide:nth-of-type(3){animation-delay:12s}
+.slide img{width:100%;height:100%;object-fit:cover;display:block}
+.slide figcaption{position:absolute;left:0;right:0;bottom:0;padding:120px 56px 44px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.65));display:flex;flex-direction:column;gap:6px}
+.slide b{font-size:clamp(26px,3.6vw,46px);font-weight:800;letter-spacing:-.02em;line-height:1.05}
+.slide span{font-size:clamp(16px,1.8vw,22px);opacity:.9}
+.brand{position:absolute;top:28px;left:32px;height:64px;width:auto;object-fit:contain;background:#fff;border-radius:12px;padding:6px 12px;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:2}
+.dots{position:absolute;right:32px;bottom:34px;display:flex;gap:8px;z-index:2}
+.dots i{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.45);animation:car-dot 18s infinite both}
+.dots i:nth-child(2){animation-delay:6s} .dots i:nth-child(3){animation-delay:12s}
+@keyframes car-fade{0%{opacity:0}5%{opacity:1}33%{opacity:1}38%{opacity:0}100%{opacity:0}}
+@keyframes car-fade-first{0%{opacity:1}33%{opacity:1}38%{opacity:0}100%{opacity:0}}
+@keyframes car-dot{0%,38%,100%{background:rgba(255,255,255,.45)}5%,33%{background:#fff}}
+@media (prefers-reduced-motion:reduce){.slide,.slide:first-of-type{animation:none}.slide:first-of-type{opacity:1}.dots{display:none}}
+@media (max-width:600px){.slide figcaption{padding:90px 22px 30px}.brand{top:16px;left:16px;height:48px}}
+</style>
+<section class="s"><img class="brand" src="https://dev-next.wcpos.com/wp-content/plugins/woocommerce-pos-pro/vendor/wcpos/woocommerce-pos/assets/img/template-gallery/preview-assets/coffee-monster.png" alt="Coffee Monster"><figure class="slide"><img src="examples/coffee-beans.webp" alt="Coffee beans"><figcaption><b>New season blends are in.</b><span>Ask for a tasting.</span></figcaption></figure><figure class="slide"><img src="examples/croissant.webp" alt="Croissant"><figcaption><b>Fresh pastries, baked every morning.</b><span>Until they sell out.</span></figcaption></figure><figure class="slide"><img src="examples/latte.webp" alt="Latte"><figcaption><b>Buy nine, the tenth is on us.</b><span>Ask for a loyalty card.</span></figcaption></figure><div class="dots"><i></i><i></i><i></i></div></section>
+</body></html>
