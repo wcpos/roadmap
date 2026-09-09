@@ -1,0 +1,29 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Season&#x27;s Greetings — Winter window</title></head><body>
+<style>
+html,body{margin:0;height:100%}
+.s{position:relative;height:100vh;overflow:hidden;background:linear-gradient(180deg,#dfeaf3 0%,#f6f9fc 55%,#ffffff 100%);color:#1c2b3a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;display:flex;align-items:center;justify-content:center}
+.snow{position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,.95) 0 2px,transparent 3px),radial-gradient(circle,rgba(255,255,255,.7) 0 1.5px,transparent 2.5px),radial-gradient(circle,rgba(180,200,220,.35) 0 1px,transparent 2px);background-size:140px 140px,90px 90px,60px 60px;background-position:0 0,40px 60px,20px 10px}
+.card{position:relative;background:#fffdf8;border:1px solid #e6d7b3;box-shadow:0 30px 60px rgba(28,43,58,.12);border-radius:18px;padding:44px 64px 48px;text-align:center;max-width:min(760px,84vw)}
+.card:before{content:"";position:absolute;left:50%;top:0;transform:translateX(-50%);width:120px;height:6px;border-radius:0 0 6px 6px;background:#b3262e}
+.brand{height:110px;width:auto;object-fit:contain;display:block;margin:0 auto 18px}
+h1{font-family:'Iowan Old Style','Palatino Linotype','Book Antiqua',Georgia,serif;font-weight:600;font-size:clamp(44px,6.4vw,84px);letter-spacing:-.01em;line-height:1;margin:6px 0 14px;color:#173a2e}
+.rule{display:flex;align-items:center;justify-content:center;gap:14px;color:#b99a4a;margin:0 0 16px}
+.rule i{display:block;width:70px;height:1px;background:#b99a4a}
+p{margin:0;font-size:clamp(17px,2vw,24px);color:#3a4b5c;max-width:32ch;margin-inline:auto;text-wrap:balance}
+.trees{position:absolute;left:0;right:0;bottom:0;height:120px;display:flex;align-items:flex-end;justify-content:center;gap:0;pointer-events:none}
+.tree{width:0;height:0;border-left:34px solid transparent;border-right:34px solid transparent;border-bottom:96px solid #1f5d45;margin:0 -8px;opacity:.9}
+.tree.b{border-bottom-color:#2a7a5a;border-bottom-width:70px;border-left-width:26px;border-right-width:26px}
+@media (max-width:600px){.card{padding:34px 26px 36px}.tree{border-bottom-width:64px;border-left-width:22px;border-right-width:22px}.trees{height:80px}}
+@keyframes sg-snow{from{background-position:0 0,40px 60px,20px 10px}to{background-position:0 140px,40px 150px,20px 70px}}@keyframes sg-star{0%,100%{opacity:.7;transform:scale(1)}50%{opacity:1;transform:scale(1.25)}}@media (prefers-reduced-motion:no-preference){.snow{animation:sg-snow 14s linear infinite}.rule{animation:sg-star 3.2s ease-in-out infinite}}
+</style>
+<section class="s">
+  <div class="snow"></div>
+  <div class="card">
+    <img class="brand" src="https://dev-next.wcpos.com/wp-content/plugins/woocommerce-pos-pro/vendor/wcpos/woocommerce-pos/assets/img/template-gallery/preview-assets/coffee-monster.png" alt="Coffee Monster">
+    <h1>Season's Greetings</h1>
+    <div class="rule"><i></i>&#10038;<i></i></div>
+    <p>Thank you for shopping with us this season.</p>
+  </div>
+  <div class="trees"><div class="tree"></div><div class="tree b"></div><div class="tree"></div><div class="tree b"></div><div class="tree"></div><div class="tree b"></div><div class="tree"></div><div class="tree b"></div><div class="tree"></div><div class="tree b"></div><div class="tree"></div><div class="tree b"></div><div class="tree"></div><div class="tree b"></div></div>
+</section>
+</body></html>

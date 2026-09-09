@@ -1,0 +1,12 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>New Year — Countdown</title></head><body>
+<style>html,body{margin:0;height:100%}.s{position:relative;height:100vh;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+.s{background:radial-gradient(circle at 50% 60%,#1b2450,#0a0f2b 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;gap:12px}
+.confetti{position:absolute;inset:0;background-image:radial-gradient(circle,#ffd166 0 3px,transparent 4px),radial-gradient(circle,#ff6b6b 0 2px,transparent 3px),radial-gradient(circle,#5ee1ff 0 2px,transparent 3px),radial-gradient(circle,#fff 0 1.5px,transparent 2.5px);background-size:160px 120px,130px 170px,190px 140px,90px 80px;background-position:10px 20px,60px 90px,120px 30px,0 0;opacity:.8}
+.burst{position:absolute;left:50%;top:50%;width:min(90vw,900px);aspect-ratio:1;transform:translate(-50%,-50%);background:repeating-conic-gradient(from 0deg,rgba(255,209,102,.16) 0 4deg,transparent 4deg 12deg);border-radius:50%;mask:radial-gradient(circle,#000 20%,transparent 68%);-webkit-mask:radial-gradient(circle,#000 20%,transparent 68%)}
+.brand{position:relative;height:80px;width:auto;object-fit:contain;background:#fff;border-radius:12px;padding:8px 14px}
+h1{position:relative;margin:0;font-size:clamp(48px,8vw,112px);font-weight:900;letter-spacing:-.03em;line-height:.95;text-align:center;color:#ffd166}
+p{position:relative;margin:0;font-size:clamp(17px,2vw,25px);color:#dfe6ff;text-wrap:balance;text-align:center}
+@keyframes ny-spin{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}@keyframes ny-fall{from{background-position:10px 20px,60px 90px,120px 30px,0 0}to{background-position:10px 140px,60px 260px,120px 170px,0 80px}}@media (prefers-reduced-motion:no-preference){.burst{animation:ny-spin 90s linear infinite}.confetti{animation:ny-fall 16s linear infinite}}
+</style>
+<section class="s"><div class="confetti"></div><div class="burst"></div><img class="brand" src="https://dev-next.wcpos.com/wp-content/plugins/woocommerce-pos-pro/vendor/wcpos/woocommerce-pos/assets/img/template-gallery/preview-assets/coffee-monster.png" alt="Coffee Monster"><h1>Happy New Year</h1><p>Here's to a great year ahead. Thank you for your custom.</p></section>
+</body></html>

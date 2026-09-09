@@ -1,0 +1,26 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lunar New Year — Lanterns</title></head><body>
+<style>
+html,body{margin:0;height:100%}
+.s{position:relative;height:100vh;overflow:hidden;background:radial-gradient(120% 90% at 50% 110%,#7f0f22 0%,#a8122b 55%,#c1182f 100%);color:#ffe8a3;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:16vh;box-sizing:border-box}
+.lan{position:absolute;top:0;width:96px;transform:scale(var(--s));transform-origin:top center}
+.lan i{display:block;width:2px;height:var(--h);background:#f2c14e;margin:0 auto}
+.lan b{display:block;width:96px;height:120px;border-radius:48px/40px;background:radial-gradient(circle at 35% 30%,#ff6b6b,#e11d2f 60%,#9f0b1e);box-shadow:0 0 60px 10px rgba(255,120,80,.35);position:relative}
+.lan b:before,.lan b:after{content:"";position:absolute;left:18px;right:18px;height:10px;background:#f2c14e;border-radius:3px}
+.lan b:before{top:-6px} .lan b:after{bottom:-6px}
+.lan u{display:block;width:6px;height:44px;margin:8px auto 0;background:#f2c14e;border-radius:3px}
+.brand{height:92px;width:auto;object-fit:contain;background:#fff;border-radius:16px;padding:12px 18px;box-shadow:0 12px 30px rgba(0,0,0,.25);margin-bottom:26px}
+h1{margin:0 0 10px;font-size:clamp(40px,7.5vw,104px);font-weight:900;letter-spacing:-.03em;line-height:.95;color:#ffd166;text-shadow:0 6px 0 rgba(0,0,0,.12);text-align:center;text-wrap:balance;padding:0 5vw}
+p{margin:0;font-size:clamp(17px,2.1vw,26px);color:#ffe8a3;opacity:.95;text-wrap:balance;max-width:34ch;text-align:center}
+.clouds{position:absolute;left:0;right:0;bottom:0;height:64px;background:radial-gradient(circle at 20px 64px,#f2c14e 0 22px,transparent 23px),radial-gradient(circle at 60px 64px,#f2c14e 0 30px,transparent 31px);background-size:80px 64px;opacity:.9}
+.clouds:after{content:"";position:absolute;inset:auto 0 0 0;height:14px;background:#f2c14e}
+@media (max-width:600px){.s{padding-bottom:22vh}.lan{transform:scale(calc(var(--s) * .7))}}
+@keyframes lny-sway{0%,100%{transform:scale(var(--s)) rotate(-2.5deg)}50%{transform:scale(var(--s)) rotate(2.5deg)}}@keyframes lny-glow{0%,100%{box-shadow:0 0 60px 10px rgba(255,120,80,.3)}50%{box-shadow:0 0 70px 16px rgba(255,150,90,.5)}}@media (prefers-reduced-motion:no-preference){.lan{animation:lny-sway 5s ease-in-out infinite}.lan:nth-child(2){animation-delay:-1.3s}.lan:nth-child(3){animation-delay:-2.6s}.lan:nth-child(4){animation-delay:-3.9s}.lan b{animation:lny-glow 4s ease-in-out infinite}}
+</style>
+<section class="s">
+  <div class="lan" style="left:12%;--h:60px;--s:1"><i></i><b></b><u></u></div><div class="lan" style="left:30%;--h:140px;--s:0.8"><i></i><b></b><u></u></div><div class="lan" style="left:60%;--h:40px;--s:1.1"><i></i><b></b><u></u></div><div class="lan" style="left:82%;--h:120px;--s:0.85"><i></i><b></b><u></u></div>
+  <img class="brand" src="https://dev-next.wcpos.com/wp-content/plugins/woocommerce-pos-pro/vendor/wcpos/woocommerce-pos/assets/img/template-gallery/preview-assets/coffee-monster.png" alt="Coffee Monster">
+  <h1>Happy Lunar New Year</h1>
+  <p>Wishing you good fortune and prosperity in the year ahead.</p>
+  <div class="clouds"></div>
+</section>
+</body></html>
