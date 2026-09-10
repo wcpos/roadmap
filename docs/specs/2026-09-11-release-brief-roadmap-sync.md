@@ -27,7 +27,7 @@ wcpos.com/roadmap, the five repos' milestones, Project #4 and the Discord roadma
 
 Exactly one release issue per version. `release` and `epic` are never on the same issue.
 
-**Body.** Three sections plus an optional one-sentence `### Pitch`, then optional free prose. The whole body is public and written for merchants; internal notes go in comments.
+**Body.** Three sections plus an optional one-sentence `### Pitch` and, on a release filed after its tag, an optional `### Shipped on`, then optional free prose. The whole body is public and written for merchants; internal notes go in comments.
 
 ```markdown
 ### Due date
@@ -41,6 +41,9 @@ Exactly one release issue per version. `release` and `epic` are never on the sam
 
 ### Not in this release
 - <item>                       # optional section; deferred decisions from maps land here
+
+### Shipped on
+2026-08-25                     # optional, closed releases only: the plugin tag date when the issue was filed or closed after the fact; the page otherwise uses closedAt
 ```
 
 "What's in" is never written: it is the sub-issue list.
@@ -54,7 +57,7 @@ Exactly one release issue per version. `release` and `epic` are never on the sam
 | Active | the lowest-version open release, **dated or not** (this rule wins over the dateless rule below) | Now |
 | Planning | any other open release with a due date | Next |
 | Planning (dateless) | open, not the lowest version, `### Due date` empty | Later (rendered on the page at the end of the Next rail, labelled "no date yet"; the digest and forum keep the word Later) |
-| Shipped | closed as `completed` | Shipped |
+| Shipped | closed as `completed`; shipped date = `### Shipped on` when present, else the issue's `closedAt` | Shipped |
 | Withdrawn | closed as `not planned` | never shown; milestone copies deleted |
 
 Reopening returns a release to the open rules.
