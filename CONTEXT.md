@@ -79,6 +79,10 @@ _Avoid_: Cancelled, dropped, superseded (say why in the close reason, not the na
 A per-repo GitHub milestone the sync writes from a release: title is the version, description the theme. A projection, never a source.
 _Avoid_: Release (a milestone is a copy of one)
 
+**Thread**:
+The Discord roadmap forum's projection of one visible epic: starter post kept current, replies only for events, archived when the epic ships or is withdrawn.
+_Avoid_: Forum post, announcement, topic
+
 **Digest**:
 The one pinned issue the sync keeps current: the state of every open release, then every item needing attention, each in a lane. Paul reads it instead of touching GitHub; the assistant acts from it.
 _Avoid_: Review queue, approval list, notification, report
