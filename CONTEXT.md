@@ -41,7 +41,7 @@ _Avoid_: Sub-task, ticket, task (in the roadmap sense)
 ### Lifecycle
 
 **Planning**:
-An open release that is not the lowest open version. Shown as "Next", or "Later" if it has no due date.
+An open release that is not the lowest open version. Grouped as Next, or Later if it has no due date; the page draws Later releases at the end of the Next rail with "no date yet".
 
 **Active**:
 The lowest-version open release. Shown as "Now". There is exactly one at a time.
