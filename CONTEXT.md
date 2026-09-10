@@ -44,7 +44,7 @@ The lowest-version open release. Shown as "Now". There is exactly one at a time.
 _Avoid_: Current, in progress (that is an epic state)
 
 **Shipped**:
-A release issue closed as completed.
+A release issue closed as completed. The plugin's `vX.Y.0` tag is what closes it.
 _Avoid_: Done, released, closed
 
 **Withdrawn**:
@@ -54,6 +54,24 @@ _Avoid_: Cancelled, abandoned
 **Leftover**:
 An epic that was still open when its release closed. It detaches, loses its milestone, and waits in the digest to be placed.
 _Avoid_: Carry-over, rollover, orphan
+
+### Epic states
+
+**Planned**:
+An open epic none of whose work has completed yet. An epic with no work filed under it is planned.
+_Avoid_: Up next, backlog, todo
+
+**In progress**:
+An open epic with at least one piece of work completed.
+_Avoid_: Active (that is a release state), started, WIP
+
+**Done**:
+An epic closed as completed: its merchant-facing outcome is in. Epics are done; only releases are shipped.
+_Avoid_: Shipped, complete, resolved
+
+**Withdrawn epic**:
+An epic closed as not planned or duplicate. It leaves its release and its milestone and is never shown.
+_Avoid_: Cancelled, dropped, superseded (say why in the close reason, not the name)
 
 ### Derived surfaces
 
