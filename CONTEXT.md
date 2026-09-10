@@ -19,8 +19,12 @@ The few words after the version in a release's title that say what the release i
 _Avoid_: Title, tagline, headline
 
 **Brief**:
-The body of a release issue: why the release exists, what is deliberately not in it, and its due date. Written for merchants, so public in full.
+The body of a release issue: why the release exists, what is deliberately not in it, its due date, and optionally a one-sentence pitch. Written for merchants, so public in full; the page shows only the pitch, the rest is a click away on GitHub.
 _Avoid_: Spec, description, scope doc
+
+**Pitch**:
+The one sentence for merchants shown under a release on the public page: the `Pitch` section of its brief, or the first sentence of its Why when there is none.
+_Avoid_: Tagline, strapline, slogan, teaser
 
 **Epic**:
 A merchant-facing unit of a release: any issue that is a direct child of a release issue. Its size does not matter; its position does.
