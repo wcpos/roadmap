@@ -80,7 +80,7 @@ A per-repo GitHub milestone the sync writes from a release: title is the version
 _Avoid_: Release (a milestone is a copy of one)
 
 **Thread**:
-The Discord roadmap forum's projection of one visible epic: starter post kept current, replies only for events, archived when the epic ships or is withdrawn.
+The Discord roadmap forum's projection of one visible epic: starter post kept current, replies only for events, archived when the epic is done or withdrawn.
 _Avoid_: Forum post, announcement, topic
 
 **Digest**:
