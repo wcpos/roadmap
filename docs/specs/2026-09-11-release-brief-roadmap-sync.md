@@ -21,8 +21,8 @@ wcpos.com/roadmap, the five repos' milestones, Project #4 and the Discord roadma
 
 **Identity.** An issue in `wcpos/roadmap` with the `release` label and a title matching
 
-```
-^v(\d+)\.(\d+)\.0 — (.+)$      # version — theme; theme ≤ 60 chars; separator is space, em dash, space
+```text
+^v(\d+)\.(\d+)\.0 — (.{1,60})$      # version — theme (1–60 chars); separator is space, em dash, space
 ```
 
 Exactly one release issue per version. `release` and `epic` are never on the same issue.
@@ -48,9 +48,9 @@ Exactly one release issue per version. `release` and `epic` are never on the sam
 
 | State | Rule | Page group |
 |---|---|---|
-| Active | the lowest-version open release | Now |
+| Active | the lowest-version open release, **dated or not** (this rule wins over the dateless rule below) | Now |
 | Planning | any other open release with a due date | Next |
-| Planning (dateless) | open, `### Due date` empty | Later |
+| Planning (dateless) | open, not the lowest version, `### Due date` empty | Later |
 | Shipped | closed as `completed` | Shipped |
 | Withdrawn | closed as `not planned` | never shown; milestone copies deleted |
 
@@ -73,11 +73,11 @@ Reopening returns a release to the open rules.
 | open, `subIssuesSummary.completed > 0` | in progress |
 | open, otherwise (including zero sub-issues) | planned |
 
-Per-epic progress = `completed / total` sub-issues when `total > 0`. Release progress = done visible epics / visible epics.
+Per-epic progress = `completed / total` sub-issues when `total > 0`. Release progress = done visible epics / visible epics, **`null` when there are no visible epics** — the page then shows "No public items yet" and no fraction, and the digest JSON carries `progress: null`.
 
 **Shipped trigger.** When `wcpos/woocommerce-pos` gets a tag matching `^v(\d+)\.(\d+)\.0$`, the sync closes the matching release issue as `completed`. Patch tags do nothing. A release closed by hand with no tag is a `paul` digest item.
 
-**Project #4** is neither read nor written by anything here. Its built-in "Item closed → Done" and "Pull request merged" workflows are enabled once by hand (UI-only). The board is the agents' triage intake; the README stops calling it the roadmap.
+**Project #4** is neither read nor written by **the sync or the page**. The existing `Add to Roadmap` Action in each repo keeps adding new issues to the board in Triage — that is agents' intake, not roadmap state, and it stays. The board's built-in "Item closed → Done" and "Pull request merged" workflows are enabled once by hand (UI-only). The README stops calling the board the roadmap.
 
 ## 4. Projections
 
@@ -102,12 +102,12 @@ repository(owner:"wcpos", name:"roadmap") {
       subIssuesSummary { total completed } } } } } }
 ```
 
-Transform: parse title and sections; skip a `release`-labelled issue that fails the regex (log); groups per §2; epics visible iff `### Summary` present; order in progress → planned → done, then GitHub sub-issue order; Shipped capped at the latest two. **No bug strip** (`BugFixList` and `roadmap.bugs.*` go). Empty states: no open release → existing "nothing to display yet"; a release with no visible epics → its brief plus "No public items yet". **Zero releases in a production render → `infraLogger.error`** to the Discord alert path. Chip copy: "live from GitHub" → `github.com/wcpos/roadmap/issues?q=label:release`. Cache unchanged (`cacheLife('roadmap')`, revalidate route). Auth unchanged (`wcpos-website`, read-only). `GITHUB_PROJECT_NUMBER` removed; owner/repo are constants. **Layout (built, wcpos/wcpos-com#629):** the active release as a hero — version, theme, `done / visible` fraction, due date, the brief in two columns (Why | Not in this release), epics as cards with full Summaries and progress — and Next / Later / Shipped beneath on the existing scroll-drawn rail, Later with a dotted tone, Shipped faded. Empty brief sections render no heading. A due date must be a real calendar day (`2026-02-31` → null + warning).
+The page paginates `issues` with the cursor; `subIssues(first:100)` is a **hard supported cap**: a release with more than 100 sub-issues is invalid — the page renders it from the first 100 and logs a warning, and the sync reports it as an `assistant`-lane digest item ("split this release"). Transform: parse title and sections; skip a `release`-labelled issue that fails the regex (log); groups per §2; epics visible iff `### Summary` present; order in progress → planned → done, then GitHub sub-issue order; Shipped capped at the latest two. **No bug strip** (`BugFixList` and `roadmap.bugs.*` go). Empty states: no open release → existing "nothing to display yet"; a release with no visible epics → its brief plus "No public items yet". **Zero releases in a production render → `infraLogger.error`** to the Discord alert path. Chip copy: "live from GitHub" → `github.com/wcpos/roadmap/issues?q=label:release`. Cache unchanged (`cacheLife('roadmap')`, revalidate route). Auth unchanged (`wcpos-website`, read-only). `GITHUB_PROJECT_NUMBER` removed; owner/repo are constants. **Layout (built, wcpos/wcpos-com#629):** the active release as a hero — version, theme, `done / visible` fraction, due date, the brief in two columns (Why | Not in this release), epics as cards with full Summaries and progress — and Next / Later / Shipped beneath on the existing scroll-drawn rail, Later with a dotted tone, Shipped faded. Empty brief sections render no heading. A due date must be a real calendar day (`2026-02-31` → null + warning).
 
 ### 4.3 The Discord forum ([#189](https://github.com/wcpos/roadmap/issues/189))
 
 - **One thread per visible epic**, created when the epic becomes visible. Starter = Summary, release (header line), progress, GitHub link. Edited in place on change.
-- Replies only for events: completed, shipped in vX.Y.0, moved, reopened, withdrawn, detached leftover. Shipped and Withdrawn archive the thread. Human replies are never touched; the sync re-archives only on the next state change.
+- Replies only for events: completed, shipped in vX.Y.0, moved, reopened, withdrawn, detached leftover. **Archive** on Shipped, on Withdrawn, and on **any other visible→hidden transition** (the Summary removed, the epic detached from every release other than as a leftover): the thread gets a one-line reply saying why and is archived. A **leftover** (release closed with the epic open) is the one hidden state whose thread stays open, with the "awaiting a release" reply, because it will become visible again once placed. Human replies are never touched; the sync re-archives only on the next state change.
 - Five state tags, one at a time: `Planned` `In progress` `Done` `Shipped` `Withdrawn`. The service creates a missing tag. Type tags are dropped.
 - Writer: the sync Action, via `wcpos-discord` (§7). Forum drift is a projection (§6.3).
 - First pass under the manual `bulk` dispatch, after Paul glances at the channel and posts a short human announcement.
@@ -116,7 +116,9 @@ Transform: parse title and sections; skip a `release`-labelled issue that fails 
 
 **Home.** `wcpos/roadmap`: `sync/` (TypeScript, tests) + `.github/workflows/roadmap-sync.yml`. The README's "no code" sentence becomes "the only code here is the sync that keeps the roadmap honest".
 
-**Triggers.** `schedule: */15 * * * *` (the guarantee); `issues: [opened, edited, closed, reopened, labeled, unlabeled]` on this repo; `repository_dispatch: release-tagged` sent by a new step in `woocommerce-pos/.github/workflows/release.yml` after it pushes a `vX.Y.0` tag; `workflow_dispatch` with input `bulk: boolean`.
+**Triggers.** `schedule: */15 * * * *` (the guarantee); `issues: [opened, edited, closed, reopened, labeled, unlabeled]` on this repo; `repository_dispatch: release-tagged` sent by a new step in `woocommerce-pos/.github/workflows/release.yml` after it pushes a `vX.Y.0` tag; `workflow_dispatch` with inputs `bulk: boolean` and `dry_run: boolean`. **Dry-run mode** (also a constant `DRY_RUN` the landing order flips for the first week): the reconcile computes everything, applies **no projection write** (GitHub, forum, revalidate, Discord ping), and edits only the digest issue, whose items are prefixed `(dry run) would:`.
+
+**Control-plane writes are exempt from projection suppression.** Editing the digest issue, the validation comment on a release issue, and the Discord ping are how the sync *reports*; they are never blocked by validation, by the bulk cap, or by dry-run (except the ping, which dry-run suppresses). That is how "release blocked by validation" and "run refused on bulk cap" reach the digest.
 
 **Credential.** `wcpos-bot` (App 2860316) via the existing `PROJECT_BOT_APP_ID` / `PROJECT_BOT_PRIVATE_KEY` secrets; per-run installation token scoped to the five repos. No new App.
 
@@ -125,7 +127,7 @@ Transform: parse title and sections; skip a `release`-labelled issue that fails 
 2. Validate each release issue; a failing one gets **one comment** (marker `<!-- roadmap-sync:invalid -->`, edited not repeated) and **blocks every write derived from it**.
 3. Compute desired state: release states, epic states, milestone set, `epic` labels, detachments, forum threads, revalidation need.
 4. Diff against actual. If `writes > BULK_CAP` (constant, 100) and not `bulk`: write nothing, report.
-5. Apply deltas serialized at ≥1 s; `concurrency: roadmap-sync` group; any write error fails the run (next tick retries).
+5. Apply deltas serialized at ≥1 s; `concurrency: roadmap-sync` group; any write error fails the run (next tick retries). **Non-idempotent side effects carry their own retry contract:** a forum reply is keyed `(issueId, event, version)` and the service refuses a duplicate key, so a retried run cannot post twice; the Discord ping is keyed by digest item `id` + lane and is sent at most once per key, recorded in the digest JSON (`notified: [ids]`); revalidation is recorded as `revalidatePending: true` in the digest JSON when any projection write succeeded, and cleared only when the ping returns 2xx — so a failed ping is retried on the next tick even with an empty diff.
 6. Emit the digest (§6). If any write happened, `POST https://wcpos.com/api/roadmap/revalidate` with `x-webhook-secret`.
 
 **Writes, complete list.** Close release on tag · create/update/close/delete milestone copies (five repos) · set milestone on every descendant, move on reparent · apply `epic` to direct children · detach open epics on release close and withdrawn epics · forum upsert/reply/archive · edit the digest issue · validation comment · Discord ping (§6.4) · revalidate ping. **Never:** Project #4 writes, priority labels, issue closes other than the release-on-tag, attaching epics, editing bodies.
@@ -164,7 +166,7 @@ Item `id`s are stable across runs so the assistant can track what it has handled
 
 New routes, behind a **dedicated** bearer token (`ROADMAP_API_TOKEN`, a platform credential):
 - `PUT /api/roadmap/threads/{issueId}` — idempotent upsert keyed by GitHub issue **id**: create thread or edit starter; set the single state tag (create tag if missing); body `{ title, summary, release, progress, url, state }`.
-- `POST /api/roadmap/threads/{issueId}/reply` — `{ event, text }`.
+- `POST /api/roadmap/threads/{issueId}/reply` — `{ event, version, text }`; the service stores `(issueId, event, version)` and returns 200 without posting when the key exists (idempotent).
 - `POST /api/roadmap/threads/{issueId}/archive`.
 - `GET /api/roadmap/threads` — `[ { issueId, threadId, state, starterHash, archived } ]`.
 
