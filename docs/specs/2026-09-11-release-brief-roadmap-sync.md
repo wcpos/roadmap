@@ -43,7 +43,7 @@ Exactly one release issue per version. `release` and `epic` are never on the sam
 - <item>                       # optional section; deferred decisions from maps land here
 
 ### Shipped on
-2026-08-25                     # optional, closed releases only: the plugin tag date when the issue was filed or closed after the fact; the page otherwise uses closedAt
+2026-08-25                     # optional: the plugin tag date, for a release filed after its tag. Ignored (never a validation failure) while the issue is open, so the sync can still close it; once closed the page prefers it over closedAt
 ```
 
 "What's in" is never written: it is the sub-issue list.
@@ -194,7 +194,7 @@ The fleet-wide `projects_write` deny stays. App 2860316 is never revoked.
 - `CONTEXT.md` (PR #193) and **`AGENTS.md` recipe** (below); `.github/ISSUE_TEMPLATE/release.yml` mirroring the body shape; delete `ROADMAP.md`; README rewrite; `sync/` package; workflow; `roadmap-digest` and `release` labels (the latter created 2026-09-11).
 
 **AGENTS.md recipe (to add verbatim):**
-> **Releases.** A release is an issue labelled `release` titled `vX.Y.0 — Theme`, body sections `### Due date`, optionally a one-sentence `### Pitch` (the only release copy the public page shows), `### Why this release`, `### Not in this release`; the whole body is public. File one only when Paul states a release's intention; write it in his words for merchants. Attach an epic (as a sub-issue) when it plainly fits the Theme and is not excluded; ask Paul when unsure; never attach to a shipped release. Every direct child of a release is public: give it a `### Summary` (2–3 sentences for merchants) or it stays hidden. Work nests under epics, never under a release. Never edit a milestone; the sync owns them. When you close a map whose deferrals affect the active release, add them to its "Not in this release".
+> **Releases.** A release is an issue labelled `release` titled `vX.Y.0 — Theme`, body sections `### Due date`, optionally a one-sentence `### Pitch` (the only release copy the public page shows), `### Why this release`, `### Not in this release`, and — only when filing a release after its plugin tag has already shipped — `### Shipped on` with the tag date; the whole body is public. File one only when Paul states a release's intention; write it in his words for merchants. Attach an epic (as a sub-issue) when it plainly fits the Theme and is not excluded; ask Paul when unsure; never attach to a shipped release. Every direct child of a release is public: give it a `### Summary` (2–3 sentences for merchants) or it stays hidden. Work nests under epics, never under a release. Never edit a milestone; the sync owns them. When you close a map whose deferrals affect the active release, add them to its "Not in this release".
 
 ## 10. `wcpos-com` changes
 
