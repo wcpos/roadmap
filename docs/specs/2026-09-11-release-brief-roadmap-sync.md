@@ -1,6 +1,6 @@
 # Release-brief roadmap sync — spec (draft v0)
 
-**Status:** ready for review, written 2026-09-11 from the decisions on the [Release-brief roadmap sync map](https://github.com/wcpos/roadmap/issues/178). Every rule below links to the ticket that decided it; the ticket's resolution comment is the authority if this text and it disagree. The page rebuild (§4.2, §10) has landed as [wcpos/wcpos-com#629](https://github.com/wcpos/wcpos-com/pull/629) and the release-issue contract is in live use on [v1.11.0 — Checkout & payments](https://github.com/wcpos/roadmap/issues/195); nothing here is provisional any more.
+**Status:** ready for review, written 2026-09-11 from the decisions on the [Release-brief roadmap sync map](https://github.com/wcpos/roadmap/issues/178). Every rule below links to the ticket that decided it; the ticket's resolution comment is the authority if this text and it disagree. The page rebuild (§4.2, §10) has landed as [wcpos/wcpos-com#631](https://github.com/wcpos/wcpos-com/pull/631) (the data source came in #629; its layout was replaced) and the release-issue contract is in live use on [v1.11.0 — Checkout & payments](https://github.com/wcpos/roadmap/issues/195); nothing here is provisional any more.
 
 **Language:** [`CONTEXT.md`](../../CONTEXT.md) (merged as #193). This document uses those words internally; **public copy says "features", never "epics"** (a merchant-wording rule set on the page PR).
 
@@ -27,7 +27,7 @@ wcpos.com/roadmap, the five repos' milestones, Project #4 and the Discord roadma
 
 Exactly one release issue per version. `release` and `epic` are never on the same issue.
 
-**Body.** Three sections plus an optional one-line `### Pitch`, then optional free prose. The whole body is public and written for merchants; internal notes go in comments.
+**Body.** Three sections plus an optional one-sentence `### Pitch`, then optional free prose. The whole body is public and written for merchants; internal notes go in comments.
 
 ```markdown
 ### Due date
@@ -53,7 +53,7 @@ Exactly one release issue per version. `release` and `epic` are never on the sam
 |---|---|---|
 | Active | the lowest-version open release, **dated or not** (this rule wins over the dateless rule below) | Now |
 | Planning | any other open release with a due date | Next |
-| Planning (dateless) | open, not the lowest version, `### Due date` empty | Later |
+| Planning (dateless) | open, not the lowest version, `### Due date` empty | Later (rendered on the page at the end of the Next rail, labelled "no date yet"; the digest and forum keep the word Later) |
 | Shipped | closed as `completed` | Shipped |
 | Withdrawn | closed as `not planned` | never shown; milestone copies deleted |
 
@@ -76,7 +76,7 @@ Reopening returns a release to the open rules.
 | open, `subIssuesSummary.completed > 0` | in progress |
 | open, otherwise (including zero sub-issues) | planned |
 
-Per-epic progress = `completed / total` sub-issues when `total > 0`. Release progress = done visible epics / visible epics, **`null` when there are no visible epics** — the page then shows "No public items yet" and no fraction, and the digest JSON carries `progress: null`.
+Per-epic progress = `completed / total` sub-issues when `total > 0`. Release progress = done visible epics / visible epics, **`null` when there are no visible epics** — the page then shows `0 of 0 features` and an empty bar, and the digest JSON carries `progress: null`.
 
 **Shipped trigger.** When `wcpos/woocommerce-pos` gets a tag matching `^v(\d+)\.(\d+)\.0$`, the sync closes the matching release issue as `completed`. Patch tags do nothing. A release closed by hand with no tag is a `paul` digest item.
 
@@ -105,7 +105,7 @@ repository(owner:"wcpos", name:"roadmap") {
       subIssuesSummary { total completed } } } } } }
 ```
 
-The page paginates `issues` with the cursor; `subIssues(first:100)` is a **hard supported cap**: a release with more than 100 sub-issues is invalid — the page renders it from the first 100 and logs a warning, and the sync reports it as an `assistant`-lane digest item ("split this release"). Transform: parse title and sections; skip a `release`-labelled issue that fails the regex (log); groups per §2; epics visible iff `### Summary` present; order in progress → planned → done, then GitHub sub-issue order; Shipped capped at the latest two. **No bug strip** (`BugFixList` and `roadmap.bugs.*` go). Empty states: no open release → existing "nothing to display yet"; a release with no visible epics → its brief plus "No public items yet". **Zero releases in a production render → `infraLogger.error`** to the Discord alert path. Chip copy: "live from GitHub" → `github.com/wcpos/roadmap/issues?q=label:release`. Cache unchanged (`cacheLife('roadmap')`, revalidate route). Auth unchanged (`wcpos-website`, read-only). `GITHUB_PROJECT_NUMBER` removed; owner/repo are constants. **Layout (ruled 2026-09-10, built in wcpos/wcpos-com#631):** the **release train** — one vertical rail, groups Now / Next / Shipped (Later releases ride at the end of Next with "no date yet"), a node per release, the red progress bar, Shipped faded at the bottom. Per release: `vX.Y.0 Theme` headline linking to the issue, `done of total features · due <date>`, the Pitch (or the first sentence of Why), a "Full release brief" link (Shipped: "Release notes" to the plugin tag). Per epic: one row with title and the first sentence of its Summary, `completed/total` when it has sub-issues; Shipped rows are titles only. **Density rule:** one line per feature, one sentence per release, everything else is a click to GitHub — no brief sections, no full Summaries. The hero + two-column brief layout shipped in #629 was rejected by Paul as an unrequested redesign with too much information; do not bring it back. A due date must be a real calendar day (`2026-02-31` → null + warning).
+The page paginates `issues` with the cursor; `subIssues(first:100)` is a **hard cap**: a release with more than 100 sub-issues is invalid — the page renders it from the first 100 and logs a warning, and the sync reports it as an `assistant`-lane digest item ("split this release"). Transform: parse title and sections; skip a `release`-labelled issue that fails the regex (log); groups per §2; epics visible iff `### Summary` present; order in progress → planned → done, then GitHub sub-issue order; Shipped capped at the latest two. **No bug strip** (`BugFixList` and `roadmap.bugs.*` go). Empty states: no open release → existing "nothing to display yet"; a release with no visible epics → its headline, meta line, pitch and brief link, with no feature rows (the train has no "No public items yet" line). **Zero releases in a production render → `infraLogger.error`** to the Discord alert path. Chip copy: "live from GitHub" → `github.com/wcpos/roadmap/issues?q=label:release`. Cache unchanged (`cacheLife('roadmap')`, revalidate route). Auth unchanged (`wcpos-website`, read-only). `GITHUB_PROJECT_NUMBER` removed; owner/repo are constants. **Layout (ruled 2026-09-10, built in wcpos/wcpos-com#631):** the **release train** — one vertical rail, groups Now / Next / Shipped (Later releases ride at the end of Next with "no date yet"), a node per release, the red progress bar, Shipped faded at the bottom. Per release: `vX.Y.0 Theme` headline linking to the issue, `done of total features · due <date>`, the Pitch (or the first sentence of Why), a "Full release brief" link (Shipped: "Release notes" to the plugin tag `github.com/wcpos/woocommerce-pos/releases/tag/vX.Y.0`; a release closed by hand before its tag exists links to a tag that is not there yet — an accepted edge, already a `paul` digest item under §3, that heals when the tag is published). Per epic: one row with title and the first sentence of its Summary, `completed/total` when it has sub-issues; Shipped rows are titles only. **Density rule:** one line per feature, one sentence per release, everything else is a click to GitHub — no brief sections, no full Summaries. The hero + two-column brief layout shipped in #629 was rejected by Paul as an unrequested redesign with too much information; do not bring it back. A due date must be a real calendar day (`2026-02-31` → null + warning).
 
 ### 4.3 The Discord forum ([#189](https://github.com/wcpos/roadmap/issues/189))
 
@@ -191,11 +191,11 @@ The fleet-wide `projects_write` deny stays. App 2860316 is never revoked.
 - `CONTEXT.md` (PR #193) and **`AGENTS.md` recipe** (below); `.github/ISSUE_TEMPLATE/release.yml` mirroring the body shape; delete `ROADMAP.md`; README rewrite; `sync/` package; workflow; `roadmap-digest` and `release` labels (the latter created 2026-09-11).
 
 **AGENTS.md recipe (to add verbatim):**
-> **Releases.** A release is an issue labelled `release` titled `vX.Y.0 — Theme`, body sections `### Due date`, `### Why this release`, `### Not in this release`, optionally a one-sentence `### Pitch` (the only release copy the public page shows); the whole body is public. File one only when Paul states a release's intention; write it in his words for merchants. Attach an epic (as a sub-issue) when it plainly fits the Theme and is not excluded; ask Paul when unsure; never attach to a shipped release. Every direct child of a release is public: give it a `### Summary` (2–3 sentences for merchants) or it stays hidden. Work nests under epics, never under a release. Never edit a milestone; the sync owns them. When you close a map whose deferrals affect the active release, add them to its "Not in this release".
+> **Releases.** A release is an issue labelled `release` titled `vX.Y.0 — Theme`, body sections `### Due date`, optionally a one-sentence `### Pitch` (the only release copy the public page shows), `### Why this release`, `### Not in this release`; the whole body is public. File one only when Paul states a release's intention; write it in his words for merchants. Attach an epic (as a sub-issue) when it plainly fits the Theme and is not excluded; ask Paul when unsure; never attach to a shipped release. Every direct child of a release is public: give it a `### Summary` (2–3 sentences for merchants) or it stays hidden. Work nests under epics, never under a release. Never edit a milestone; the sync owns them. When you close a map whose deferrals affect the active release, add them to its "Not in this release".
 
 ## 10. `wcpos-com` changes
 
-Done in [wcpos/wcpos-com#629](https://github.com/wcpos/wcpos-com/pull/629): `github-roadmap.ts` (query + transform per §4.2) and `types/roadmap.ts` replaced; `roadmap-timeline.tsx` rewritten to the hero + rail layout; `bug-fix-list.tsx` deleted; `dev-fixture.ts` rewritten; tests rebuilt on markdown fixtures under `src/services/core/external/__fixtures__/roadmap/` (the sync copies these — §12); error-level self-alert; ten locales updated; `GITHUB_PROJECT_NUMBER` removed from `env.ts` (remove it from Vercel once merged). Follow-up [wcpos/wcpos-com#631](https://github.com/wcpos/wcpos-com/pull/631): the page returns to the release-train layout (§4.2), `pitch` added to `Release` and `Epic`, `### Pitch` parsed, `firstSentence()` helper, locale keys trimmed to the train.
+Done in [wcpos/wcpos-com#629](https://github.com/wcpos/wcpos-com/pull/629): `github-roadmap.ts` (query + transform per §4.2) and `types/roadmap.ts` replaced; `roadmap-timeline.tsx` rewritten (to a hero + rail layout, since replaced by the release train in #631); `bug-fix-list.tsx` deleted; `dev-fixture.ts` rewritten; tests rebuilt on markdown fixtures under `src/services/core/external/__fixtures__/roadmap/` (the sync copies these — §12); error-level self-alert; ten locales updated; `GITHUB_PROJECT_NUMBER` removed from `env.ts` (remove it from Vercel once merged). Follow-up [wcpos/wcpos-com#631](https://github.com/wcpos/wcpos-com/pull/631): the page returns to the release-train layout (§4.2), `pitch` added to `Release` and `Epic`, `### Pitch` parsed, `firstSentence()` helper, locale keys trimmed to the train.
 
 ## 11. Landing order
 
@@ -204,7 +204,7 @@ Done in [wcpos/wcpos-com#629](https://github.com/wcpos/wcpos-com/pull/629): `git
 3. `sync/` reconcile with milestones + labels + detach + digest, **dry-run mode** (`workflow_dispatch` only, writes logged not applied) for one week of ticks; read the digest.
 4. Bulk cleanup (`bulk: true`): legacy milestones, five copies for v1.11.0 and v2.0.0, `epic` labels.
 5. Enable the schedule; add the `release-tagged` dispatch step to the plugin's `release.yml`.
-6. `wcpos-com` page rewrite — **done (#629)**; the revalidate ping is enabled when the Action lands (step 5).
+6. `wcpos-com` page rewrite — **done (#629 data source, #631 release-train layout)**; the revalidate ping is enabled when the Action lands (step 5).
 7. `wcpos-discord` routes; forum `bulk` first pass after Paul's glance.
 8. Drucker retirement PRs 2–5.
 9. Assistant onboarding: read the digest JSON, work the `assistant` lane (**provisional**, waits on the Mac Mini).
@@ -217,7 +217,7 @@ Done in [wcpos/wcpos-com#629](https://github.com/wcpos/wcpos-com/pull/629): `git
 
 ## 13. Open
 
-- Page layout: settled by building it ([#192](https://github.com/wcpos/roadmap/issues/192) → wcpos/wcpos-com#629).
+- Page layout: settled by building it ([#192](https://github.com/wcpos/roadmap/issues/192) → wcpos/wcpos-com#629, then re-settled by Paul on the release train → wcpos/wcpos-com#631).
 - Release issue contract in practice: in live use on #195 ([#191](https://github.com/wcpos/roadmap/issues/191)); one clarification for `AGENTS.md`: "Not in this release" is where deferred decisions from maps land.
 - Translation of the brief and Summaries (fog on the map).
 - The assistant's cadence and record-keeping (fog; waits on the Mac Mini).
