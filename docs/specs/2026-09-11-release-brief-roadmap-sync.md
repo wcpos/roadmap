@@ -1,8 +1,8 @@
 # Release-brief roadmap sync — spec (draft v0)
 
-**Status:** draft for review, written 2026-09-11 from the decisions on the [Release-brief roadmap sync map](https://github.com/wcpos/roadmap/issues/178). Every rule below links to the ticket that decided it; the ticket's resolution comment is the authority if this text and it disagree. Items marked **provisional** wait on the two open prototype tickets.
+**Status:** ready for review, written 2026-09-11 from the decisions on the [Release-brief roadmap sync map](https://github.com/wcpos/roadmap/issues/178). Every rule below links to the ticket that decided it; the ticket's resolution comment is the authority if this text and it disagree. The page rebuild (§4.2, §10) has landed as [wcpos/wcpos-com#629](https://github.com/wcpos/wcpos-com/pull/629) and the release-issue contract is in live use on [v1.11.0 — Checkout & payments](https://github.com/wcpos/roadmap/issues/195); nothing here is provisional any more.
 
-**Language:** [`CONTEXT.md`](../../CONTEXT.md) (PR #193). This document uses those words and no others.
+**Language:** [`CONTEXT.md`](../../CONTEXT.md) (merged as #193). This document uses those words internally; **public copy says "features", never "epics"** (a merchant-wording rule set on the page PR).
 
 ---
 
@@ -102,7 +102,7 @@ repository(owner:"wcpos", name:"roadmap") {
       subIssuesSummary { total completed } } } } } }
 ```
 
-Transform: parse title and sections; skip a `release`-labelled issue that fails the regex (log); groups per §2; epics visible iff `### Summary` present; order in progress → planned → done, then GitHub sub-issue order; Shipped capped at the latest two. **No bug strip** (`BugFixList` and `roadmap.bugs.*` go). Empty states: no open release → existing "nothing to display yet"; a release with no visible epics → its brief plus "No public items yet". **Zero releases in a production render → `infraLogger.error`** to the Discord alert path. Chip copy: "live from GitHub" → `github.com/wcpos/roadmap/issues?q=label:release`. Cache unchanged (`cacheLife('roadmap')`, revalidate route). Auth unchanged (`wcpos-website`, read-only). `GITHUB_PROJECT_NUMBER` removed; owner/repo are constants. **Provisional:** layout per the page prototype ([#192](https://github.com/wcpos/roadmap/issues/192)).
+Transform: parse title and sections; skip a `release`-labelled issue that fails the regex (log); groups per §2; epics visible iff `### Summary` present; order in progress → planned → done, then GitHub sub-issue order; Shipped capped at the latest two. **No bug strip** (`BugFixList` and `roadmap.bugs.*` go). Empty states: no open release → existing "nothing to display yet"; a release with no visible epics → its brief plus "No public items yet". **Zero releases in a production render → `infraLogger.error`** to the Discord alert path. Chip copy: "live from GitHub" → `github.com/wcpos/roadmap/issues?q=label:release`. Cache unchanged (`cacheLife('roadmap')`, revalidate route). Auth unchanged (`wcpos-website`, read-only). `GITHUB_PROJECT_NUMBER` removed; owner/repo are constants. **Layout (built, wcpos/wcpos-com#629):** the active release as a hero — version, theme, `done / visible` fraction, due date, the brief in two columns (Why | Not in this release), epics as cards with full Summaries and progress — and Next / Later / Shipped beneath on the existing scroll-drawn rail, Later with a dotted tone, Shipped faded. Empty brief sections render no heading. A due date must be a real calendar day (`2026-02-31` → null + warning).
 
 ### 4.3 The Discord forum ([#189](https://github.com/wcpos/roadmap/issues/189))
 
@@ -190,7 +190,7 @@ The fleet-wide `projects_write` deny stays. App 2860316 is never revoked.
 
 ## 10. `wcpos-com` changes
 
-Replace `github-roadmap.ts` (query + transform per §4.2) and `types/roadmap.ts`; rewrite `roadmap-timeline.tsx` per the winning prototype (**provisional**); delete `bug-fix-list.tsx`; rewrite `dev-fixture.ts`; rewrite the 19 tests against the shared fixtures; error-level self-alert; chip copy in ten locales; remove `GITHUB_PROJECT_NUMBER` from `env.ts` and Vercel.
+Done in [wcpos/wcpos-com#629](https://github.com/wcpos/wcpos-com/pull/629): `github-roadmap.ts` (query + transform per §4.2) and `types/roadmap.ts` replaced; `roadmap-timeline.tsx` rewritten to the hero + rail layout; `bug-fix-list.tsx` deleted; `dev-fixture.ts` rewritten; tests rebuilt on markdown fixtures under `src/services/core/external/__fixtures__/roadmap/` (the sync copies these — §12); error-level self-alert; ten locales updated; `GITHUB_PROJECT_NUMBER` removed from `env.ts` (remove it from Vercel once merged).
 
 ## 11. Landing order
 
@@ -199,7 +199,7 @@ Replace `github-roadmap.ts` (query + transform per §4.2) and `types/roadmap.ts`
 3. `sync/` reconcile with milestones + labels + detach + digest, **dry-run mode** (`workflow_dispatch` only, writes logged not applied) for one week of ticks; read the digest.
 4. Bulk cleanup (`bulk: true`): legacy milestones, five copies for v1.11.0 and v2.0.0, `epic` labels.
 5. Enable the schedule; add the `release-tagged` dispatch step to the plugin's `release.yml`.
-6. `wcpos-com` page rewrite (after the prototype verdict); revalidate ping enabled.
+6. `wcpos-com` page rewrite — **done (#629)**; the revalidate ping is enabled when the Action lands (step 5).
 7. `wcpos-discord` routes; forum `bulk` first pass after Paul's glance.
 8. Drucker retirement PRs 2–5.
 9. Assistant onboarding: read the digest JSON, work the `assistant` lane (**provisional**, waits on the Mac Mini).
@@ -210,10 +210,10 @@ Replace `github-roadmap.ts` (query + transform per §4.2) and `types/roadmap.ts`
 - Board-ops audit fixtures (§8.1) as regression cases for done / stale / orphan checks.
 - Reconcile tests assert the exact write list for each fixture, and that a malformed release produces zero writes and one comment.
 
-## 13. Open and provisional
+## 13. Open
 
-- Page layout: [#192](https://github.com/wcpos/roadmap/issues/192) (prototype built on a fixture; awaiting Paul's pick).
-- Release issue contract in practice: [#191](https://github.com/wcpos/roadmap/issues/191) (v1.11.0 drafted as #195; six reaction points).
+- Page layout: settled by building it ([#192](https://github.com/wcpos/roadmap/issues/192) → wcpos/wcpos-com#629).
+- Release issue contract in practice: in live use on #195 ([#191](https://github.com/wcpos/roadmap/issues/191)); one clarification for `AGENTS.md`: "Not in this release" is where deferred decisions from maps land.
 - Translation of the brief and Summaries (fog on the map).
 - The assistant's cadence and record-keeping (fog; waits on the Mac Mini).
 - A `track` kind for standing themes was ruled out for now; additive later if needed.
