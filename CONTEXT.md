@@ -80,8 +80,16 @@ A per-repo GitHub milestone the sync writes from a release: title is the version
 _Avoid_: Release (a milestone is a copy of one)
 
 **Digest**:
-The report Paul reads instead of touching GitHub: scope changes, leftovers, epics missing a Summary, drift.
-_Avoid_: Review queue, approval list, notification
+The one pinned issue the sync keeps current: the state of every open release, then every item needing attention, each in a lane. Paul reads it instead of touching GitHub; the assistant acts from it.
+_Avoid_: Review queue, approval list, notification, report
+
+**Lane**:
+Who acts on a digest item: `paul` (a call or veto only he can make), `assistant` (acted on unasked, reported after), or `log` (healed automatically, listed for the record).
+_Avoid_: Severity, priority, owner
+
+**Heal**:
+What the sync does to a derived surface that disagrees with its release issue: overwrite it. Only projections heal; choices are reported.
+_Avoid_: Fix, repair, auto-correct
 
 **Drift**:
 Any disagreement between a release issue and a surface derived from it.
