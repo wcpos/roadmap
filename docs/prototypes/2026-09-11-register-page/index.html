@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Register page — three layouts, live</title>
+<!--
+  PROTOTYPE — throwaway. wcpos/roadmap#214: the Register page in the left-hand menu and its split
+  from the Reports page. Three layouts of the page body (A board, B ledger, C focus) switchable from
+  the strip at the top; the open / paid in / paid out / no sale / count / close / print flows are
+  live against an in-memory session; permission, edition, network and width toggles change what a
+  cashier sees. Nothing persists. Language, session model, closure document and permission rows are
+  the decided ones (#207, #210, #211, #212, #213).
+-->
+<style>
+:root{
+  --primary:#0069bd;--primary-fg:#f3faff;--bg:#f0f6fc;--fg:#162330;--card:#fff;--card-header:#dfe5ec;
+  --footer:#e6ecf2;--row-alt:#f8fafd;--border:#d2d8df;--muted:#f0f4f9;--muted-fg:#495766;--secondary:#5b748e;
+  --success:#007936;--warning:#e46212;--destructive:#d40924;--attention:#fed252;--info:#0079ce;
+  --sidebar:#142a41;--sidebar-fg:#e0e5eb;--sidebar-border:#0b1c2c;--radius:8px;
+  --sys:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{font-size:14px}
+body{margin:0;background:#e9edf2;color:var(--fg);font-family:var(--sys);-webkit-font-smoothing:antialiased;line-height:1.4}
+h1{font-size:22px;margin:0 0 4px}
+.lead{margin:0;color:var(--muted-fg);max-width:100ch}
+.doc{padding:28px 32px 0}
+a{color:var(--primary)}
+
+/* ---------- control strip (not part of the design) ---------- */
+.strip{position:sticky;top:0;z-index:50;background:#111827;color:#e5e7eb;padding:10px 32px;display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.strip .g{display:flex;align-items:center;gap:6px}
+.strip .g>b{color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:10px;margin-right:2px}
+.seg{display:inline-flex;border:1px solid #374151;border-radius:6px;overflow:hidden}
+.seg button{border:0;background:transparent;color:#d1d5db;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit}
+.seg button.on{background:#f3f4f6;color:#111827;font-weight:600}
+.strip label.ck{display:inline-flex;align-items:center;gap:5px;cursor:pointer;color:#d1d5db}
+.strip label.ck input{accent-color:#60a5fa}
+
+/* ---------- app frame ---------- */
+.stage{padding:22px 32px 10px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.frame{background:var(--bg);border:1px solid #c7ced6;box-shadow:0 12px 34px rgba(0,0,0,.18);overflow:hidden;position:relative;display:flex;flex-direction:column}
+.frame.tablet{width:1180px;height:760px;border-radius:10px}
+.frame.phone{width:390px;height:780px;border-radius:30px;border:8px solid #111}
+.hdr{height:40px;background:var(--sidebar);border-bottom:1px solid var(--sidebar-border);display:flex;align-items:center;color:var(--sidebar-fg);flex:none;position:relative}
+.hdr .ttl{position:absolute;left:0;right:0;text-align:center;font-size:17px;pointer-events:none}
+.hdr .rgt{margin-left:auto;display:flex;align-items:center;gap:12px;padding-right:12px;font-size:13px}
+.hdr .dot{width:12px;height:12px;border-radius:50%;background:var(--success)}
+.hdr .dot.off{background:var(--destructive)}
+.hdr .av{width:22px;height:22px;border-radius:50%;background:#e5e7eb;color:#334155;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.hdr .burger{width:40px;height:40px;display:flex;align-items:center;justify-content:center;color:var(--sidebar-fg)}
+.body{flex:1;display:flex;min-height:0}
+.rail{width:52px;background:var(--sidebar);border-right:1px solid var(--sidebar-border);display:flex;flex-direction:column;padding:0;flex:none}
+.rail .it{height:48px;display:flex;align-items:center;justify-content:center;color:var(--sidebar-fg);border-left:4px solid transparent;border-right:4px solid transparent;position:relative}
+.rail .it.on{border-left-color:var(--primary);color:#4da3ff}
+.rail .it.on svg{color:#4da3ff}
+.rail .sp{margin-top:auto}
+.rail .ver{font-size:9px;opacity:.5;text-align:center;padding:6px 0 8px;color:var(--sidebar-fg)}
+.rail .tip{position:absolute;left:54px;background:#fff;color:var(--fg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:12px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.15);display:none}
+.rail .it:hover .tip{display:block}
+.rail .it.new::after{content:"";position:absolute;right:6px;top:8px;width:6px;height:6px;border-radius:50%;background:var(--attention)}
+.main{flex:1;min-width:0;overflow:auto;position:relative;display:flex;flex-direction:column}
+.upgrade{background:#fff7e6;border-bottom:1px solid #f5d9a8;color:#7a4b00;font-size:12px;padding:5px 12px;display:flex;justify-content:space-between}
+.pad{padding:14px}
+.phone .pad{padding:12px}
+
+/* app primitives */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card-h{background:var(--card-header);padding:8px 10px;border-bottom:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;display:flex;align-items:center;gap:8px;font-weight:600}
+.card-h .sub{font-weight:400;color:var(--muted-fg);font-size:12px}
+.card-b{padding:12px}
+.card-f{background:var(--footer);border-top:1px solid var(--border);padding:8px 10px;display:flex;justify-content:flex-end;gap:8px;border-radius:0 0 var(--radius) var(--radius)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 14px;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--fg);font:inherit;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}
+.btn:hover{background:#f7f9fb}
+.btn.p{background:var(--primary);border-color:var(--primary);color:var(--primary-fg)}
+.btn.p:hover{background:#005ea9}
+.btn.d{background:var(--destructive);border-color:var(--destructive);color:#fff}
+.btn.od{color:var(--destructive);border-color:#f2b8c1}
+.btn.g{border-color:transparent;background:transparent}
+.btn.g:hover{background:#eef2f6}
+.btn.sm{height:30px;padding:0 10px;font-size:12px}
+.btn.lg{height:44px;padding:0 20px;font-size:15px}
+.btn.xl{height:52px;font-size:16px;font-weight:600}
+.btn.w{width:100%}
+.btn:disabled,.btn.dis{opacity:.5;cursor:not-allowed}
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:600;height:20px}
+.pill.open{background:#e3f4ea;color:var(--success)}
+.pill.closed{background:#e6ecf2;color:var(--muted-fg)}
+.pill.count{background:#fff1e6;color:var(--warning)}
+.pill.warn{background:#fff1e6;color:var(--warning)}
+.pill.bad{background:#fde8eb;color:var(--destructive)}
+.pill.info{background:#e6f2fb;color:var(--info)}
+.pill.pro{background:#f3e8ff;color:#7c3aed}
+.pill.dotp::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.mut{color:var(--muted-fg)}
+.sm{font-size:12px}
+.xs{font-size:11px}
+.num{font-variant-numeric:tabular-nums}
+.b{font-weight:600}
+.row{display:flex;align-items:center;gap:8px}
+.grow{flex:1;min-width:0}
+.right{text-align:right}
+.money{font-variant-numeric:tabular-nums;font-weight:600}
+.money.neg{color:var(--destructive)}
+.money.pos{color:var(--success)}
+.kpi{padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;min-width:0}
+.kpi .l{font-size:11px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.kpi .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+.kpi .v.hidden-v{color:var(--muted-fg);font-size:14px;font-weight:500;margin-top:6px}
+.kpi .s{font-size:11px;color:var(--muted-fg)}
+table.t{width:100%;border-collapse:collapse;font-size:13px}
+table.t th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-fg);font-weight:600;padding:6px 8px;background:var(--footer);border-bottom:1px solid var(--border)}
+table.t td{padding:7px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+table.t tr:last-child td{border-bottom:0}
+table.t td.r,table.t th.r{text-align:right}
+table.t tr.sel td{background:#e6f2fb}
+table.t tr.click{cursor:pointer}
+table.t tr.click:hover td{background:#f4f7fa}
+table.t tr.void td{color:var(--muted-fg);text-decoration:line-through}
+table.t tr.void td:last-child{text-decoration:none}
+.ledger td.run{color:var(--muted-fg)}
+.phone table.t td,.phone table.t th{padding:6px 5px;font-size:12px}
+.phone table.t td .btn.sm{padding:0 6px}
+.who{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--muted-fg)}
+.who i{width:16px;height:16px;border-radius:50%;background:#dbe4ee;color:#334155;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-style:normal;font-weight:700}
+.line1{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);background:#fff}
+.alert{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius);font-size:13px}
+.alert.w{background:#fff4e8;border:1px solid #f5cfae;color:#7a3e00}
+.alert.i{background:#e9f3fb;border:1px solid #bcd9ef;color:#0b4a73}
+.alert.e{background:#fde8eb;border:1px solid #f3b6c0;color:#8a0f22}
+.alert .btn{margin-left:auto}
+.stack{display:flex;flex-direction:column;gap:12px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.cols4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.phone .cols,.phone .cols3{grid-template-columns:1fr 1fr}
+.phone .cols4{grid-template-columns:1fr 1fr}
+.phone .cols.stack-p{grid-template-columns:1fr}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.phone .actions .btn{flex:1 1 30%}
+input.in,select.in{height:36px;border:1px solid var(--border);border-radius:6px;padding:0 10px;font:inherit;font-size:14px;background:#fff;width:100%;color:var(--fg)}
+input.in.big{height:52px;font-size:26px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+input.in:focus{outline:2px solid #9ec5ea;border-color:var(--primary)}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:12px;color:var(--muted-fg);font-weight:600}
+.seg2{display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;background:#fff}
+.seg2 button{border:0;background:transparent;padding:0 14px;height:36px;font:inherit;font-size:13px;cursor:pointer;color:var(--fg)}
+.seg2 button.on{background:var(--primary);color:#fff;font-weight:600}
+.seg2 button.on.out{background:var(--warning)}
+.seg2 button.on.ns{background:var(--secondary)}
+.tabs{display:inline-flex;background:var(--muted);border-radius:6px;padding:3px;gap:2px}
+.tabs button{border:0;background:transparent;padding:6px 12px;border-radius:5px;font:inherit;font-size:13px;color:var(--muted-fg);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.tabs button.on{background:#fff;color:var(--fg);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:1px solid var(--border);border-radius:999px;background:#fff;font-size:12px;color:var(--fg)}
+.chip.on{border-color:var(--primary);background:#e6f2fb;color:#0b4a73}
+.filterbar{background:var(--card-header);border:1px solid var(--border);border-radius:var(--radius);padding:6px 8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.receipt{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;line-height:1.35;background:#fff;color:#111;padding:14px 16px;width:300px;box-shadow:0 2px 10px rgba(0,0,0,.15);border-radius:3px;white-space:pre}
+.receipt.copy{position:relative}
+.receipt.copy::after{content:"COPY";position:absolute;top:10px;right:12px;border:2px solid #b91c1c;color:#b91c1c;padding:1px 6px;font-weight:700;transform:rotate(-8deg);opacity:.85}
+.hero{padding:22px 18px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
+.hero .big{font-size:38px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.hero .lbl{font-size:12px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.overflow{position:relative}
+.menu{position:absolute;right:0;top:40px;background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 8px 24px rgba(0,0,0,.14);min-width:200px;z-index:5;padding:4px}
+.menu button{display:flex;width:100%;border:0;background:transparent;text-align:left;padding:9px 12px;font:inherit;font-size:13px;border-radius:5px;cursor:pointer}
+.menu button:hover{background:#f2f5f9}
+.menu .sep{height:1px;background:var(--border);margin:4px 0}
+.detail{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:13px}
+.detail div b{display:block;font-size:11px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.phone .detail{grid-template-columns:1fr 1fr}
+.settled{color:var(--info);font-weight:600}
+.locked{display:inline-flex;align-items:center;gap:6px;color:var(--muted-fg);font-size:12px}
+.sect{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fg);font-weight:700;margin:4px 0 6px}
+.collapse{border:1px solid var(--border);border-radius:var(--radius);background:#fff}
+.collapse>button{width:100%;display:flex;align-items:center;gap:8px;border:0;background:transparent;padding:11px 12px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;text-align:left}
+.collapse>button .mut{margin-left:auto;font-weight:400}
+.collapse .in-b{padding:0 12px 12px}
+.bar{position:sticky;bottom:0;background:var(--footer);border-top:1px solid var(--border);padding:10px 12px;display:flex;gap:8px;margin:12px -14px -14px}
+.phone .bar{margin:12px -12px -12px;flex-wrap:wrap}
+.phone .bar .btn{flex:1 1 40%}
+.sheet-wrap{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:20}
+.phone .sheet-wrap{align-items:flex-end}
+.sheet{background:#fff;border-radius:10px;border:1px solid var(--border);width:440px;max-width:92%;max-height:92%;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.sheet.wide{width:640px}
+.phone .sheet{width:100%;max-width:100%;border-radius:16px 16px 0 0;max-height:94%}
+.sheet-h{padding:14px 16px 10px;display:flex;align-items:flex-start;gap:8px;border-bottom:1px solid var(--border)}
+.sheet-h .t{font-size:16px;font-weight:700}
+.sheet-h .s{font-size:12px;color:var(--muted-fg)}
+.sheet-h .x{margin-left:auto;border:0;background:transparent;font-size:18px;cursor:pointer;color:var(--muted-fg);line-height:1}
+.sheet-b{padding:14px 16px;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.sheet-f{padding:10px 16px;border-top:1px solid var(--border);background:var(--footer);display:flex;justify-content:flex-end;gap:8px;border-radius:0 0 10px 10px}
+.phone .sheet-f{border-radius:0}
+.denoms{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.phone .denoms{grid-template-columns:repeat(3,1fr)}
+.den{border:1px solid var(--border);border-radius:6px;padding:6px;display:flex;flex-direction:column;gap:3px;background:#fff}
+.den b{font-size:12px}
+.den input{height:30px;border:1px solid var(--border);border-radius:5px;padding:0 6px;font:inherit;text-align:right;width:100%}
+.den .sub{font-size:10px;color:var(--muted-fg);text-align:right}
+.vari{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:var(--radius);background:var(--muted);font-size:13px}
+.vari b{font-size:16px}
+.login{max-width:360px;margin:60px auto;display:flex;flex-direction:column;gap:12px;text-align:center}
+.login .logo{width:56px;height:56px;border-radius:14px;background:var(--sidebar);margin:0 auto;display:flex;align-items:center;justify-content:center}
+.reports-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+.phone .reports-grid{grid-template-columns:1fr}
+.rep-chart{height:120px;display:flex;align-items:flex-end;gap:6px;padding:8px 8px 0}
+.rep-chart i{flex:1;background:#e75c3a;border-radius:2px 2px 0 0;position:relative;display:block}
+.rep-chart i::after{content:"";position:absolute;left:0;right:0;top:0;height:18%;background:#007866;border-radius:2px 2px 0 0}
+.leaves{border:1px dashed #b45309;background:#fffbeb;color:#7a3e00;border-radius:6px;padding:6px 10px;font-size:12px;display:inline-flex;gap:6px;align-items:center}
+.leaves b{color:#b45309}
+
+/* ---------- below the frame ---------- */
+.notes{padding:10px 32px 60px;display:grid;grid-template-columns:1.1fr .9fr;gap:20px}
+.notes h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin:0 0 8px}
+.notes .box{background:#fff;border:1px solid #d9dee5;border-radius:10px;padding:14px 16px;font-size:13px}
+.notes ul{margin:0;padding-left:18px}
+.notes li{margin:0 0 6px}
+pre.state{margin:0;background:#0f172a;color:#cbd5e1;border-radius:10px;padding:12px 14px;font-size:11px;line-height:1.4;max-height:420px;overflow:auto}
+.log{background:#fff;border:1px solid #d9dee5;border-radius:10px;padding:10px 14px;font-size:12px;max-height:200px;overflow:auto}
+.log div{padding:3px 0;border-bottom:1px dashed #e5e7eb}
+.log div:last-child{border-bottom:0}
+kbd{font-family:ui-monospace,Menlo,monospace;background:#eef2f6;border:1px solid #d2d8df;border-radius:4px;padding:0 5px;font-size:11px}
+@media (max-width:1240px){.frame.tablet{transform-origin:top center;transform:scale(.9)}}
+@media (max-width:1000px){.notes{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="doc">
+  <h1>Register page — three layouts, live</h1>
+  <p class="lead">One in-memory register (<b>Front counter</b>, UK Store). Everything in the frame works: open the register, move cash, count, close, print. The strip changes who is looking and on what. The layouts differ only in the page body; the sheets, the count screen and the Reports page are shared, because those are forms and the question is the page.</p>
+</div>
+
+<div class="strip" id="strip"></div>
+
+<div class="stage"><div id="frame"></div></div>
+
+<div class="notes">
+  <div>
+    <h2>What to react to</h2>
+    <div class="box">
+      <ul>
+        <li><b>Layout A · Board</b> — status card, figures, action row, movements beside tenders. The manager's view of the drawer.</li>
+        <li><b>Layout B · Ledger</b> — the session as one running ledger with the arithmetic on show (float + cash sales − refunds + in − out = expected), actions pinned to the bottom. The cashier who is £2 short sees which line moved.</li>
+        <li><b>Layout C · Focus</b> — one number, one button, three small ones; everything else folds. Phone-first, and the closest to what a cashier does twice a day.</li>
+        <li><b>Menu position</b> — toggle "after POS" vs "before Reports". The icon is a drawer, since POS already owns the cash register glyph.</li>
+        <li><b>Blind count</b> — untick <i>view reports</i>: the expected figure, the X-report and the variance vanish from the page and the count screen.</li>
+        <li><b>Offline close</b> — set Network to Offline: the count screen says how many sales are not on the server yet, the closure is marked <i>Unsynced</i>, and the Reports detail shows the till's expected beside the server's.</li>
+        <li><b>Reports split</b> — switch Page to Reports: the range report is renamed <i>Sales</i>, a <i>Closures</i> tab (Pro) lists every register's closures and opens one as recorded with its corrections and settled figures.</li>
+      </ul>
+    </div>
+    <h2 style="margin-top:18px">Questions this prototype raised (for the morning)</h2>
+    <div class="box" id="questions"></div>
+  </div>
+  <div>
+    <h2>State (live)</h2>
+    <pre class="state" id="statejson"></pre>
+    <h2 style="margin-top:14px">Action log</h2>
+    <div class="log" id="log"></div>
+  </div>
+</div>
+
+<script>
+/* ============================ data ============================ */
+const CUR = '£';
+const fmt = (n, sign=false) => { const a = Math.abs(n); const s = CUR + a.toFixed(2); if (n < 0) return '−' + s; return (sign && n > 0 ? '+' : '') + s; };
+const DENOMS = [50,20,10,5,2,1,0.5,0.2,0.1,0.05,0.02,0.01];
+const CASHIERS = { demo:{name:'Demo Cashier', ini:'DC'}, amy:{name:'Amy Okafor', ini:'AO'}, sam:{name:'Sam Reilly', ini:'SR'} };
+
+const S = {
+  viewport:'tablet', variant:'A', page:'register', menuPos:'top', floatMode:'default',
+  signedIn:true, sessionsOn:true, pro:true, online:true,
+  caps:{ cash:true, reports:true, closures:true },
+  now:'17:42', today:'Thu 11 Sep',
+  register:{ name:'Front counter', store:'UK Store', closeTime:'18:00', threshold:5, printer:'Epson TM-m30', defaultFloat:200 },
+  session:null,
+  closures:[],
+  sheet:null, menuOpen:false, reportsTab:'sales', selClosure:null, countOpen:{}, log:[]
+};
+
+function seedClosures(){
+  return [
+    { number:12, ts:20260910.1802, register:'Front counter', opened:'Wed 10 Sep 09:01', closed:'Wed 10 Sep 18:02', openedBy:'demo', closedBy:'demo',
+      floatExpected:200, floatCounted:200, cashSales:402.1, cashRefunds:0, paidIn:0, paidOut:30, expected:572.1, tillExpected:572.1, counted:570.1,
+      card:{sales:811.4, refunds:24}, unsynced:0, unsyncedTotal:0, orders:41, refundsN:1, firstReceipt:'FC-1187', lastReceipt:'FC-1227',
+      movements:[{type:'paid_out', amount:30, reason:'Milk & sugar', by:'amy', at:'11:40'}],
+      taxes:[{rate:'VAT 20%', net:1011.25, tax:202.25}], corrections:[], perpetual:{sales:48211.9, refunds:1210.4}, printed:'18:02', copies:0, settled:null },
+    { number:11, ts:20260909.1758, register:'Front counter', opened:'Tue 9 Sep 09:03', closed:'Tue 9 Sep 17:58', openedBy:'amy', closedBy:'sam',
+      floatExpected:200, floatCounted:195, cashSales:288.7, cashRefunds:15, paidIn:0, paidOut:0, expected:468.7, tillExpected:463.7, counted:468.7,
+      card:{sales:602, refunds:0}, unsynced:0, unsyncedTotal:0, orders:33, refundsN:1, firstReceipt:'FC-1151', lastReceipt:'FC-1186',
+      movements:[], taxes:[{rate:'VAT 20%', net:742.25, tax:148.45}],
+      corrections:[{type:'late_sale', at:'Wed 10 Sep 09:14', amount:5, note:'Order FC-1186a landed after close', by:'server'}],
+      perpetual:{sales:46998.4, refunds:1186.4}, printed:'17:58', copies:1, settled:{expected:473.7, variance:-5} },
+    { number:7, ts:20260910.1630, register:'Back office', opened:'Wed 10 Sep 10:10', closed:'Wed 10 Sep 16:30', openedBy:'sam', closedBy:'sam',
+      floatExpected:100, floatCounted:100, cashSales:56, cashRefunds:0, paidIn:0, paidOut:0, expected:156, tillExpected:156, counted:156,
+      card:{sales:1240, refunds:0}, unsynced:0, unsyncedTotal:0, orders:9, refundsN:0, firstReceipt:'BO-88', lastReceipt:'BO-96',
+      movements:[], taxes:[{rate:'VAT 20%', net:1080, tax:216}], corrections:[], perpetual:{sales:9120, refunds:0}, printed:'16:30', copies:0, settled:null },
+  ];
+}
+function sampleSession(){
+  return { state:'open', openedAt:'09:02', openedBy:'demo', floatExpected:200, floatCounted:200,
+    cashSales:318.4, cashRefunds:12, orders:14, refundsN:1, card:{sales:642.1, refunds:0}, unsyncedN:3, unsyncedTotal:61.2,
+    movements:[
+      {id:1, type:'paid_in',  amount:20,   reason:'Change from the bank', by:'demo', at:'10:15'},
+      {id:2, type:'no_sale',  amount:0,    reason:'Customer needed change for the meter', by:'amy', at:'12:31'},
+      {id:3, type:'paid_out', amount:45.6, reason:'Window cleaner', by:'amy', at:'14:05'},
+    ], nextId:4, ranBy:['demo','amy'], counted:{}, override:null };
+}
+S.closures = seedClosures();
+S.session = sampleSession();
+
+/* ============================ derived ============================ */
+const movSum = (ses, type) => ses.movements.filter(m => m.type===type && !m.voidedBy).reduce((a,m)=>a+m.amount,0);
+function expected(ses){ return +(ses.floatCounted + ses.cashSales - ses.cashRefunds + movSum(ses,'paid_in') - movSum(ses,'paid_out')).toFixed(2); }
+const lastClosure = () => S.closures.filter(c=>c.register===S.register.name).sort((a,b)=>b.number-a.number)[0];
+const can = k => S.caps[k];
+const who = k => CASHIERS[k] || {name:k, ini:'?'};
+const overdue = () => S.session && S.session.state==='open' && S.now > S.register.closeTime;
+
+function log(msg){ S.log.unshift(`${S.now} · ${msg}`); if (S.log.length>40) S.log.pop(); }
+function tick(min){ const [h,m]=S.now.split(':').map(Number); const t=h*60+m+min; S.now=`${String(Math.floor(t/60)%24).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`; }
+// the float the open sheet suggests: the register's default float when one is set, else what was counted at the last closure
+function suggestedFloat(){ const lc=lastClosure(); return S.floatMode==='default' && S.register.defaultFloat!=null ? S.register.defaultFloat : (lc?lc.counted:0); }
+function suggestedFloatWhy(){ const lc=lastClosure(); return S.floatMode==='default' && S.register.defaultFloat!=null ? `this register's default float` : (lc?`everything counted at closure ${lc.number}`:'no previous closure'); }
+
+/* ============================ actions ============================ */
+const A = {
+  set(k,v){ S[k]=v; if(k==='page') S.menuOpen=false; },
+  cap(k){ S.caps[k]=!S.caps[k]; },
+  scenario(name){
+    S.sheet=null; S.menuOpen=false; S.page='register';
+    switch(name){
+      case 'signedout': S.signedIn=false; break;
+      case 'off': S.signedIn=true; S.sessionsOn=false; break;
+      case 'closed': S.signedIn=true; S.sessionsOn=true; S.session=null; S.now='08:55'; break;
+      case 'open': S.signedIn=true; S.sessionsOn=true; S.session=sampleSession(); S.now='17:42'; break;
+      case 'counting': S.signedIn=true; S.sessionsOn=true; S.session=sampleSession(); S.session.state='counting'; S.session.countingAt='17:42'; S.now='17:44'; break;
+      case 'overdue': S.signedIn=true; S.sessionsOn=true; S.session=sampleSession(); S.now='18:31'; break;
+    }
+    log(`Scenario → ${name}`);
+  },
+  signIn(){ S.signedIn=true; tick(1); log('Signed in as Demo Cashier on Front counter'); },
+  openSheet(type, extra={}){ S.menuOpen=false; S.sheet={type, ...extra}; },
+  closeSheet(){ S.sheet=null; },
+  doOpen(counted){
+    const c = parseFloat(counted); if (isNaN(c)) return;
+    const exp = suggestedFloat(); tick(2);
+    S.session = { state:'open', openedAt:S.now, openedBy:'demo', floatExpected:exp, floatCounted:c, cashSales:0, cashRefunds:0, orders:0, refundsN:0,
+      card:{sales:0, refunds:0}, unsyncedN:0, unsyncedTotal:0, movements:[], nextId:1, ranBy:['demo'], counted:{}, override:null };
+    S.sheet=null; log(`Register opened · float counted ${fmt(c)} (expected ${fmt(exp)}, opening variance ${fmt(c-exp,true)})`);
+  },
+  doMove(type, amount, reason){
+    const a = type==='no_sale' ? 0 : parseFloat(amount); if (type!=='no_sale' && (isNaN(a) || a<=0)) return; if (!reason) return;
+    tick(4); S.session.movements.push({id:S.session.nextId++, type, amount:a, reason, by:'demo', at:S.now});
+    S.sheet=null; log(`${label(type)} ${type==='no_sale'?'':fmt(a)} — "${reason}"`);
+  },
+  voidMove(id){
+    const m = S.session.movements.find(x=>x.id===id); if(!m || m.voidedBy) return; tick(1);
+    const v = {id:S.session.nextId++, type:'void', of:id, amount:m.amount, reason:`Voids ${label(m.type).toLowerCase()} ${fmt(m.amount)}`, by:'demo', at:S.now};
+    m.voidedBy = v.id; S.session.movements.push(v); S.sheet=null; log(`Voided movement #${id} with a new row #${v.id}`);
+  },
+  startCounting(){ tick(3); S.session.state='counting'; S.session.countingAt=S.now; S.sheet=null; S.menuOpen=false; log('Close register → counting; no sales on this register until it reopens'); },
+  resume(){ S.session.state='open'; delete S.session.countingAt; log('Back to selling — counting abandoned, nothing recorded'); },
+  setCount(tender, v){ S.session.counted[tender] = v; },
+  tryClose(){
+    const ses=S.session; const counted=parseFloat(ses.counted.cash); if (isNaN(counted)) return;
+    const variance = +(counted - expected(ses)).toFixed(2);
+    if (Math.abs(variance) > S.register.threshold && !ses.override){ S.sheet={type:'override', variance}; return; }
+    A.writeClosure(counted, variance);
+  },
+  approve(user){ S.session.override = {by:user||'sam', at:S.now}; S.sheet=null; log(`Override approved by ${who(S.session.override.by).name}`); A.tryClose(); },
+  writeClosure(counted, variance){
+    const ses=S.session; const lc=lastClosure(); const n=(lc?lc.number:0)+1; tick(6);
+    const cardCounted = ses.counted.card!==undefined && ses.counted.card!=='' ? parseFloat(ses.counted.card) : null;
+    const unsyncedN = S.online?0:ses.unsyncedN, unsyncedTotal=S.online?0:ses.unsyncedTotal;
+    const c = { number:n, ts:20260911+parseFloat('0.'+S.now.replace(':','')), register:S.register.name, opened:`${S.today} ${ses.openedAt}`, closed:`${S.today} ${S.now}`, openedBy:ses.openedBy, closedBy:'demo',
+      floatExpected:ses.floatExpected, floatCounted:ses.floatCounted, cashSales:ses.cashSales, cashRefunds:ses.cashRefunds,
+      paidIn:movSum(ses,'paid_in'), paidOut:movSum(ses,'paid_out'), expected: unsyncedN? +(expected(ses)-unsyncedTotal).toFixed(2) : expected(ses), tillExpected:expected(ses), counted,
+      card:{...ses.card, counted:cardCounted}, unsynced:unsyncedN, unsyncedTotal, orders:ses.orders, refundsN:ses.refundsN, firstReceipt:'FC-1228', lastReceipt:'FC-1241',
+      movements:ses.movements.filter(m=>m.type!=='void'&&!m.voidedBy), taxes:[{rate:'VAT 20%', net:+((ses.cashSales+ses.card.sales)/1.2).toFixed(2), tax:+((ses.cashSales+ses.card.sales)-(ses.cashSales+ses.card.sales)/1.2).toFixed(2)}],
+      corrections:[], perpetual:{sales:+((lc?lc.perpetual.sales:0)+ses.cashSales+ses.card.sales).toFixed(2), refunds:+((lc?lc.perpetual.refunds:0)+ses.cashRefunds+ses.card.refunds).toFixed(2)},
+      override:ses.override, printed:null, copies:0, settled:null, ranBy:ses.ranBy };
+    S.closures.push(c); S.session=null; S.sheet={type:'zprint', number:n};
+    log(`Closure ${n} · ${S.register.name} written — counted ${fmt(counted)}, expected ${fmt(c.expected)}, ${varianceWord(variance)}${unsyncedN?` · ${unsyncedN} sales unsynced`:''}`);
+  },
+  print(n){ const c=S.closures.find(x=>x.number===n&&x.register===S.register.name); if(!c) return; if(!c.printed){ c.printed=S.now; log(`Z-report for closure ${n} printed once on ${S.register.printer}`);} else { c.copies++; log(`Closure ${n} reprinted — copy ${c.copies}`);} },
+  xprint(){ log('X-report printed (not stored)'); S.sheet=null; },
+  reportsTab(t){ S.reportsTab=t; S.selClosure=null; },
+  selClosure(n, reg){ S.selClosure={n,reg}; },
+  toggleMenu(){ S.menuOpen=!S.menuOpen; },
+  turnOn(){ S.sessionsOn=true; log('Register sessions turned on for UK Store (store setting)'); },
+};
+const label = t => ({paid_in:'Paid in', paid_out:'Paid out', no_sale:'No sale', void:'Void'})[t]||t;
+const varianceWord = v => v===0 ? 'exact' : (v>0 ? `over ${fmt(v)}` : `short ${fmt(-v)}`);
+
+/* ============================ icons ============================ */
+const I = {
+  pos:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="10" width="18" height="10" rx="1.5"/><path d="M7 10V6h10v4M3 14h18M8 17h2M14 17h2"/></svg>',
+  products:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8h16v12H4zM4 8l2-4h12l2 4M12 8v12M9 4v4M15 4v4"/></svg>',
+  orders:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21zM9 8h6M9 12h6M9 16h4"/></svg>',
+  coupons:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4z"/><path d="M9 9l6 6M9.5 9.5h0M14.5 14.5h0" stroke-linecap="round"/></svg>',
+  customers:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19c0-3 2.7-5 6-5s6 2 6 5M15 15.5c2.6 0 5 1.5 5 3.5"/></svg>',
+  reports:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M7 15l3-4 3 2 4-6"/></svg>',
+  health:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/><path d="M6 12h3l1.5-2.5 2 5 1.5-2.5H18"/></svg>',
+  settings:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>',
+  support:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H9l-5 4z"/><path d="M10 9.5a2 2 0 1 1 3 1.7c-.7.4-1 .8-1 1.5M12 14.8h0" stroke-linecap="round"/></svg>',
+  register:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M3 12h18M10 8h4M10 16h4"/></svg>',
+  bell:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22a2.5 2.5 0 0 0 2.4-2h-4.8A2.5 2.5 0 0 0 12 22zm7-6V11a7 7 0 0 0-5-6.7V3a2 2 0 1 0-4 0v1.3A7 7 0 0 0 5 11v5l-2 2v1h18v-1z"/></svg>',
+  bars:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+  print:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 8V4h10v4M5 8h14a2 2 0 0 1 2 2v6h-4v4H7v-4H3v-6a2 2 0 0 1 2-2zM7 14h10"/></svg>',
+  lock:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+  more:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>',
+  chev:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>',
+  cloudOff:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6.2 9.5 4 4 0 0 0 7 18zM4 4l16 16"/></svg>',
+};
+
+/* ============================ shell ============================ */
+function renderStrip(){
+  const seg = (k, opts) => `<span class="seg">${opts.map(([v,l])=>`<button class="${S[k]===v?'on':''}" data-set="${k}" data-v="${v}">${l}</button>`).join('')}</span>`;
+  const ck = (k,l) => `<label class="ck"><input type="checkbox" data-cap="${k}" ${S.caps[k]?'checked':''}> ${l}</label>`;
+  document.getElementById('strip').innerHTML = `
+    <div class="g"><b>Width</b>${seg('viewport',[['tablet','Tablet'],['phone','Phone']])}</div>
+    <div class="g"><b>Layout</b>${seg('variant',[['A','A · Board'],['B','B · Ledger'],['C','C · Focus']])}</div>
+    <div class="g"><b>Page</b>${seg('page',[['register','Register'],['reports','Reports']])}</div>
+    <div class="g"><b>Jump to</b><span class="seg">${[['signedout','Signed out'],['off','Sessions off'],['closed','Register closed'],['open','Session open'],['counting','Counting'],['overdue','Overdue']].map(([v,l])=>`<button data-scn="${v}">${l}</button>`).join('')}</span></div>
+    <div class="g"><b>Can</b>${ck('cash','manage cash')}${ck('reports','view reports')}${ck('closures','manager override')}</div>
+    <div class="g"><b>Edition</b>${seg('pro',[[true,'Pro'],[false,'Free']])}</div>
+    <div class="g"><b>Network</b>${seg('online',[[true,'Online'],[false,'Offline']])}</div>
+    <div class="g"><b>Menu</b>${seg('menuPos',[['top','after POS'],['reports','before Reports']])}</div>
+    <div class="g"><b>Float</b>${seg('floatMode',[['default','default £200'],['carry','carry last count']])}</div>`;
+}
+
+function renderRail(){
+  const items = [['pos','POS'],['products','Products'],['orders','Orders'],['coupons','Coupons'],['customers','Customers'],['reports','Reports']];
+  const reg = ['register','Register'];
+  if (S.menuPos==='top') items.splice(1,0,reg); else items.splice(5,0,reg);
+  const bottom = [['health','Store health'],['settings','Settings'],['support','Support']];
+  const it = ([k,l]) => `<div class="it ${S.page===k?'on':''} ${k==='register'?'new':''}" data-set="page" data-v="${k}">${I[k]}<span class="tip">${l}</span></div>`;
+  return `<div class="rail">${items.map(it).join('')}<div class="sp"></div>${bottom.map(it).join('')}<div class="ver">v 1.11.0</div></div>`;
+}
+
+function renderHeader(){
+  const title = S.page==='reports' ? 'Reports' : 'Register';
+  const phone = S.viewport==='phone';
+  return `<div class="hdr">${phone?`<div class="burger">${I.bars}</div>`:''}<div class="ttl">${title} - ${S.register.store}</div>
+    <div class="rgt"><span class="dot ${S.online?'':'off'}" title="${S.online?'Online':'No internet connection'}"></span>${S.signedIn?`${I.bell}<span class="row" style="gap:6px"><span class="av">DC</span>${phone?'':'Demo Cashier ▾'}</span>`:''}</div></div>`;
+}
+
+function renderFrame(){
+  const f = document.getElementById('frame');
+  f.className = `frame ${S.viewport}`;
+  const content = !S.signedIn ? renderSignedOut() : (S.page==='reports' ? renderReports() : renderRegister());
+  f.innerHTML = `${renderHeader()}<div class="body">${S.viewport==='tablet' && S.signedIn ? renderRail() : ''}<div class="main">${!S.pro && S.signedIn ? `<div class="upgrade"><span>Upgrade to WCPOS Pro</span><span>Learn more</span></div>` : ''}<div class="pad">${content}</div>${renderSheet()}</div></div>`;
+}
+
+/* ============================ register page ============================ */
+function renderSignedOut(){
+  const lc = lastClosure();
+  return `<div class="login">
+    <div class="logo">${I.register.replace('width="20" height="20"','width="28" height="28"').replace('currentColor','#e0e5eb')}</div>
+    <div><div class="b" style="font-size:18px">${S.register.name}</div><div class="mut sm">${S.register.store} · register 2 · signed out</div></div>
+    ${lc ? `<div class="line1 sm" style="justify-content:center"><span class="mut">Last closure</span><b>${lc.number}</b><span class="mut">·</span><span>${lc.closed}</span></div>` : ''}
+    <button class="btn p lg w" data-act="signIn">Sign in</button>
+    <div class="mut xs">Signs in with your WordPress account. The register stays this device's.</div>
+  </div>`;
+}
+
+function renderRegister(){
+  if (!S.sessionsOn) return renderSessionsOff();
+  const ses = S.session;
+  if (ses && ses.state==='counting') return renderCounting();
+  return { A:renderA, B:renderB, C:renderC }[S.variant]();
+}
+
+function renderSessionsOff(){
+  return `<div class="stack">
+    ${registerHead('Sessions off')}
+    <div class="alert i">Register sessions are off for ${S.register.store}. ${can('closures') ? `<button class="btn sm" data-act="turnOn">Turn on</button>` : `<a class="btn sm g" href="#">How sessions work</a>`}</div>
+  </div>`;
+}
+
+function registerHead(statusPill){
+  const ses=S.session; let pill='';
+  if (ses && ses.state==='open') pill = overdue() ? `<span class="pill warn dotp">Open · overdue</span>` : `<span class="pill open dotp">Open</span>`;
+  else if (ses && ses.state==='counting') pill = `<span class="pill count dotp">Counting</span>`;
+  else pill = `<span class="pill closed dotp">${statusPill||'Closed'}</span>`;
+  const sub = ses ? `Opened ${ses.openedAt} by ${who(ses.openedBy).name}${ses.ranBy.length>1?` · ${ses.ranBy.length} cashiers rang`:''}` : (lastClosure()?`Last closed ${lastClosure().closed}`:'Never opened');
+  return `<div class="row"><div class="grow"><div class="row" style="gap:10px"><span class="b" style="font-size:18px">${S.register.name}</span>${pill}${!S.online?`<span class="pill bad">${I.cloudOff} Offline</span>`:''}</div><div class="mut sm">${sub}</div></div>${xreportBtn()}${overflowBtn()}</div>`;
+}
+function xreportBtn(){ const ses=S.session; if(!ses||ses.state!=='open'||!can('reports')) return ''; return `<button class="btn" data-act="openSheet" data-type="xreport">${I.print} X-report</button>`; }
+function overflowBtn(){
+  const lc = lastClosure();
+  return `<span class="overflow"><button class="btn g" data-act="toggleMenu" title="More">${I.more}</button>${S.menuOpen?`<div class="menu">
+    ${lc?`<button data-act="openSheet" data-type="reprint">Reprint last closure (${lc.number})</button>`:''}
+    ${S.pro?`<button data-act="set" data-k="page" data-v="reports">All closures in Reports</button>`:`<button disabled class="mut">All closures — Pro</button>`}
+    <div class="sep"></div><button class="mut">Register settings</button></div>`:''}</span>`;
+}
+
+function lastClosureCard(compact=false){
+  const lc = lastClosure(); if(!lc) return `<div class="card"><div class="card-b mut sm">No closure yet on this register.</div></div>`;
+  const v = +(lc.counted-lc.expected).toFixed(2);
+  return `<div class="card">
+    <div class="card-h">Last closure <span class="sub">Closure ${lc.number} · ${lc.closed}</span>${lc.unsynced?`<span class="pill warn" style="margin-left:auto">Unsynced ${lc.unsynced}</span>`:''}</div>
+    <div class="card-b">
+      <div class="${compact?'cols':'cols3'}">
+        <div><div class="xs mut b">COUNTED</div><div class="money" style="font-size:18px">${fmt(lc.counted)}</div></div>
+        ${can('reports')?`<div><div class="xs mut b">EXPECTED</div><div class="money" style="font-size:18px">${fmt(lc.expected)}</div></div>
+        <div><div class="xs mut b">VARIANCE</div><div class="money ${v<0?'neg':v>0?'pos':''}" style="font-size:18px">${v===0?'Exact':fmt(v,true)}</div></div>`:`<div class="locked" style="grid-column:span 2">${I.lock} Expected and variance hidden</div>`}
+      </div>
+      <div class="mut xs" style="margin-top:8px">Closed by ${who(lc.closedBy).name}${lc.override?` · approved by ${who(lc.override.by).name}`:''} · ${lc.printed?`printed ${lc.printed}${lc.copies?` · ${lc.copies} cop${lc.copies>1?'ies':'y'}`:''}`:'not printed'}</div>
+    </div>
+    <div class="card-f"><button class="btn sm" data-act="openSheet" data-type="reprint">${I.print} Reprint copy</button></div>
+  </div>`;
+}
+
+function openBtn(size='lg'){ return can('cash') ? `<button class="btn p ${size}" data-act="openSheet" data-type="open">Open register</button>` : `<span class="locked">${I.lock} Only a cashier with cash permission can open this register</span>`; }
+function movementActions(){ if(!can('cash')) return `<span class="locked">${I.lock} Cash actions need cash permission</span>`; return `<button class="btn" data-act="openSheet" data-type="movement" data-mtype="paid_in">Paid in</button><button class="btn" data-act="openSheet" data-type="movement" data-mtype="paid_out">Paid out</button><button class="btn" data-act="openSheet" data-type="movement" data-mtype="no_sale">No sale</button>`; }
+function closeBtn(cls='btn od'){ return can('cash') ? `<button class="${cls}" data-act="startCounting">Close register</button>` : ''; }
+
+function movementsTable(ses, withRun=false){
+  if(!ses.movements.length) return `<div class="mut sm" style="padding:8px">No cash movements this session.</div>`;
+  return `<table class="t"><thead><tr><th>Time</th><th>Movement</th><th>Reason</th><th>By</th><th class="r">Amount</th><th></th></tr></thead><tbody>
+  ${ses.movements.map(m=>`<tr class="${m.voidedBy?'void':''}"><td class="num mut">${m.at}</td><td>${label(m.type)}</td><td>${m.reason}</td><td><span class="who"><i>${who(m.by).ini}</i>${S.viewport==='phone'?'':who(m.by).name.split(' ')[0]}</span></td><td class="r money ${m.type==='paid_out'?'neg':m.type==='paid_in'?'pos':''}">${m.type==='no_sale'?'—':m.type==='void'?fmt(0):fmt(m.type==='paid_out'?-m.amount:m.amount,true)}</td><td class="r">${!m.voidedBy && m.type!=='void' && m.type!=='no_sale' && can('cash') && ses.state==='open' ? `<button class="btn sm g" data-act="openSheet" data-type="void" data-id="${m.id}">Void</button>`:''}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+function tendersTable(ses){
+  return `<table class="t"><thead><tr><th>Tender</th><th class="r">Sales</th><th class="r">Refunds</th></tr></thead><tbody>
+    <tr><td>Cash</td><td class="r money">${fmt(ses.cashSales)}</td><td class="r money ${ses.cashRefunds?'neg':''}">${ses.cashRefunds?fmt(-ses.cashRefunds):'—'}</td></tr>
+    <tr><td>Card · terminal</td><td class="r money">${fmt(ses.card.sales)}</td><td class="r money ${ses.card.refunds?'neg':''}">${ses.card.refunds?fmt(-ses.card.refunds):'—'}</td></tr>
+    <tr><td class="mut">${ses.orders} sales · ${ses.refundsN} refund${ses.refundsN===1?'':'s'}${!S.online&&ses.unsyncedN?` · <span class="pill warn">${ses.unsyncedN} not on server</span>`:''}</td><td class="r money">${fmt(ses.cashSales+ses.card.sales)}</td><td class="r money">${fmt(-(ses.cashRefunds+ses.card.refunds))}</td></tr>
+  </tbody></table>`;
+}
+function overdueAlert(){ return overdue() ? `<div class="alert w">Past the expected close time (${S.register.closeTime}). ${closeBtn('btn sm')}</div>` : ''; }
+
+/* ---- A · Board ---- */
+function renderA(){
+  const ses=S.session;
+  if(!ses) return `<div class="stack">${registerHead()}
+    <div class="cols stack-p">
+      <div class="card"><div class="hero"><div class="lbl">Register closed</div><div class="mut sm">Open it to take payments on this device.</div><div style="margin-top:8px">${openBtn('lg')}</div></div></div>
+      ${lastClosureCard(true)}
+    </div></div>`;
+  const exp = expected(ses);
+  return `<div class="stack">${registerHead()}${overdueAlert()}
+    <div class="cols4">
+      ${can('reports')?`<div class="kpi"><div class="l">Expected in drawer</div><div class="v">${fmt(exp)}</div><div class="s">float ${fmt(ses.floatCounted)} · till figure</div></div>`:`<div class="kpi"><div class="l">In drawer</div><div class="v hidden-v">${I.lock} Counted at close</div></div>`}
+      <div class="kpi"><div class="l">Cash sales</div><div class="v">${fmt(ses.cashSales)}</div><div class="s">${ses.refundsN?`refunds ${fmt(-ses.cashRefunds)}`:'no refunds'}</div></div>
+      <div class="kpi"><div class="l">Card sales</div><div class="v">${fmt(ses.card.sales)}</div><div class="s">terminal</div></div>
+      <div class="kpi"><div class="l">Movements</div><div class="v ${movSum(ses,'paid_in')-movSum(ses,'paid_out')<0?'':''}">${fmt(movSum(ses,'paid_in')-movSum(ses,'paid_out'),true)}</div><div class="s">in ${fmt(movSum(ses,'paid_in'))} · out ${fmt(movSum(ses,'paid_out'))}</div></div>
+    </div>
+    <div class="actions">${movementActions()}<span class="grow"></span>${closeBtn()}</div>
+    <div class="cols stack-p">
+      <div class="card"><div class="card-h">Cash movements</div>${movementsTable(ses)}</div>
+      <div class="stack"><div class="card"><div class="card-h">Tenders this session</div>${tendersTable(ses)}</div>${lastClosureCard(true)}</div>
+    </div>
+  </div>`;
+}
+
+/* ---- B · Ledger ---- */
+function renderB(){
+  const ses=S.session; const phone=S.viewport==='phone';
+  if(!ses){ const lc=lastClosure(); return `<div class="stack">${registerHead()}
+    <div class="card"><div class="card-h">Ledger <span class="sub">${lc?`closure ${lc.number} · ${lc.closed}`:'empty'}</span></div>
+    ${lc?ledgerRows(lc, true):''}
+    <div class="card-f" style="justify-content:space-between"><button class="btn sm" data-act="openSheet" data-type="reprint">${I.print} Reprint copy</button>${openBtn('')}</div></div>
+    <div class="mut sm">Open the register to start a new ledger. The float suggested is ${suggestedFloatWhy()} (${fmt(suggestedFloat())}).</div></div>`; }
+  return `<div class="stack">${registerHead()}${overdueAlert()}
+    <div class="card"><div class="card-h">Ledger <span class="sub">this session · running</span>${!S.online&&ses.unsyncedN?`<span class="pill warn" style="margin-left:auto">${ses.unsyncedN} sales not on server</span>`:''}</div>${ledgerRows(ses,false)}</div>
+    <div class="card"><div class="card-h">Card · terminal <span class="sub">reported, not counted here</span></div><div class="card-b row"><span class="grow">${ses.orders} sales this session</span><span class="money">${fmt(ses.card.sales)}</span></div></div>
+    <div class="bar">${movementActions()}<span class="grow"></span>${closeBtn()}</div>
+  </div>`;
+}
+function ledgerRows(x, closed){
+  const blind=!can('reports'); let run = x.floatCounted;
+  const rows=[]; const R=(t,l,by,amt,cls='')=>{ run=+(run+amt).toFixed(2); rows.push(`<tr class="${cls}"><td class="num mut">${t}</td><td>${l}</td><td>${by?`<span class="who"><i>${who(by).ini}</i></span>`:''}</td><td class="r money ${amt<0?'neg':amt>0?'pos':''}">${amt===0?'—':fmt(amt,true)}</td><td class="r run num">${blind?'':fmt(run)}</td></tr>`); };
+  run=0; R(closed?x.opened.split(' ').pop():x.openedAt, `Opening float <span class="mut xs">expected ${fmt(x.floatExpected)}${x.floatCounted!==x.floatExpected?` · opening ${varianceWord(x.floatCounted-x.floatExpected)}`:''}</span>`, x.openedBy, x.floatCounted);
+  const movs = closed ? x.movements : x.movements;
+  const sales = closed ? x.cashSales : x.cashSales; const refunds = closed ? x.cashRefunds : x.cashRefunds;
+  R('', `Cash sales <span class="mut xs">${x.orders} sales</span>`, null, sales);
+  if (refunds) R('', `Cash refunds <span class="mut xs">${x.refundsN}</span>`, null, -refunds);
+  movs.forEach(m=>{ if(m.type==='void') return; const amt = m.type==='paid_out'?-m.amount:m.type==='paid_in'?m.amount:0; if (m.voidedBy){ rows.push(`<tr class="void"><td class="num mut">${m.at}</td><td>${label(m.type)} · ${m.reason}</td><td><span class="who"><i>${who(m.by).ini}</i></span></td><td class="r money">${fmt(amt,true)}</td><td class="r mut xs">voided</td></tr>`); return;} R(m.at, `${label(m.type)} <span class="mut xs">${m.reason}</span>`, m.by, amt); });
+  const foot = closed
+    ? `<tr><td colspan="3" class="b">Expected</td><td></td><td class="r money">${blind?`<span class="locked">${I.lock}</span>`:fmt(x.expected)}</td></tr><tr><td colspan="3" class="b">Counted <span class="mut xs" style="font-weight:400">by ${who(x.closedBy).name}</span></td><td></td><td class="r money">${fmt(x.counted)}</td></tr><tr><td colspan="3" class="b">Variance</td><td></td><td class="r money ${x.counted-x.expected<0?'neg':x.counted-x.expected>0?'pos':''}">${blind?`<span class="locked">${I.lock}</span>`:(x.counted===x.expected?'Exact':fmt(x.counted-x.expected,true))}</td></tr>`
+    : `<tr><td colspan="3" class="b">Expected in drawer now</td><td></td><td class="r money" style="font-size:16px">${blind?`<span class="locked">${I.lock} hidden</span>`:fmt(run)}</td></tr>`;
+  return `<table class="t ledger"><thead><tr><th>Time</th><th>Line</th><th>By</th><th class="r">Amount</th><th class="r">Running</th></tr></thead><tbody>${rows.join('')}${foot}</tbody></table>`;
+}
+
+/* ---- C · Focus ---- */
+function renderC(){
+  const ses=S.session; const lc=lastClosure();
+  if(!ses) return `<div class="stack">${registerHead()}
+    <div class="card"><div class="hero"><div class="lbl">Closed</div>${lc?`<div class="big">${fmt(lc.counted)}</div><div class="mut sm">counted at closure ${lc.number} · ${lc.closed.split(' ').slice(0,3).join(' ')}</div>`:`<div class="mut">Never opened</div>`}<div style="margin-top:10px;width:100%;max-width:360px">${can('cash')?`<button class="btn p xl w" data-act="openSheet" data-type="open">Open register</button>`:openBtn()}</div></div></div>
+    ${lc?`<div class="collapse"><button data-act="toggleCollapse" data-k="lastc">${I.chev} Last closure <span class="mut">Closure ${lc.number}${lc.unsynced?' · Unsynced':''}</span></button>${S.countOpen.lastc?`<div class="in-b">${lastClosureCard(true)}</div>`:''}</div>`:''}
+  </div>`;
+  const exp=expected(ses);
+  return `<div class="stack">${registerHead()}${overdueAlert()}
+    <div class="card"><div class="hero">
+      ${can('reports')?`<div class="lbl">Expected in drawer</div><div class="big">${fmt(exp)}</div><div class="mut sm">float ${fmt(ses.floatCounted)} · cash sales ${fmt(ses.cashSales)}${ses.cashRefunds?` · refunds ${fmt(-ses.cashRefunds)}`:''} · movements ${fmt(movSum(ses,'paid_in')-movSum(ses,'paid_out'),true)}</div>`
+                      :`<div class="lbl">Cash sales</div><div class="big">${fmt(ses.cashSales)}</div><div class="locked">${I.lock} The drawer is counted at close</div>`}
+      <div style="margin-top:10px;width:100%;max-width:360px" class="stack">${can('cash')?`<button class="btn od xl w" data-act="startCounting">Close register</button><div class="actions" style="justify-content:center">${movementActions()}</div>`:`<span class="locked">${I.lock} Cash actions need cash permission</span>`}</div>
+    </div></div>
+    <div class="collapse"><button data-act="toggleCollapse" data-k="mov">${I.chev} Cash movements <span class="mut">${ses.movements.filter(m=>m.type!=='void'&&!m.voidedBy).length}</span></button>${S.countOpen.mov?`<div class="in-b">${movementsTable(ses)}</div>`:''}</div>
+    <div class="collapse"><button data-act="toggleCollapse" data-k="ten">${I.chev} Tenders this session <span class="mut">${fmt(ses.cashSales+ses.card.sales)}</span></button>${S.countOpen.ten?`<div class="in-b">${tendersTable(ses)}</div>`:''}</div>
+    ${lc?`<div class="collapse"><button data-act="toggleCollapse" data-k="lastc">${I.chev} Last closure <span class="mut">Closure ${lc.number}</span></button>${S.countOpen.lastc?`<div class="in-b">${lastClosureCard(true)}</div>`:''}</div>`:''}
+  </div>`;
+}
+
+/* ---- counting (shared) ---- */
+function renderCounting(){
+  const ses=S.session; const exp=expected(ses); const blind=!can('reports');
+  const counted = parseFloat(ses.counted.cash); const has=!isNaN(counted); const v = has? +(counted-exp).toFixed(2) : null;
+  const overT = has && Math.abs(v) > S.register.threshold;
+  return `<div class="stack">${registerHead()}
+    <div class="alert w">Counting since ${ses.countingAt}. No sales on this register until it reopens.${can('cash')?`<button class="btn sm g" data-act="resume">Back to selling</button>`:''}</div>
+    ${!S.online&&ses.unsyncedN?`<div class="alert e">${I.cloudOff} ${ses.unsyncedN} sales (${fmt(ses.unsyncedTotal)}) are not on the server yet. The closure will say so.</div>`:''}
+    <div class="cols stack-p">
+      <div class="card"><div class="card-h">Count the drawer <span class="sub">everything in it, float included</span></div>
+        <div class="card-b stack">
+          <div class="fld"><label>Cash counted</label><input class="in big" data-count="cash" value="${ses.counted.cash??''}" placeholder="0.00" inputmode="decimal"></div>
+          <div class="collapse"><button data-act="toggleCollapse" data-k="den">${I.chev} Count by denomination <span class="mut">fills the total, stores nothing</span></button>${S.countOpen.den?`<div class="in-b"><div class="denoms">${DENOMS.map(d=>`<div class="den"><b>${d>=1?CUR+d:(d*100)+'p'}</b><input type="number" min="0" data-den="${d}" value="${S.countOpen['d'+d]||''}" placeholder="0"><div class="sub">${fmt((S.countOpen['d'+d]||0)*d)}</div></div>`).join('')}</div></div>`:''}</div>
+          <div class="fld"><label>Card counted <span style="font-weight:400">· optional, from the terminal batch total</span></label><input class="in" data-count="card" value="${ses.counted.card??''}" placeholder="${fmt(ses.card.sales-ses.card.refunds)} reported" inputmode="decimal"></div>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="card"><div class="card-h">Against the session</div>
+          <div class="card-b stack">
+            ${blind?`<div class="locked">${I.lock} Expected and variance are shown to a manager after the close.</div>`:`
+            <div class="vari"><span>Expected cash <span class="mut xs">till figure${!S.online?' · server may differ':''}</span></span><b class="num">${fmt(exp)}</b></div>
+            <div class="vari"><span>Variance</span><b class="num ${has?(v<0?'money neg':v>0?'money pos':''):''}">${has?(v===0?'Exact':fmt(v,true)+(v<0?' short':' over')):'—'}</b></div>
+            ${overT?`<div class="alert w">Above the store's ${fmt(S.register.threshold)} limit. ${ses.override?`Approved by ${who(ses.override.by).name}.`:'A manager approves the close.'}</div>`:''}`}
+            <div class="sm mut">Opening float ${fmt(ses.floatCounted)}${ses.floatCounted!==ses.floatExpected?` (opening ${varianceWord(ses.floatCounted-ses.floatExpected)})`:''} · cash sales ${fmt(ses.cashSales)} · refunds ${fmt(-ses.cashRefunds)} · in ${fmt(movSum(ses,'paid_in'))} · out ${fmt(movSum(ses,'paid_out'))}</div>
+          </div>
+        </div>
+        <div class="card"><div class="card-b row"><span class="grow sm">Closure <b>${(lastClosure()?lastClosure().number:0)+1}</b> · ${S.register.name} · Z-report prints once on ${S.register.printer}</span></div>
+          <div class="card-f"><button class="btn p lg ${has?'':'dis'}" ${has?'':'disabled'} data-act="tryClose">${overT && !ses.override ? 'Approve & close' : 'Close & print'}</button></div></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================ sheets ============================ */
+function sheet(title, sub, body, foot, wide=false){
+  return `<div class="sheet-wrap" data-close="1"><div class="sheet ${wide?'wide':''}"><div class="sheet-h"><div><div class="t">${title}</div>${sub?`<div class="s">${sub}</div>`:''}</div><button class="x" data-act="closeSheet">×</button></div><div class="sheet-b">${body}</div>${foot?`<div class="sheet-f">${foot}</div>`:''}</div></div>`;
+}
+function renderSheet(){
+  const sh=S.sheet; if(!sh) return '';
+  const lc=lastClosure();
+  switch(sh.type){
+    case 'open': {
+      const exp = suggestedFloat(); const c = parseFloat(sh.counted ?? ''); const has=!isNaN(c);
+      return sheet('Open register', `${S.register.name} · ${who('demo').name}`,
+        `<div class="vari"><span>Expected float <span class="mut xs">${suggestedFloatWhy()}</span></span><b class="num">${fmt(exp)}</b></div>
+         <div class="fld"><label>Count the cash in the drawer now</label><input class="in big" data-sheet="counted" value="${sh.counted??''}" placeholder="${exp.toFixed(2)}" inputmode="decimal" autofocus></div>
+         ${has && c!==exp ? `<div class="alert ${Math.abs(c-exp)>S.register.threshold?'w':'i'}">Opening ${varianceWord(c-exp)} — recorded on the session, kept apart from the closing variance.</div>`:''}
+         <div class="row" style="gap:6px"><button class="btn sm" data-act="sheetSet" data-k="counted" data-v="${exp.toFixed(2)}">Use ${fmt(exp)}</button><span class="mut xs">or type what you counted</span></div>`,
+        `<button class="btn" data-act="closeSheet">Cancel</button><button class="btn p" data-act="doOpen" ${has?'':'disabled'}>Open register</button>`);
+    }
+    case 'movement': {
+      const t = sh.mtype; const isNS = t==='no_sale';
+      return sheet('Cash movement', `${S.register.name} · ${who('demo').name} · ${S.now}`,
+        `<div class="seg2"><button class="${t==='paid_in'?'on':''}" data-act="sheetSet" data-k="mtype" data-v="paid_in">Paid in</button><button class="${t==='paid_out'?'on out':''}" data-act="sheetSet" data-k="mtype" data-v="paid_out">Paid out</button><button class="${t==='no_sale'?'on ns':''}" data-act="sheetSet" data-k="mtype" data-v="no_sale">No sale</button></div>
+         ${isNS?`<div class="alert i">Opens the drawer without a sale. Recorded with your name and the reason.</div>`:`<div class="fld"><label>Amount ${t==='paid_out'?'taken out':'put in'}</label><input class="in big" data-sheet="amount" value="${sh.amount??''}" placeholder="0.00" inputmode="decimal" autofocus></div>`}
+         <div class="fld"><label>Reason</label><input class="in" data-sheet="reason" value="${sh.reason??''}" placeholder="${t==='paid_out'?'e.g. Window cleaner':t==='paid_in'?'e.g. Change from the bank':'e.g. Customer needed change'}"></div>`,
+        `<button class="btn" data-act="closeSheet">Cancel</button><button class="btn ${t==='paid_out'?'d':'p'}" data-act="doMove" ${(sh.reason && (isNS || parseFloat(sh.amount)>0))?'':'disabled'}>${isNS?'Open drawer':label(t)}</button>`);
+    }
+    case 'void': {
+      const m=S.session.movements.find(x=>x.id===sh.id);
+      return sheet('Void this movement?', `${label(m.type)} ${fmt(m.amount)} · "${m.reason}" · ${who(m.by).name} ${m.at}`,
+        `<div class="sm">A voiding row is added with your name. The original stays in the ledger, struck through.</div>`,
+        `<button class="btn" data-act="closeSheet">Keep it</button><button class="btn d" data-act="voidMove" data-id="${m.id}">Void</button>`);
+    }
+    case 'override': {
+      return sheet('Manager approval', `Variance ${fmt(sh.variance,true)} is above the ${fmt(S.register.threshold)} limit`,
+        `<div class="fld"><label>Manager username</label><input class="in" data-sheet="user" value="${sh.user??'sam'}"></div><div class="fld"><label>Password</label><input class="in" type="password" value="••••••••"></div>
+         <div class="mut xs">Checked on the server. The closure records both of you.</div>`,
+        `<button class="btn" data-act="closeSheet">Back to count</button><button class="btn p" data-act="approve">Approve & close</button>`);
+    }
+    case 'zprint': {
+      const c=S.closures.find(x=>x.number===sh.number&&x.register===S.register.name);
+      return sheet(`Closure ${c.number} · ${S.register.name}`, `Written ${c.closed}${c.unsynced?` · <b style="color:#b45309">Unsynced — ${c.unsynced} sales not on the server</b>`:''}`,
+        `<div style="display:flex;justify-content:center">${receipt(c, false, 'Z-REPORT')}</div>`,
+        `${c.printed?`<span class="mut sm" style="margin-right:auto;align-self:center">Printed ${c.printed} on ${S.register.printer}</span><button class="btn" data-act="closeSheet">Done</button>`:`<button class="btn g" data-act="closeSheet">Print later</button><button class="btn p" data-act="print" data-n="${c.number}">${I.print} Print</button>`}`, true);
+    }
+    case 'reprint': {
+      if(!lc) return '';
+      return sheet(`Reprint closure ${lc.number}`, `A copy — marked "copy ${lc.copies+1}", printed ${S.now}`,
+        `<div style="display:flex;justify-content:center">${receipt(lc, true, 'Z-REPORT')}</div>`,
+        `<button class="btn" data-act="closeSheet">Cancel</button><button class="btn p" data-act="print" data-n="${lc.number}">${I.print} Print copy</button>`, true);
+    }
+    case 'xreport': {
+      const ses=S.session; const x = {...ses, number:null, opened:`${S.today} ${ses.openedAt}`, closed:null, closedBy:null, expected:expected(ses), tillExpected:expected(ses), counted:null, paidIn:movSum(ses,'paid_in'), paidOut:movSum(ses,'paid_out'), movements:ses.movements.filter(m=>m.type!=='void'&&!m.voidedBy), taxes:[{rate:'VAT 20%', net:+((ses.cashSales+ses.card.sales)/1.2).toFixed(2), tax:+((ses.cashSales+ses.card.sales)-(ses.cashSales+ses.card.sales)/1.2).toFixed(2)}], perpetual:null, unsynced:S.online?0:ses.unsyncedN, unsyncedTotal:S.online?0:ses.unsyncedTotal};
+      return sheet('X-report', `Reads the open session without closing it · not stored`,
+        `<div style="display:flex;justify-content:center">${receipt(x, false, 'X-REPORT')}</div>`,
+        `<button class="btn" data-act="closeSheet">Close</button><button class="btn p" data-act="xprint">${I.print} Print</button>`, true);
+    }
+  }
+  return '';
+}
+
+function receipt(c, copy, kind){
+  const W=38; const L=(l,r)=> l.padEnd(W-r.length,' ')+r; const rule='-'.repeat(W); const C=s=>' '.repeat(Math.max(0,Math.floor((W-s.length)/2)))+s;
+  const v = c.counted!=null ? +(c.counted-c.expected).toFixed(2) : null;
+  const lines = [
+    C('UK STORE'), C(kind + (c.number?`  ·  CLOSURE ${c.number}`:'')), C(c.register || S.register.name), copy?C(`COPY ${c.copies+1} · printed ${S.now}`):'', rule,
+    L('Opened', `${c.opened}`), c.closed?L('Closed', c.closed):L('Printed', `${S.today} ${S.now}`),
+    L('Opened by', who(c.openedBy).name.slice(0,18)), c.closedBy?L('Closed by', who(c.closedBy).name.slice(0,18)):'', c.override?L('Approved by', who(c.override.by).name.slice(0,18)):'',
+    c.firstReceipt?L('Receipts', `${c.firstReceipt} – ${c.lastReceipt}`):'', rule, C('CASH'),
+    L('Opening float', fmt(c.floatCounted)), c.floatCounted!==c.floatExpected?L('  opening variance', fmt(c.floatCounted-c.floatExpected,true)):'',
+    L('Cash sales', fmt(c.cashSales)), L('Cash refunds', fmt(-c.cashRefunds)), L('Paid in', fmt(c.paidIn)), L('Paid out', fmt(-c.paidOut)),
+    L('EXPECTED', fmt(c.expected)), c.counted!=null?L('COUNTED', fmt(c.counted)):'', v!=null?L('VARIANCE', v===0?'EXACT':fmt(v,true)+(v<0?' SHORT':' OVER')):'',
+    c.unsynced?L('Unsynced sales', `${c.unsynced} · ${fmt(c.unsyncedTotal)}`):'', c.unsynced?L('Till expected', fmt(c.tillExpected)):'',
+    rule, C('TENDERS'), L('Cash', fmt(c.cashSales-c.cashRefunds)), L('Card · terminal', fmt(c.card.sales-c.card.refunds)), c.card.counted!=null?L('  card counted', fmt(c.card.counted)):'',
+    rule, C('TAX'), ...c.taxes.map(t=>L(`${t.rate}  net ${fmt(t.net)}`, fmt(t.tax))),
+    rule, L('Sales', `${c.orders}`), L('Refunds', `${c.refundsN}`),
+    c.perpetual?rule:'', c.perpetual?C('GRAND TOTALS'):'', c.perpetual?L('Period sales', fmt(c.cashSales+c.card.sales)):'', c.perpetual?L('Period refunds', fmt(c.cashRefunds+c.card.refunds)):'', c.perpetual?L('Perpetual sales', fmt(c.perpetual.sales)):'', c.perpetual?L('Perpetual refunds', fmt(c.perpetual.refunds)):'',
+    rule, C('WCPOS 1.11.0'),
+  ].filter(x=>x!=='');
+  return `<div class="receipt ${copy?'copy':''}">${lines.join('\n')}</div>`;
+}
+
+/* ============================ reports page ============================ */
+function renderReports(){
+  const phone=S.viewport==='phone';
+  const tabs = `<div class="row"><div class="tabs"><button class="${S.reportsTab==='sales'?'on':''}" data-act="reportsTab" data-t="sales">Sales</button><button class="${S.reportsTab==='closures'?'on':''}" data-act="reportsTab" data-t="closures">Closures ${S.pro?'':'<span class="pill pro">Pro</span>'}</button></div><span class="grow"></span>${S.reportsTab==='sales'?`<span class="leaves"><b>Leaves:</b> the "Z-report" name — this is a range report, not a closure</span>`:''}</div>`;
+  if (S.reportsTab==='sales') return `<div class="stack">${tabs}
+    <div class="filterbar"><span class="chip on">Completed</span><span class="chip">Customer</span><span class="chip on">Demo Cashier</span><span class="chip on">UK Store</span><span class="chip on">Today</span></div>
+    ${phone?'':`<div class="card"><div class="rep-chart">${[30,42,55,48,70,64,80,58,44,66,52,38].map(h=>`<i style="height:${h}%"></i>`).join('')}</div></div>`}
+    <div class="reports-grid">
+      <div class="card"><div class="card-h">Orders <span class="sub">14 · all selected</span></div><table class="t"><thead><tr><th></th><th>#</th><th>Time</th><th class="r">Total</th><th>Paid</th></tr></thead><tbody>
+        ${[['1241','17:31','12.40','Cash'],['1240','17:22','48.00','Card'],['1239','17:05','9.60','Cash'],['1238','16:48','120.00','Card'],['1237','16:30','22.10','Cash']].map(r=>`<tr><td><input type="checkbox" checked></td><td>${r[0]}</td><td class="mut">${r[1]}</td><td class="r money">${CUR}${r[2]}</td><td>${r[3]}</td></tr>`).join('')}
+      </tbody></table></div>
+      <div class="card"><div class="card-h">Sales report <span class="sub">Default (Offline)</span></div><div class="card-b"><div class="receipt" style="width:100%;box-shadow:none;padding:4px">${['UK STORE','Report generated: 2026-09-11 17:42','Period: today 00:00 – 23:59','Cashier: Demo Cashier','','SALES SUMMARY','Total Orders                    14','Total Net Sales            £800.42','Total Tax Collected        £160.08','Total Sales                £960.50','','PAYMENT METHODS','Cash                       £318.40','Card                       £642.10'].join('\n')}</div></div><div class="card-f"><button class="btn p">${I.print} Print</button></div></div>
+    </div></div>`;
+  if (!S.pro) return `<div class="stack">${tabs}<div class="card"><div class="hero"><div class="lbl">Closures across registers</div><div class="mut sm">Every register's closures, filters and reprints — in WCPOS Pro. This register's last closure is on the Register page.</div><button class="btn p">Learn about Pro</button></div></div></div>`;
+  const list = [...S.closures].sort((a,b)=> b.ts-a.ts);
+  const sel = S.selClosure ? S.closures.find(c=>c.number===S.selClosure.n && c.register===S.selClosure.reg) : null;
+  const table = `<div class="card"><div class="card-h">Closures <span class="sub">${list.length}</span></div><table class="t"><thead><tr><th>#</th><th>Register</th><th>Closed</th>${phone?'':'<th>By</th>'}<th class="r">Counted</th><th class="r">Variance</th><th></th></tr></thead><tbody>
+    ${list.map(c=>{const v=+(c.counted-c.expected).toFixed(2); return `<tr class="click ${sel===c?'sel':''}" data-act="selClosure" data-n="${c.number}" data-reg="${c.register}"><td class="b">${c.number}</td><td>${c.register}</td><td class="mut">${c.closed}</td>${phone?'':`<td><span class="who"><i>${who(c.closedBy).ini}</i>${who(c.closedBy).name.split(' ')[0]}</span></td>`}<td class="r money">${fmt(c.counted)}</td><td class="r money ${v<0?'neg':v>0?'pos':''}">${v===0?'Exact':fmt(v,true)}</td><td>${c.unsynced?`<span class="pill warn">Unsynced</span>`:c.corrections.length?`<span class="pill info">Settled</span>`:''}</td></tr>`;}).join('')}
+  </tbody></table></div>`;
+  return `<div class="stack">${tabs}
+    <div class="filterbar"><span class="chip on">All registers</span><span class="chip">Closed by</span><span class="chip on">Last 7 days</span><span class="grow"></span><button class="btn sm">Export CSV</button></div>
+    ${phone && sel ? closureDetail(sel) : `<div class="reports-grid">${table}${sel?closureDetail(sel):`<div class="card"><div class="card-b mut sm" style="padding:40px;text-align:center">Select a closure to read it as recorded.</div></div>`}</div>`}
+  </div>`;
+}
+function closureDetail(c){
+  const v=+(c.counted-c.expected).toFixed(2); const st=c.settled;
+  return `<div class="card">
+    <div class="card-h">${S.viewport==='phone'?`<button class="btn sm g" data-act="selClosure" data-n="" data-reg="">‹</button>`:''}Closure ${c.number} · ${c.register}<span class="sub">as recorded ${c.closed}</span>${c.unsynced?`<span class="pill warn" style="margin-left:auto">Unsynced ${c.unsynced}</span>`:''}</div>
+    <div class="card-b stack">
+      <div class="detail">
+        <div><b>Opened</b>${c.opened} · ${who(c.openedBy).name}</div><div><b>Closed</b>${c.closed} · ${who(c.closedBy).name}${c.override?`<div class="xs mut">approved by ${who(c.override.by).name}</div>`:''}</div>
+        <div><b>Opening float</b>${fmt(c.floatCounted)}${c.floatCounted!==c.floatExpected?` <span class="mut xs">(expected ${fmt(c.floatExpected)})</span>`:''}</div><div><b>Receipts</b>${c.firstReceipt} – ${c.lastReceipt} · ${c.orders} sales, ${c.refundsN} refunds</div>
+        <div><b>Expected (server)</b>${fmt(c.expected)}${c.tillExpected!==c.expected?`<div class="xs mut">till saw ${fmt(c.tillExpected)}${c.unsynced?` · provisional until ${c.unsynced} sales land`:''}</div>`:''}</div><div><b>Counted</b>${fmt(c.counted)}</div>
+        <div><b>Variance</b><span class="money ${v<0?'neg':v>0?'pos':''}">${v===0?'Exact':fmt(v,true)}</span>${st?` <span class="settled">→ settled ${fmt(st.variance,true)}</span>`:''}</div><div><b>Perpetual totals</b>sales ${fmt(c.perpetual.sales)} · refunds ${fmt(c.perpetual.refunds)}</div>
+      </div>
+      <div class="sect">Tenders</div>
+      <table class="t"><thead><tr><th>Tender</th><th class="r">Sales</th><th class="r">Refunds</th><th class="r">Counted</th></tr></thead><tbody>
+        <tr><td>Cash</td><td class="r money">${fmt(c.cashSales)}</td><td class="r money">${fmt(-c.cashRefunds)}</td><td class="r money">${fmt(c.counted)}</td></tr>
+        <tr><td>Card · terminal</td><td class="r money">${fmt(c.card.sales)}</td><td class="r money">${fmt(-c.card.refunds)}</td><td class="r mut">${c.card.counted!=null?fmt(c.card.counted):'—'}</td></tr></tbody></table>
+      <div class="sect">Cash movements</div>
+      ${c.movements.length?`<table class="t"><tbody>${c.movements.map(m=>`<tr><td class="mut num">${m.at}</td><td>${label(m.type)}</td><td>${m.reason}</td><td><span class="who"><i>${who(m.by).ini}</i></span></td><td class="r money">${m.type==='no_sale'?'—':fmt(m.type==='paid_out'?-m.amount:m.amount,true)}</td></tr>`).join('')}</tbody></table>`:`<div class="mut sm">None</div>`}
+      <div class="sect">Corrections</div>
+      ${c.corrections.length?`<table class="t"><tbody>${c.corrections.map(k=>`<tr><td class="mut">${k.at}</td><td><span class="pill info">${k.type.replace('_',' ')}</span></td><td>${k.note}</td><td class="r money">${fmt(k.amount,true)}</td></tr>`).join('')}</tbody></table><div class="xs mut">The closure above reads as at close; the settled figures include these rows.</div>`:`<div class="mut sm">None — reads exactly as printed on the night.</div>`}
+    </div>
+    <div class="card-f"><button class="btn sm">Export PDF</button><button class="btn sm ${can('closures')?'':'dis'}" ${can('closures')?'':'disabled'}>Recount…</button><button class="btn sm p">${I.print} Reprint copy</button></div>
+  </div>`;
+}
+
+/* ============================ questions & state ============================ */
+const QUESTIONS = [
+  ['What the expected opening float means', 'The session ruling says the open suggests "the previous close\'s counted cash"; the permission ruling adds a per-register default float (blank = carry the last count). With a default of £200 the drawer is assumed banked down to the float overnight; with none, the whole count is assumed left in the drawer. Flip the Float toggle to see both. The count screen states the physical assumption at close ("everything in it, float included") — is that the right one for WCPOS merchants?'],
+  ['Blind count after the close', 'A cashier without <i>view reports</i> never sees expected or variance while open or counting — but the Z-report they print at close carries both, and so does the last-closure card. This prototype hides the figures on the page and leaves them on the paper. Right, or should a blind register print the Z without the variance block?'],
+  ['Back to selling from counting', 'The session model says counting freezes expected and stops tender; it does not say whether counting can be abandoned. The prototype allows "Back to selling" while nothing has been recorded (Toast resumes a paused drawer; Square\'s ENDED cannot be undone). Keep it?'],
+  ['Landing page after sign-in', 'With sessions on and no session open, does sign-in land on POS (as today, with "Open register" inline at checkout) or on Register? The prototype keeps POS and treats Register as the second item.'],
+  ['Menu position and icon', 'After POS (this device, twice a day) or before Reports (money pages together)? POS already owns the cash-register glyph, so Register uses a drawer glyph.'],
+  ['Sessions-off state', 'With sessions off the Register page is nearly empty (identity, last closure if any, a one-line notice). Is that acceptable in Free, or should the menu item hide until sessions are turned on?'],
+  ['Card counted at close', 'Ruled optional (#210). The count screen offers it as a second field pre-hinted with the reported figure. Show it always, or only when a terminal is configured?'],
+  ['Register settings entry', 'The overflow menu points at "Register settings" (default float, drawer connector, printer) — a Settings › Register area or the WP admin register list? Left dim here, as the map says.'],
+];
+function renderNotes(){
+  document.getElementById('questions').innerHTML = `<ul>${QUESTIONS.map(([t,b])=>`<li><b>${t}.</b> ${b}</li>`).join('')}</ul>`;
+  const {log:_l, sheet, menuOpen, countOpen, ...rest} = S;
+  document.getElementById('statejson').textContent = JSON.stringify({...rest, closures: rest.closures.map(c=>({number:c.number, register:c.register, closed:c.closed, expected:c.expected, counted:c.counted, unsynced:c.unsynced, corrections:c.corrections.length, printed:c.printed, copies:c.copies}))}, null, 1);
+  document.getElementById('log').innerHTML = S.log.length ? S.log.map(l=>`<div>${l}</div>`).join('') : '<div class="mut">Nothing yet — press something in the frame.</div>';
+}
+
+/* ============================ wiring ============================ */
+function render(){ renderStrip(); renderFrame(); renderNotes(); }
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-set],[data-scn],[data-act],[data-close]');
+  if (!t) return;
+  if (t.dataset.set){ let v=t.dataset.v; if (v==='true') v=true; if (v==='false') v=false; A.set(t.dataset.set, v); S.selClosure=null; return render(); }
+  if (t.dataset.scn){ A.scenario(t.dataset.scn); return render(); }
+  if (t.dataset.close && e.target===t){ A.closeSheet(); return render(); }
+  const act = t.dataset.act; if (!act) return;
+  switch(act){
+    case 'set': A.set(t.dataset.k, t.dataset.v); break;
+    case 'signIn': A.signIn(); break;
+    case 'openSheet': A.openSheet(t.dataset.type, t.dataset.mtype?{mtype:t.dataset.mtype}:t.dataset.id?{id:+t.dataset.id}:{}); break;
+    case 'closeSheet': A.closeSheet(); break;
+    case 'sheetSet': S.sheet[t.dataset.k]=t.dataset.v; break;
+    case 'doOpen': A.doOpen(S.sheet.counted); break;
+    case 'doMove': A.doMove(S.sheet.mtype, S.sheet.amount, S.sheet.reason); break;
+    case 'voidMove': A.voidMove(+t.dataset.id); break;
+    case 'startCounting': A.startCounting(); break;
+    case 'resume': A.resume(); break;
+    case 'tryClose': A.tryClose(); break;
+    case 'approve': A.approve(S.sheet.user); break;
+    case 'print': A.print(+t.dataset.n); break;
+    case 'xprint': A.xprint(); break;
+    case 'turnOn': A.turnOn(); break;
+    case 'toggleMenu': A.toggleMenu(); break;
+    case 'toggleCollapse': S.countOpen[t.dataset.k]=!S.countOpen[t.dataset.k]; break;
+    case 'reportsTab': A.reportsTab(t.dataset.t); break;
+    case 'selClosure': t.dataset.n ? A.selClosure(+t.dataset.n, t.dataset.reg) : (S.selClosure=null); break;
+  }
+  render();
+});
+document.addEventListener('change', e => { const c=e.target.closest('[data-cap]'); if (c){ A.cap(c.dataset.cap); render(); } });
+document.addEventListener('input', e => {
+  const el=e.target;
+  if (el.dataset.sheet){ S.sheet[el.dataset.sheet]=el.value; const f=document.querySelector('.sheet-f'); if(f){ // refresh footer only, keep focus
+      const pos=el.selectionStart; const name=el.dataset.sheet; render(); const n=document.querySelector(`[data-sheet="${name}"]`); if(n){ n.focus(); try{n.setSelectionRange(pos,pos);}catch(_){} } } return; }
+  if (el.dataset.count){ A.setCount(el.dataset.count, el.value); const pos=el.selectionStart; const k=el.dataset.count; render(); const n=document.querySelector(`[data-count="${k}"]`); if(n){ n.focus(); try{n.setSelectionRange(pos,pos);}catch(_){} } return; }
+  if (el.dataset.den){ S.countOpen['d'+el.dataset.den]=el.value; const total=DENOMS.reduce((a,d)=>a+(parseFloat(S.countOpen['d'+d])||0)*d,0); S.session.counted.cash = total.toFixed(2); const d=el.dataset.den; render(); const n=document.querySelector(`[data-den="${d}"]`); if(n){ n.focus(); } return; }
+});
+document.addEventListener('keydown', e => {
+  if (['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+  if (e.key==='ArrowRight' || e.key==='ArrowLeft'){ const vs=['A','B','C']; let i=vs.indexOf(S.variant); i=(i+(e.key==='ArrowRight'?1:-1)+3)%3; S.variant=vs[i]; render(); }
+});
+render();
+</script>
+</body>
+</html>
