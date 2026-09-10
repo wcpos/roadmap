@@ -27,7 +27,7 @@ wcpos.com/roadmap, the five repos' milestones, Project #4 and the Discord roadma
 
 Exactly one release issue per version. `release` and `epic` are never on the same issue.
 
-**Body.** Three sections plus an optional one-sentence `### Pitch`, then optional free prose. The whole body is public and written for merchants; internal notes go in comments.
+**Body.** Three sections plus an optional one-sentence `### Pitch` and, on a release filed after its tag, an optional `### Shipped on`, then optional free prose. The whole body is public and written for merchants; internal notes go in comments.
 
 ```markdown
 ### Due date
@@ -41,6 +41,9 @@ Exactly one release issue per version. `release` and `epic` are never on the sam
 
 ### Not in this release
 - <item>                       # optional section; deferred decisions from maps land here
+
+### Shipped on
+2026-08-25                     # optional: the plugin tag date, for a release filed after its tag. Ignored (never a validation failure) while the issue is open, so the sync can still close it; once closed the page prefers it over closedAt
 ```
 
 "What's in" is never written: it is the sub-issue list.
@@ -54,7 +57,7 @@ Exactly one release issue per version. `release` and `epic` are never on the sam
 | Active | the lowest-version open release, **dated or not** (this rule wins over the dateless rule below) | Now |
 | Planning | any other open release with a due date | Next |
 | Planning (dateless) | open, not the lowest version, `### Due date` empty | Later (rendered on the page at the end of the Next rail, labelled "no date yet"; the digest and forum keep the word Later) |
-| Shipped | closed as `completed` | Shipped |
+| Shipped | closed as `completed`; shipped date = `### Shipped on` when present, else the issue's `closedAt` | Shipped |
 | Withdrawn | closed as `not planned` | never shown; milestone copies deleted |
 
 Reopening returns a release to the open rules.
@@ -191,7 +194,7 @@ The fleet-wide `projects_write` deny stays. App 2860316 is never revoked.
 - `CONTEXT.md` (PR #193) and **`AGENTS.md` recipe** (below); `.github/ISSUE_TEMPLATE/release.yml` mirroring the body shape; delete `ROADMAP.md`; README rewrite; `sync/` package; workflow; `roadmap-digest` and `release` labels (the latter created 2026-09-11).
 
 **AGENTS.md recipe (to add verbatim):**
-> **Releases.** A release is an issue labelled `release` titled `vX.Y.0 — Theme`, body sections `### Due date`, optionally a one-sentence `### Pitch` (the only release copy the public page shows), `### Why this release`, `### Not in this release`; the whole body is public. File one only when Paul states a release's intention; write it in his words for merchants. Attach an epic (as a sub-issue) when it plainly fits the Theme and is not excluded; ask Paul when unsure; never attach to a shipped release. Every direct child of a release is public: give it a `### Summary` (2–3 sentences for merchants) or it stays hidden. Work nests under epics, never under a release. Never edit a milestone; the sync owns them. When you close a map whose deferrals affect the active release, add them to its "Not in this release".
+> **Releases.** A release is an issue labelled `release` titled `vX.Y.0 — Theme`, body sections `### Due date`, optionally a one-sentence `### Pitch` (the only release copy the public page shows), `### Why this release`, `### Not in this release`, and — only when filing a release after its plugin tag has already shipped — `### Shipped on` with the tag date; the whole body is public. File one only when Paul states a release's intention; write it in his words for merchants. Attach an epic (as a sub-issue) when it plainly fits the Theme and is not excluded; ask Paul when unsure; never attach to a shipped release. Every direct child of a release is public: give it a `### Summary` (2–3 sentences for merchants) or it stays hidden. Work nests under epics, never under a release. Never edit a milestone; the sync owns them. When you close a map whose deferrals affect the active release, add them to its "Not in this release".
 
 ## 10. `wcpos-com` changes
 
