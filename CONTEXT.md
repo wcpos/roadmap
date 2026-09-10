@@ -44,7 +44,7 @@ The lowest-version open release. Shown as "Now". There is exactly one at a time.
 _Avoid_: Current, in progress (that is an epic state)
 
 **Shipped**:
-A release issue closed as completed. The plugin's `vX.Y.0` tag is what closes it.
+A release issue closed as completed. The Free plugin's `vX.Y.0` tag is what closes it.
 _Avoid_: Done, released, closed
 
 **Withdrawn**:
