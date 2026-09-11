@@ -18,8 +18,8 @@ iframe.p{width:392px;height:782px}
 <div class="top"><b>State</b><span class="seg" id="scn"></span><b>Width</b><span class="seg" id="vp"></span><b>Alerts</b><span class="seg" id="al"></span><b>Network</b><span class="seg" id="net"></span><span style="margin-left:auto;color:#9ca3af">Each frame is the live prototype; click inside them.</span></div>
 <div id="out"></div>
 <script>
-const V=[['bar','Title bar — as today'],['D','D · rail — bar is the register only; bell with count and the cashier avatar live in the rail; Offline is a pill only while offline'],['E','E · cashier on bar — as D, but the cashier avatar sits on the bar because the session records who acted'],['A','A · one line — chrome joins the register bar; store under the avatar'],['B','B · two lines — store row over register row'],['C','C · split — chrome on the search row, register alone on the bar']];
-let scn='open', vp='tablet', unread=2, online=true;
+const V=[['E','E · chosen (2026-09-11) — cashier on the bar; bar is the register only; status pill only when the state is not the normal one; Offline as a pill only while offline; bell in the rail'],['bar','Title bar — as today'],['D','D · rail — as E but the avatar is the rail\'s last item'],['A','A · one line — chrome joins the register bar; store under the avatar'],['B','B · two lines — store row over register row'],['C','C · split — chrome on the search row, register alone on the bar']];
+let scn='open', vp='tablet', unread=0, online=true;
 function build(){
   document.getElementById('scn').innerHTML=[['new','First sign-in'],['closed','Register closed'],['open','Session open'],['counting','Counting'],['overdue','Overdue']].map(([v,l])=>`<button class="${scn===v?'on':''}" data-scn="${v}">${l}</button>`).join('');
   document.getElementById('vp').innerHTML=[['tablet','Tablet'],['phone','Phone']].map(([v,l])=>`<button class="${vp===v?'on':''}" data-vp="${v}">${l}</button>`).join('');

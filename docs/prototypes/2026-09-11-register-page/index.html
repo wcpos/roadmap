@@ -231,6 +231,7 @@ table.t tr.void td:last-child{text-decoration:none}
 .narrow .cols3{grid-template-columns:1fr 1fr}
 .actions{display:flex;flex-wrap:wrap;gap:8px}
 .actions .btn{flex:1 1 30%}
+.gatecard .actions .btn{flex:0 0 auto}
 input.in,select.in{height:36px;border:1px solid var(--border);border-radius:6px;padding:0 10px;font:inherit;font-size:14px;background:#fff;width:100%;color:var(--fg)}
 input.in.big{height:52px;font-size:26px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
 input.in:focus{outline:2px solid #9ec5ea;border-color:var(--primary)}
@@ -368,7 +369,7 @@ const PRODUCTS = [['Flat white',3.2],['Sourdough loaf',4.2],['Tote bag',12],['Oa
 const CART = [['Flat white',2,3.2],['Sourdough loaf',1,4.2],['Tote bag',1,12]];
 
 const S = {
-  viewport:'tablet', page:'pos', floatMode:'default', phoneTab:'cart', header:'bar', unread:2,
+  viewport:'tablet', page:'pos', floatMode:'default', phoneTab:'cart', header:'E', unread:0,
   sessionsOn:true, pro:true, online:true,
   caps:{ cash:true, reports:true, closures:true },
   now:'17:42', today:'Thu 11 Sep',
@@ -530,7 +531,7 @@ function renderStrip(){
   const ck = (k,l) => `<label class="ck"><input type="checkbox" data-cap="${k}" ${S.caps[k]?'checked':''}> ${l}</label>`;
   document.getElementById('strip').innerHTML = `
     <div class="g"><b>Width</b>${seg('viewport',[['tablet','Tablet'],['phone','Phone']])}</div>
-    <div class="g"><b>Header</b>${seg('header',[['bar','Title bar'],['D','No bar · D rail'],['E','No bar · E cashier on bar'],['A','A'],['B','B'],['C','C']])}</div>
+    <div class="g"><b>Header</b>${seg('header',[['E','E · chosen'],['bar','Title bar (today)'],['D','D'],['A','A'],['B','B'],['C','C']])}</div>
     <div class="g"><b>Alerts</b>${seg('unread',[[0,'quiet'],[2,'2 unread']])}</div>
     <div class="g"><b>Page</b>${seg('page',[['pos','POS'],['reports','Reports']])}</div>
     <div class="g"><b>Jump to</b><span class="seg">${[['new','First sign-in'],['off','Sessions off'],['closed','Register closed'],['open','Session open'],['counting','Counting'],['overdue','Overdue']].map(([v,l])=>`<button data-scn="${v}">${l}</button>`).join('')}</span></div>
@@ -608,7 +609,8 @@ function regStatus(){
   if(!ses) return {pill:`<span class="pill closed dotp">Closed</span>`, exp:'', tap:false};
   if(ses.state==='counting') return {pill:`<span class="pill count dotp">Counting</span>`, exp:'', tap:false};
   const od=overdue();
-  return {pill: od?`<span class="pill warn dotp" title="Past the expected close time ${S.register.closeTime}">Overdue</span>`:`<span class="pill open dotp">Open</span>`, exp: can('reports')?fmt(expected(ses)):'', tap:true, od};
+  const quiet = S.header==='D'||S.header==='E';
+  return {pill: od?`<span class="pill warn dotp" title="Past the expected close time ${S.register.closeTime}">Overdue</span>`:(quiet?'':`<span class="pill open dotp">Open</span>`), exp: can('reports')?fmt(expected(ses)):'', tap:true, od};
 }
 function renderTopBar(){
   const phone=S.viewport==='phone'; const st=regStatus(); const name=S.register.exists?S.register.name:'This device';
@@ -618,7 +620,7 @@ function renderTopBar(){
     const off = !S.online ? `<span class="pill off">${I.cloudOff} Offline</span>` : '';
     const store = S.pro && !phone && S.online ? `<span class="mut">· ${S.register.store}</span>` : '';
     const exp = st.exp && !(phone && !S.online) ? `<span class="exp">${st.exp}</span>` : '';
-    const seg = `<span class="reg" ${st.tap?'data-act="openPanel"':''}><span class="ic">${I.drawer}</span><span class="b">${name}</span>${store}${st.pill}${off}${exp}${st.tap?`<span class="chev">${I.chev}</span>`:''}</span>`;
+    const seg = `<span class="reg" ${st.tap?'data-act="openPanel"':''}><span class="b">${name}</span>${store}${st.pill}${off}${exp}${st.tap?`<span class="chev">${I.chev}</span>`:''}</span>`;
     const av = S.header==='E' ? `<span class="avbtn" title="Demo Cashier · switch user"><span class="av">DC</span></span>` : '';
     const bg = phone ? `<span class="burger ${S.unread?'dot':''}">${I.bars}</span>` : '';
     return `<div class="regbar quiet ${st.od?'warn':''}">${bg}${seg}${av}</div>`;
@@ -658,17 +660,18 @@ function renderSetupCard(){
 }
 
 function renderOpenCard(){
-  const lc=lastClosure(); const exp=suggestedFloat(); const c=parseFloat(S.openForm.counted ?? ''); const has=!isNaN(c);
+  const lc=lastClosure(); const exp=suggestedFloat(); const raw = S.openForm.counted ?? exp.toFixed(2); const c=parseFloat(raw); const has=!isNaN(c);
+  const chips = [];
+  if (S.register.defaultFloat!=null) chips.push([S.register.defaultFloat, 'default float']);
+  if (lc && lc.counted!==S.register.defaultFloat) chips.push([lc.counted, `closure ${lc.number} count`]);
   return `<div class="gatecard">
     ${noHeader()?`<div class="mut sm">${lc?`Last closed ${lc.closed} · closure ${lc.number}`:'Never opened'}${!S.online?` · <span class="pill bad">${I.cloudOff} Offline</span>`:''}</div>`:`<div class="head"><span class="ic">${I.drawer.replace('16','22').replace('16','22')}</span><div class="grow"><div class="row" style="gap:8px"><span class="b" style="font-size:16px">${S.register.name}</span><span class="pill closed dotp">Closed</span>${!S.online?`<span class="pill bad">${I.cloudOff} Offline</span>`:''}</div><div class="mut sm">${lc?`Last closed ${lc.closed} · closure ${lc.number}`:'Never opened'}</div></div></div>`}
     ${can('cash') ? `
-    <div class="vari"><span>Expected float <span class="mut xs">${suggestedFloatWhy()}</span></span><b class="num">${fmt(exp)}</b></div>
-    <div class="fld"><label>Count the cash in the drawer now</label><input class="in big" data-open="counted" value="${S.openForm.counted??''}" placeholder="${exp.toFixed(2)}" inputmode="decimal"></div>
-    ${has && c!==exp ? `<div class="alert ${Math.abs(c-exp)>S.register.threshold?'w':'i'}">Opening ${varianceWord(c-exp)} — recorded on the session, kept apart from the closing variance.</div>`:''}
-    <div class="row" style="gap:6px"><button class="btn sm" data-act="useFloat" data-v="${exp.toFixed(2)}">Use ${fmt(exp)}</button><span class="mut xs">or type what you counted</span></div>
-    <button class="btn p xl w" data-act="doOpen" ${has?'':'disabled'}>Open register</button>
-    <div class="mut xs" style="text-align:center">Opens the drawer on ${S.register.printer} and brings the cart back. Products are price-check only until then.</div>`
-    : `<div class="alert i">${I.lock} Only a cashier with cash permission can open this register. Ask a colleague, or take card payments only once it is open.</div>`}
+    <div class="fld"><label>Cash in the drawer</label><input class="in big" data-open="counted" value="${raw}" inputmode="decimal"></div>
+    <div class="actions">${chips.map(([v,l])=>`<button class="btn sm ${has&&c===v?'p':''}" data-act="useFloat" data-v="${v.toFixed(2)}">${fmt(v)} <span class="${has&&c===v?'':'mut'}" style="font-weight:400">${l}</span></button>`).join('')}</div>
+    ${has && c!==exp ? `<div class="alert ${Math.abs(c-exp)>S.register.threshold?'w':'i'}">Opening ${varianceWord(c-exp)} against ${fmt(exp)}</div>`:''}
+    <button class="btn p xl w" data-act="doOpen" ${has?'':'disabled'}>Open register</button>`
+    : `<div class="alert i">${I.lock} Opening the register needs cash permission.</div>`}
     ${lc?`<div class="collapse"><button data-act="toggleCollapse" data-k="lastc">${I.chev} Last closure <span class="mut">Closure ${lc.number}${lc.unsynced?' · Unsynced':''}</span></button>${S.countOpen.lastc?`<div class="in-b">${lastClosureCard(true)}</div>`:''}</div>`:''}
   </div>`;
 }
@@ -909,7 +912,7 @@ document.addEventListener('click', e => {
     case 'closeSheet': A.closeSheet(); break;
     case 'sheetSet': S.sheet[t.dataset.k]=t.dataset.v; break;
     case 'useFloat': S.openForm.counted=t.dataset.v; break;
-    case 'doOpen': A.doOpen(S.openForm.counted); break;
+    case 'doOpen': A.doOpen(S.openForm.counted ?? suggestedFloat().toFixed(2)); break;
     case 'createRegister': A.createRegister(S.setupName); break;
     case 'doMove': A.doMove(S.sheet.mtype, S.sheet.amount, S.sheet.reason); break;
     case 'voidMove': A.voidMove(+t.dataset.id); break;

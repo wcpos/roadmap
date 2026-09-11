@@ -71,6 +71,15 @@ Strip → *Alerts* switches quiet (no badge anywhere) and 2 unread; *Network* �
 
 On phone the hamburger moves into the bar. Reports gets a page bar (`Reports … UK Store ● 🔔 DC`). The rail gains a logo tile so it has a top. Captures: `screens/header/{bar,A,B,C}-*`; `node shoot-header.js` regenerates them (run it after `shoot.js`, which clears `screens/`).
 
+## Direction chosen: E (Paul, 2026-09-11 evening)
+
+"E is the right direction … still way too complex and cluttered, but we can start with this and refine." E is now the prototype's default; the other variants stay in the strip for comparison.
+
+**Declutter pass 1** (applied with the decision):
+- The bar shows a status pill only when the state is not the normal one: closed, counting, overdue, set up. While open and on time it reads `Front counter · UK Store   £480.80 ›   DC` and nothing else. The drawer icon is gone; the chevron is the affordance.
+- The Open register card is the amount (prefilled with the expected float), one or two chips (`£200.00 default float`, `£570.10 closure 12 count`), and one button. The expected-float row, "Use £200", the "or type what you counted" hint and the drawer/printer sentence are gone. The opening-variance line appears only when the typed amount differs.
+- Not touched yet, for Paul to direct: the panel (hero + three actions + folds), the count screen, the products-column notice while closed, the tab bar labels on phone, the Reports page bar.
+
 ## Questions still open
 
 Listed at the foot of the page: where the bar sits (cart column vs app header); products while closed (browsable vs dimmed vs no gate at all); opening-float semantics; blind count after close; card counted at close; where register settings live.
