@@ -80,6 +80,10 @@ On phone the hamburger moves into the bar. Reports gets a page bar (`Reports …
 - The bar shows a status pill only when the state is not the normal one: closed, counting, overdue, set up. While open and on time it reads `Front counter · UK Store   £480.80 ›   DC` and nothing else. The drawer icon is gone; the chevron is the affordance.
 - The Open register card is the amount (prefilled with the expected float), one or two chips (`£200.00 default float`, `£570.10 closure 12 count`), and one button. The expected-float row, "Use £200", the "or type what you counted" hint and the drawer/printer sentence are gone. The opening-variance line appears only when the typed amount differs.
 - The bar names the register only when the store has more than one; otherwise it says *Register*. Most stores never see a register name.
+**Declutter pass 2** (the panel and the count):
+- Panel: the amount is the title (`£480.80` / `in the drawer · Register · opened 09:02 by Demo Cashier`); three 56 pt tiles Paid in / Paid out / No sale; one list — Cash, Card, Paid in/out (tap for the rows and Void), Print X-report; one row for the last closure with its reprint; `Close register` alone in the footer, neutral not red (closing is not destructive). Gone: the Register title, the status row, the hero card and its breakdown sentence, the three folds, the Reports link, the Done button. Blind cashiers see the register name as the title and a sales count instead of the totals.
+- Count: one big input (`Cash counted, float included`), one line under it (`Expected £480.80 · −£17.50 short`, live as you type), the manager line only over the limit, denomination and card counted folded, one button. Gone: the two cards, the breakdown sentence, the closure/printer line.
+- Products notice while closed shortened to `Price check only until the register is open.`
 - Not touched yet, for Paul to direct: the panel (hero + three actions + folds), the count screen, the products-column notice while closed, the tab bar labels on phone, the Reports page bar.
 
 ## Questions still open

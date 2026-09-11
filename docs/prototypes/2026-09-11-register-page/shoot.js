@@ -61,7 +61,7 @@ fs.mkdirSync(OUT, { recursive: true });
   await page.fill('[data-sheet="amount"]', '10'); await page.fill('[data-sheet="reason"]', 'Parking'); await shot('flow-04-paid-out-sheet-over-panel');
   await act('[data-act="doMove"]'); await expect(/Paid out/, 'move failed');
   await page.evaluate('S.countOpen.mov=true; render()'); await shot('flow-05-panel-after-paid-out');
-  await act('[data-act="openSheet"][data-type="void"]'); await act('[data-act="voidMove"]'); await expect(/Voided/, 'void failed');
+  await page.evaluate('S.countOpen.mov=true; render()'); await act('[data-act="openSheet"][data-type="void"]'); await act('[data-act="voidMove"]'); await expect(/Voided/, 'void failed');
   await act('[data-act="openSheet"][data-mtype="no_sale"]'); await page.fill('[data-sheet="reason"]', 'Change for the meter'); await act('[data-act="doMove"]');
   await act('[data-act="openSheet"][data-type="xreport"]'); await shot('flow-06-xreport'); await act('[data-act="xprint"]');
   await act('[data-act="startCounting"]'); await expect(/counting/, 'start counting failed');

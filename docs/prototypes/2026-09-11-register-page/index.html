@@ -166,6 +166,17 @@ a{color:var(--primary)}
 .panel-h .x{margin-left:auto;border:0;background:transparent;font-size:20px;cursor:pointer;color:var(--muted-fg);line-height:1}
 .panel-b{padding:14px;overflow:auto;display:flex;flex-direction:column;gap:12px;flex:1}
 .panel-f{padding:10px 14px;border-top:1px solid var(--border);background:var(--footer);display:flex;gap:8px;flex:none}
+.panel-h .amt{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1.1}
+.tiles3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tiles3 .btn{height:56px;font-size:14px;font-weight:600}
+.list{background:#fff;border:1px solid var(--border);border-radius:var(--radius)}
+.list .lr{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;min-height:44px}
+.list .lr:last-child{border-bottom:0}
+.list .lr .v{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:600}
+.list .lr.click{cursor:pointer}
+.list .lr.click:hover{background:#f6f9fc}
+.vline{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:2px 2px}
+.vline b{font-size:15px;font-variant-numeric:tabular-nums}
 
 /* app primitives */
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 1px 3px rgba(0,0,0,.06)}
@@ -328,8 +339,8 @@ body.embed .stage{padding:0}
         <li><b>No title bar</b> — Header → <i>No bar</i>: the app's title bar goes and the store name, online dot, notifications and user move into the bar above the cart, which is now there in every state. <b>A</b> one line (the store name moves under the avatar menu; there is no room for it beside the register at cart width); <b>B</b> two lines (store row, then register row); <b>C</b> chrome on the search row, register alone on the bar (phone falls back to A). Reports gets a page bar; the rail gets a logo tile.</li>
         <li><b>D · rail</b> and <b>E · cashier on bar</b> (round two, from Mobbin's work-tool conventions): the bar carries the register only — name, store (Pro), status, expected, chevron — at 48 pt. <b>Offline</b> is an amber pill in the bar that exists only while offline; online is the absence of a badge (Substack, Aboard). <b>Notifications</b> are a bell in the rail's bottom cluster with a count badge only when there is a count (Gorgias, Hootsuite, Patreon). <b>Identity</b>: D puts a 28 px avatar as the rail's last item (Hootsuite, Shop, Fabric) that opens the user panel; E keeps the avatar on the bar because the session records who acted. No caret anywhere. Toggle <i>Alerts</i> to compare quiet vs alerting; Network → Offline for the pill.</li>
         <li><b>The bar</b> — <i>Session open</i>: one line at the top of the cart: register, status, expected cash (blind cashiers see none). Tap it for the panel. Overdue turns it amber with the close time. Would you rather it sat in the app header?</li>
-        <li><b>The panel</b> — right panel on tablet, sheet on phone, the same overlay pattern the app is moving to. It is the old "Focus" layout: one number, the three cash actions, X-report, and the folds. Close register is in its footer.</li>
-        <li><b>Counting</b> — the cart column becomes the count; the product grid is dimmed with one line. <i>Back to selling</i> returns the cart. Nothing to navigate.</li>
+        <li><b>The panel</b> (pass 2) — the amount is the title; three 56 pt tiles Paid in / Paid out / No sale; one list: Cash, Card, Paid in/out (tap for the rows), Print X-report; one row for the last closure with its reprint; Close register alone in the footer, neutral not red. The status row, the hero card, the breakdown sentence, the three folds and the Reports link are gone.</li>
+        <li><b>Counting</b> (pass 2) — one big input, one line under it (Expected · variance, live as you type), denomination and card counted folded, one button. The two cards, the breakdown sentence and the closure line are gone.</li>
         <li><b>First sign-in</b> — registers are <b>server records</b> (Paul, 2026-09-11 late): every store gets one by default, more are created in the plugin's admin, never in the POS. The device holds only a pointer. Registers → <i>1</i>: binding is silent and the register is never named on screen (the bar says <i>Register</i>). Registers → <i>3</i>: a one-time picker replaces the cart; the choice is changed under the avatar. A wiped device re-binds and loses no numbering.</li>
         <li><b>Blind count</b> — untick <i>view reports</i>: expected and variance vanish from the bar, the panel and the count.</li>
         <li><b>Offline close</b> — Network → Offline: the count says how many sales are not on the server yet; the closure is marked <i>Unsynced</i>.</li>
@@ -584,7 +595,7 @@ function renderPOS(){
 function renderProducts(){
   const ses=S.session; let over='', notice='';
   if (S.sessionsOn && !S.register.exists) notice = `<div class="notice">Choose this device's register before selling.</div>`;
-  else if (S.sessionsOn && !ses) notice = `<div class="notice">Register closed · price check only. Open it to add to a cart.</div>`;
+  else if (S.sessionsOn && !ses) notice = `<div class="notice">Price check only until the register is open.</div>`;
   else if (S.sessionsOn && ses.state==='counting') over = `<div class="gate"><div>No sales while the register is counting.</div></div>`;
   return `<div class="prodcol">${notice}
     <div class="search">${S.header==='C'&&S.viewport==='phone'?`<span class="burger">${I.bars}</span>`:''}<input class="in" placeholder="Search products" style="height:32px"><button class="btn sm">Barcode</button>${S.header==='C'&&S.viewport==='tablet'?chrome(true):''}</div>
@@ -683,23 +694,24 @@ function renderOpenCard(){
 /* ---- Register panel (open session) ---- */
 function renderPanel(){
   if(!S.panel) return ''; const ses=S.session; if(!ses || ses.state!=='open') return '';
-  const exp=expected(ses); const lc=lastClosure();
+  const exp=expected(ses); const lc=lastClosure(); const net=movSum(ses,'paid_in')-movSum(ses,'paid_out');
+  const regName = S.registers>1 ? S.register.name : 'Register';
   return `<div class="panel-wrap" data-closepanel="1"><div class="panel narrow">
-    <div class="panel-h"><div><div class="t">Register</div><div class="s">${S.register.name} · ${S.register.store}</div></div><button class="x" data-act="closePanel">×</button></div>
+    <div class="panel-h"><div>${can('reports')?`<div class="amt">${fmt(exp)}</div><div class="s">in the drawer · ${regName} · opened ${ses.openedAt} by ${who(ses.openedBy).name}</div>`:`<div class="t">${regName}</div><div class="s">opened ${ses.openedAt} by ${who(ses.openedBy).name}</div>`}</div><button class="x" data-act="closePanel">×</button></div>
     <div class="panel-b">
-      <div class="row"><div class="grow"><div class="row" style="gap:8px">${overdue()?`<span class="pill warn dotp">Open · overdue</span>`:`<span class="pill open dotp">Open</span>`}${!S.online?`<span class="pill bad">${I.cloudOff} Offline</span>`:''}</div><div class="mut sm">Opened ${ses.openedAt} by ${who(ses.openedBy).name}${ses.ranBy.length>1?` · ${ses.ranBy.length} cashiers rang`:''}</div></div>${can('reports')?`<button class="btn sm" data-act="openSheet" data-type="xreport">${I.print} X-report</button>`:''}</div>
-      ${overdue()?`<div class="alert w">Past the expected close time (${S.register.closeTime}).</div>`:''}
-      <div class="card"><div class="hero">
-        ${can('reports')?`<div class="lbl">Expected in drawer</div><div class="big">${fmt(exp)}</div><div class="mut sm">float ${fmt(ses.floatCounted)} · cash sales ${fmt(ses.cashSales)}${ses.cashRefunds?` · refunds ${fmt(-ses.cashRefunds)}`:''} · movements ${fmt(movSum(ses,'paid_in')-movSum(ses,'paid_out'),true)}</div>`
-                        :`<div class="lbl">Cash sales</div><div class="big">${fmt(ses.cashSales)}</div><div class="locked">${I.lock} The drawer is counted at close</div>`}
-        <div class="actions" style="width:100%;margin-top:6px">${movementActions()}</div>
-      </div></div>
-      <div class="collapse"><button data-act="toggleCollapse" data-k="mov">${I.chev} Cash movements <span class="mut">${ses.movements.filter(m=>m.type!=='void'&&!m.voidedBy).length}</span></button>${S.countOpen.mov?`<div class="in-b">${movementsTable(ses)}</div>`:''}</div>
-      <div class="collapse"><button data-act="toggleCollapse" data-k="ten">${I.chev} Tenders this session <span class="mut">${fmt(ses.cashSales+ses.card.sales)}</span></button>${S.countOpen.ten?`<div class="in-b">${tendersTable(ses)}</div>`:''}</div>
-      ${lc?`<div class="collapse"><button data-act="toggleCollapse" data-k="lastc">${I.chev} Last closure <span class="mut">Closure ${lc.number}</span></button>${S.countOpen.lastc?`<div class="in-b">${lastClosureCard(true)}</div>`:''}</div>`:''}
-      ${S.pro?`<div class="mut xs">Every register's closures: <a href="#" data-set="page" data-v="reports">Reports › Closures</a></div>`:`<div class="mut xs">Closures across registers are in Reports with WCPOS Pro.</div>`}
+      ${overdue()?`<div class="alert w">Past the close time ${S.register.closeTime}</div>`:''}
+      ${!S.online?`<div class="alert w">${I.cloudOff} Offline · ${ses.unsyncedN} sales not on the server</div>`:''}
+      ${can('cash')?`<div class="tiles3"><button class="btn" data-act="openSheet" data-type="movement" data-mtype="paid_in">Paid in</button><button class="btn" data-act="openSheet" data-type="movement" data-mtype="paid_out">Paid out</button><button class="btn" data-act="openSheet" data-type="movement" data-mtype="no_sale">No sale</button></div>`:`<div class="alert i">${I.lock} Cash actions need cash permission</div>`}
+      <div class="list">
+        ${can('reports')?`<div class="lr"><span>Cash</span><span class="mut xs">${ses.orders} sales${ses.refundsN?` · ${ses.refundsN} refund`:''}</span><span class="v">${fmt(ses.cashSales-ses.cashRefunds)}</span></div>
+        <div class="lr"><span>Card</span><span class="v">${fmt(ses.card.sales-ses.card.refunds)}</span></div>`:`<div class="lr"><span>${ses.orders} sales</span><span class="mut xs">${I.lock} totals are counted at close</span></div>`}
+        <div class="lr click" data-act="toggleCollapse" data-k="mov"><span>Paid in / out</span><span class="mut xs">${ses.movements.filter(m=>m.type!=='void'&&!m.voidedBy).length} movements</span><span class="v ${net<0?'money neg':net>0?'money pos':''}">${fmt(net,true)}</span><span class="chev" style="transform:rotate(${S.countOpen.mov?90:0}deg)">${I.chev}</span></div>
+        ${S.countOpen.mov?`<div style="padding:0 4px 4px">${movementsTable(ses)}</div>`:''}
+        ${can('reports')?`<div class="lr click" data-act="openSheet" data-type="xreport"><span>${I.print} Print X-report</span><span class="mut xs">reads the session, stores nothing</span></div>`:''}
+      </div>
+      ${lc?`<div class="list"><div class="lr click" data-act="openSheet" data-type="reprint"><span>Last closure</span><span class="mut xs">${lc.number} · ${lc.closed}</span><span class="v">${fmt(lc.counted)}</span><span class="mut xs">${I.print} copy</span></div></div>`:''}
     </div>
-    <div class="panel-f">${can('cash')?`<button class="btn od lg" style="flex:1" data-act="startCounting">Close register</button>`:`<span class="locked grow">${I.lock} Closing needs cash permission</span>`}<button class="btn lg" data-act="closePanel">Done</button></div>
+    <div class="panel-f">${can('cash')?`<button class="btn lg w" data-act="startCounting">Close register</button>`:`<span class="locked grow">${I.lock} Closing needs cash permission</span>`}</div>
   </div></div>`;
 }
 
@@ -741,25 +753,13 @@ function renderCounting(){
   const ses=S.session; const exp=expected(ses); const blind=!can('reports');
   const counted = parseFloat(ses.counted.cash); const has=!isNaN(counted); const v = has? +(counted-exp).toFixed(2) : null;
   const overT = has && Math.abs(v) > S.register.threshold;
-  return `<div class="row"><div class="grow">${noHeader()?'':`<div class="row" style="gap:8px"><span class="b" style="font-size:16px">${S.register.name}</span><span class="pill count dotp">Counting</span>${!S.online?`<span class="pill bad">${I.cloudOff} Offline</span>`:''}</div>`}<div class="mut sm">Counting since ${ses.countingAt} · no sales until it reopens</div></div>${can('cash')?`<button class="btn sm" data-act="resume">Back to selling</button>`:''}</div>
-    ${!S.online&&ses.unsyncedN?`<div class="alert e">${I.cloudOff} ${ses.unsyncedN} sales (${fmt(ses.unsyncedTotal)}) are not on the server yet. The closure will say so.</div>`:''}
-    <div class="card"><div class="card-h">Count the drawer <span class="sub">everything in it, float included</span></div>
-      <div class="card-b stack">
-        <div class="fld"><label>Cash counted</label><input class="in big" data-count="cash" value="${ses.counted.cash??''}" placeholder="0.00" inputmode="decimal"></div>
-        <div class="collapse"><button data-act="toggleCollapse" data-k="den">${I.chev} Count by denomination <span class="mut">fills the total</span></button>${S.countOpen.den?`<div class="in-b"><div class="denoms">${DENOMS.map(d=>`<div class="den"><b>${d>=1?CUR+d:(d*100)+'p'}</b><input type="number" min="0" data-den="${d}" value="${S.countOpen['d'+d]||''}" placeholder="0"><div class="sub">${fmt((S.countOpen['d'+d]||0)*d)}</div></div>`).join('')}</div></div>`:''}</div>
-        <div class="fld"><label>Card counted <span style="font-weight:400">· optional, terminal batch total</span></label><input class="in" data-count="card" value="${ses.counted.card??''}" placeholder="${fmt(ses.card.sales-ses.card.refunds)} reported" inputmode="decimal"></div>
-      </div>
-    </div>
-    <div class="card"><div class="card-h">Against the session</div>
-      <div class="card-b stack">
-        ${blind?`<div class="locked">${I.lock} Expected and variance are shown to a manager after the close.</div>`:`
-        <div class="vari"><span>Expected cash <span class="mut xs">till figure${!S.online?' · server may differ':''}</span></span><b class="num">${fmt(exp)}</b></div>
-        <div class="vari"><span>Variance</span><b class="num ${has?(v<0?'money neg':v>0?'money pos':''):''}">${has?(v===0?'Exact':fmt(v,true)+(v<0?' short':' over')):'—'}</b></div>
-        ${overT?`<div class="alert w">Above the store's ${fmt(S.register.threshold)} limit. ${ses.override?`Approved by ${who(ses.override.by).name}.`:'A manager approves the close.'}</div>`:''}`}
-        <div class="sm mut">Float ${fmt(ses.floatCounted)}${ses.floatCounted!==ses.floatExpected?` (opening ${varianceWord(ses.floatCounted-ses.floatExpected)})`:''} · cash sales ${fmt(ses.cashSales)} · refunds ${fmt(-ses.cashRefunds)} · in ${fmt(movSum(ses,'paid_in'))} · out ${fmt(movSum(ses,'paid_out'))}</div>
-      </div>
-    </div>
-    <div class="mut xs">Closure <b>${(lastClosure()?lastClosure().number:0)+1}</b> · ${S.register.name} · Z-report prints once on ${S.register.printer}</div>
+  return `<div class="row"><div class="grow mut sm">Counting since ${ses.countingAt} · no sales until it reopens</div>${can('cash')?`<button class="btn sm" data-act="resume">Back to selling</button>`:''}</div>
+    ${!S.online&&ses.unsyncedN?`<div class="alert w">${I.cloudOff} ${ses.unsyncedN} sales (${fmt(ses.unsyncedTotal)}) not on the server yet — the closure will say so</div>`:''}
+    <div class="fld"><label>Cash counted, float included</label><input class="in big" data-count="cash" value="${ses.counted.cash??''}" placeholder="0.00" inputmode="decimal"></div>
+    ${blind?'':`<div class="vline"><span class="mut">Expected ${fmt(exp)}</span><b class="${has?(v<0?'money neg':v>0?'money pos':''):'mut'}">${has?(v===0?'Exact':fmt(v,true)+(v<0?' short':' over')):'—'}</b></div>`}
+    ${overT&&!blind?`<div class="alert w">Over the ${fmt(S.register.threshold)} limit · ${ses.override?`approved by ${who(ses.override.by).name}`:'a manager approves the close'}</div>`:''}
+    <div class="collapse"><button data-act="toggleCollapse" data-k="den">${I.chev} Count by denomination</button>${S.countOpen.den?`<div class="in-b"><div class="denoms">${DENOMS.map(d=>`<div class="den"><b>${d>=1?CUR+d:(d*100)+'p'}</b><input type="number" min="0" data-den="${d}" value="${S.countOpen['d'+d]||''}" placeholder="0"><div class="sub">${fmt((S.countOpen['d'+d]||0)*d)}</div></div>`).join('')}</div></div>`:''}</div>
+    <div class="collapse"><button data-act="toggleCollapse" data-k="cardc">${I.chev} Card counted <span class="mut">optional · ${fmt(ses.card.sales-ses.card.refunds)} reported</span></button>${S.countOpen.cardc?`<div class="in-b"><input class="in" data-count="card" value="${ses.counted.card??''}" placeholder="${fmt(ses.card.sales-ses.card.refunds)}" inputmode="decimal"></div>`:''}</div>
     <button class="btn p xl w ${has?'':'dis'}" ${has?'':'disabled'} data-act="tryClose">${overT && !ses.override ? 'Approve & close' : 'Close & print'}</button>`;
 }
 
