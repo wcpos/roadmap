@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tender pane mockups</title>
+<style>
+  :root{
+    --bg:#f3f6fb; --card:#fff; --line:#dfe4ec; --line-strong:#c9d1dd; --ink:#111827; --muted:#6b7280; --faint:#9aa3b2;
+    --primary:#0b5fb0; --primary-soft:#e3eefb; --success:#1e7e34; --success-soft:#e6f4ea; --warn:#c2410c; --warn-soft:#fff1e8;
+    --danger:#b91c1c; --danger-soft:#fde8e8; --rail:#1f2a3c; --radius:10px;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#2b2f36;color:var(--ink);font-size:14px;line-height:1.35}
+  /* ---- driver strip (not part of the design) ---- */
+  .strip{position:sticky;top:0;z-index:10;background:#15181d;color:#cfd4dc;padding:10px 16px;display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;font-size:12px;border-bottom:1px solid #000}
+  .strip b{color:#fff;font-weight:600;margin-right:6px}
+  .strip .grp{display:flex;align-items:center;gap:4px}
+  .strip button{background:#2b3038;color:#cfd4dc;border:1px solid #3a4049;border-radius:6px;padding:4px 9px;font-size:12px;cursor:pointer}
+  .strip button.on{background:#3b82f6;border-color:#3b82f6;color:#fff}
+  .strip .note{margin-left:auto;color:#8b93a1}
+  /* ---- app frame ---- */
+  .stage{display:flex;justify-content:center;padding:24px 16px 48px}
+  .frame{width:1280px;max-width:100%;height:800px;background:var(--bg);display:grid;grid-template-columns:52px 1fr;grid-template-rows:36px 1fr;border-radius:8px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45);position:relative}
+  .frame.phone{width:390px;height:844px;grid-template-columns:1fr;grid-template-rows:36px 1fr}
+  .topbar{grid-column:1/-1;background:var(--rail);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;position:relative}
+  .topbar .right{position:absolute;right:14px;display:flex;align-items:center;gap:10px;font-size:13px}
+  .dot{width:9px;height:9px;border-radius:50%;background:#22c55e;display:inline-block}
+  .avatar{width:18px;height:18px;border-radius:50%;background:#fff;color:var(--rail);font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+  .rail{background:var(--rail);display:flex;flex-direction:column;align-items:center;padding-top:12px;gap:22px}
+  .frame.phone .rail{display:none}
+  .rail i{width:20px;height:20px;border-radius:5px;background:#9fb0c8;opacity:.75;display:block}
+  .rail i.on{background:#fff;opacity:1;box-shadow:-4px 0 0 0 var(--rail), -6px 0 0 0 #3b82f6}
+  .rail .v{margin-top:auto;margin-bottom:10px;color:#8593a6;font-size:10px}
+  .columns{display:grid;grid-template-columns:1fr 488px;min-height:0}
+  .frame.phone .columns{grid-template-columns:1fr;grid-template-rows:1fr auto}
+  /* ---- tender pane ---- */
+  .tender{padding:14px 18px 18px;display:flex;flex-direction:column;min-height:0;overflow:auto}
+  .frame.phone .tender{padding:12px 14px}
+  .hdr{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+  .hdr .back{display:flex;align-items:center;gap:6px;font-size:15px;color:var(--ink);cursor:pointer}
+  .hdr h1{font-size:18px;font-weight:600;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .frame.phone .hdr h1{font-size:16px}
+  .tabs{display:flex;background:#e6eaf1;border-radius:8px;padding:2px}
+  .tabs span{padding:6px 14px;border-radius:6px;color:var(--muted);font-size:13px}
+  .tabs span.on{background:var(--primary);color:#fff}
+  .frame.phone .tabs span{padding:6px 10px}
+  /* amount block */
+  .amt{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:16px}
+  .amt .lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .amt .big{font-size:38px;font-weight:700;letter-spacing:-.02em;line-height:1.05;font-variant-numeric:tabular-nums}
+  .frame.phone .amt .big{font-size:32px}
+  .amt .sub{font-size:13px;color:var(--muted);margin-top:4px}
+  .amt .this{text-align:right}
+  .amt .this .lbl{text-transform:none;letter-spacing:0;font-size:13px}
+  .amt .this .n{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:7px;background:var(--primary-soft);color:var(--primary);font-weight:500;font-size:13px;cursor:pointer;white-space:nowrap}
+  .chip.ghost{background:transparent;border:1px solid var(--line-strong);color:var(--ink)}
+  .chip.on{background:var(--primary);color:#fff}
+  .badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 7px;border-radius:99px;background:#eef1f6;color:var(--muted);font-weight:500;white-space:nowrap}
+  .badge.ok{background:var(--success-soft);color:var(--success)}
+  .badge.warn{background:var(--warn-soft);color:var(--warn)}
+  .plan{display:flex;gap:6px;align-items:center;margin:-8px 0 14px;flex-wrap:wrap}
+  .plan .leg{font-size:12px;padding:3px 9px;border-radius:99px;border:1px solid var(--line-strong);color:var(--muted);font-variant-numeric:tabular-nums}
+  .plan .leg.now{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+  .plan .txt{font-size:12px;color:var(--muted);margin-right:4px}
+  /* icons */
+  .ic{width:22px;height:22px;flex:none;color:var(--muted)}
+  .ic svg{width:100%;height:100%;display:block}
+  /* tiles */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .frame.phone .grid{grid-template-columns:repeat(2,1fr)}
+  .tile{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;min-height:78px;display:flex;flex-direction:column;justify-content:space-between;gap:8px;cursor:pointer;position:relative}
+  .tile:hover{border-color:var(--line-strong)}
+  .tile.on{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary) inset}
+  .tile .t{font-size:16px;font-weight:600}
+  .tile .row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .tile.off{background:#f7f9fc;color:var(--faint);cursor:default;border-style:dashed}
+  .tile.off .t{color:var(--faint)}
+  .tile.off .ic{color:#c3cad6}
+  .tile .why{font-size:12px;color:var(--warn)}
+  .unavail{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+  .unavail .head{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;cursor:pointer;user-select:none}
+  .unavail .head .n{margin-left:auto;font-size:12px;color:var(--faint)}
+  .unavail ul{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
+  .unavail li{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--faint)}
+  .unavail li b{font-weight:500;color:var(--muted)}
+  .unavail li .why{margin-left:auto;font-size:12px;color:var(--warn)}
+  .unavail.closed ul{display:none}
+  .caret{width:14px;height:14px;transition:transform .15s}
+  .unavail.closed .caret{transform:rotate(-90deg)}
+  /* list variant */
+  .split2{display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start}
+  .frame.phone .split2{grid-template-columns:1fr}
+  .list{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .lrow{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line);cursor:pointer}
+  .lrow:last-child{border-bottom:0}
+  .lrow:hover{background:#fafbfd}
+  .lrow.on{background:var(--primary-soft)}
+  .lrow.on .t{color:var(--primary)}
+  .lrow .t{font-size:15px;font-weight:600;flex:1}
+  .lrow .s{font-size:12px;color:var(--muted)}
+  .lrow .chev{color:var(--faint);width:16px;height:16px}
+  .lrow.off{cursor:default;background:#f9fafc}
+  .lrow.off .t{color:var(--faint);font-weight:500}
+  .lrow.off .s{color:var(--warn)}
+  .lrow.off .ic{color:#c3cad6}
+  .lsec{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);padding:10px 14px 4px;background:#f9fafc;border-bottom:1px solid var(--line)}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+  .panel h3{margin:0 0 10px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .stack{display:flex;flex-direction:column;gap:8px}
+  .opt{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:14px}
+  .opt.on{border-color:var(--primary);background:var(--primary-soft);color:var(--primary);font-weight:600}
+  .opt .r{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px}
+  .opt.on .r{color:var(--primary)}
+  /* hero variant */
+  .heroes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+  .frame.phone .heroes{grid-template-columns:1fr}
+  .hero{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;min-height:118px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;position:relative}
+  .hero.on{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary) inset}
+  .hero:hover{border-color:var(--line-strong)}
+  .hero .top{display:flex;align-items:center;gap:10px}
+  .hero .top .ic{width:26px;height:26px;color:var(--ink)}
+  .hero .t{font-size:20px;font-weight:700}
+  .hero .cta{font-size:14px;color:var(--primary);font-weight:600;margin-top:12px;display:flex;align-items:center;gap:6px}
+  .hero .cta small{font-weight:400;color:var(--muted)}
+  .hero .badge{position:absolute;top:14px;right:14px}
+  .secrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .sec{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--line);background:var(--card);border-radius:9px;font-size:13px;font-weight:500;cursor:pointer}
+  .sec.on{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+  .sec .ic{width:18px;height:18px}
+  .sec.off{color:var(--faint);border-style:dashed;cursor:default;background:#f7f9fc}
+  .sec.off .ic{color:#c3cad6}
+  .more{font-size:13px;color:var(--muted);cursor:pointer;padding:8px 4px}
+  /* keypad */
+  .keypad{max-width:340px;margin-top:16px;display:flex;flex-direction:column;gap:10px}
+  .keypad.inpanel{max-width:none;margin-top:0}
+  .keypad .lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .keypad .entry{font-size:34px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1}
+  .keypad .change{font-size:13px;font-weight:600;color:var(--success)}
+  .keypad .reader{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+  .keypad .reader a{color:var(--primary);cursor:pointer}
+  .quick{display:flex;flex-wrap:wrap;gap:6px}
+  .keys{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .key{height:40px;border-radius:7px;background:#e9edf3;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--ink);cursor:pointer}
+  .key.big{height:46px}
+  .actions{display:flex;gap:8px;margin-top:4px}
+  .btn{height:42px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;padding:0 16px;font-size:15px;font-weight:600;cursor:pointer;border:1px solid transparent;white-space:nowrap}
+  .btn.success{background:var(--success);color:#fff;flex:1}
+  .btn.outline{background:var(--card);border-color:var(--line-strong);color:var(--ink)}
+  .btn.primary{background:var(--primary);color:#fff;flex:1}
+  .btn.danger{background:var(--danger-soft);color:var(--danger);height:34px;font-size:13px;font-weight:500}
+  .hint{font-size:13px;color:var(--muted);margin-top:14px}
+  /* ---- ledger ---- */
+  .ledger{background:var(--card);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+  .frame.phone .ledger{display:none}
+  .ledger .lh{background:#e6eaf1;padding:12px 16px;font-size:14px;display:flex;gap:8px;align-items:center}
+  .ledger .lh b{font-weight:600}
+  .ledger .body{padding:14px 16px;flex:1;overflow:auto}
+  .line{display:flex;justify-content:space-between;padding:4px 0;font-size:14px}
+  .line .r{font-variant-numeric:tabular-nums}
+  .pl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+  .pay{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:#f7f9fc;margin-bottom:8px}
+  .pay .row{display:flex;justify-content:space-between;align-items:center;font-size:14px}
+  .pay .row .r{display:flex;gap:8px;align-items:center}
+  .pay .s{font-size:12px;color:var(--muted);margin-top:2px}
+  .totals{border-top:1px solid var(--line);padding:12px 16px}
+  .totals .line{padding:5px 0}
+  .totals .line.b{font-weight:700;font-size:15px}
+  .tabsbar{display:flex;gap:6px;align-items:center;padding:8px 10px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+  .tabsbar .tab{padding:6px 10px;border-radius:6px}
+  .tabsbar .tab.on{background:var(--primary);color:#fff}
+  /* phone balance bar */
+  .balbar{display:none;background:var(--card);border-top:1px solid var(--line);padding:10px 14px;align-items:center;justify-content:space-between;font-size:14px}
+  .frame.phone .balbar{display:flex}
+  .balbar b{font-variant-numeric:tabular-nums}
+  .balbar .s{color:var(--muted);font-size:12px}
+  /* under-frame notes */
+  .notes{max-width:1280px;margin:0 auto;padding:0 16px 40px;color:#c8ccd4;font-size:13px;line-height:1.5}
+  .notes h2{color:#fff;font-size:15px;margin:22px 0 8px}
+  .notes p,.notes li{margin:0 0 6px}
+  .notes ul{padding-left:18px}
+  .notes a{color:#8ab4f8}
+  .notes .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media (max-width:900px){.notes .grid3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="strip">
+  <div class="grp"><b>Layout</b>
+    <button data-set="variant" data-val="A">A · Grid</button>
+    <button data-set="variant" data-val="B">B · List + panel</button>
+    <button data-set="variant" data-val="C">C · Two big buttons</button>
+  </div>
+  <div class="grp"><b>Tap</b>
+    <button data-set="pick" data-val="">nothing</button>
+    <button data-set="pick" data-val="cash">Cash</button>
+    <button data-set="pick" data-val="card">Card</button>
+    <button data-set="pick" data-val="sim-terminal">Simulated terminal</button>
+  </div>
+  <div class="grp"><b>Split</b>
+    <button data-set="split" data-val="0">off</button>
+    <button data-set="split" data-val="2">2 ways</button>
+    <button data-set="split" data-val="custom">custom 10,00</button>
+  </div>
+  <div class="grp"><b>Network</b>
+    <button data-set="offline" data-val="0">online</button>
+    <button data-set="offline" data-val="1">offline</button>
+  </div>
+  <div class="grp"><b>Width</b>
+    <button data-set="phone" data-val="0">Tablet</button>
+    <button data-set="phone" data-val="1">Phone</button>
+  </div>
+  <div class="grp"><b>Paid so far</b>
+    <button data-set="paid" data-val="0">nothing</button>
+    <button data-set="paid" data-val="1">one cash leg</button>
+  </div>
+  <span class="note">←/→ cycle layouts · 1/2/3 tap Cash/Card/terminal · 0 clears</span>
+</div>
+
+<div class="stage">
+  <div class="frame" id="frame">
+    <div class="topbar">POS – UK Store
+      <div class="right"><span class="dot"></span><span>🔔</span><span class="avatar">DC</span><span>Demo Cashier ▾</span></div>
+    </div>
+    <div class="rail"><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><span class="v">v 1.11.0</span></div>
+    <div class="columns">
+      <div class="tender" id="tender"></div>
+      <div class="ledger" id="ledger"></div>
+      <div class="balbar" id="balbar"></div>
+    </div>
+  </div>
+</div>
+
+<div class="notes">
+  <h2>What changed against the live screen (all three)</h2>
+  <ul>
+    <li><b>One number leads.</b> <i>Remaining</i> is the only large figure. <i>This payment</i> appears only when a split or custom amount makes it differ, and then it reads as a plan (<i>Payment 1 of 2</i>) not a second total.</li>
+    <li><b>“OTHER” is gone.</b> The kind is an icon (notes, card, terminal, reader). A kind label repeats the title on five of seven tiles today and says nothing a cashier acts on.</li>
+    <li><b>Unavailable methods don't compete with live ones.</b> Fresha and Square put a single explanation in one place instead of on each tile; here they fold into one <i>Not available right now</i> row (A, C) or the tail of the list (B), reasons kept.</li>
+    <li><b>Equal tiles, fixed grid.</b> Tile width no longer follows the title, so the grid stops wrapping unevenly.</li>
+    <li><b>The paragraph at the bottom is gone.</b> Split is a labelled button beside the amount; the tiles are self-describing. If a hint survives, it is one line under the tiles.</li>
+    <li><b>Offline is a state of the page, not of each tile.</b> Offline puts one badge in the header and disables what needs the store; “Works offline” stays as a quiet badge on Cash and Card because it is the 1.11 promise.</li>
+  </ul>
+  <div class="grid3">
+    <div><h2>A · Grid</h2><p>The live layout, tidied: equal tiles, icon kinds, unavailable folded, keypad opens under the tiles as it does today. Least change, least risk.</p></div>
+    <div><h2>B · List + panel</h2><p>Methods as a list on the left (the Grab / Etsy / Wise idiom from Mobbin), a panel on the right that is the split plan until a method is tapped, then the keypad. Split leaves the header and becomes a real choice with amounts on it. Two orders in checkout still each get their own pane.</p></div>
+    <div><h2>C · Two big buttons</h2><p>Cash and Card carry the balance on them (<i>Take 18,00 £</i>) — the Toast / Odoo exact-amount shortcut from the vendor research. Terminals sit in a chip row beneath; card is one tap, cash opens the keypad because change is the question. Fastest for the 5 pm cashier, thinnest for a shop that lives on terminals.</p></div>
+  </div>
+  <h2>Mobbin references pulled for this</h2>
+  <ul>
+    <li>Fresha · <a href="https://mobbin.com/screens/f8daaa62-6cf5-4d3e-a817-939ac8a62cd0">Select payment</a> — four equal tiles with icons, one banner for the disabled tile, ledger and <i>To pay</i> on the right.</li>
+    <li>Square · <a href="https://mobbin.com/screens/f4cd018c-ee3c-4fb6-93db-6599ffbcc115">Quick charge</a> — <i>Split payment</i> as a secondary button beside the section title; one dismissible notice for what isn't set up.</li>
+    <li>Grab · <a href="https://mobbin.com/screens/73a19673-a57c-40f0-810d-8cb447d6230d">Payment methods</a>, Etsy · <a href="https://mobbin.com/screens/a5070d60-c3a3-47b9-b240-4cee11c7e378">Choose a payment method</a>, Wise · <a href="https://mobbin.com/screens/b9c3646b-aaf3-4af5-bc7a-380ed4a9924c">How would you like to pay</a> — list rows, icon + title, one grey line for why an option is out.</li>
+    <li>World App · <a href="https://mobbin.com/screens/59400b3c-9dea-4c79-906b-f67eea3b5fee">Buy</a>, Monzo · <a href="https://mobbin.com/screens/1e932052-af1c-43ba-9748-781e2b6d83e6">Pay</a> — amount leads, quick-amount chips above the keypad.</li>
+  </ul>
+  <h2>Questions this raises</h2>
+  <ul>
+    <li>C makes Card one tap for the exact balance. Is a confirm step wanted before a terminal starts, or is the terminal's own screen the confirm?</li>
+    <li>B moves Split out of the header into the panel. Is it still findable when a customer says “half on card” mid-sale?</li>
+    <li>Should “Works offline” show at all while online, or only once the till loses the store?</li>
+    <li>Where does <i>Legacy</i> go when a store has no webview gateway — hidden, or kept as a tab so the position never moves?</li>
+  </ul>
+</div>
+
+<script>
+const fmt = n => n.toFixed(2).replace('.', ',') + ' £';
+const ICONS = {
+  cash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5h.01M18 14.5h.01"/></svg>',
+  card: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 10h19M6 15h4"/></svg>',
+  terminal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="6" y="2.5" width="12" height="19" rx="2"/><rect x="8.5" y="5" width="7" height="5" rx="1"/><path d="M9 13h2M13 13h2M9 16h2M13 16h2"/></svg>',
+  reader: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="7" y="3" width="10" height="18" rx="2.5"/><path d="M10 7h4M12 17h.01"/><path d="M19.5 8.5c1.2 1.2 1.2 5.8 0 7M4.5 8.5c-1.2 1.2-1.2 5.8 0 7"/></svg>',
+  caret: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>',
+  chev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>',
+  back: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>',
+  del: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 6H8l-5 6 5 6h13z"/><path d="M12 9l6 6M18 9l-6 6"/></svg>'
+};
+const METHODS = [
+  { id:'cash',         kind:'cash',     title:'Cash',               offline:true, change:true },
+  { id:'card',         kind:'card',     title:'Card',               offline:true },
+  { id:'sim-terminal', kind:'terminal', title:'Simulated terminal', server:true, reader:'Front desk' },
+  { id:'sim-reader',   kind:'reader',   title:'Simulated reader',   device:true },
+  { id:'sumup',        kind:'terminal', title:'SumUp Terminal',     server:true, reader:'Counter 1' },
+  { id:'mollie',       kind:'terminal', title:'Mollie Terminal',    server:true, why:'No terminals set up' },
+  { id:'stripe',       kind:'reader',   title:'Stripe Terminal',    device:true, why:'Not available in the browser' },
+];
+const TOTAL = 18.00;
+const state = { variant:'A', pick:'', split:'0', offline:0, phone:0, paid:0, unavailOpen:0 };
+try { Object.assign(state, JSON.parse(localStorage.getItem('tender-mock') || '{}')); } catch(e){}
+
+function tiles(){
+  return METHODS.map(m => {
+    let why = m.why || null;
+    if (state.offline && (m.server || m.device)) why = 'Needs a connection';
+    return { ...m, why, off: !!why };
+  });
+}
+function figures(){
+  const paid = state.paid ? 8.00 : 0;
+  const remaining = TOTAL - paid;
+  let thisPay = remaining, planTxt = '', legs = null;
+  if (state.split === '2'){ thisPay = remaining/2; planTxt = 'Payment 1 of 2'; legs = [thisPay, remaining - thisPay]; }
+  if (state.split === 'custom'){ thisPay = 10.00; planTxt = 'After this payment: ' + fmt(remaining - 10) + ' still to take'; }
+  return { paid, remaining, thisPay, planTxt, legs };
+}
+
+function header(f){
+  const splitLabel = state.split==='2' ? 'Split 2 ways' : state.split==='custom' ? 'Custom amount' : 'Split';
+  const showThis = state.split !== '0';
+  const offlineBadge = state.offline ? '<span class="badge warn">Offline · cash and card only</span>' : '';
+  return `
+  <div class="hdr">
+    <span class="back">${ICONS.back} Cart</span>
+    <h1>Pay order #102476</h1>
+    ${state.paid ? '<span class="btn danger">Cancel payment</span>' : ''}
+    <div class="tabs"><span class="on">Payments</span><span>Legacy</span></div>
+  </div>
+  <div class="amt">
+    <div>
+      <div class="lbl">${state.paid ? 'Remaining' : 'Total'}</div>
+      <div class="big">${fmt(f.remaining)}</div>
+      <div class="sub">${state.paid ? fmt(f.paid)+' of '+fmt(TOTAL)+' paid' : '1 item · Guest'} ${offlineBadge}</div>
+    </div>
+    ${state.variant !== 'B' ? `
+    <div class="this">
+      ${showThis ? `<div class="lbl">This payment</div><div class="n">${fmt(f.thisPay)}</div>` : ''}
+      <div style="margin-top:6px"><span class="chip ${showThis?'on':''}">${splitLabel}</span></div>
+    </div>` : ''}
+  </div>
+  ${f.legs && state.variant !== 'B' ? `<div class="plan"><span class="txt">${f.planTxt}</span>${f.legs.map((l,i)=>`<span class="leg ${i===0?'now':''}">${fmt(l)}</span>`).join('')}</div>` : ''}
+  ${state.split==='custom' && state.variant !== 'B' ? `<div class="plan"><span class="txt">${f.planTxt}</span></div>` : ''}`;
+}
+
+function keypad(m, f, inpanel){
+  // Cash: pre-fill the smallest note that covers the balance, so the change line shows; card: the balance.
+  const note = [5,10,20,50].find(n => n >= f.thisPay) ?? f.thisPay;
+  const amount = m.change ? note : f.thisPay;
+  const change = m.change && amount > f.thisPay ? amount - f.thisPay : 0;
+  const quick = m.change
+    ? [f.thisPay, note, 50].filter((v,i,a)=>a.indexOf(v)===i).map(v=>`<span class="chip ${v===amount?'on':'ghost'}">${fmt(v)}</span>`).join('')
+    : `<span class="chip on">Full balance ${fmt(f.thisPay)}</span>`;
+  const reader = m.server ? `<div class="reader">${ICONS.terminal.replace('<svg','<svg width="16" height="16"')} Terminal: ${m.reader} <a>Change</a></div>`
+               : m.device ? `<div class="reader">${ICONS.reader.replace('<svg','<svg width="16" height="16"')} Reader: Simulated M2 · connected <a>Change</a></div>` : '';
+  return `
+  <div class="keypad ${inpanel?'inpanel':''}">
+    <div>
+      <div class="lbl">${m.change ? 'Tendered' : m.title}${f.planTxt && state.split==='2' ? ' · ' + f.planTxt : ''}</div>
+      <div class="entry">${fmt(amount)}</div>
+      ${change>0 ? `<div class="change">Change ${fmt(change)}</div>` : ''}
+    </div>
+    ${reader}
+    <div class="quick">${quick}</div>
+    <div class="keys">
+      ${['1','2','3','4','5','6','7','8','9','C','0'].map(k=>`<span class="key">${k}</span>`).join('')}<span class="key">${ICONS.del}</span>
+    </div>
+    <div class="actions"><span class="btn success">Take ${fmt(Math.min(amount, f.thisPay))} in ${m.title}</span><span class="btn outline">Cancel</span></div>
+  </div>`;
+}
+
+function unavailBlock(offs){
+  if (!offs.length) return '';
+  return `
+  <div class="unavail ${state.unavailOpen?'':'closed'}" id="unavail">
+    <div class="head"><span class="ic caret">${ICONS.caret}</span>Not available right now<span class="n">${offs.length}</span></div>
+    <ul>${offs.map(m=>`<li><span class="ic" style="width:18px;height:18px">${ICONS[m.kind]}</span><b>${m.title}</b><span class="why">${m.why}</span></li>`).join('')}</ul>
+  </div>`;
+}
+
+function variantA(f){
+  const ts = tiles(); const ons = ts.filter(t=>!t.off), offs = ts.filter(t=>t.off);
+  const picked = ts.find(t=>t.id===state.pick && !t.off);
+  return header(f) + `
+  <div class="grid">${ons.map(m=>`
+    <div class="tile ${m.id===state.pick?'on':''}" data-pick="${m.id}">
+      <div class="row"><span class="ic">${ICONS[m.kind]}</span>${m.offline?'<span class="badge">Works offline</span>':''}</div>
+      <div class="t">${m.title}</div>
+    </div>`).join('')}
+  </div>
+  ${unavailBlock(offs)}
+  ${picked ? keypad(picked, f, false) : ''}`;
+}
+
+function variantB(f){
+  const ts = tiles();
+  const picked = ts.find(t=>t.id===state.pick && !t.off);
+  // On a phone the list folds to the chosen row so the keypad is on screen; tapping it reopens the list.
+  const rows = (+state.phone && picked ? [picked] : ts).map(m=>`
+    <div class="lrow ${m.off?'off':''} ${m.id===state.pick?'on':''}" ${m.off?'':`data-pick="${m.id}"`}>
+      <span class="ic">${ICONS[m.kind]}</span>
+      <span class="t">${m.title}</span>
+      <span class="s">${m.off ? m.why : (m.offline ? 'Works offline' : m.reader ? 'Terminal: '+m.reader : m.device ? 'Bluetooth reader' : '')}</span>
+      ${m.off ? '' : `<span class="ic chev">${ICONS.chev}</span>`}
+    </div>`).join('');
+  const half = f.remaining/2, third = f.remaining/3;
+  const plan = `
+    <div class="panel">
+      <h3>This payment</h3>
+      <div class="stack">
+        <div class="opt ${state.split==='0'?'on':''}" data-split="0"><span>All of it</span><span class="r">${fmt(f.remaining)}</span></div>
+        <div class="opt ${state.split==='2'?'on':''}" data-split="2"><span>Split 2 ways</span><span class="r">${fmt(half)} each</span></div>
+        <div class="opt" data-split="3"><span>Split 3 ways</span><span class="r">${fmt(third)} each</span></div>
+        <div class="opt ${state.split==='custom'?'on':''}" data-split="custom"><span>Custom amount…</span><span class="r">${state.split==='custom'?fmt(10):''}</span></div>
+      </div>
+      ${f.legs ? `<div class="plan" style="margin:12px 0 0"><span class="txt">${f.planTxt}</span>${f.legs.map((l,i)=>`<span class="leg ${i===0?'now':''}">${fmt(l)}</span>`).join('')}</div>` : ''}
+      ${state.split==='custom' ? `<div class="plan" style="margin:12px 0 0"><span class="txt">${f.planTxt}</span></div>` : ''}
+      <div class="hint" style="margin-top:12px">Then choose how the customer is paying.</div>
+    </div>`;
+  return header(f) + `
+  <div class="split2">
+    <div class="list">${rows}</div>
+    ${picked ? `<div class="panel">${keypad(picked, f, true)}</div>` : plan}
+  </div>`;
+}
+
+function variantC(f){
+  const ts = tiles();
+  const cash = ts.find(t=>t.id==='cash'), card = ts.find(t=>t.id==='card');
+  const others = ts.filter(t=>!['cash','card'].includes(t.id));
+  const ons = others.filter(t=>!t.off), offs = others.filter(t=>t.off);
+  const picked = ts.find(t=>t.id===state.pick && !t.off);
+  const hero = (m, cta) => `
+    <div class="hero ${m.id===state.pick?'on':''}" data-pick="${m.id}">
+      ${m.offline?'<span class="badge">Works offline</span>':''}
+      <div class="top"><span class="ic">${ICONS[m.kind]}</span><span class="t">${m.title}</span></div>
+      <div class="cta">${cta}</div>
+    </div>`;
+  return header(f) + `
+  <div class="heroes">
+    ${hero(cash, `Take ${fmt(f.thisPay)} <small>· or enter what they hand you</small>`)}
+    ${hero(card, `Take ${fmt(f.thisPay)} <small>· one tap</small>`)}
+  </div>
+  <div class="secrow">
+    ${ons.map(m=>`<span class="sec ${m.id===state.pick?'on':''}" data-pick="${m.id}"><span class="ic">${ICONS[m.kind]}</span>${m.title}</span>`).join('')}
+    ${offs.length ? `<span class="more" id="moreC">${state.unavailOpen ? 'Hide' : offs.length + ' more not available'}</span>` : ''}
+  </div>
+  ${state.unavailOpen && offs.length ? `<div class="secrow" style="margin-top:8px">${offs.map(m=>`<span class="sec off"><span class="ic">${ICONS[m.kind]}</span>${m.title} <span class="badge warn">${m.why}</span></span>`).join('')}</div>` : ''}
+  ${picked ? keypad(picked, f, false) : ''}`;
+}
+
+function ledger(f){
+  const pays = state.paid ? `<div class="pay"><div class="row"><span>Cash</span><span class="r">${fmt(8)} <span class="badge ok">Captured</span></span></div><div class="s">Tendered ${fmt(10)} · change ${fmt(2)}</div></div>`
+             : `<div style="font-size:14px;color:var(--muted)">No payments yet</div>`;
+  return `
+  <div class="lh"><b>#102476</b> Guest</div>
+  <div class="body">
+    <div class="line"><span>1 × Belt</span><span class="r">${fmt(18)}</span></div>
+    <div class="pl">Payments</div>
+    ${pays}
+  </div>
+  <div class="totals">
+    <div class="line"><span>Total</span><span class="r">${fmt(TOTAL)}</span></div>
+    <div class="line"><span>Paid</span><span class="r">${fmt(f.paid)}</span></div>
+    <div class="line b"><span>Remaining</span><span class="r">${fmt(f.remaining)}</span></div>
+  </div>
+  <div class="tabsbar"><span>‹</span><span class="tab">Cart 0,00 £</span><span class="tab on">Cart ${fmt(TOTAL)}</span><span>+</span><span style="margin-left:auto">›</span></div>`;
+}
+
+function render(){
+  const f = figures();
+  const frame = document.getElementById('frame');
+  frame.classList.toggle('phone', !!+state.phone);
+  const t = document.getElementById('tender');
+  t.innerHTML = ({A:variantA,B:variantB,C:variantC})[state.variant](f);
+  document.getElementById('ledger').innerHTML = ledger(f);
+  document.getElementById('balbar').innerHTML = `<span><b>Remaining ${fmt(f.remaining)}</b><div class="s">${state.paid ? fmt(f.paid)+' paid · ' : ''}1 item · Guest</div></span><span class="chip ghost">Ledger</span>`;
+  document.querySelectorAll('.strip button').forEach(b => b.classList.toggle('on', String(state[b.dataset.set]) === b.dataset.val));
+  try { localStorage.setItem('tender-mock', JSON.stringify(state)); } catch(e){}
+}
+
+document.querySelector('.strip').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  state[b.dataset.set] = b.dataset.val; render();
+});
+document.getElementById('tender').addEventListener('click', e => {
+  const p = e.target.closest('[data-pick]'); if (p){ state.pick = state.pick===p.dataset.pick ? '' : p.dataset.pick; return render(); }
+  const s = e.target.closest('[data-split]'); if (s){ state.split = s.dataset.split==='3' ? '2' : s.dataset.split; return render(); }
+  if (e.target.closest('#unavail .head') || e.target.closest('#moreC')){ state.unavailOpen = state.unavailOpen?0:1; return render(); }
+  if (e.target.closest('.btn.outline')){ state.pick=''; return render(); }
+  if (e.target.closest('.chip') && e.target.closest('.this')){ state.split = state.split==='0' ? '2' : '0'; return render(); }
+});
+document.addEventListener('keydown', e => {
+  const order = ['A','B','C'];
+  if (e.key==='ArrowRight'){ state.variant = order[(order.indexOf(state.variant)+1)%3]; render(); }
+  if (e.key==='ArrowLeft'){ state.variant = order[(order.indexOf(state.variant)+2)%3]; render(); }
+  if (e.key==='1'){ state.pick='cash'; render(); } if (e.key==='2'){ state.pick='card'; render(); }
+  if (e.key==='3'){ state.pick='sim-terminal'; render(); } if (e.key==='0'){ state.pick=''; render(); }
+});
+render();
+</script>
+</body>
+</html>

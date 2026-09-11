@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tender pane mockup</title>
+<style>
+  /* Tokens mirror apps/main/global.css (OKLCH → hex approximations). Light first, dark below. */
+  :root{
+    --background:#f4f6fa; --foreground:#2b3442; --card:#ffffff; --card-header:#e9edf3;
+    --muted:#f1f3f7; --muted-foreground:#5c6677; --faint:#8d95a3;
+    --primary:#0a62b4; --primary-foreground:#f5f9ff; --primary-soft:#e4eefb;
+    --success:#0f8a56; --success-foreground:#f2fbf6; --success-soft:#e3f5ec;
+    --warning:#c8711a; --warning-soft:#fdf1e4;
+    --destructive:#cf3a2f; --destructive-soft:#fbe9e7;
+    --border:#dbe0e8; --border-strong:#c6cdd8; --ring:#0a62b4; --radius:8px;
+    --sidebar:#1f2733; --key:#e8ecf2; --key-press:#d9dfe8;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  .frame.dark{
+    --background:#1e2431; --foreground:#e6e9ef; --card:#262d3b; --card-header:#2f3745;
+    --muted:#2f3745; --muted-foreground:#a3abb8; --faint:#7d8696;
+    --primary:#4d9ae6; --primary-foreground:#0f1520; --primary-soft:#243a55;
+    --success:#3fbf86; --success-foreground:#0f1a15; --success-soft:#1f3a2e;
+    --warning:#e6963c; --warning-soft:#3d2d1a;
+    --destructive:#e0574c; --destructive-soft:#40221f;
+    --border:#3a4352; --border-strong:#4a5464; --ring:#4d9ae6;
+    --sidebar:#161b24; --key:#323b4a; --key-press:#3d4757;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#2b2f36;color:#111;font-size:14px;line-height:1.35}
+  /* driver strip — not part of the design */
+  .strip{position:sticky;top:0;z-index:10;background:#15181d;color:#cfd4dc;padding:10px 16px;display:flex;flex-wrap:wrap;gap:12px 22px;align-items:center;font-size:12px;border-bottom:1px solid #000}
+  .strip b{color:#fff;font-weight:600;margin-right:6px}
+  .strip .grp{display:flex;align-items:center;gap:4px}
+  .strip button{background:#2b3038;color:#cfd4dc;border:1px solid #3a4049;border-radius:6px;padding:4px 9px;font-size:12px;cursor:pointer}
+  .strip button.on{background:#3b82f6;border-color:#3b82f6;color:#fff}
+  .strip .note{margin-left:auto;color:#8b93a1}
+  /* frame */
+  .stage{display:flex;justify-content:center;padding:24px 16px 48px}
+  .frame{width:1280px;max-width:100%;height:800px;background:var(--background);color:var(--foreground);display:grid;grid-template-columns:52px 1fr;grid-template-rows:36px 1fr;border-radius:8px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+  .frame.phone{width:390px;height:844px;grid-template-columns:1fr}
+  .topbar{grid-column:1/-1;background:var(--sidebar);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;position:relative}
+  .topbar .right{position:absolute;right:14px;display:flex;align-items:center;gap:10px;font-size:13px}
+  .dot{width:9px;height:9px;border-radius:50%;background:#22c55e;display:inline-block}
+  .dot.off{background:#e6963c}
+  .avatar{width:18px;height:18px;border-radius:50%;background:#fff;color:#1f2733;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+  .rail{background:var(--sidebar);display:flex;flex-direction:column;align-items:center;padding-top:12px;gap:22px}
+  .frame.phone .rail{display:none}
+  .frame.phone .topbar{justify-content:flex-start;padding-left:14px;font-size:14px}
+  .frame.phone .topbar .right span:last-child{display:none}
+  .rail i{width:20px;height:20px;border-radius:5px;background:#9fb0c8;opacity:.6;display:block}
+  .rail i.on{background:#fff;opacity:1;box-shadow:-4px 0 0 0 var(--sidebar), -6px 0 0 0 #4d9ae6}
+  .rail .v{margin-top:auto;margin-bottom:10px;color:#8593a6;font-size:10px}
+  .columns{display:grid;grid-template-columns:1fr 488px;min-height:0}
+  .frame.phone .columns{grid-template-columns:1fr;grid-template-rows:1fr auto}
+  /* tender pane */
+  .tender{padding:12px 20px 20px;display:flex;flex-direction:column;min-height:0;overflow:auto}
+  .frame.phone .tender{padding:10px 14px 14px}
+  .hdr{display:flex;align-items:center;gap:10px;margin-bottom:10px;min-height:44px}
+  .iconbtn{width:44px;height:44px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;color:var(--foreground);cursor:pointer;margin-left:-8px}
+  .iconbtn:hover{background:var(--muted)}
+  .iconbtn svg{width:22px;height:22px}
+  .hdr h1{font-size:17px;font-weight:600;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
+  .frame.phone .hdr h1{font-size:16px}
+  .seg{display:flex;background:var(--muted);border-radius:9px;padding:3px;height:36px}
+  .seg span{padding:0 14px;border-radius:7px;color:var(--muted-foreground);font-size:13px;display:inline-flex;align-items:center;font-weight:500}
+  .seg span.on{background:var(--card);color:var(--foreground);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+  .frame.dark .seg span.on{box-shadow:none;border:1px solid var(--border-strong)}
+  .btn-danger{height:36px;padding:0 12px;border-radius:8px;background:var(--destructive-soft);color:var(--destructive);font-size:13px;font-weight:500;display:inline-flex;align-items:center;cursor:pointer}
+  /* amount block */
+  .amt{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:2px 0 16px}
+  .amt .lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground);font-weight:600}
+  .amt .big{font-size:40px;font-weight:700;letter-spacing:-.025em;line-height:1.05;font-variant-numeric:tabular-nums;margin-top:2px}
+  .frame.phone .amt .big{font-size:34px}
+  .amt .sub{font-size:13px;color:var(--muted-foreground);margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:20px}
+  .amt .sub b{color:var(--foreground);font-weight:600;font-variant-numeric:tabular-nums}
+  .chip{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 14px;border-radius:9px;background:var(--card);border:1px solid var(--border-strong);color:var(--foreground);font-weight:500;font-size:14px;cursor:pointer;white-space:nowrap}
+  .chip.on{background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}
+  .chip.sm{height:34px;font-size:13px;padding:0 12px}
+  .badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;padding:2px 8px;border-radius:99px;background:var(--muted);color:var(--muted-foreground);font-weight:500;white-space:nowrap;line-height:16px}
+  .badge.warn{background:var(--warning-soft);color:var(--warning)}
+  .badge.ok{background:var(--success-soft);color:var(--success)}
+  .badge svg{width:12px;height:12px}
+  .legs{display:inline-flex;gap:5px;align-items:center}
+  .legs .leg{font-size:12px;padding:2px 8px;border-radius:99px;border:1px solid var(--border-strong);color:var(--muted-foreground);font-variant-numeric:tabular-nums}
+  .legs .leg.now{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+  .legs .leg.done{border-color:transparent;background:var(--success-soft);color:var(--success)}
+  /* grid */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .frame.phone .grid{grid-template-columns:repeat(2,1fr)}
+  .tile{background:var(--card);border:1px solid var(--border);border-radius:12px;height:96px;padding:12px 14px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;position:relative;transition:transform .1s ease-out,border-color .12s ease-out,background .12s ease-out;user-select:none}
+  .tile:hover{border-color:var(--border-strong)}
+  .tile:active{transform:scale(.98);background:var(--muted)}
+  .tile.on{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary);background:var(--primary-soft)}
+  .tile .row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+  .tile .ic{width:26px;height:26px;color:var(--foreground)}
+  .tile.on .ic{color:var(--primary)}
+  .tile .ic svg{width:100%;height:100%;display:block}
+  .tile .t{font-size:17px;font-weight:600;letter-spacing:-.01em;line-height:1.15}
+  .tile.on .t{color:var(--primary)}
+  .tile .why{font-size:12px;color:var(--muted-foreground);line-height:1.2;margin-top:2px}
+  .tile.off{cursor:default;background:var(--muted);border-color:transparent}
+  .tile.off:active{transform:none}
+  .tile.off .ic{color:var(--faint)}
+  .tile.off .t{color:var(--faint);font-weight:500}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .mchip{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 14px;border-radius:10px;background:var(--card);border:1px solid var(--border);font-size:14px;font-weight:500;cursor:pointer;user-select:none;transition:transform .1s ease-out}
+  .mchip:active{transform:scale(.97)}
+  .mchip.on{background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}
+  .mchip .ic{width:18px;height:18px}.mchip .ic svg{width:100%;height:100%;display:block}
+  .mchip.off{color:var(--faint);background:var(--muted);border-color:transparent;cursor:default}
+  .mchip.off .ic{color:var(--faint)}
+  .frame.phone .tile{height:88px}
+  .frame.phone .tile .t{font-size:16px}
+  /* keypad */
+  .keypad{margin-top:16px;display:grid;grid-template-columns:360px 1fr;gap:20px;align-items:start}
+  .frame.phone .keypad{grid-template-columns:1fr;gap:12px}
+  .frame.phone .side{display:none}
+  .plan{font-size:13px;color:var(--muted-foreground);margin-top:6px;display:flex;align-items:center;gap:8px}
+  .keypad .lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground);font-weight:600}
+  .keypad .entry{font-size:36px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.025em;line-height:1.05;margin-top:2px}
+  .keypad .change{font-size:14px;font-weight:600;color:var(--success);margin-top:4px;min-height:18px;animation:rise .18s ease-out}
+  @keyframes rise{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+  .keypad .reader{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted-foreground);margin-top:6px}
+  .keypad .reader a{color:var(--primary);cursor:pointer;font-weight:500}
+  .keypad .reader svg{width:16px;height:16px}
+  .quick{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+  .keys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .key{height:56px;border-radius:10px;background:var(--key);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:500;color:var(--foreground);cursor:pointer;transition:transform .08s ease-out,background .08s;user-select:none;font-variant-numeric:tabular-nums}
+  .key:active{transform:scale(.97);background:var(--key-press)}
+  .key svg{width:22px;height:22px}
+  .actions{display:flex;gap:10px;margin-top:12px}
+  .btn{height:52px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;padding:0 18px;font-size:16px;font-weight:600;cursor:pointer;border:1px solid transparent;white-space:nowrap;transition:transform .08s ease-out}
+  .btn:active{transform:scale(.98)}
+  .btn.success{background:var(--success);color:var(--success-foreground);flex:1}
+  .btn.outline{background:var(--card);border-color:var(--border-strong);color:var(--foreground);min-width:96px}
+  .side{padding-top:6px;font-size:13px;color:var(--muted-foreground)}
+  .side .line{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums}
+  .side .line:last-child{border-bottom:0}
+  .side .line b{color:var(--foreground);font-weight:600}
+  /* ledger */
+  .ledger{background:var(--card);border-left:1px solid var(--border);display:flex;flex-direction:column;min-height:0}
+  .frame.phone .ledger{display:none}
+  .ledger .lh{background:var(--card-header);padding:12px 16px;font-size:14px;display:flex;gap:8px;align-items:center}
+  .ledger .lh b{font-weight:600}
+  .ledger .body{padding:14px 16px;flex:1;overflow:auto}
+  .line{display:flex;justify-content:space-between;padding:4px 0;font-size:14px}
+  .line .r{font-variant-numeric:tabular-nums}
+  .pl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground);margin:14px 0 6px;font-weight:600}
+  .pay{border:1px solid var(--border);border-radius:8px;padding:10px 12px;background:var(--muted);margin-bottom:8px}
+  .pay.new{animation:land .28s cubic-bezier(.2,.9,.3,1.1)}
+  @keyframes land{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}
+  .pay .row{display:flex;justify-content:space-between;align-items:center;font-size:14px}
+  .pay .row .r{display:flex;gap:8px;align-items:center;font-variant-numeric:tabular-nums}
+  .pay .s{font-size:12px;color:var(--muted-foreground);margin-top:2px}
+  .totals{border-top:1px solid var(--border);padding:12px 16px}
+  .totals .line{padding:5px 0}
+  .totals .line.b{font-weight:700;font-size:15px}
+  .tabsbar{display:flex;gap:6px;align-items:center;padding:8px 10px;border-top:1px solid var(--border);font-size:13px;color:var(--muted-foreground)}
+  .tabsbar .tab{padding:6px 10px;border-radius:6px}
+  .tabsbar .tab.on{background:var(--primary);color:var(--primary-foreground)}
+  .balbar{display:none;background:var(--card);border-top:1px solid var(--border);padding:10px 14px;align-items:center;justify-content:space-between;font-size:14px}
+  .frame.phone .balbar{display:flex}
+  .balbar b{font-variant-numeric:tabular-nums}
+  .balbar .s{color:var(--muted-foreground);font-size:12px}
+  .empty{color:var(--muted-foreground);font-size:14px}
+  /* paid stamp (completion beat) */
+  .stamp{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+  .stamp span{display:inline-flex;align-items:center;gap:8px;background:var(--success);color:var(--success-foreground);font-size:18px;font-weight:700;padding:10px 18px;border-radius:12px;animation:stamp .5s cubic-bezier(.2,.9,.3,1.15) both}
+  .stamp svg{width:22px;height:22px}
+  @keyframes stamp{0%{opacity:0;transform:scale(.7)}60%{opacity:1;transform:scale(1.04)}100%{opacity:1;transform:scale(1)}}
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:.01ms!important;transition-duration:.01ms!important} }
+  /* notes */
+  .notes{max-width:1280px;margin:0 auto;padding:0 16px 40px;color:#c8ccd4;font-size:13px;line-height:1.5}
+  .notes h2{color:#fff;font-size:15px;margin:22px 0 8px}
+  .notes ul{padding-left:18px}.notes li{margin:0 0 6px}.notes a{color:#8ab4f8}
+</style>
+</head>
+<body>
+
+<div class="strip">
+  <div class="grp"><b>Tap</b>
+    <button data-set="pick" data-val="">nothing</button>
+    <button data-set="pick" data-val="cash">Cash</button>
+    <button data-set="pick" data-val="card">Card</button>
+    <button data-set="pick" data-val="sumup">SumUp</button>
+  </div>
+  <div class="grp"><b>Split</b>
+    <button data-set="split" data-val="0">off</button>
+    <button data-set="split" data-val="2">2 ways</button>
+    <button data-set="split" data-val="custom">custom 10,00</button>
+  </div>
+  <div class="grp"><b>Network</b>
+    <button data-set="offline" data-val="0">online</button>
+    <button data-set="offline" data-val="1">offline</button>
+  </div>
+  <div class="grp"><b>Width</b>
+    <button data-set="phone" data-val="0">Tablet</button>
+    <button data-set="phone" data-val="1">Phone</button>
+  </div>
+  <div class="grp"><b>Theme</b>
+    <button data-set="dark" data-val="0">Light</button>
+    <button data-set="dark" data-val="1">Dark</button>
+  </div>
+  <div class="grp"><b>Paid so far</b>
+    <button data-set="paid" data-val="0">nothing</button>
+    <button data-set="paid" data-val="1">one cash leg</button>
+  </div>
+  <span class="note">Everything in the frame is live: tap a tile, type, press Take. 1/2/3 tap Cash/Card/SumUp · 0 clears · Esc closes</span>
+</div>
+
+<div class="stage">
+  <div class="frame" id="frame">
+    <div class="topbar">POS – UK Store
+      <div class="right"><span class="dot" id="dot"></span><span>🔔</span><span class="avatar">DC</span><span>Demo Cashier ▾</span></div>
+    </div>
+    <div class="rail"><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><span class="v">v 1.11.0</span></div>
+    <div class="columns">
+      <div class="tender" id="tender"></div>
+      <div class="ledger" id="ledger"></div>
+      <div class="balbar" id="balbar"></div>
+    </div>
+  </div>
+</div>
+
+<div class="notes">
+  <h2>What this applies from the design rules</h2>
+  <ul>
+    <li><b>Close, not a left arrow.</b> The pane is on the left of the ledger; leaving checkout brings the products column back here. A left arrow pointed nowhere. Esc does the same on desktop.</li>
+    <li><b>One number.</b> <i>Total</i> (or <i>Remaining</i> once a leg is taken) is the only large figure. A split or custom amount shows as a plan line under it, in the cashier's words, not as a second total.</li>
+    <li><b>A grid built for six gateways.</b> Three fixed columns, every tile 96 pt tall, order set by the POS settings page and never reshuffled. Unavailable gateways stay where the cashier learned they are, dimmed, with the reason in one quiet line. Nothing orange unless the cashier can act on it.</li>
+    <li><b>Kinds are icons.</b> Notes, card, terminal, Bluetooth reader. No <i>OTHER</i> label.</li>
+    <li><b>Touch sizes.</b> Tiles 96, keys 56, Take 52, chips 40, close 44. Gaps 8–10.</li>
+    <li><b>State in one place.</b> Offline is a badge under the total and the dot in the top bar; the tiles that need the store dim with <i>Needs a connection</i>.</li>
+    <li><b>Joy, defined.</b> Pressed states in 100 ms; the change line rises as you type; pressing Take lands the payment in the ledger and stamps <i>Paid</i> when the balance reaches zero. Nothing else moves. Reduce-motion turns it all off.</li>
+    <li><b>Tokens, both themes.</b> Colours are the semantic tokens from <code>apps/main/global.css</code>; blue primary, red only for Cancel payment. Dark mode is the same tokens swapped.</li>
+    <li><b>No paragraph.</b> The tiles and the Split chip explain themselves.</li>
+  </ul>
+  <h2>Kept from the live screen</h2>
+  <ul><li>Payments / Legacy segmented control · Cancel payment once a leg exists · every disabled reason the code produces (no terminals set up, not available in the browser, needs a connection) · Works offline on Cash and Card · quick amounts and Full balance · terminal and reader lines with Change · Payment n of m · the ledger pane and cart tabs · phone: full-width pane with the ledger folded to a balance bar.</li></ul>
+  <h2>Open questions</h2>
+  <ul>
+    <li>Should a card tap for the exact balance skip the keypad and go straight to the terminal? (Toast Fast cash / Odoo one-click.) Here it opens the keypad pre-filled; one more tap.</li>
+    <li>Does <i>Works offline</i> earn its place while online, or show only once the till loses the store?</li>
+    <li>Legacy tab when the store has no webview gateway: hide, or keep the position stable?</li>
+  </ul>
+  <p>First round (three layouts, pre-rules) kept as <a href="index-v1-three-layouts.html">index-v1-three-layouts.html</a>.</p>
+</div>
+
+<script>
+const fmt = n => n.toFixed(2).replace('.', ',') + ' £';
+const I = {
+  cash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5h.01M18 14.5h.01"/></svg>',
+  card: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 10h19M6 15h4"/></svg>',
+  terminal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2"/><rect x="8.5" y="5" width="7" height="5" rx="1"/><path d="M9 13h2M13 13h2M9 16h2M13 16h2"/></svg>',
+  reader: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="3" width="10" height="18" rx="2.5"/><path d="M10 7h4M12 17h.01"/><path d="M19.5 8.5c1.2 1.2 1.2 5.8 0 7M4.5 8.5c-1.2 1.2-1.2 5.8 0 7"/></svg>',
+  close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  del: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 6H8l-5 6 5 6h13z"/><path d="M12 9l6 6M18 9l-6 6"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  wifi: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 8.5a15 15 0 0 1 20 0M5.5 12a10 10 0 0 1 13 0M9 15.5a5 5 0 0 1 6 0M12 19h.01"/><path d="M3 3l18 18"/></svg>'
+};
+const METHODS = [
+  { id:'cash',    kind:'cash',     title:'Cash',               offline:true, change:true },
+  { id:'card',    kind:'card',     title:'Card',               offline:true },
+  { id:'sim-t',   kind:'terminal', title:'Simulated terminal', server:true, reader:'Front desk' },
+  { id:'sim-r',   kind:'reader',   title:'Simulated reader',   device:true },
+  { id:'mollie',  kind:'terminal', title:'Mollie Terminal',    server:true, why:'No terminals set up' },
+  { id:'stripe',  kind:'reader',   title:'Stripe Terminal',    device:true, why:'Not available in the browser' },
+  { id:'sumup',   kind:'terminal', title:'SumUp Terminal',     server:true, reader:'Counter 1' },
+];
+const TOTAL = 18.00;
+const state = { pick:'', split:'0', offline:0, phone:0, dark:0, paid:0, entry:null, legs:[], stamp:0 };
+try { Object.assign(state, JSON.parse(localStorage.getItem('tender-mock-v2') || '{}')); } catch(e){}
+
+function legsTaken(){ return state.paid ? [{title:'Cash', amount:8, s:'Tendered 10,00 £ · change 2,00 £'}, ...state.legs] : state.legs; }
+function figures(){
+  const paid = legsTaken().reduce((a,l)=>a+l.amount,0);
+  const remaining = Math.max(0, TOTAL - paid);
+  let thisPay = remaining, plan = null;
+  if (state.split==='2' && remaining>0){ const n = state.legs.length; thisPay = n===0 ? remaining/2 : remaining; plan = { txt:`Payment ${n+1} of 2`, legs:[{v:remaining/2 || thisPay, k:n>0?'done':'now'},{v:remaining - (n===0?remaining/2:0), k:n>0?'now':''}] }; }
+  if (state.split==='custom' && remaining>0){ thisPay = Math.min(10, remaining); plan = { txt:`After this payment: ${fmt(remaining - thisPay)} still to take` }; }
+  return { paid, remaining, thisPay, plan };
+}
+function tiles(){ return METHODS.map(m => { let why = m.why || null; if (state.offline && (m.server||m.device)) why = 'Needs a connection'; return {...m, why, off: !!why}; }); }
+
+function header(f){
+  const remainingMode = f.paid > 0;
+  const splitLabel = state.split==='2' ? 'Split 2 ways' : state.split==='custom' ? 'Custom amount' : 'Split';
+  const offline = state.offline ? `<span class="badge warn">${I.wifi} Offline · cash and card only</span>` : '';
+  let planLine = '';
+  if (f.plan && f.plan.legs) planLine = `<span>${f.plan.txt}</span><span class="legs">${f.plan.legs.map(l=>`<span class="leg ${l.k}">${fmt(l.v)}</span>`).join('')}</span>`;
+  else if (f.plan) planLine = `<span>${f.plan.txt}</span>`;
+  const sub = remainingMode ? `<b>${fmt(f.paid)}</b> of ${fmt(TOTAL)} paid` : `1 item · Guest`;
+  const planRow = planLine ? `<div class="plan">${planLine}</div>` : '';
+  return `
+  <div class="hdr">
+    <span class="iconbtn" title="Close checkout">${I.close}</span>
+    <h1>Pay order #102476</h1>
+    ${legsTaken().length && f.remaining>0 ? '<span class="btn-danger">Cancel payment</span>' : ''}
+    <div class="seg"><span class="on">Payments</span><span>Legacy</span></div>
+  </div>
+  <div class="amt">
+    <div>
+      <div class="lbl">${remainingMode ? 'Remaining' : 'Total'}</div>
+      <div class="big">${fmt(f.remaining)}</div>
+      <div class="sub">${sub} ${offline}</div>${planRow}
+    </div>
+    ${f.remaining>0 ? `<span class="chip ${state.split!=='0'?'on':''}" data-split-toggle>${splitLabel}</span>` : ''}
+  </div>`;
+}
+
+function keypad(m, f){
+  const note = [5,10,20,50].find(n => n >= f.thisPay) ?? f.thisPay;
+  const amount = state.entry ?? (m.change ? note : f.thisPay);
+  const applied = Math.min(amount, f.thisPay);
+  const change = m.change && amount > f.thisPay ? amount - f.thisPay : 0;
+  const quick = m.change ? [f.thisPay, note, 50].filter((v,i,a)=>a.indexOf(v)===i) : [f.thisPay];
+  const reader = m.server ? `<div class="reader">${I.terminal} Terminal: ${m.reader} <a>Change</a></div>`
+               : m.device ? `<div class="reader">${I.reader} Reader: Simulated M2 · connected <a>Change</a></div>` : '';
+  const after = f.remaining - applied;
+  return `
+  <div class="keypad">
+    <div>
+      <div class="lbl">${m.change ? 'Tendered' : m.title}${f.plan && f.plan.legs ? ' · ' + f.plan.txt : ''}</div>
+      <div class="entry">${fmt(amount)}</div>
+      <div class="change">${change>0 ? 'Change ' + fmt(change) : ''}</div>
+      ${reader}
+      <div class="quick">${quick.map(v=>`<span class="chip ${v===amount?'on':''}" data-entry="${v}">${v===f.thisPay && !m.change ? 'Full balance ' : ''}${fmt(v)}</span>`).join('')}</div>
+      <div class="keys">${['1','2','3','4','5','6','7','8','9','C','0'].map(k=>`<span class="key" data-key="${k}">${k}</span>`).join('')}<span class="key" data-key="⌫">${I.del}</span></div>
+      <div class="actions"><span class="btn success" data-take>Take ${fmt(applied)} in ${m.title}</span><span class="btn outline" data-cancel>Cancel</span></div>
+    </div>
+    <div class="side">
+      <div class="line"><span>Balance</span><b>${fmt(f.remaining)}</b></div>
+      <div class="line"><span>This payment</span><b>${fmt(applied)}</b></div>
+      <div class="line"><span>${after>0 ? 'Still to take' : 'After this'}</span><b>${after>0 ? fmt(after) : 'Paid in full'}</b></div>
+    </div>
+  </div>`;
+}
+
+function tenderPane(f){
+  const ts = tiles(); const picked = ts.find(t=>t.id===state.pick && !t.off && f.remaining>0);
+  if (picked) {
+    // Progressive disclosure: once a method is chosen the grid folds to a chip row so the
+    // keypad and Take stay on screen; tapping another chip switches method, the same chip clears.
+    return header(f) + `
+    <div class="chips">${(+state.phone ? [picked] : ts).map(m=>`<span class="mchip ${m.off?'off':''} ${m.id===state.pick?'on':''}" ${m.off?'':`data-pick="${m.id}"`}><span class="ic">${I[m.kind]}</span>${m.title}</span>`).join('')}${+state.phone ? '<span class="mchip" data-cancel>Change method</span>' : ''}</div>
+    ${keypad(picked, f)}`;
+  }
+  const shown = ts;
+  return header(f) + `
+  <div class="grid">${shown.map(m=>`
+    <div class="tile ${m.off?'off':''} ${m.id===state.pick?'on':''}" ${m.off?'':`data-pick="${m.id}"`}>
+      <div class="row"><span class="ic">${I[m.kind]}</span>${m.offline && !m.off ? '<span class="badge">Works offline</span>' : ''}</div>
+      <div><div class="t">${m.title}</div>${m.off ? `<div class="why">${m.why}</div>` : ''}</div>
+    </div>`).join('')}
+  </div>
+  ${picked ? keypad(picked, f) : ''}`;
+}
+
+function ledger(f){
+  const legs = legsTaken();
+  const pays = legs.length ? legs.map((l,i)=>`<div class="pay ${l.fresh?'new':''}"><div class="row"><span>${l.title}</span><span class="r">${fmt(l.amount)} <span class="badge ok">Captured</span></span></div><div class="s">${l.s}</div></div>`).join('')
+             : `<div class="empty">No payments yet</div>`;
+  const stamp = state.stamp ? `<div class="stamp"><span>${I.check} Paid</span></div>` : '';
+  return `
+  <div class="lh"><b>#102476</b> Guest</div>
+  <div class="body" style="position:relative">
+    <div class="line"><span>1 × Belt</span><span class="r">${fmt(18)}</span></div>
+    <div class="pl">Payments</div>
+    ${pays}
+    ${stamp}
+  </div>
+  <div class="totals">
+    <div class="line"><span>Total</span><span class="r">${fmt(TOTAL)}</span></div>
+    <div class="line"><span>Paid</span><span class="r">${fmt(f.paid)}</span></div>
+    <div class="line b"><span>Remaining</span><span class="r">${fmt(f.remaining)}</span></div>
+  </div>
+  <div class="tabsbar"><span>‹</span><span class="tab">Cart 0,00 £</span><span class="tab on">Cart ${fmt(TOTAL)}</span><span>+</span><span style="margin-left:auto">›</span></div>`;
+}
+
+function render(){
+  const f = figures();
+  const frame = document.getElementById('frame');
+  frame.classList.toggle('phone', !!+state.phone); frame.classList.toggle('dark', !!+state.dark);
+  document.getElementById('dot').className = 'dot' + (state.offline ? ' off' : '');
+  document.getElementById('tender').innerHTML = tenderPane(f);
+  document.getElementById('ledger').innerHTML = ledger(f);
+  document.getElementById('balbar').innerHTML = `<span><b>${f.paid>0?'Remaining':'Total'} ${fmt(f.remaining)}</b><div class="s">${f.paid>0 ? fmt(f.paid)+' paid · ' : ''}1 item · Guest</div></span><span class="chip sm">Ledger</span>`;
+  document.querySelectorAll('.strip button').forEach(b => b.classList.toggle('on', String(state[b.dataset.set]) === b.dataset.val));
+  state.legs.forEach(l => delete l.fresh);
+  try { localStorage.setItem('tender-mock-v2', JSON.stringify({...state, stamp:0})); } catch(e){}
+}
+
+document.querySelector('.strip').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  state[b.dataset.set] = b.dataset.val; state.entry = null;
+  if (b.dataset.set === 'paid') { state.legs = []; }
+  render();
+});
+document.getElementById('tender').addEventListener('click', e => {
+  const t = e.target;
+  const p = t.closest('[data-pick]'); if (p){ state.pick = state.pick===p.dataset.pick ? '' : p.dataset.pick; state.entry=null; return render(); }
+  if (t.closest('[data-split-toggle]')){ state.split = state.split==='0' ? '2' : '0'; state.entry=null; return render(); }
+  const q = t.closest('[data-entry]'); if (q){ state.entry = +q.dataset.entry; return render(); }
+  const k = t.closest('[data-key]'); if (k){
+    const cur = state.entry===null ? '' : Math.round(state.entry*100).toString();
+    let next = cur;
+    if (k.dataset.key==='C') next = '';
+    else if (k.dataset.key==='⌫') next = cur.slice(0,-1);
+    else next = (cur + k.dataset.key).slice(0,7);
+    state.entry = next==='' ? 0 : +next/100; return render();
+  }
+  if (t.closest('[data-cancel]')){ state.pick=''; state.entry=null; return render(); }
+  if (t.closest('.iconbtn')){ state.pick=''; state.entry=null; return render(); }
+  if (t.closest('[data-take]')){
+    const f = figures(); const m = METHODS.find(x=>x.id===state.pick);
+    const note = [5,10,20,50].find(n => n >= f.thisPay) ?? f.thisPay;
+    const amount = state.entry ?? (m.change ? note : f.thisPay);
+    const applied = Math.min(amount, f.thisPay);
+    const change = m.change && amount > applied ? amount - applied : 0;
+    state.legs.push({ title:m.title, amount:applied, s: m.change ? `Tendered ${fmt(amount)} · change ${fmt(change)}` : (m.reader ? `Terminal: ${m.reader}` : 'Card'), fresh:true });
+    state.pick=''; state.entry=null;
+    const f2 = figures(); state.stamp = f2.remaining <= 0 ? 1 : 0;
+    render();
+    if (state.stamp) setTimeout(()=>{ state.stamp=0; render(); }, 1400);
+  }
+});
+document.addEventListener('keydown', e => {
+  if (e.key==='1'){ state.pick='cash'; } else if (e.key==='2'){ state.pick='card'; } else if (e.key==='3'){ state.pick='sumup'; }
+  else if (e.key==='0' || e.key==='Escape'){ state.pick=''; } else return;
+  state.entry=null; render();
+});
+render();
+</script>
+</body>
+</html>
