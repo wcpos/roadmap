@@ -16,7 +16,7 @@ The dark strip at the top is not part of the design.
 
 | Control | What it changes |
 |---|---|
-| **Jump to** | Fresh sale · Typed 20 · Split 2 ways · After a cash leg · On the terminal · Paid |
+| **Jump to** | Fresh sale · Typed 20 · Card selected · SumUp selected · Split 2 ways · After a cash leg · On the terminal · Paid · Unavailable list open |
 | **Network** | offline: one badge by the label, the dot in the top bar, terminal pills faded with one line under the row saying why |
 | **Surface** | Slate (the sidebar colour) · Blue (brand) · Light |
 | **Width** | Tablet (1280, ledger beside) or Phone (390, ledger folded to a balance bar, method row scrolls) |
@@ -26,7 +26,7 @@ Keyboard: digits and Backspace type, Enter takes cash, Esc closes.
 ## What it does
 
 - **The amount is the screen.** Balance pre-typed, dimmed until you type; the change line rises as you type; a short amount says what is still to take.
-- **The method is the commit.** Cash and Card are white and carry the amount they will take. Terminals and readers sit in the same row in POS-settings order and wrap; unavailable ones fade with one quiet line under the row.
+- **Choose the method, then commit** (round 5, after Paul's notes). The method row under the amount is a selector; the helpers change with it (notes + Exact for cash, Full balance for card, reader line + Change for a terminal); one white button at the bottom names the action. Unavailable gateways sit in a folded *N not available right now* list with reasons. Payments / Legacy is a segmented control at the far right; Split is a chip beside the To pay label.
 - **Card → terminal moment → Paid.** No confirm screen. The Paid moment is full-bleed green, the tick draws, change is the headline for cash, then Print / Email / No receipt · New sale.
 - **Split** is a header action that turns the amount into a plan and pre-types the leg. Custom amounts: type.
 - **Close, not an arrow.**

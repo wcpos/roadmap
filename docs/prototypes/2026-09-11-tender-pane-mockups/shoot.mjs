@@ -6,8 +6,8 @@ const dir = path.dirname(fileURLToPath(import.meta.url));
 const url = 'file://' + path.join(dir, 'index.html');
 // [name, jump, {set: val}]
 const shots = [
-  ['fresh', 'fresh', {}], ['typed', 'typed', {}], ['split', 'split', {}], ['partpaid', 'partpaid', {}],
-  ['terminal', 'terminal', {}], ['paid', 'paid', {}], ['offline', 'fresh', {offline:'1'}],
+  ['fresh', 'fresh', {}], ['typed', 'typed', {}], ['card', 'card', {}], ['sumup', 'sumup', {}], ['split', 'split', {}], ['partpaid', 'partpaid', {}],
+  ['terminal', 'terminal', {}], ['paid', 'paid', {}], ['offline', 'fresh', {offline:'1'}], ['unavail-open', 'unavail', {offline:'1'}],
   ['blue', 'typed', {surface:'blue'}], ['light', 'typed', {surface:'light'}],
   ['phone-fresh', 'fresh', {phone:'1'}], ['phone-paid', 'paid', {phone:'1'}], ['phone-terminal', 'terminal', {phone:'1'}],
 ];

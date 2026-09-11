@@ -49,6 +49,35 @@
   .hd .lnk{color:var(--pay-dim);cursor:pointer;padding:8px 10px;border-radius:8px;font-weight:500}
   .hd .lnk.on{background:var(--pay-2);color:var(--pay-fg)}
   .hd .lnk.danger{color:#ff9c93}
+  .seg{display:flex;background:var(--pay-2);border-radius:10px;padding:3px;height:38px;margin-left:16px}
+  .seg span{padding:0 14px;border-radius:8px;color:var(--pay-dim);font-size:13px;display:inline-flex;align-items:center;font-weight:500;cursor:pointer}
+  .seg span.on{background:var(--pay-fg);color:var(--pay)}
+  .lblrow{display:flex;justify-content:center;align-items:center;gap:10px}
+  .splitchip{height:28px;padding:0 12px;border-radius:99px;border:1px solid var(--pay-3);color:var(--pay-dim);font-size:12px;font-weight:600;display:inline-flex;align-items:center;cursor:pointer;text-transform:none;letter-spacing:0}
+  .splitchip.on{background:var(--pay-fg);color:var(--pay);border-color:transparent}
+  .sel{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px;flex:none}
+  .sel .m{height:48px;font-size:15px;padding:0 16px;border-radius:12px;background:var(--pay-2);color:var(--pay-dim)}
+  .sel .m.on{background:var(--pay-fg);color:var(--pay);font-weight:700}
+  .sel .m .ic{width:20px;height:20px}
+  .unav{text-align:center;margin-top:8px;font-size:12.5px;color:var(--pay-faint)}
+  .unav .h{cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:8px;color:var(--pay-dim)}
+  .unav .h:hover{background:var(--pay-2)}
+  .unav .h .car{width:12px;height:12px;transition:transform .15s}
+  .unav.closed .h .car{transform:rotate(-90deg)}
+  .unav ul{list-style:none;margin:6px auto 0;padding:0;display:grid;gap:4px;max-width:440px}
+  .unav li{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:8px;background:var(--pay-2);color:var(--pay-dim);font-size:13px}
+  .unav li .ic{width:16px;height:16px;opacity:.7}.unav li .ic svg{width:100%;height:100%;display:block}
+  .unav li b{font-weight:600;color:var(--pay-fg)}
+  .unav li .why{margin-left:auto;color:var(--pay-faint)}
+  .unav.closed ul{display:none}
+  .helpers{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:10px;min-height:36px;flex-wrap:wrap}
+  .helpers .reader{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--pay-dim);height:36px;padding:0 12px;border-radius:99px;background:var(--pay-2)}
+  .helpers .reader svg{width:16px;height:16px}
+  .helpers .reader a{color:var(--pay-fg);font-weight:600;cursor:pointer;margin-left:4px}
+  .commit{display:flex;justify-content:center;margin-top:10px;flex:none}
+  .commit .btn{width:100%;max-width:440px;height:58px;font-size:18px}
+  .commit .btn.disabled{opacity:.45;cursor:default}
+  .frame.phone .commit .btn{max-width:none}
   .frame.light .hd .lnk.danger{color:var(--destructive)}
   .amt{text-align:center;margin:10px 0 0;flex:none}
   .amt .lbl{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--pay-dim);font-weight:600;min-height:16px}
@@ -66,16 +95,15 @@
   .badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:3px 9px;border-radius:99px;background:var(--pay-2);color:var(--pay-dim);font-weight:500}
   .badge.warn{color:var(--pay-warn)}
   .badge svg{width:12px;height:12px}
-  .quick{display:flex;justify-content:center;gap:8px;margin-top:14px;min-height:36px}
+  .quick{display:flex;justify-content:center;gap:8px;min-height:36px}
   .q{height:36px;padding:0 14px;border-radius:99px;background:var(--pay-2);color:var(--pay-fg);font-weight:600;font-size:14px;display:inline-flex;align-items:center;cursor:pointer;font-variant-numeric:tabular-nums;transition:transform .08s}
   .q:active{transform:scale(.96)}
   .q.on{background:var(--pay-fg);color:var(--pay)}
   .keys{display:grid;grid-template-columns:repeat(3,1fr);gap:4px 6px;max-width:440px;width:100%;margin:6px auto 0;flex:1;min-height:0}
   .frame.phone .keys{max-width:none;flex:none;grid-auto-rows:54px;margin-top:2px}
   .frame.phone .pay{overflow:auto}
-  .frame.phone .methods{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;padding-bottom:4px;margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}
-  .frame.phone .m{height:52px;flex:none}
-  .frame.phone .whyline{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .frame.phone .sel{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;padding-bottom:4px;margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}
+  .frame.phone .sel .m{flex:none}
   .k{display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:500;color:var(--pay-fg);border-radius:14px;cursor:pointer;user-select:none;transition:background .08s,transform .08s;font-variant-numeric:tabular-nums}
   .k:active{background:var(--pay-2);transform:scale(.96)}
   .k.sub{font-size:24px;color:var(--pay-dim)}
@@ -160,10 +188,13 @@
   <div class="grp"><b>Jump to</b>
     <button data-jump="fresh">Fresh sale</button>
     <button data-jump="typed">Typed 20</button>
+    <button data-jump="card">Card selected</button>
+    <button data-jump="sumup">SumUp selected</button>
     <button data-jump="split">Split 2 ways</button>
     <button data-jump="partpaid">After a cash leg</button>
     <button data-jump="terminal">On the terminal</button>
     <button data-jump="paid">Paid</button>
+    <button data-jump="unavail">Unavailable list open</button>
   </div>
   <div class="grp"><b>Network</b><button data-set="offline" data-val="0">online</button><button data-set="offline" data-val="1">offline</button></div>
   <div class="grp"><b>Surface</b><button data-set="surface" data-val="slate">Slate</button><button data-set="surface" data-val="blue">Blue</button><button data-set="surface" data-val="light">Light</button></div>
@@ -225,7 +256,8 @@ const METHODS = [
   { id:'stripe', kind:'reader',   title:'Stripe', device:true, why:'not available in the browser' },
 ];
 const TOTAL = 18.00;
-const S = { entry:null, split:'0', offline:0, surface:'slate', phone:0, legs:[], view:'keypad', term:null, timers:[] };
+const S = { entry:null, split:'0', offline:0, surface:'slate', phone:0, legs:[], view:'keypad', term:null, timers:[], method:'cash', unavailOpen:0 };
+I.caret='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
 
 const paidSoFar = () => S.legs.reduce((a,l)=>a+l.amount,0);
 function figures(){
@@ -238,35 +270,50 @@ const methods = () => METHODS.map(m => { let why = m.why || null; if (S.offline 
 const clearTimers = () => { S.timers.forEach(clearTimeout); S.timers = []; };
 
 function keypadView(f){
+  const ms = methods();
+  const ons = ms.filter(m=>!m.off), offs = ms.filter(m=>m.off);
+  if (!ons.find(m=>m.id===S.method)) S.method = ons[0] ? ons[0].id : null;
+  const m = ons.find(x=>x.id===S.method) || null;
   const entry = S.entry ?? f.thisPay;
   const ghost = S.entry === null;
-  const change = entry > f.thisPay ? entry - f.thisPay : 0;
+  const applied = Math.min(entry, f.thisPay);
+  const change = m && m.change && entry > f.thisPay ? entry - f.thisPay : 0;
   const short = entry < f.thisPay ? f.thisPay - entry : 0;
-  const note = [5,10,20,50].filter(n => n > f.thisPay).slice(0,2);
-  const ms = methods();
-  const offs = ms.filter(m=>m.off);
   let line = '';
   if (change>0) line = `<span class="chg">Change ${fmt(change)}</span>`;
+  else if (m && !m.change && entry > f.thisPay) line = `<span class="short">Only ${fmt(f.thisPay)} is due — ${m.title} can't give change</span>`;
   else if (short>0 && entry>0) line = `<span class="short">${fmt(short)} still to take after this</span>`;
   else if (f.plan) line = `<span class="plan">${f.plan.txt}</span>${f.plan.legs.map(l=>`<span class="leg ${l.k}">${fmt(l.v)}</span>`).join('')}`;
   const offline = S.offline ? `<span class="badge warn">${I.wifi} Offline · cash and card only</span>` : '';
+  // helpers change with the selected method
+  let helpers = '';
+  if (m && m.change){
+    const notes = [5,10,20,50].filter(n => n > f.thisPay).slice(0,2);
+    helpers = `<div class="quick">${notes.map(n=>`<span class="q ${entry===n?'on':''}" data-q="${n}">${fmt(n)}</span>`).join('')}<span class="q ${ghost?'on':''}" data-q="exact">Exact ${fmt(f.thisPay)}</span></div>`;
+  } else if (m && (m.server || m.device)){
+    helpers = `<span class="reader">${m.device ? I.reader : I.terminal} ${m.model} · ${m.reader} · <span class="dot"></span> connected · 82% <a>Change</a></span><span class="q ${ghost?'on':''}" data-q="exact">Full balance ${fmt(f.thisPay)}</span>`;
+  } else if (m){
+    helpers = `<span class="q ${ghost?'on':''}" data-q="exact">Full balance ${fmt(f.thisPay)}</span>`;
+  }
+  const commitLabel = !m ? 'Choose how the customer is paying' : (m.server||m.device) ? `Send ${fmt(applied)} to ${m.title}` : `Take ${fmt(applied)} in ${m.title}`;
+  const canCommit = m && applied > 0 && !(m && !m.change && entry > f.thisPay);
   return `
   <div class="hd">
     <span class="x" data-close>${I.close}</span>
     <span class="title">Order <b>#102476</b> · 1 item · Guest${f.paid>0 ? ` · <b>${fmt(f.paid)}</b> paid` : ''}</span>
     ${S.legs.length ? '<span class="lnk danger" data-cancel-payment>Cancel payment</span>' : ''}
-    <span class="lnk ${S.split!=='0'?'on':''}" data-split>Split</span>
-    <span class="lnk">Legacy</span>
+    <div class="seg"><span class="on">Payments</span><span>Legacy</span></div>
   </div>
   <div class="amt">
-    <div class="lbl">${f.paid>0 ? 'Remaining' : 'To pay'} ${fmt(f.thisPay)} ${offline}</div>
+    <div class="lblrow"><span class="lbl">${f.paid>0 ? 'Remaining' : 'To pay'} ${fmt(f.thisPay)}</span>${f.remaining>0 ? `<span class="splitchip ${S.split!=='0'?'on':''}" data-split>${S.split!=='0' ? 'Split 2 ways' : 'Split'}</span>` : ''}${offline}</div>
     <div class="big ${ghost?'ghost':''}" id="big">${fmt(entry)}</div>
     <div class="line">${line}</div>
   </div>
-  <div class="quick">${note.map(n=>`<span class="q ${entry===n?'on':''}" data-q="${n}">${fmt(n)}</span>`).join('')}<span class="q ${ghost?'on':''}" data-q="exact">Exact ${fmt(f.thisPay)}</span></div>
+  <div class="sel">${ons.map(x=>`<span class="m ${x.id===S.method?'on':''}" data-pick="${x.id}"><span class="ic">${I[x.kind]}</span>${x.title}</span>`).join('')}</div>
+  ${offs.length ? `<div class="unav ${S.unavailOpen?'':'closed'}"><span class="h" data-unavail><span class="car">${I.caret}</span>${offs.length} not available right now</span><ul>${offs.map(x=>`<li><span class="ic">${I[x.kind]}</span><b>${x.title}</b><span class="why">${x.why}</span></li>`).join('')}</ul></div>` : ''}
+  <div class="helpers">${helpers}</div>
   <div class="keys">${['1','2','3','4','5','6','7','8','9'].map(k=>`<span class="k" data-key="${k}">${k}</span>`).join('')}<span class="k sub" data-key="C">C</span><span class="k" data-key="0">0</span><span class="k sub" data-key="⌫">${I.del}</span></div>
-  <div class="methods">${ms.map(m=>`<span class="m ${m.primary?'primary':''} ${m.off?'off':''}" ${m.off?'':`data-take="${m.id}"`}><span class="ic">${I[m.kind]}</span>${m.title}${m.primary && !m.off ? ` <span class="amt-in">${fmt(Math.min(entry, f.thisPay))}</span>` : ''}</span>`).join('')}</div>
-  <div class="whyline">${offs.length ? offs.map(m=>`<b>${m.title}</b> ${m.why}`).join(' · ') : ''}</div>`;
+  <div class="commit"><span class="btn white ${canCommit?'':'disabled'}" ${canCommit && m ? `data-take="${m.id}"` : ''}>${commitLabel}</span></div>`;
 }
 
 function terminalView(f){
@@ -333,6 +380,7 @@ function take(id){
     return;
   }
   const change = m.change ? entry - applied : 0;
+  if (!m.change && entry > applied) return;
   land(m, applied, change, m.change ? `Tendered ${fmt(applied+change)} · change ${fmt(change)}` : 'Manual entry');
 }
 function land(m, applied, change, detail){
@@ -343,8 +391,11 @@ function land(m, applied, change, detail){
   render();
 }
 function jump(name){
-  clearTimers(); S.entry=null; S.split='0'; S.legs=[]; S.view='keypad'; S.term=null;
+  clearTimers(); S.entry=null; S.split='0'; S.legs=[]; S.view='keypad'; S.term=null; S.method='cash'; S.unavailOpen=0;
   if (name==='typed') S.entry = 20;
+  if (name==='card') S.method = 'card';
+  if (name==='sumup') S.method = 'sumup';
+  if (name==='unavail') S.unavailOpen = 1;
   if (name==='split') S.split = '2';
   if (name==='partpaid') S.legs = [{title:'Cash', amount:10, change:0, detail:'Tendered 10,00 £ · change 0,00 £'}];
   if (name==='terminal'){ S.view='terminal'; S.term={method:'sumup', amount:18, step:1}; }
@@ -367,6 +418,8 @@ document.getElementById('pay').addEventListener('click', e => {
     S.entry = next==='' ? 0 : +next/100; return render();
   }
   const q = t.closest('[data-q]'); if (q){ S.entry = q.dataset.q==='exact' ? null : +q.dataset.q; return render(); }
+  const pk = t.closest('[data-pick]'); if (pk){ S.method = pk.dataset.pick; S.entry = null; return render(); }
+  if (t.closest('[data-unavail]')){ S.unavailOpen = S.unavailOpen ? 0 : 1; return render(); }
   const m = t.closest('[data-take]'); if (m) return take(m.dataset.take);
   if (t.closest('[data-split]')){ S.split = S.split==='0' ? '2' : '0'; S.entry=null; return render(); }
   if (t.closest('[data-close]') || t.closest('[data-new]')) return jump('fresh');
@@ -381,7 +434,7 @@ document.addEventListener('keydown', e => {
     const next = e.key==='Backspace' ? cur.slice(0,-1) : (cur + e.key).slice(0,7);
     S.entry = next==='' ? 0 : +next/100; render();
   }
-  if (e.key==='Enter') take('cash');
+  if (e.key==='Enter' && S.method) take(S.method);
 });
 render();
 </script>
