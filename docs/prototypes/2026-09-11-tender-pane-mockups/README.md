@@ -48,3 +48,7 @@ Direction 01 steals from Cash App (the amount is the screen; digits without boxe
 ## Reaction
 
 _To be recorded after Paul has walked it._
+
+## Split board (round 7)
+
+`split-directions.html` — five models of what a split *is*, each drawn on the current pay surface with the Mobbin idiom it borrows: **A** even ways plus Amount / Percent tabs (Revolut, Splitwise), **B** build the legs first then take them in order (Monzo, Wise), **C** split by item (GoPay), **D** how many people, a stepper with person cards (Blackbird, Chime, PayPal), **E** no plan at all, Half / A third / Type chips on the keypad (Monzo). Captures in `screens/split-A..E.png`. Built after Paul asked to see more options for the split flow.
