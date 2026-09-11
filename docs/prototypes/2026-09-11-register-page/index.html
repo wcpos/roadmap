@@ -184,6 +184,22 @@ a{color:var(--primary)}
 .list .lr.click{cursor:pointer}
 .list .lr.click:hover{background:#f6f9fc}
 .vline{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:2px 2px}
+.cart-h .avbtn{width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;margin:-6px -6px -6px 0}
+.cart-h .avbtn .av{width:28px;height:28px;border-radius:50%;background:var(--sidebar);color:#e0e5eb;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.regbody{padding:14px;display:flex;flex-direction:column;gap:12px;overflow:auto;flex:1}
+.regbody .amt{font-size:32px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1.1}
+.emptycart{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted-fg);gap:6px}
+.drawer-wrap{position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:15;display:flex;align-items:flex-end;animation:fadein .15s ease-out}
+.drawer{width:100%;height:76%;background:var(--bg);border-radius:14px 14px 0 0;display:flex;flex-direction:column;box-shadow:0 -10px 30px rgba(0,0,0,.3);animation:slideup .22s ease-out}
+.drawer .handle{width:40px;height:5px;border-radius:3px;background:#c7ced6;margin:8px auto 0;flex:none}
+.dentiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.phone .dentiles{grid-template-columns:repeat(3,1fr)}
+.dentile{height:64px;border:1px solid var(--border);border-radius:8px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;position:relative;user-select:none;-webkit-user-select:none;transition:transform .1s ease-out,background .12s ease-out}
+.dentile:active{transform:scale(.96);background:#e9eff5}
+.dentile b{font-size:16px}
+.dentile .sub{font-size:12px;color:var(--muted-fg);font-variant-numeric:tabular-nums}
+.dentile .cnt{position:absolute;top:-6px;right:-6px;min-width:22px;height:22px;border-radius:11px;background:var(--primary);color:#fff;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 6px;animation:stamp .2s ease-out}
+.dentile.note{background:#f4f7fb}
 .vline b{font-size:16px;font-variant-numeric:tabular-nums;transition:color .15s ease-out}
 .vline .ok{display:inline-flex;align-items:center;gap:5px;color:var(--success)}
 
@@ -414,7 +430,7 @@ const S = {
   sessionsOn:true, pro:true, online:true,
   caps:{ cash:true, reports:true, closures:true },
   now:'17:42', today:'Thu 11 Sep',
-  stores:2, registers:3, register:{ exists:true, name:'Front counter', store:'UK Store', closeTime:'18:00', threshold:5, printer:'Epson TM-m30', defaultFloat:200 },
+  idea:'none', cartEmpty:false, stores:2, registers:3, register:{ exists:true, name:'Front counter', store:'UK Store', closeTime:'18:00', threshold:5, printer:'Epson TM-m30', defaultFloat:200 },
   session:null,
   closures:[],
   sheet:null, panel:false, toast:null, settle:null, openForm:{}, setupName:'Front counter', reportsTab:'sales', selClosure:null, countOpen:{}, log:[]
@@ -487,6 +503,10 @@ const A = {
   },
   pickRegister(name){ S.register.exists=true; S.register.name=name; tick(1); if (name==='Front counter') S.session=sampleSession(); else S.session=null; log(`This device is now bound to "${name}" (server register, ${S.register.store}). Numbering and counters live on the server; a wiped device re-binds and loses nothing.`); },
   openPanel(){ S.panel=true; },
+  checkoutCash(){ const exp=suggestedFloat(); tick(1); S.session={ state:'open', openedAt:S.now, openedBy:'demo', floatExpected:exp, floatCounted:exp, cashSales:22.6, cashRefunds:0, orders:1, refundsN:0, card:{sales:0, refunds:0}, unsyncedN:0, unsyncedTotal:0, movements:[], nextId:1, ranBy:['demo'], counted:{}, override:null }; S.cartEmpty=true; toast(`<span class="ck">${CK}</span>Paid £22.60 in cash · register open, float <span class="num">${fmt(exp)}</span> ${S.floatMode==='default'?'default':'carried'}`); log(`First cash sale of the day — the register opened itself with the ${S.floatMode==='default'?'default':'carried'} float ${fmt(exp)} (Shopify auto-open shape)`); },
+  kick(){ tick(1); S.session.movements.push({id:S.session.nextId++, type:'no_sale', amount:0, reason:'Drawer opened', by:'demo', at:S.now}); toast(`<span class="ck">${CK}</span>Drawer opened · no sale`); log('No sale — the drawer kicked open (haptic on native)'); },
+  tapDen(d, n){ S.countOpen['d'+d]=(+(S.countOpen['d'+d]||0))+n; const total=DENOMS.reduce((a,x)=>a+(parseFloat(S.countOpen['d'+x])||0)*x,0); S.session.counted.cash=total.toFixed(2); },
+  clearDen(){ DENOMS.forEach(d=>delete S.countOpen['d'+d]); S.session.counted.cash=''; },
   switchUser(name){ S.sheet=null; log(name==='another' ? 'Opens the WordPress login for a different account; the returned token is that person\'s (#217)' : `Switched to ${name} — their stored token; every row from now on records them`); },
   rebindRegister(){ S.sheet=null; S.register.exists=false; S.session=null; log('Choose another register on this store'); },
   signOut(){ S.sheet=null; log('Signed out — the register stays this device\'s; the next person signs in with their own account'); },
@@ -579,6 +599,8 @@ function renderStrip(){
   const ck = (k,l) => `<label class="ck"><input type="checkbox" data-cap="${k}" ${S.caps[k]?'checked':''}> ${l}</label>`;
   document.getElementById('strip').innerHTML = `
     <div class="g"><b>Width</b>${seg('viewport',[['tablet','Tablet'],['phone','Phone']])}</div>
+    <div class="g"><b>Idea</b>${seg('idea',[['none','E as chosen'],['empty','1 · empty cart is the register'],['autoopen','2 · first cash sale opens'],['timed','3 · button knows the time'],['tapcount','4 · tap to count'],['drawer','5 · the drawer is a drawer']])}</div>
+    <div class="g"><b>Cart</b>${seg('cartEmpty',[[false,'3 items'],[true,'empty']])}</div>
     <div class="g"><b>Stores</b>${seg('stores',[[1,'1'],[2,'2 (Pro)']])}</div>
     <div class="g"><b>Registers</b>${seg('registers',[[1,'1 (default, silent)'],[3,'3 (pick once)']])}</div>
     <div class="g"><b>Alerts</b>${seg('unread',[[0,'quiet'],[2,'2 unread']])}</div>
@@ -616,7 +638,7 @@ function renderFrame(){
   const f = document.getElementById('frame');
   f.className = `frame ${S.viewport}`;
   const content = S.page==='reports' ? `${noHeader()?`<div class="pagebar">${S.viewport==='phone'?`<span class="burger ${S.unread?'dot':''}">${I.bars}</span>`:''}<span class="ttl2">Reports</span>${(S.header==='D'||S.header==='E')?`<span class="chrome-r">${!S.online?`<span class="pill off">${I.cloudOff} Offline</span>`:''}${S.pro?`<span class="mut sm">${S.register.store}</span>`:''}${S.header==='E'?`<span class="av">DC</span>`:''}</span>`:chrome(true)}</div>`:''}<div class="pad">${renderReports()}</div>` : renderPOS();
-  f.innerHTML = `${renderHeader()}<div class="body">${S.viewport==='tablet' ? renderRail() : ''}<div class="main">${!S.pro ? `<div class="upgrade"><span>Upgrade to WCPOS Pro</span><span>Learn more</span></div>` : ''}${content}${renderPanel()}${renderSheet()}</div></div>`;
+  f.innerHTML = `${renderHeader()}<div class="body">${S.viewport==='tablet' ? renderRail() : ''}<div class="main">${!S.pro ? `<div class="upgrade"><span>Upgrade to WCPOS Pro</span><span>Learn more</span></div>` : ''}${content}${S.idea==='drawer'?'':renderPanel()}${renderSheet()}</div></div>`;
 }
 
 /* ============================ POS screen ============================ */
@@ -624,7 +646,8 @@ function renderPOS(){
   const phone = S.viewport==='phone';
   if (!phone) return `<div class="pos">${renderProducts()}${renderCartColumn()}</div>`;
   const g = gated();
-  const badge = !S.sessionsOn ? `<span class="badge">3</span>` : !S.register.exists ? `<span class="badge warn">Pick</span>` : !S.session ? `<span class="badge warn">Open</span>` : S.session.state==='counting' ? `<span class="badge warn">Count</span>` : `<span class="badge">3</span>`;
+  const nItems = S.cartEmpty ? 0 : 3; const nb = nItems ? `<span class="badge">${nItems}</span>` : '';
+  const badge = !S.sessionsOn ? nb : !S.register.exists ? `<span class="badge warn">Pick</span>` : !S.session ? `<span class="badge warn">Open</span>` : S.session.state==='counting' ? `<span class="badge warn">Count</span>` : nb;
   return `<div class="pos" style="flex-direction:column">${S.phoneTab==='products' ? renderProducts() : renderCartColumn()}
     <div class="tabbar"><button class="${S.phoneTab==='products'?'on':''}" data-set="phoneTab" data-v="products">${I.products}Products</button><button class="${S.phoneTab==='cart'?'on':''}" data-set="phoneTab" data-v="cart">${badge}${I.cart}${g?'Register':'Cart'}</button></div></div>`;
 }
@@ -642,12 +665,13 @@ function renderProducts(){
 function renderCartColumn(){
   const ses=S.session;
   let body;
-  const top = noHeader() ? renderTopBar() : '';
+  const top = noHeader() && S.idea!=='empty' ? renderTopBar() : (S.idea==='empty' && S.sessionsOn && S.register.exists && ses && ses.state!=='open' ? renderTopBar() : '');
   if (S.sessionsOn && !S.register.exists) body = renderPickCard();
+  else if (S.sessionsOn && !ses && S.idea==='autoopen') body = renderCart();
   else if (S.sessionsOn && !ses) body = renderOpenCard();
   else if (S.sessionsOn && ses.state==='counting') body = `<div class="gatecard narrow">${renderCounting()}</div>`;
   else body = renderCart();
-  return `<div class="cartcol narrow">${top}${S.toast?`<div class="toast" role="status">${S.toast}</div>`:''}${body}</div>`;
+  return `<div class="cartcol narrow">${top}${S.toast?`<div class="toast" role="status">${S.toast}</div>`:''}${body}${S.idea==='drawer'?renderPanel(true):''}</div>`;
 }
 
 /* ---- no-title-bar variants: the bar above the cart carries store, status, notifications, user ---- */
@@ -655,10 +679,11 @@ function regStatus(){
   const ses=S.session;
   if(!S.sessionsOn) return {pill:'', exp:'', tap:false};
   if(!S.register.exists) return {pill:`<span class="pill warn dotp">Choose register</span>`, exp:'', tap:false};
-  if(!ses) return {pill:`<span class="pill closed dotp">Closed</span>`, exp:'', tap:false};
+  if(!ses) return {pill: S.idea==='autoopen' ? '' : `<span class="pill closed dotp">Closed</span>`, exp:'', tap:false};
   if(ses.state==='counting') return {pill:`<span class="pill count dotp">Counting</span>`, exp:'', tap:false};
   const od=overdue();
   const quiet = S.header==='D'||S.header==='E';
+  if (S.idea==='timed' && od && S.cartEmpty) return {pill:'', exp:'', tap:true, od:false};
   return {pill: od?`<span class="pill warn dotp" title="Past the expected close time ${S.register.closeTime}">Overdue</span>`:(quiet?'':`<span class="pill open dotp">Open</span>`), exp: can('reports')?fmt(expected(ses)):'', tap:true, od};
 }
 function renderTopBar(){
@@ -682,14 +707,47 @@ function renderTopBar(){
 }
 
 function renderCart(){
-  const ses=S.session; const sub=CART.reduce((a,[,q,p])=>a+q*p,0); const tax=+(sub-sub/1.2).toFixed(2);
-  return `${S.sessionsOn&&!noHeader()?renderRegBar():''}
-    <div class="cart-h"><span class="cust">Guest ▾</span><span class="grow"></span><button class="btn sm g">+</button><button class="btn sm g">${I.more}</button></div>
+  const ses=S.session; const items = S.cartEmpty ? [] : CART; const sub=items.reduce((a,[,q,p])=>a+q*p,0); const tax=+(sub-sub/1.2).toFixed(2);
+  const avatar = S.idea==='empty' ? `<span class="avbtn" data-act="openSheet" data-type="user"><span class="av">DC</span></span>` : '';
+  const head = `<div class="cart-h"><span class="cust">Guest ▾</span><span class="grow"></span><button class="btn sm g">+</button><button class="btn sm g">${I.more}</button>${avatar}</div>`;
+  // idea 1: the empty cart is the register
+  if (S.idea==='empty' && S.sessionsOn && ses && ses.state==='open' && !items.length) return `${head}${renderRegisterBody(true)}`;
+  // idea 2: closed but no gate — the first cash sale opens the register
+  const autoNote = S.idea==='autoopen' && S.sessionsOn && !ses ? `<div class="mut sm" style="padding:8px 12px;border-bottom:1px solid var(--border)">Register opens with the first cash sale · float ${fmt(suggestedFloat())} ${S.floatMode==='default'?'default':'carried'}</div>` : '';
+  // idea 3: the primary button knows the time
+  const timed = S.idea==='timed' && ses && ses.state==='open' && overdue() && !items.length;
+  const footer = timed
+    ? `<div class="cart-f"><button class="btn p xl w" data-act="startCounting">Close register</button></div>`
+    : `<div class="cart-f"><button class="btn" style="flex:1">Note</button><button class="btn p xl" style="flex:2" ${items.length?'':'disabled'} data-act="${S.idea==='autoopen' && !ses ? 'checkoutCash' : 'noop'}">Checkout ${fmt(sub)}</button></div>`;
+  return `${head}${autoNote}
     <div class="inner">
-      ${CART.map(([n,q,p])=>`<div class="cartline"><span class="q">${q}</span><span class="grow">${n}</span><span class="money">${fmt(q*p)}</span></div>`).join('')}
-      <div class="totals"><div class="r2 mut"><span>Subtotal</span><span class="num">${fmt(sub-tax)}</span></div><div class="r2 mut"><span>VAT 20%</span><span class="num">${fmt(tax)}</span></div><div class="r2 big"><span>Total</span><span class="num">${fmt(sub)}</span></div></div>
+      ${items.length ? items.map(([n,q,p])=>`<div class="cartline"><span class="q">${q}</span><span class="grow">${n}</span><span class="money">${fmt(q*p)}</span></div>`).join('') : `<div class="emptycart">${I.cart.replace('20','36').replace('20','36')}<span class="sm">${timed?`Past ${S.register.closeTime} · nothing in the cart`:'Tap a product to start a sale'}</span></div>`}
+      ${items.length?`<div class="totals"><div class="r2 mut"><span>Subtotal</span><span class="num">${fmt(sub-tax)}</span></div><div class="r2 mut"><span>VAT 20%</span><span class="num">${fmt(tax)}</span></div><div class="r2 big"><span>Total</span><span class="num">${fmt(sub)}</span></div></div>`:''}
     </div>
-    <div class="cart-f"><button class="btn" style="flex:1">Note</button><button class="btn p xl" style="flex:2">Checkout ${fmt(sub)}</button></div>`;
+    ${footer}`;
+}
+
+/* shared register body: the panel's content, also the empty cart in idea 1 */
+function renderRegisterBody(inline){
+  const ses=S.session; const exp=expected(ses); const lc=lastClosure(); const net=movSum(ses,'paid_in')-movSum(ses,'paid_out');
+  const regName = S.registers>1 ? S.register.name : S.register.store;
+  const head = inline
+    ? `<div>${can('reports')?`<div class="amt">${fmt(exp)}</div><div class="mut sm">in the drawer · ${S.registers>1?`${S.register.name} · `:''}${S.register.store} · opened ${ses.openedAt} by ${who(ses.openedBy).name}</div>`:`<div class="b" style="font-size:18px">${regName}</div><div class="mut sm">opened ${ses.openedAt} by ${who(ses.openedBy).name}</div>`}</div>`
+    : '';
+  return `<div class="regbody">${head}
+      ${overdue()?`<div class="alert w">Past the close time ${S.register.closeTime}</div>`:''}
+      ${!S.online?`<div class="alert w">${I.cloudOff} Offline · ${ses.unsyncedN} sales not on the server</div>`:''}
+      ${can('cash')?`<div class="tiles3"><button class="btn" data-act="openSheet" data-type="movement" data-mtype="paid_in">Paid in</button><button class="btn" data-act="openSheet" data-type="movement" data-mtype="paid_out">Paid out</button><button class="btn" data-act="${S.idea==='drawer'?'kick':'openSheet'}" data-type="movement" data-mtype="no_sale">No sale</button></div>`:`<div class="alert i">${I.lock} Cash actions need cash permission</div>`}
+      <div class="list">
+        ${can('reports')?`<div class="lr"><span>Cash</span><span class="mut xs">${ses.orders} sales${ses.refundsN?` · ${ses.refundsN} refund`:''}</span><span class="v">${fmt(ses.cashSales-ses.cashRefunds)}</span></div>
+        <div class="lr"><span>Card</span><span class="v">${fmt(ses.card.sales-ses.card.refunds)}</span></div>`:`<div class="lr"><span>${ses.orders} sales</span><span class="mut xs">${I.lock} totals are counted at close</span></div>`}
+        <div class="lr click ${S.settle==='mov'?'settle':''}" data-act="toggleCollapse" data-k="mov"><span>Paid in / out</span><span class="mut xs">${ses.movements.filter(m=>m.type!=='void'&&!m.voidedBy).length} movements</span><span class="v ${net<0?'money neg':net>0?'money pos':''}">${fmt(net,true)}</span><span class="chev" style="transform:rotate(${S.countOpen.mov?90:0}deg)">${I.chev}</span></div>
+        ${S.countOpen.mov?`<div style="padding:0 4px 4px">${movementsTable(ses)}</div>`:''}
+        ${can('reports')?`<div class="lr click" data-act="openSheet" data-type="xreport"><span>${I.print} Print X-report</span><span class="mut xs">reads the session, stores nothing</span></div>`:''}
+      </div>
+      ${lc?`<div class="list"><div class="lr click" data-act="openSheet" data-type="reprint"><span>Last closure</span><span class="mut xs">${lc.number} · ${lc.closed}</span><span class="v">${fmt(lc.counted)}</span><span class="mut xs">${I.print} copy</span></div></div>`:''}
+    </div>
+    ${inline?`<div class="cart-f">${can('cash')?`<button class="btn lg w" data-act="startCounting">Close register</button>`:`<span class="locked grow">${I.lock} Closing needs cash permission</span>`}</div>`:''}`;
 }
 
 function renderRegBar(){
@@ -731,27 +789,14 @@ function renderOpenCard(){
 }
 
 /* ---- Register panel (open session) ---- */
-function renderPanel(){
+function renderPanel(asDrawer=false){
   if(!S.panel) return ''; const ses=S.session; if(!ses || ses.state!=='open') return '';
-  const exp=expected(ses); const lc=lastClosure(); const net=movSum(ses,'paid_in')-movSum(ses,'paid_out');
-  const regName = S.registers>1 ? S.register.name : 'Register';
-  return `<div class="panel-wrap" data-closepanel="1"><div class="panel narrow">
-    <div class="panel-h"><div>${can('reports')?`<div class="amt">${fmt(exp)}</div><div class="s">in the drawer · ${regName} · opened ${ses.openedAt} by ${who(ses.openedBy).name}</div>`:`<div class="t">${regName}</div><div class="s">opened ${ses.openedAt} by ${who(ses.openedBy).name}</div>`}</div><button class="x" data-act="closePanel">×</button></div>
-    <div class="panel-b">
-      ${overdue()?`<div class="alert w">Past the close time ${S.register.closeTime}</div>`:''}
-      ${!S.online?`<div class="alert w">${I.cloudOff} Offline · ${ses.unsyncedN} sales not on the server</div>`:''}
-      ${can('cash')?`<div class="tiles3"><button class="btn" data-act="openSheet" data-type="movement" data-mtype="paid_in">Paid in</button><button class="btn" data-act="openSheet" data-type="movement" data-mtype="paid_out">Paid out</button><button class="btn" data-act="openSheet" data-type="movement" data-mtype="no_sale">No sale</button></div>`:`<div class="alert i">${I.lock} Cash actions need cash permission</div>`}
-      <div class="list">
-        ${can('reports')?`<div class="lr"><span>Cash</span><span class="mut xs">${ses.orders} sales${ses.refundsN?` · ${ses.refundsN} refund`:''}</span><span class="v">${fmt(ses.cashSales-ses.cashRefunds)}</span></div>
-        <div class="lr"><span>Card</span><span class="v">${fmt(ses.card.sales-ses.card.refunds)}</span></div>`:`<div class="lr"><span>${ses.orders} sales</span><span class="mut xs">${I.lock} totals are counted at close</span></div>`}
-        <div class="lr click ${S.settle==='mov'?'settle':''}" data-act="toggleCollapse" data-k="mov"><span>Paid in / out</span><span class="mut xs">${ses.movements.filter(m=>m.type!=='void'&&!m.voidedBy).length} movements</span><span class="v ${net<0?'money neg':net>0?'money pos':''}">${fmt(net,true)}</span><span class="chev" style="transform:rotate(${S.countOpen.mov?90:0}deg)">${I.chev}</span></div>
-        ${S.countOpen.mov?`<div style="padding:0 4px 4px">${movementsTable(ses)}</div>`:''}
-        ${can('reports')?`<div class="lr click" data-act="openSheet" data-type="xreport"><span>${I.print} Print X-report</span><span class="mut xs">reads the session, stores nothing</span></div>`:''}
-      </div>
-      ${lc?`<div class="list"><div class="lr click" data-act="openSheet" data-type="reprint"><span>Last closure</span><span class="mut xs">${lc.number} · ${lc.closed}</span><span class="v">${fmt(lc.counted)}</span><span class="mut xs">${I.print} copy</span></div></div>`:''}
-    </div>
-    <div class="panel-f">${can('cash')?`<button class="btn lg w" data-act="startCounting">Close register</button>`:`<span class="locked grow">${I.lock} Closing needs cash permission</span>`}</div>
-  </div></div>`;
+  const exp=expected(ses); const regName = S.registers>1 ? S.register.name : S.register.store;
+  const header = `<div class="panel-h"><div>${can('reports')?`<div class="amt">${fmt(exp)}</div><div class="s">in the drawer · ${regName} · opened ${ses.openedAt} by ${who(ses.openedBy).name}</div>`:`<div class="t">${regName}</div><div class="s">opened ${ses.openedAt} by ${who(ses.openedBy).name}</div>`}</div><button class="x" data-act="closePanel">×</button></div>`;
+  const body = renderRegisterBody(false).replace('class="regbody"','class="panel-b"');
+  const foot = `<div class="panel-f">${can('cash')?`<button class="btn lg w" data-act="startCounting">Close register</button>`:`<span class="locked grow">${I.lock} Closing needs cash permission</span>`}</div>`;
+  if (asDrawer) return `<div class="drawer-wrap" data-closepanel="1"><div class="drawer narrow"><div class="handle"></div>${header}${body}${foot}</div></div>`;
+  return `<div class="panel-wrap" data-closepanel="1"><div class="panel narrow">${header}${body}${foot}</div></div>`;
 }
 
 function lastClosureCard(compact=false){
@@ -797,7 +842,9 @@ function renderCounting(){
     <div class="fld"><label>Cash counted, float included</label><div class="amtwrap"><span class="cur">${CUR}</span><input class="in big" data-count="cash" value="${ses.counted.cash??''}" placeholder="0.00" inputmode="decimal"></div></div>
     ${blind?'':`<div class="vline"><span class="mut">Expected ${fmt(exp)}</span><b class="${has?(v<0?'money neg':v>0?'money pos':''):'mut'}">${has?(v===0?`<span class="ok"><span class="toast-ck" style="width:16px;height:16px;border-radius:50%;background:var(--success);display:inline-flex;align-items:center;justify-content:center">${CK}</span>Exact</span>`:fmt(v,true)+(v<0?' short':' over')):'—'}</b></div>`}
     ${overT&&!blind?`<div class="alert w">Over the ${fmt(S.register.threshold)} limit · ${ses.override?`approved by ${who(ses.override.by).name}`:'a manager approves the close'}</div>`:''}
-    <div class="collapse"><button data-act="toggleCollapse" data-k="den">${I.chev} Count by denomination</button>${S.countOpen.den?`<div class="in-b"><div class="denoms">${DENOMS.map(d=>`<div class="den"><b>${d>=1?CUR+d:(d*100)+'p'}</b><input type="number" min="0" data-den="${d}" value="${S.countOpen['d'+d]||''}" placeholder="0"><div class="sub">${fmt((S.countOpen['d'+d]||0)*d)}</div></div>`).join('')}</div></div>`:''}</div>
+    ${S.idea==='tapcount' ? `<div class="row"><span class="sect grow" style="margin:0">Tap each note and coin · hold for ×10</span>${DENOMS.some(d=>S.countOpen['d'+d])?`<button class="btn sm g" data-act="clearDen">Clear</button>`:''}</div>
+    <div class="dentiles">${DENOMS.map(d=>{const n=+(S.countOpen['d'+d]||0); return `<div class="dentile ${d>=5?'note':''}" data-den-tap="${d}"><b>${d>=1?CUR+d:(d*100)+'p'}</b><span class="sub">${n?fmt(n*d):''}</span>${n?`<span class="cnt">${n}</span>`:''}</div>`;}).join('')}</div>` : `<div class="collapse"><button data-act="toggleCollapse" data-k="den">${I.chev} Count by denomination</button>${S.countOpen.den?`<div class="in-b"><div class="denoms">${DENOMS.map(d=>`<div class="den"><b>${d>=1?CUR+d:(d*100)+'p'}</b><input type="number" min="0" data-den="${d}" value="${S.countOpen['d'+d]||''}" placeholder="0"><div class="sub">${fmt((S.countOpen['d'+d]||0)*d)}</div></div>`).join('')}</div></div>`:''}</div>`}
+    ${S.idea==='autoopen'?`<div class="vline"><span class="mut">Started with ${fmt(ses.floatCounted)} ${ses.floatExpected===ses.floatCounted?'carried':''}</span><button class="btn sm g" data-act="noop">Change</button></div>`:''}
     <div class="collapse"><button data-act="toggleCollapse" data-k="cardc">${I.chev} Card counted <span class="mut">optional · ${fmt(ses.card.sales-ses.card.refunds)} reported</span></button>${S.countOpen.cardc?`<div class="in-b"><input class="in" data-count="card" value="${ses.counted.card??''}" placeholder="${fmt(ses.card.sales-ses.card.refunds)}" inputmode="decimal"></div>`:''}</div>
     <button class="btn p xl w ${has?'':'dis'}" ${has?'':'disabled'} data-act="tryClose">${overT && !ses.override ? 'Approve & close' : 'Close & print'}</button>`;
 }
@@ -964,13 +1011,17 @@ function refocus(sel){ const n=document.querySelector(sel); if(n){ const pos=n.v
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-set],[data-scn],[data-act],[data-close],[data-closepanel]');
   if (!t) return;
-  if (t.dataset.set){ e.preventDefault(); let v=t.dataset.v; if (v==='true') v=true; if (v==='false') v=false; if (t.dataset.set==='unread'||t.dataset.set==='registers'||t.dataset.set==='stores') v=+v; if (t.dataset.set==='registers' && v===1) { S.register.exists=true; S.register.name='Front counter'; } A.set(t.dataset.set, v); S.selClosure=null; return render(); }
+  if (t.dataset.set){ e.preventDefault(); let v=t.dataset.v; if (v==='true') v=true; if (v==='false') v=false; if (t.dataset.set==='unread'||t.dataset.set==='registers'||t.dataset.set==='stores') v=+v; if (t.dataset.set==='cartEmpty') v=(v===true||v==='true'); if (t.dataset.set==='registers' && v===1) { S.register.exists=true; S.register.name='Front counter'; } A.set(t.dataset.set, v); S.selClosure=null; return render(); }
   if (t.dataset.scn){ A.scenario(t.dataset.scn); return render(); }
   if (t.dataset.close && e.target===t){ A.closeSheet(); return render(); }
   if (t.dataset.closepanel && e.target===t){ A.closePanel(); return render(); }
   const act = t.dataset.act; if (!act) return;
   switch(act){
     case 'openPanel': A.openPanel(); break;
+    case 'checkoutCash': A.checkoutCash(); break;
+    case 'kick': A.kick(); break;
+    case 'clearDen': A.clearDen(); break;
+    case 'noop': break;
     case 'closePanel': A.closePanel(); break;
     case 'openSheet': A.openSheet(t.dataset.type, t.dataset.mtype?{mtype:t.dataset.mtype}:t.dataset.id?{id:+t.dataset.id}:{}); break;
     case 'closeSheet': A.closeSheet(); break;
@@ -999,6 +1050,10 @@ document.addEventListener('click', e => {
   }
   render();
 });
+let holdT=null, held=false;
+document.addEventListener('pointerdown', e => { const t=e.target.closest('[data-den-tap]'); if(!t) return; held=false; holdT=setTimeout(()=>{ held=true; A.tapDen(+t.dataset.denTap, 10); render(); }, 450); });
+document.addEventListener('pointerup', e => { const t=e.target.closest('[data-den-tap]'); clearTimeout(holdT); if(!t) return; if(!held){ A.tapDen(+t.dataset.denTap, 1); render(); } });
+document.addEventListener('pointercancel', () => clearTimeout(holdT));
 document.addEventListener('change', e => { const c=e.target.closest('[data-cap]'); if (c){ A.cap(c.dataset.cap); render(); } });
 document.addEventListener('input', e => {
   const el=e.target;
@@ -1013,6 +1068,7 @@ document.addEventListener('input', e => {
   if(q.get('scn')) A.scenario(q.get('scn'));
   for (const k of ['header','viewport','page']) if(q.get(k)) S[k]=q.get(k);
   if(q.get('unread')!==null) S.unread=+q.get('unread'); if(q.get('online')!==null) S.online=q.get('online')==='true';
+  if(q.get('idea')) S.idea=q.get('idea'); if(q.get('cart')==='empty') S.cartEmpty=true; if(q.get('panel')) S.panel=true; if(q.get('taps')) { S.countOpen.d20=8; S.countOpen.d5=3; S.countOpen.d1=2; S.countOpen['d0.5']=1; if(S.session) S.session.counted.cash='177.50'; }
   if(q.get('embed')) document.body.classList.add('embed');
 })();
 render();

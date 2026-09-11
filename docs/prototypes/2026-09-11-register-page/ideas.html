@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Register — five ideas beyond the bar and the panel</title>
+<style>
+body{margin:0;background:#e9edf2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#162330}
+.top{position:sticky;top:0;z-index:5;background:#111827;color:#e5e7eb;padding:10px 24px;display:flex;gap:18px;align-items:center;font-size:13px}
+.top b{color:#9ca3af;text-transform:uppercase;font-size:10px;letter-spacing:.06em}
+.seg{display:inline-flex;border:1px solid #374151;border-radius:6px;overflow:hidden}
+.seg button{border:0;background:transparent;color:#d1d5db;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit}
+.seg button.on{background:#f3f4f6;color:#111827;font-weight:600}
+section{padding:22px 24px 6px}
+h2{font-size:15px;margin:0 0 4px}
+p.d{margin:0 0 10px;font-size:13px;color:#4b5563;max-width:120ch}
+.row{display:flex;gap:24px;overflow-x:auto;align-items:flex-start}
+iframe{border:0;background:transparent;flex:none}
+iframe.t{width:1182px;height:762px} iframe.p{width:392px;height:782px}
+</style></head><body>
+<div class="top"><b>Width</b><span class="seg" id="vp"></span><span style="margin-left:auto;color:#9ca3af">Each frame is live; click inside. The strip's <i>Idea</i> control in the main prototype switches the same things.</span></div>
+<div id="out"></div>
+<script>
+const IDEAS=[
+ ['none','E as chosen — for reference','The bar names the place, the drawer icon opens the panel.','open',''],
+ ['empty','1 · The empty cart is the register','No bar, no panel, no drawer icon. With nothing in the cart the column is the register: the figure, Paid in / out / No sale, the list, Close register. Add an item and it is the cart. The cashier avatar sits in the cart header.','open','&cart=empty'],
+ ['autoopen','2 · The first cash sale opens the register','No morning gate. The register is closed but the cart is there; one muted line says the first cash sale opens it with the carried float. Tap Checkout to see it happen. The float check moves to closing (a Change link on the count).','closed',''],
+ ['timed','3 · The primary button knows the time','Past close time with an empty cart, Checkout becomes Close register. No Overdue pill, no hunt. With items in the cart it is Checkout as usual.','overdue','&cart=empty'],
+ ['tapcount','4 · Count by tapping notes, not typing','The count screen is a grid of note and coin tiles: tap once per piece, hold for ×10, total ticking up into the cash field. Shown with 8 × £20, 3 × £5, 2 × £1, 1 × 50p.','counting','&taps=1'],
+ ['drawer','5 · The drawer is a drawer','The register sheet rises from the bottom of the cart column, where the hardware sits; No sale kicks it open. Same content as the panel.','open','&panel=1'],
+];
+let vp='tablet';
+function build(){
+  document.getElementById('vp').innerHTML=[['tablet','Tablet'],['phone','Phone']].map(([v,l])=>`<button class="${vp===v?'on':''}" data-vp="${v}">${l}</button>`).join('');
+  const cls=vp==='tablet'?'t':'p';
+  document.getElementById('out').innerHTML=IDEAS.map(([k,t,d,scn,extra])=>`<section><h2>${t}</h2><p class="d">${d}</p><div class="row"><iframe class="${cls}" src="index.html?embed=1&idea=${k}&viewport=${vp}&scn=${scn}${extra}"></iframe></div></section>`).join('');
+}
+document.addEventListener('click',e=>{const b=e.target.closest('button[data-vp]'); if(!b) return; vp=b.dataset.vp; build();});
+build();
+</script></body></html>

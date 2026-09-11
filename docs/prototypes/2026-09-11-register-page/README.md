@@ -103,3 +103,15 @@ Listed at the foot of the page: where the bar sits (cart column vs app header); 
 
 - Paul walks the second cut; the resolution on #214 records which of the open questions changed anything.
 - `CONTEXT.md` in the monorepo: the **Register** entry's "left-hand menu item is Register … the cashier signs in inside it" sentence is superseded by this cut (separate docs PR).
+
+## Five ideas beyond the bar and the panel (2026-09-11, late — "think outside the box")
+
+`ideas.html` shows each one live beside the others; the main prototype's strip → *Idea* switches the same things, and *Cart* → empty matters for 1 and 3. Captures in `screens/ideas/` (`node shoot-ideas.js`, run after `shoot.js`).
+
+1. **The empty cart is the register.** No bar, no panel, no drawer icon. With nothing in the cart the column *is* the register: the figure, Paid in / Paid out / No sale, the list, Close register in the footer. Add an item and it is the cart. The avatar sits in the cart header. Removes a whole layer.
+2. **The first cash sale opens the register.** No morning gate: the cart is there, one muted line says the first cash sale opens the register with the carried float, and tapping Checkout does exactly that with one toast. The float check moves to closing (*Started with £200.00 · Change* on the count). Shopify's auto-open. A session-model change, so a ruling.
+3. **The primary button knows the time.** Past close time with an empty cart, *Checkout* becomes *Close register*; no Overdue pill. With items it is Checkout as usual.
+4. **Count by tapping notes, not typing.** The denomination counter is a grid of note and coin tiles: tap once per piece, hold for ×10, the count badge stamps in and the total ticks into the cash field. Mirrors the physical act; no mis-keys.
+5. **The drawer is a drawer.** The register sheet rises from the bottom of the cart column, where the hardware sits, with a handle; *No sale* kicks it open with a toast (haptic on native). Same content as the panel.
+
+Recommendation: **1 with 3** (they delete the bar and the panel; the register becomes what the cart is when nothing is in it), **4** regardless, **2** as a ruling on the session model, **5** as the phone shape of the panel if 1 is not chosen.
