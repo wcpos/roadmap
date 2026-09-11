@@ -48,7 +48,9 @@ Direction 01 steals from Cash App (the amount is the screen; digits without boxe
 
 ## Reaction
 
-_To be recorded after Paul has walked it._
+Approved on round 10, 2026-09-11: *"ok, this looks great!!! Can we start work on that and make sure everything is captured, especially things like the split screen and the terminal payment animation."* Path to here: three grid layouts (v1) → *"it just looks ugly"* → the design rules → a rules-driven grid (v2) → *"moderately better, not something we could ever ship"* → the five-direction board → 01 chosen → method selection step, unavailable list, Split/Legacy separated → split chooser → five split models → four modes (Even / Amount / Percent / Item) → split takes over the pane, not a sheet → Item loops and shares N ways, terminal pills carry status.
+
+Build contract: `docs/specs/2026-09-11-tender-pane-keypad-spec.md`. Epic on wcpos/roadmap under v1.11.0 (#195).
 
 ## Split board (round 7)
 
