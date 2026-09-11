@@ -138,6 +138,12 @@ a{color:var(--primary)}
 .regbar.quiet .ic{width:26px;height:26px;border-radius:6px;background:var(--sidebar);color:#e0e5eb;display:inline-flex;align-items:center;justify-content:center;flex:none}
 .regbar.quiet.warn .ic{background:var(--warning)}
 .regbar.quiet .exp{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:600}
+.regbar.quiet .names{display:flex;align-items:center;gap:8px;flex:1;min-width:0;white-space:nowrap}
+.regbar.quiet .names .store{cursor:pointer;border-radius:6px;padding:6px 6px;margin:-6px -6px}
+.regbar.quiet .names .store:hover{background:#eef3f8}
+.regbar.quiet .ibtn{width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;flex:none;cursor:pointer;border-radius:8px;color:var(--fg)}
+.regbar.quiet .ibtn:hover{background:#eef3f8}
+.regbar.quiet .ibtn.warn{color:var(--warning)}
 .regbar.quiet .avbtn{width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;margin-right:-8px;flex:none;cursor:pointer;border-radius:8px}
 .regbar.quiet .avbtn:hover{background:#eef3f8}
 .regbar.quiet .avbtn .av{width:28px;height:28px;border-radius:50%;background:var(--sidebar);color:#e0e5eb;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
@@ -338,6 +344,7 @@ body.embed .stage{padding:0}
         <li><b>The gate</b> — <i>Register closed</i>: the cart column is the Open register card, with the float pair inline (expected, then what you counted). Products stay browsable for price checks; tapping one logs why nothing was added. Is the card the right size, and is the last closure the right thing to see under it?</li>
         <li><b>No title bar</b> — Header → <i>No bar</i>: the app's title bar goes and the store name, online dot, notifications and user move into the bar above the cart, which is now there in every state. <b>A</b> one line (the store name moves under the avatar menu; there is no room for it beside the register at cart width); <b>B</b> two lines (store row, then register row); <b>C</b> chrome on the search row, register alone on the bar (phone falls back to A). Reports gets a page bar; the rail gets a logo tile.</li>
         <li><b>D · rail</b> and <b>E · cashier on bar</b> (round two, from Mobbin's work-tool conventions): the bar carries the register only — name, store (Pro), status, expected, chevron — at 48 pt. <b>Offline</b> is an amber pill in the bar that exists only while offline; online is the absence of a badge (Substack, Aboard). <b>Notifications</b> are a bell in the rail's bottom cluster with a count badge only when there is a count (Gorgias, Hootsuite, Patreon). <b>Identity</b>: D puts a 28 px avatar as the rail's last item (Hootsuite, Shop, Fabric) that opens the user panel; E keeps the avatar on the bar because the session records who acted. No caret anywhere. Toggle <i>Alerts</i> to compare quiet vs alerting; Network → Offline for the pill.</li>
+        <li><b>The bar names the place, not the money</b> (Paul, 2026-09-11 late): the expected figure is gone from the bar and lives in the panel one tap away. Names on the left are places you can change; icons on the right are things you open. One register → `UK Store`; several → `Front counter · UK Store`. Stores → 2: the store name is a tap target that opens a store switcher (a register belongs to one store, so switching re-binds the register). The drawer icon button opens the panel while a session is open. <b>The avatar</b> opens the user sheet: your sales today, Switch user (the device's stored users, or another account via WordPress login), Switch register when the store has more than one, Sign out apart at the bottom. Status pill only when the state is not the normal one.</li>
         <li><b>The bar</b> — <i>Session open</i>: one line at the top of the cart: register, status, expected cash (blind cashiers see none). Tap it for the panel. Overdue turns it amber with the close time. Would you rather it sat in the app header?</li>
         <li><b>The panel</b> (pass 2) — the amount is the title; three 56 pt tiles Paid in / Paid out / No sale; one list: Cash, Card, Paid in/out (tap for the rows), Print X-report; one row for the last closure with its reprint; Close register alone in the footer, neutral not red. The status row, the hero card, the breakdown sentence, the three folds and the Reports link are gone.</li>
         <li><b>Counting</b> (pass 2) — one big input, one line under it (Expected · variance, live as you type), denomination and card counted folded, one button. The two cards, the breakdown sentence and the closure line are gone.</li>
@@ -384,7 +391,7 @@ const S = {
   sessionsOn:true, pro:true, online:true,
   caps:{ cash:true, reports:true, closures:true },
   now:'17:42', today:'Thu 11 Sep',
-  registers:3, register:{ exists:true, name:'Front counter', store:'UK Store', closeTime:'18:00', threshold:5, printer:'Epson TM-m30', defaultFloat:200 },
+  stores:2, registers:3, register:{ exists:true, name:'Front counter', store:'UK Store', closeTime:'18:00', threshold:5, printer:'Epson TM-m30', defaultFloat:200 },
   session:null,
   closures:[],
   sheet:null, panel:false, openForm:{}, setupName:'Front counter', reportsTab:'sales', selClosure:null, countOpen:{}, log:[]
@@ -454,6 +461,10 @@ const A = {
   },
   pickRegister(name){ S.register.exists=true; S.register.name=name; tick(1); if (name==='Front counter') S.session=sampleSession(); else S.session=null; log(`This device is now bound to "${name}" (server register, ${S.register.store}). Numbering and counters live on the server; a wiped device re-binds and loses nothing.`); },
   openPanel(){ S.panel=true; },
+  switchUser(name){ S.sheet=null; log(name==='another' ? 'Opens the WordPress login for a different account; the returned token is that person\'s (#217)' : `Switched to ${name} — their stored token; every row from now on records them`); },
+  rebindRegister(){ S.sheet=null; S.register.exists=false; S.session=null; log('Choose another register on this store'); },
+  signOut(){ S.sheet=null; log('Signed out — the register stays this device\'s; the next person signs in with their own account'); },
+  switchStore(name){ if(name===S.register.store) { S.sheet=null; return; } S.register.store=name; S.sheet=null; S.session=null; S.register.name = name==='Dublin Store' ? 'Dublin till' : 'Front counter'; if (S.registers>1 && name==='UK Store') S.register.exists=false; log(`Switched to ${name}. A register belongs to one store, so this device re-binds: ${S.registers>1?'pick one of its registers':'its only register, silently'}.`); },
   closePanel(){ S.panel=false; },
   openSheet(type, extra={}){ S.sheet={type, ...extra}; },
   closeSheet(){ S.sheet=null; },
@@ -543,6 +554,7 @@ function renderStrip(){
   document.getElementById('strip').innerHTML = `
     <div class="g"><b>Width</b>${seg('viewport',[['tablet','Tablet'],['phone','Phone']])}</div>
     <div class="g"><b>Header</b>${seg('header',[['E','E · chosen'],['bar','Title bar (today)'],['D','D'],['A','A'],['B','B'],['C','C']])}</div>
+    <div class="g"><b>Stores</b>${seg('stores',[[1,'1'],[2,'2 (Pro)']])}</div>
     <div class="g"><b>Registers</b>${seg('registers',[[1,'1 (default, silent)'],[3,'3 (pick once)']])}</div>
     <div class="g"><b>Alerts</b>${seg('unread',[[0,'quiet'],[2,'2 unread']])}</div>
     <div class="g"><b>Page</b>${seg('page',[['pos','POS'],['reports','Reports']])}</div>
@@ -625,17 +637,19 @@ function regStatus(){
   return {pill: od?`<span class="pill warn dotp" title="Past the expected close time ${S.register.closeTime}">Overdue</span>`:(quiet?'':`<span class="pill open dotp">Open</span>`), exp: can('reports')?fmt(expected(ses)):'', tap:true, od};
 }
 function renderTopBar(){
-  const phone=S.viewport==='phone'; const st=regStatus(); const name=!S.register.exists?'This device':(S.registers>1?S.register.name:'Register');
+  const phone=S.viewport==='phone'; const st=regStatus(); const name=!S.register.exists?'This device':(S.registers>1?S.register.name:S.register.store);
   const burger = phone ? `<span class="burger">${I.bars}</span>` : '';
   const regSeg = `<span class="reg" ${st.tap?'data-act="openPanel"':''}><span class="ic">${I.drawer}</span><span class="b">${name}</span>${st.pill}${st.exp?`<span class="exp">${st.exp}</span>`:''}${st.tap?`<span class="chev">${I.chev}</span>`:''}</span>`;
   if (S.header==='D'||S.header==='E'){
     const off = !S.online ? `<span class="pill off">${I.cloudOff} Offline</span>` : '';
-    const store = S.pro && !phone && S.online ? `<span class="mut">· ${S.register.store}</span>` : '';
-    const exp = st.exp && !(phone && !S.online) ? `<span class="exp">${st.exp}</span>` : '';
-    const seg = `<span class="reg" ${st.tap?'data-act="openPanel"':''}><span class="b">${name}</span>${store}${st.pill}${off}${exp}${st.tap?`<span class="chev">${I.chev}</span>`:''}</span>`;
-    const av = S.header==='E' ? `<span class="avbtn" title="Demo Cashier · switch user"><span class="av">DC</span></span>` : '';
+    const storeEl = `<span class="store ${S.stores>1?'':'static'}" ${S.stores>1?'data-act="openSheet" data-type="stores" title="Switch store"':''}>${S.register.store}</span>`;
+    const names = S.registers>1 && S.register.exists
+      ? `<span class="names"><span class="b">${S.register.name}</span><span class="mut">·</span>${storeEl}${st.pill}${off}</span>`
+      : `<span class="names"><span class="b">${storeEl}</span>${st.pill}${off}</span>`;
+    const panelBtn = st.tap ? `<span class="ibtn ${st.od?'warn':''}" data-act="openPanel" title="Register">${I.drawer.replace('16','20').replace('16','20')}</span>` : '';
+    const av = S.header==='E' ? `<span class="avbtn" data-act="openSheet" data-type="user" title="Demo Cashier"><span class="av">DC</span></span>` : '';
     const bg = phone ? `<span class="burger ${S.unread?'dot':''}">${I.bars}</span>` : '';
-    return `<div class="regbar quiet ${st.od?'warn':''}">${bg}${seg}${av}</div>`;
+    return `<div class="regbar quiet ${st.od?'warn':''}">${bg}${names}${panelBtn}${av}</div>`;
   }
   if (S.header==='B') return `<div class="regbar2 ${st.od?'warn':''}"><div class="r1">${burger}<span class="b">${S.register.store}</span>${chrome(false)}</div><div class="r2" ${st.tap?'data-act="openPanel"':''}><span class="ic">${I.drawer}</span><span class="b">${name}</span>${st.pill}${st.exp?`<span class="exp">${st.exp}</span>`:''}${st.tap?`<span class="chev">${I.chev}</span>`:''}</div></div>`;
   if (S.header==='C' && !phone) return `<div class="regbar chrome ${st.od?'warn':''}">${regSeg}</div>`;
@@ -771,6 +785,24 @@ function renderSheet(){
   const sh=S.sheet; if(!sh) return '';
   const lc=lastClosure();
   switch(sh.type){
+    case 'user': {
+      const ses=S.session; const mine = ses ? {n:9, total:412.3} : {n:0, total:0};
+      const others=[['amy','Amy Okafor','signed in on this device'],['sam','Sam Reilly','signed in on this device']];
+      return sheet('Demo Cashier', `Cashier · ${S.register.store}${S.registers>1&&S.register.exists?` · ${S.register.name}`:''}`,
+        `<div class="list">
+           <div class="lr"><span>Your sales today</span><span class="mut xs">${mine.n} sales</span><span class="v">${fmt(mine.total)}</span></div>
+         </div>
+         <div class="sect">Switch user</div>
+         <div class="list">${others.map(([k,n,sub])=>`<button class="lr click" style="width:100%;border:0;background:transparent;font:inherit;text-align:left" data-act="switchUser" data-name="${n}"><span class="who" style="font-size:13px;color:var(--fg)"><i>${who(k).ini}</i>${n}</span><span class="mut xs" style="margin-left:auto">${sub}</span>${I.chev}</button>`).join('')}<button class="lr click" style="width:100%;border:0;background:transparent;font:inherit;text-align:left" data-act="switchUser" data-name="another"><span>Another account…</span><span class="mut xs" style="margin-left:auto">WordPress login</span></button></div>
+         ${S.registers>1?`<div class="list"><button class="lr click" style="width:100%;border:0;background:transparent;font:inherit;text-align:left" data-act="rebindRegister"><span>Switch register</span><span class="mut xs" style="margin-left:auto">${S.register.name}</span>${I.chev}</button></div>`:''}`,
+        `<button class="btn od" data-act="signOut">Sign out</button><span class="grow"></span><button class="btn" data-act="closeSheet">Close</button>`);
+    }
+    case 'stores': {
+      const stores=[['UK Store','3 registers'],['Dublin Store','1 register']];
+      return sheet('Switch store', 'This device moves to that store\'s register',
+        `<div class="stack" style="gap:8px">${stores.map(([n,sub])=>`<button class="btn w" style="height:56px;justify-content:flex-start;gap:12px" data-act="switchStore" data-name="${n}"><span class="grow" style="text-align:left"><span class="b" style="display:block">${n}</span><span class="mut xs">${sub}</span></span>${n===S.register.store?'<span class="pill info">Current</span>':I.chev}</button>`).join('')}</div>`,
+        `<button class="btn" data-act="closeSheet">Cancel</button>`);
+    }
     case 'movement': {
       const t = sh.mtype; const isNS = t==='no_sale';
       return sheet('Cash movement', `${S.register.name} · ${who('demo').name} · ${S.now}`,
@@ -904,7 +936,7 @@ function refocus(sel){ const n=document.querySelector(sel); if(n){ const pos=n.v
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-set],[data-scn],[data-act],[data-close],[data-closepanel]');
   if (!t) return;
-  if (t.dataset.set){ e.preventDefault(); let v=t.dataset.v; if (v==='true') v=true; if (v==='false') v=false; if (t.dataset.set==='unread'||t.dataset.set==='registers') v=+v; if (t.dataset.set==='registers' && v===1) { S.register.exists=true; S.register.name='Front counter'; } A.set(t.dataset.set, v); S.selClosure=null; return render(); }
+  if (t.dataset.set){ e.preventDefault(); let v=t.dataset.v; if (v==='true') v=true; if (v==='false') v=false; if (t.dataset.set==='unread'||t.dataset.set==='registers'||t.dataset.set==='stores') v=+v; if (t.dataset.set==='registers' && v===1) { S.register.exists=true; S.register.name='Front counter'; } A.set(t.dataset.set, v); S.selClosure=null; return render(); }
   if (t.dataset.scn){ A.scenario(t.dataset.scn); return render(); }
   if (t.dataset.close && e.target===t){ A.closeSheet(); return render(); }
   if (t.dataset.closepanel && e.target===t){ A.closePanel(); return render(); }
@@ -918,6 +950,10 @@ document.addEventListener('click', e => {
     case 'useFloat': S.openForm.counted=t.dataset.v; break;
     case 'doOpen': A.doOpen(S.openForm.counted ?? suggestedFloat().toFixed(2)); break;
     case 'pickRegister': A.pickRegister(t.dataset.name); break;
+    case 'switchStore': A.switchStore(t.dataset.name); break;
+    case 'switchUser': A.switchUser(t.dataset.name); break;
+    case 'rebindRegister': A.rebindRegister(); break;
+    case 'signOut': A.signOut(); break;
     case 'doMove': A.doMove(S.sheet.mtype, S.sheet.amount, S.sheet.reason); break;
     case 'voidMove': A.voidMove(+t.dataset.id); break;
     case 'startCounting': A.startCounting(); break;

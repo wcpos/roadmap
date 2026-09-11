@@ -30,6 +30,12 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
     await set('unread','2'); await set('online','false'); await shot(`${h}-tablet-open-offline`); await set('online','true');
     await set('viewport','phone'); await scn('open'); await shot(`${h}-phone-open-alert`); await set('online','false'); await shot(`${h}-phone-open-offline`); await set('online','true');
   }
+  await set('viewport','tablet'); await set('header','E'); await set('stores','2'); await scn('open');
+  await page.click('.regbar .store'); await shot('E-tablet-switch-store'); await page.click('[data-act="switchStore"][data-name="Dublin Store"]');
+  if (!/Switched to Dublin Store/.test(await page.locator('#log div').first().textContent())) throw new Error('store switch failed');
+  await shot('E-tablet-after-switch');
+  await set('stores','1'); await scn('open'); await page.click('.regbar .avbtn'); await shot('E-tablet-user-sheet'); await page.click('[data-act="closeSheet"]');
+  await set('viewport','phone'); await scn('open'); await page.click('.regbar .avbtn'); await shot('E-phone-user-sheet'); await page.click('[data-act="closeSheet"]');
   await set('viewport','tablet'); await set('header','A'); await scn('open');
   await page.click('[data-act="openPanel"]'); await shot('A-tablet-panel');
   if (!(await page.locator('.panel').count())) throw new Error('panel did not open from the merged bar');
