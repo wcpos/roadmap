@@ -283,7 +283,10 @@ pre.state{margin:0;background:#0f172a;color:#cbd5e1;border-radius:10px;padding:1
 .log div{padding:3px 0;border-bottom:1px dashed #e5e7eb}
 .log div:last-child{border-bottom:0}
 kbd{font-family:ui-monospace,Menlo,monospace;background:#eef2f6;border:1px solid #d2d8df;border-radius:4px;padding:0 5px;font-size:11px}
-@media (max-width:1240px){.frame.tablet{transform-origin:top center;transform:scale(.9)}}
+body.embed .strip,body.embed .doc,body.embed .notes{display:none}
+body.embed{background:transparent}
+body.embed .stage{padding:0}
+@media (max-width:1240px){body:not(.embed) .frame.tablet{transform-origin:top center;transform:scale(.9)}}
 @media (max-width:1000px){.notes{grid-template-columns:1fr}}
 </style>
 </head>
@@ -903,6 +906,12 @@ document.addEventListener('input', e => {
   if (el.dataset.count){ A.setCount(el.dataset.count, el.value); const k=el.dataset.count; render(); refocus(`[data-count="${k}"]`); return; }
   if (el.dataset.den){ S.countOpen['d'+el.dataset.den]=el.value; const total=DENOMS.reduce((a,d)=>a+(parseFloat(S.countOpen['d'+d])||0)*d,0); S.session.counted.cash = total.toFixed(2); const d=el.dataset.den; render(); refocus(`[data-den="${d}"]`); return; }
 });
+// URL parameters for embedding: ?header=A&viewport=phone&scn=open&page=reports&embed=1
+(function(){ const q=new URLSearchParams(location.search);
+  if(q.get('scn')) A.scenario(q.get('scn'));
+  for (const k of ['header','viewport','page']) if(q.get(k)) S[k]=q.get(k);
+  if(q.get('embed')) document.body.classList.add('embed');
+})();
 render();
 </script>
 </body>
