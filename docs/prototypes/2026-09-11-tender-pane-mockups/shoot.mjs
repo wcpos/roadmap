@@ -6,7 +6,7 @@ const dir = path.dirname(fileURLToPath(import.meta.url));
 const url = 'file://' + path.join(dir, 'index.html');
 // [name, jump, {set: val}]
 const shots = [
-  ['fresh', 'fresh', {}], ['typed', 'typed', {}], ['card', 'card', {}], ['sumup', 'sumup', {}], ['split-sheet', 'splitsheet', {}], ['split', 'split', {}], ['split3-after', 'split3after', {}], ['phone-split-sheet', 'splitsheet', {phone:'1'}], ['partpaid', 'partpaid', {}],
+  ['fresh', 'fresh', {}], ['typed', 'typed', {}], ['card', 'card', {}], ['sumup', 'sumup', {}], ['split-sheet', 'splitsheet', {}], ['split', 'split', {}], ['split3-after', 'split3after', {}], ['split-percent', 'splitpct', {}], ['split-item', 'splititem', {}], ['split-items-after', 'splititems-after', {}], ['phone-split-item', 'splititem', {phone:'1'}], ['phone-split-sheet', 'splitsheet', {phone:'1'}], ['partpaid', 'partpaid', {}],
   ['terminal', 'terminal', {}], ['paid', 'paid', {}], ['offline', 'fresh', {offline:'1'}], ['unavail-open', 'unavail', {offline:'1'}],
   ['blue', 'typed', {surface:'blue'}], ['light', 'typed', {surface:'light'}],
   ['phone-fresh', 'fresh', {phone:'1'}], ['phone-paid', 'paid', {phone:'1'}], ['phone-terminal', 'terminal', {phone:'1'}],

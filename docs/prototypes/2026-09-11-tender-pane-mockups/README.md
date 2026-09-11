@@ -6,7 +6,7 @@ Throwaway, self-contained HTML. Open `index.html` in a browser (double-click; no
 
 **Fourth round (this file): direction 01, "the keypad is the screen", pushed.** Paul picked it from the direction board (*"01 is closest. It's still not great, but keep pushing in that direction"*). Cash App's idea: the amount is the whole surface, the balance is already typed at 104 pt, the method row is the commit. Card methods go straight to the terminal moment (direction 05); cash goes straight to a full-bleed Paid beat. Everything in the frame is live: type, tap Cash or Card, watch a terminal run its steps, cancel, split, go offline, switch surface (slate / brand blue / light), switch width. Earlier rounds are kept: `index-v2-grid.html` (grid, rules-driven), `index-v1-three-layouts.html`, `directions.html` (the five-direction board).
 
-Built on the real screen: `packages/core/src/screens/main/pos/checkout/tender/tender-pane.tsx` and `tiles.ts` on monorepo `next`. Every disabled reason the code produces is here, plus quick amounts, change due, split plans, terminal and reader legs, captured legs, Cancel payment and Legacy.
+Built on the real screen: `packages/core/src/screens/main/pos/checkout/tender/tender-pane.tsx` and `tiles.ts` on monorepo `next`. The mock order has three lines (Belt, Scarf, Socks · 46,00 £) so Item split has something to split. Every disabled reason the code produces is here, plus quick amounts, change due, split plans, terminal and reader legs, captured legs, Cancel payment and Legacy.
 
 Reopen: `open ~/Projects/roadmap-worktrees/docs-tender-pane-mockups/docs/prototypes/2026-09-11-tender-pane-mockups/index.html`
 
@@ -16,7 +16,7 @@ The dark strip at the top is not part of the design.
 
 | Control | What it changes |
 |---|---|
-| **Jump to** | Fresh sale · Typed 20 · Card selected · SumUp selected · Split chooser · Split 2 ways · 3 ways after leg 1 · After a cash leg · On the terminal · Paid · Unavailable list open |
+| **Jump to** | Fresh sale · Typed 20 · Card selected · SumUp selected · Split chooser · Split 2 ways · 3 ways after leg 1 · Percent tab · Item tab · Items after leg 1 · After a cash leg · On the terminal · Paid · Unavailable list open |
 | **Network** | offline: one badge by the label, the dot in the top bar, terminal pills faded with one line under the row saying why |
 | **Surface** | Slate (the sidebar colour) · Blue (brand) · Light |
 | **Width** | Tablet (1280, ledger beside) or Phone (390, ledger folded to a balance bar, method row scrolls) |
@@ -28,7 +28,7 @@ Keyboard: digits and Backspace type, Enter takes cash, Esc closes.
 - **The amount is the screen.** Balance pre-typed, dimmed until you type; the change line rises as you type; a short amount says what is still to take.
 - **Choose the method, then commit** (round 5, after Paul's notes). The method row under the amount is a selector; the helpers change with it (notes + Exact for cash, Full balance for card, reader line + Change for a terminal); one white button at the bottom names the action. Unavailable gateways sit in a folded *N not available right now* list with reasons. Payments / Legacy is a segmented control at the far right; Split is a chip beside the To pay label.
 - **Card → terminal moment → Paid.** No confirm screen. The Paid moment is full-bleed green, the tick draws, change is the headline for cash, then Print / Email / No receipt · New sale.
-- **Split flow** (round 6). The Split chip opens a chooser: 2 / 3 / 4 ways with the per-payment amount on each, *Type an amount* for a part payment, and *No split* once a plan exists. A plan puts a strip under the number: done legs green with their method, the current leg outlined, the rest dim, and *Change split* beside them. The label reads *Payment 2 of 3 · 12,00 £ left*, the commit button reads *Take 6,00 £ in Card · 2 of 3*. Typing less than the planned leg says the difference moves to the next payment; a part payment without a plan says what is left after it. Each leg can use a different method.
+- **Split flow** (round 8: four modes). The Split chip opens a chooser with four tabs. **Even**: 2 to 6 ways with the amount each. **Amount**: 5 / 10 / 20 / 50, Half, or type the first payment on the keypad. **Percent**: 10 / 20 / 25 / 30 / 50 / 75 with the amount shown. **Item**: tick the cart lines this payment covers, *Pay for these · 28,00 £*; after it lands the ledger marks those lines *paid · Card*. *No split* clears a plan. A plan puts a strip under the number: done legs green with their method, the current leg outlined, the rest dim, and *Change split* beside them. The label reads *Payment 2 of 3 · 12,00 £ left*, the commit button reads *Take 6,00 £ in Card · 2 of 3*. Typing less than the planned leg says the difference moves to the next payment; a part payment without a plan says what is left after it. Each leg can use a different method.
 - **Close, not an arrow.**
 
 ## Screens
