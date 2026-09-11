@@ -64,7 +64,7 @@ The numbers, all from primary sources:
 | Gap between adjacent targets | 8 dp or more | Material 3; Shopify POS guidance |
 | Padding around a bordered control | about 12 pt | Apple HIG |
 | Keys hit every sale | errors keep falling up to about 20 mm | Duff et al. 2010; Chen et al. 2013 (kiosk studies) |
-| Legal floor for the web build | 24 × 24 CSS px (AA), 44 (AAA) | WCAG 2.5.8, 2.5.5 |
+| Floor for the web build | 24 × 24 CSS px, 44 preferred; the project takes the numbers without the spacing, inline and essential exceptions WCAG allows | WCAG 2.5.8 (AA), 2.5.5 (AAA) |
 
 Two consequences. Keypad keys, payment tiles, product tiles and the Pay button are at least
 56 pt tall on a tablet, and bigger is not wasted. And the same CSS size is a different physical
@@ -80,9 +80,10 @@ affordances; hover and keyboard are desktop extras layered onto a touch design.
 
 Navigation, modality, sheets, popovers, safe areas and typography follow the Human Interface
 Guidelines. Modal tasks are "simple, short, and streamlined"; a complex task gets a full-screen
-presentation, not an enlarged centred modal. Text defaults to 17 pt on iPad with an 11 pt floor;
-the app's base is 14 px on web and 16 px on native, and nothing the cashier reads at arm's length
-goes below 14. System fonts throughout, tabular numerals for every amount.
+presentation, not an enlarged centred modal. Text defaults to 17 pt on iPad with an 11 pt floor for
+native text; the app's base is 16 px on native and 14 px on web, where 14 px is the floor, and
+nothing the cashier reads at arm's length goes below 14. System fonts throughout, tabular
+numerals for every amount.
 
 **Back points where the content goes.** A left arrow on a pane that is to the left of the thing
 it returns to is wrong. Use a close (×) or a labelled action instead. This is the specific fault
