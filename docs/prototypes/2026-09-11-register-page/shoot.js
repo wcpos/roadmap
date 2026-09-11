@@ -24,7 +24,7 @@ fs.mkdirSync(OUT, { recursive: true });
   const expect = async (re, what) => { const t = await logTop(); if (!re.test(t)) throw new Error(`${what}: ${t}`); };
 
   // 1. states, tablet
-  await scn('new'); await shot('tablet-1-first-signin');
+  await set('registers','3'); await scn('new'); await shot('tablet-1-first-signin-pick'); await set('registers','1'); await scn('new'); await shot('tablet-1b-first-signin-silent');
   await scn('off'); await shot('tablet-2-sessions-off');
   await scn('closed'); await shot('tablet-3-closed-gate');
   await scn('open'); await shot('tablet-4-open-bar');
@@ -46,9 +46,9 @@ fs.mkdirSync(OUT, { recursive: true });
   await set('viewport', 'tablet');
 
   // 3. the full chain: first sign-in → closed → open (float 195) → paid out → void → no sale → X → close → count → override → print → reprint
-  await scn('new');
-  await page.fill('[data-setup="name"]', 'Till 3'); await act('[data-act="createRegister"]');
-  await expect(/created/, 'create register failed');
+  await set('registers','3'); await scn('new'); await shot('flow-00-pick-register');
+  await act('[data-act="pickRegister"][data-name="Till 3"]');
+  await expect(/bound to "Till 3"/, 'pick register failed');
   if (!/Never opened/.test(await frameText())) throw new Error('closed gate not shown after create');
   await shot('flow-01-closed-after-setup');
   await act('.tile[data-name="Tote bag"]'); await expect(/Price check only/, 'product tap while closed should not add');

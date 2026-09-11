@@ -11,7 +11,7 @@ Throwaway, self-contained HTML. Open `index.html` in a browser (double-click; no
 - **Counting** → the cart column *is* the count screen; the product grid is dimmed. *Back to selling* returns the cart.
 - **Overdue** → the bar turns amber with the close time.
 - **Sessions off** → the POS screen exactly as today.
-- **First sign-in** → the cart column asks for the register's name before anything else; the register binds to the store.
+- **First sign-in** → registers are **server records** (Paul, 2026-09-11 late — superseding the earlier "name it on the POS screen"): every store gets one by default, more are created in the plugin's admin, never in the POS. The device holds only a pointer. Strip → *Registers* → 1: binding is silent and the bar says *Register*; → 3: a one-time picker (register, status, who opened it) replaces the cart, changed later under the avatar. A wiped device re-binds and loses no numbering.
 - **No menu item, no sign-in state.**
 
 Built on the decided language (#207 minus its menu item), session model (#210), offline binding (#211), closure document (#212) and permission rows (#213). One in-memory register, *Front counter* at *UK Store*; nothing persists.
@@ -51,7 +51,7 @@ What Paul's walk-through of the first cut changed, and the defaults he accepted 
 3. **Reports overlap removed.** Free's till features (open, move, count, close, print once, reprint last) live in the POS screen as cards, panel and sheets; everything that looks back across registers is Pro on Reports. This is the #213 line ("the document is Free, reading it back is Pro") with no page in between.
 4. **Menu item dropped entirely** rather than kept as a shortcut to the panel (default accepted).
 5. **Closing with unpaid carts open is allowed** — open carts are unsynced orders, not tendered money (default accepted).
-6. **First sign-in names the register on the POS screen**, not on the store picker (default accepted).
+6. ~~First sign-in names the register on the POS screen~~ **Superseded the same night:** registers are created on the server (one per store by default, more in the plugin's admin); the device only picks one, and only when the store has more than one. Creating on the device would lose the register on a wipe or duplicate it.
 7. Questions from the first cut that this settles: landing page after sign-in (POS), menu position and icon (none), the sessions-off state (nothing shows), back-to-selling (exists).
 
 ## No title bar (Paul's suggestion, 2026-09-11 evening)
@@ -78,6 +78,7 @@ On phone the hamburger moves into the bar. Reports gets a page bar (`Reports …
 **Declutter pass 1** (applied with the decision):
 - The bar shows a status pill only when the state is not the normal one: closed, counting, overdue, set up. While open and on time it reads `Front counter · UK Store   £480.80 ›   DC` and nothing else. The drawer icon is gone; the chevron is the affordance.
 - The Open register card is the amount (prefilled with the expected float), one or two chips (`£200.00 default float`, `£570.10 closure 12 count`), and one button. The expected-float row, "Use £200", the "or type what you counted" hint and the drawer/printer sentence are gone. The opening-variance line appears only when the typed amount differs.
+- The bar names the register only when the store has more than one; otherwise it says *Register*. Most stores never see a register name.
 - Not touched yet, for Paul to direct: the panel (hero + three actions + folds), the count screen, the products-column notice while closed, the tab bar labels on phone, the Reports page bar.
 
 ## Questions still open

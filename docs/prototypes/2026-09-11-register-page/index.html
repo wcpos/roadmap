@@ -330,7 +330,7 @@ body.embed .stage{padding:0}
         <li><b>The bar</b> — <i>Session open</i>: one line at the top of the cart: register, status, expected cash (blind cashiers see none). Tap it for the panel. Overdue turns it amber with the close time. Would you rather it sat in the app header?</li>
         <li><b>The panel</b> — right panel on tablet, sheet on phone, the same overlay pattern the app is moving to. It is the old "Focus" layout: one number, the three cash actions, X-report, and the folds. Close register is in its footer.</li>
         <li><b>Counting</b> — the cart column becomes the count; the product grid is dimmed with one line. <i>Back to selling</i> returns the cart. Nothing to navigate.</li>
-        <li><b>First sign-in</b> — the one state added: a device signing in to a store for the first time names its register before the cart appears. Should it be here or on the store picker?</li>
+        <li><b>First sign-in</b> — registers are <b>server records</b> (Paul, 2026-09-11 late): every store gets one by default, more are created in the plugin's admin, never in the POS. The device holds only a pointer. Registers → <i>1</i>: binding is silent and the register is never named on screen (the bar says <i>Register</i>). Registers → <i>3</i>: a one-time picker replaces the cart; the choice is changed under the avatar. A wiped device re-binds and loses no numbering.</li>
         <li><b>Blind count</b> — untick <i>view reports</i>: expected and variance vanish from the bar, the panel and the count.</li>
         <li><b>Offline close</b> — Network → Offline: the count says how many sales are not on the server yet; the closure is marked <i>Unsynced</i>.</li>
         <li><b>Reports</b> — unchanged in shape: <i>Sales</i> (the range report, renamed) and <i>Closures</i> (Pro). Free's upgrade card now points back to the POS screen for the last closure.</li>
@@ -373,7 +373,7 @@ const S = {
   sessionsOn:true, pro:true, online:true,
   caps:{ cash:true, reports:true, closures:true },
   now:'17:42', today:'Thu 11 Sep',
-  register:{ exists:true, name:'Front counter', store:'UK Store', closeTime:'18:00', threshold:5, printer:'Epson TM-m30', defaultFloat:200 },
+  registers:3, register:{ exists:true, name:'Front counter', store:'UK Store', closeTime:'18:00', threshold:5, printer:'Epson TM-m30', defaultFloat:200 },
   session:null,
   closures:[],
   sheet:null, panel:false, openForm:{}, setupName:'Front counter', reportsTab:'sales', selClosure:null, countOpen:{}, log:[]
@@ -432,7 +432,7 @@ const A = {
   scenario(name){
     S.sheet=null; S.panel=false; S.page='pos'; S.openForm={}; S.register.exists=true; S.phoneTab='cart';
     switch(name){
-      case 'new': S.register.exists=false; S.sessionsOn=true; S.session=null; S.now='08:50'; break;
+      case 'new': S.sessionsOn=true; S.session=null; S.now='08:50'; if (S.registers>1) S.register.exists=false; else log('Store has one register — bound silently, nothing to choose'); break;
       case 'off': S.sessionsOn=false; S.session=null; S.now='10:12'; break;
       case 'closed': S.sessionsOn=true; S.session=null; S.now='08:55'; break;
       case 'open': S.sessionsOn=true; S.session=sampleSession(); S.now='17:42'; break;
@@ -441,7 +441,7 @@ const A = {
     }
     log(`Scenario → ${name}`);
   },
-  createRegister(name){ const n=(name||'').trim(); if(!n) return; S.register.exists=true; S.register.name=n; tick(1); log(`Register "${n}" created for ${S.register.store} — bound to the store from now on; an administrator can move it while it has no open session`); },
+  pickRegister(name){ S.register.exists=true; S.register.name=name; tick(1); if (name==='Front counter') S.session=sampleSession(); else S.session=null; log(`This device is now bound to "${name}" (server register, ${S.register.store}). Numbering and counters live on the server; a wiped device re-binds and loses nothing.`); },
   openPanel(){ S.panel=true; },
   closePanel(){ S.panel=false; },
   openSheet(type, extra={}){ S.sheet={type, ...extra}; },
@@ -494,7 +494,7 @@ const A = {
   turnOn(){ S.sessionsOn=true; log('Register sessions turned on for UK Store (store setting)'); },
   tapProduct(name){
     if (!S.sessionsOn || (S.session && S.session.state==='open')) { log(`${name} added to the cart`); return; }
-    if (!S.register.exists) log(`${name} — not added: this device has no register yet`);
+    if (!S.register.exists) log(`${name} — not added: choose this device's register first`);
     else if (!S.session) log(`${name} — not added: the register is closed. Price check only.`);
     else log(`${name} — not added: the register is counting`);
   },
@@ -532,9 +532,10 @@ function renderStrip(){
   document.getElementById('strip').innerHTML = `
     <div class="g"><b>Width</b>${seg('viewport',[['tablet','Tablet'],['phone','Phone']])}</div>
     <div class="g"><b>Header</b>${seg('header',[['E','E · chosen'],['bar','Title bar (today)'],['D','D'],['A','A'],['B','B'],['C','C']])}</div>
+    <div class="g"><b>Registers</b>${seg('registers',[[1,'1 (default, silent)'],[3,'3 (pick once)']])}</div>
     <div class="g"><b>Alerts</b>${seg('unread',[[0,'quiet'],[2,'2 unread']])}</div>
     <div class="g"><b>Page</b>${seg('page',[['pos','POS'],['reports','Reports']])}</div>
-    <div class="g"><b>Jump to</b><span class="seg">${[['new','First sign-in'],['off','Sessions off'],['closed','Register closed'],['open','Session open'],['counting','Counting'],['overdue','Overdue']].map(([v,l])=>`<button data-scn="${v}">${l}</button>`).join('')}</span></div>
+    <div class="g"><b>Jump to</b><span class="seg">${[['new','First sign-in (no pointer)'],['off','Sessions off'],['closed','Register closed'],['open','Session open'],['counting','Counting'],['overdue','Overdue']].map(([v,l])=>`<button data-scn="${v}">${l}</button>`).join('')}</span></div>
     <div class="g"><b>Can</b>${ck('cash','manage cash')}${ck('reports','view reports')}${ck('closures','manager override')}</div>
     <div class="g"><b>Edition</b>${seg('pro',[[true,'Pro'],[false,'Free']])}</div>
     <div class="g"><b>Network</b>${seg('online',[[true,'Online'],[false,'Offline']])}</div>
@@ -575,14 +576,14 @@ function renderPOS(){
   const phone = S.viewport==='phone';
   if (!phone) return `<div class="pos">${renderProducts()}${renderCartColumn()}</div>`;
   const g = gated();
-  const badge = !S.sessionsOn ? `<span class="badge">3</span>` : !S.register.exists ? `<span class="badge warn">!</span>` : !S.session ? `<span class="badge warn">Open</span>` : S.session.state==='counting' ? `<span class="badge warn">Count</span>` : `<span class="badge">3</span>`;
+  const badge = !S.sessionsOn ? `<span class="badge">3</span>` : !S.register.exists ? `<span class="badge warn">Pick</span>` : !S.session ? `<span class="badge warn">Open</span>` : S.session.state==='counting' ? `<span class="badge warn">Count</span>` : `<span class="badge">3</span>`;
   return `<div class="pos" style="flex-direction:column">${S.phoneTab==='products' ? renderProducts() : renderCartColumn()}
     <div class="tabbar"><button class="${S.phoneTab==='products'?'on':''}" data-set="phoneTab" data-v="products">${I.products}Products</button><button class="${S.phoneTab==='cart'?'on':''}" data-set="phoneTab" data-v="cart">${badge}${I.cart}${g?'Register':'Cart'}</button></div></div>`;
 }
 
 function renderProducts(){
   const ses=S.session; let over='', notice='';
-  if (S.sessionsOn && !S.register.exists) notice = `<div class="notice">Set up this register before selling.</div>`;
+  if (S.sessionsOn && !S.register.exists) notice = `<div class="notice">Choose this device's register before selling.</div>`;
   else if (S.sessionsOn && !ses) notice = `<div class="notice">Register closed · price check only. Open it to add to a cart.</div>`;
   else if (S.sessionsOn && ses.state==='counting') over = `<div class="gate"><div>No sales while the register is counting.</div></div>`;
   return `<div class="prodcol">${notice}
@@ -594,7 +595,7 @@ function renderCartColumn(){
   const ses=S.session;
   let body;
   const top = noHeader() ? renderTopBar() : '';
-  if (S.sessionsOn && !S.register.exists) body = renderSetupCard();
+  if (S.sessionsOn && !S.register.exists) body = renderPickCard();
   else if (S.sessionsOn && !ses) body = renderOpenCard();
   else if (S.sessionsOn && ses.state==='counting') body = `<div class="gatecard narrow">${renderCounting()}</div>`;
   else body = renderCart();
@@ -605,7 +606,7 @@ function renderCartColumn(){
 function regStatus(){
   const ses=S.session;
   if(!S.sessionsOn) return {pill:'', exp:'', tap:false};
-  if(!S.register.exists) return {pill:`<span class="pill warn dotp">Set up</span>`, exp:'', tap:false};
+  if(!S.register.exists) return {pill:`<span class="pill warn dotp">Choose register</span>`, exp:'', tap:false};
   if(!ses) return {pill:`<span class="pill closed dotp">Closed</span>`, exp:'', tap:false};
   if(ses.state==='counting') return {pill:`<span class="pill count dotp">Counting</span>`, exp:'', tap:false};
   const od=overdue();
@@ -613,7 +614,7 @@ function regStatus(){
   return {pill: od?`<span class="pill warn dotp" title="Past the expected close time ${S.register.closeTime}">Overdue</span>`:(quiet?'':`<span class="pill open dotp">Open</span>`), exp: can('reports')?fmt(expected(ses)):'', tap:true, od};
 }
 function renderTopBar(){
-  const phone=S.viewport==='phone'; const st=regStatus(); const name=S.register.exists?S.register.name:'This device';
+  const phone=S.viewport==='phone'; const st=regStatus(); const name=!S.register.exists?'This device':(S.registers>1?S.register.name:'Register');
   const burger = phone ? `<span class="burger">${I.bars}</span>` : '';
   const regSeg = `<span class="reg" ${st.tap?'data-act="openPanel"':''}><span class="ic">${I.drawer}</span><span class="b">${name}</span>${st.pill}${st.exp?`<span class="exp">${st.exp}</span>`:''}${st.tap?`<span class="chev">${I.chev}</span>`:''}</span>`;
   if (S.header==='D'||S.header==='E'){
@@ -648,14 +649,17 @@ function renderRegBar(){
     <span class="exp">${can('reports')?fmt(exp):''}</span><span class="chev">${I.chev}</span></div>`;
 }
 
-function renderSetupCard(){
+function renderPickCard(){
+  const lc7 = S.closures.find(c=>c.register==='Back office');
+  const regs = [
+    ['Front counter', `<span class="pill open dotp">Open</span> since 09:02 · Amy Okafor`],
+    ['Back office', `Closed · last closure ${lc7?lc7.number:'—'}`],
+    ['Till 3', `Never opened`],
+  ];
   return `<div class="gatecard">
-    ${noHeader()?`<div><div class="b" style="font-size:16px">Set up this register</div><div class="mut sm">First sign-in to ${S.register.store} on this device</div></div>`:`<div class="head"><span class="ic">${I.drawer.replace('16','22').replace('16','22')}</span><div><div class="b" style="font-size:16px">Set up this register</div><div class="mut sm">First sign-in to ${S.register.store} on this device</div></div></div>`}
-    <div class="sm">Name the register. It belongs to <b>${S.register.store}</b> from now on; an administrator can move it to another store while it has no open session. Its closures are numbered from 1.</div>
-    <div class="fld"><label>Register name</label><input class="in" data-setup="name" value="${S.setupName}" placeholder="e.g. Front counter"></div>
-    <div class="line1 sm"><span class="mut">Store</span><b>${S.register.store}</b><span class="mut">· register 2 of this store</span></div>
-    <button class="btn p lg w" data-act="createRegister" ${S.setupName.trim()?'':'disabled'}>Create register</button>
-    <div class="mut xs">Default float, close time and the drawer printer are in Settings › Register.</div>
+    <div><div class="b" style="font-size:16px">Which register is this device?</div><div class="mut sm">${S.register.store} has ${regs.length} registers. Asked once; change it under your avatar.</div></div>
+    <div class="stack" style="gap:8px">${regs.map(([n,sub])=>`<button class="btn w" style="height:56px;justify-content:flex-start;gap:12px" data-act="pickRegister" data-name="${n}"><span class="grow" style="text-align:left"><span class="b" style="display:block">${n}</span><span class="mut xs">${sub}</span></span>${I.chev}</button>`).join('')}</div>
+    <div class="mut xs">Registers are created in the plugin's admin, not here.</div>
   </div>`;
 }
 
@@ -900,7 +904,7 @@ function refocus(sel){ const n=document.querySelector(sel); if(n){ const pos=n.v
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-set],[data-scn],[data-act],[data-close],[data-closepanel]');
   if (!t) return;
-  if (t.dataset.set){ e.preventDefault(); let v=t.dataset.v; if (v==='true') v=true; if (v==='false') v=false; if (t.dataset.set==='unread') v=+v; A.set(t.dataset.set, v); S.selClosure=null; return render(); }
+  if (t.dataset.set){ e.preventDefault(); let v=t.dataset.v; if (v==='true') v=true; if (v==='false') v=false; if (t.dataset.set==='unread'||t.dataset.set==='registers') v=+v; if (t.dataset.set==='registers' && v===1) { S.register.exists=true; S.register.name='Front counter'; } A.set(t.dataset.set, v); S.selClosure=null; return render(); }
   if (t.dataset.scn){ A.scenario(t.dataset.scn); return render(); }
   if (t.dataset.close && e.target===t){ A.closeSheet(); return render(); }
   if (t.dataset.closepanel && e.target===t){ A.closePanel(); return render(); }
@@ -913,7 +917,7 @@ document.addEventListener('click', e => {
     case 'sheetSet': S.sheet[t.dataset.k]=t.dataset.v; break;
     case 'useFloat': S.openForm.counted=t.dataset.v; break;
     case 'doOpen': A.doOpen(S.openForm.counted ?? suggestedFloat().toFixed(2)); break;
-    case 'createRegister': A.createRegister(S.setupName); break;
+    case 'pickRegister': A.pickRegister(t.dataset.name); break;
     case 'doMove': A.doMove(S.sheet.mtype, S.sheet.amount, S.sheet.reason); break;
     case 'voidMove': A.voidMove(+t.dataset.id); break;
     case 'startCounting': A.startCounting(); break;
