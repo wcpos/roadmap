@@ -36,9 +36,10 @@ Keyboard: digits and Backspace type, Enter takes cash, Esc closes.
 
 `screens/` holds Playwright captures of every jump state, the three surfaces, offline and phone. Regenerate with `node docs/prototypes/2026-09-11-tender-pane-mockups/shoot.mjs` run from the monorepo root (uses its Playwright). `screens-v1/`, `screens-v2/` and `screens/direction-0N.png` are the earlier rounds.
 
-Run the interaction checks from that same installed monorepo workspace, pointing `ROADMAP_CHECKOUT` at this checkout:
+Run the interaction checks from that same installed monorepo workspace. `ROADMAP_CHECKOUT` is the absolute path of this roadmap checkout (not `$PWD`, since the commands run from the monorepo root):
 
 ```sh
+export ROADMAP_CHECKOUT=/absolute/path/to/roadmap
 node "$ROADMAP_CHECKOUT/docs/prototypes/2026-09-11-tender-pane-mockups/keyboard.test.mjs"
 node "$ROADMAP_CHECKOUT/docs/prototypes/2026-09-11-tender-pane-mockups/shoot.test.mjs"
 ```
