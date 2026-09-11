@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><title>Register — five ideas beyond the bar and the panel</title>
+<html lang="en"><head><meta charset="utf-8"><title>Register — cart tabs and four ideas</title>
 <style>
 body{margin:0;background:#e9edf2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#162330}
 .top{position:sticky;top:0;z-index:5;background:#111827;color:#e5e7eb;padding:10px 24px;display:flex;gap:18px;align-items:center;font-size:13px}
@@ -18,8 +18,8 @@ iframe.t{width:1182px;height:762px} iframe.p{width:392px;height:782px}
 <div id="out"></div>
 <script>
 const IDEAS=[
- ['none','E as chosen — for reference','The bar names the place, the drawer icon opens the panel.','open',''],
- ['empty','1 · The empty cart is the register','No bar, no panel, no drawer icon. With nothing in the cart the column is the register: the figure, Paid in / out / No sale, the list, Close register. Add an item and it is the cart. The cashier avatar sits in the cart header.','open','&cart=empty'],
+ ['none','Cart tabs · their own row (as the app today)','E with two open orders. The bar names the place and holds the drawer icon and the avatar; the tab row under it is the app\'s: one tab per open order, + for a new one.','open','&orders=2'],
+ ['none','Cart tabs · in the bar','The same, with the tabs sharing the bar\'s row: tabs on the left, status pill, drawer icon and avatar on the right. One strip fewer in the column. The store name moves under the avatar.','open','&orders=2&tabs=bar'],
  ['autoopen','2 · The first cash sale opens the register','No morning gate. The register is closed but the cart is there; one muted line says the first cash sale opens it with the carried float. Tap Checkout to see it happen. The float check moves to closing (a Change link on the count).','closed',''],
  ['timed','3 · The primary button knows the time','Past close time with an empty cart, Checkout becomes Close register. No Overdue pill, no hunt. With items in the cart it is Checkout as usual.','overdue','&cart=empty'],
  ['tapcount','4 · Count by tapping notes, not typing','The count screen is a grid of note and coin tiles: tap once per piece, hold for ×10, total ticking up into the cash field. Shown with 8 × £20, 3 × £5, 2 × £1, 1 × 50p.','counting','&taps=1'],

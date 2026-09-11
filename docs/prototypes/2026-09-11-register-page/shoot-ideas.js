@@ -4,8 +4,9 @@ const path = require('path'); const fs = require('fs');
 const DIR = __dirname; const OUT = path.join(DIR, 'screens', 'ideas');
 fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive: true });
 const CASES = [
-  ['1-empty-cart-register', 'idea=empty&scn=open&cart=empty'],
-  ['1-empty-cart-with-items', 'idea=empty&scn=open'],
+  ['0-tabs-own-row', 'scn=open&orders=2'],
+  ['0-tabs-in-bar', 'scn=open&orders=2&tabs=bar'],
+  ['0-tabs-in-bar-new-order', 'scn=open&orders=2&tabs=bar&cart=empty'],
   ['2-autoopen-closed', 'idea=autoopen&scn=closed'],
   ['3-timed-overdue-empty', 'idea=timed&scn=overdue&cart=empty'],
   ['4-tapcount', 'idea=tapcount&scn=counting&taps=1'],

@@ -89,6 +89,26 @@ a{color:var(--primary)}
 .phone .ph-hide{display:none}
 .cartcol .inner{flex:1;overflow:auto;display:flex;flex-direction:column}
 .cart-h{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--border);background:var(--card-header);flex:none}
+.tabsrow{display:flex;align-items:center;gap:4px;padding:6px 8px 0;background:var(--bg);border-bottom:1px solid var(--border);flex:none;min-height:48px;white-space:nowrap}
+.tabsrow .tab{height:40px;padding:0 14px;border:1px solid var(--border);border-bottom:0;border-radius:8px 8px 0 0;background:#e6ecf2;color:var(--muted-fg);font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-variant-numeric:tabular-nums;margin-bottom:-1px;transition:background .12s ease-out}
+.tabsrow .tab.on{background:#fff;color:var(--fg);font-weight:600;border-bottom:1px solid #fff}
+.tabsrow .tab.plus{padding:0 12px;font-size:18px;line-height:1}
+.tabsrow .tab:active{transform:none;background:#dfe5ec}
+.tabsrow .scroll{display:flex;gap:4px;overflow-x:auto;flex:1;min-width:0;scrollbar-width:none;align-items:flex-end;height:42px}
+.regbar.tabsbar{padding:0 8px 0 8px;align-items:flex-end;background:var(--bg)}
+.regbar.tabsbar .scroll{display:flex;gap:4px;overflow-x:auto;flex:1;min-width:0;scrollbar-width:none;align-items:flex-end;height:48px}
+.regbar.tabsbar .tab{height:38px;padding:0 12px;border:1px solid var(--border);border-bottom:0;border-radius:8px 8px 0 0;background:#e6ecf2;color:var(--muted-fg);font-size:13px;font-weight:500;display:inline-flex;align-items:center;cursor:pointer;font-variant-numeric:tabular-nums;margin-bottom:-1px}
+.regbar.tabsbar .tab.on{background:#fff;color:var(--fg);font-weight:600;border-bottom:1px solid #fff}
+.regbar.tabsbar .tab.plus{padding:0 12px;font-size:18px}
+.regbar.tabsbar .pill,.regbar.tabsbar .ibtn,.regbar.tabsbar .avbtn,.regbar.tabsbar .burger{align-self:center}
+.regbar.tabsbar .ibtn{margin-left:4px}
+.tabsrow .chrome{display:flex;align-items:center;gap:8px;flex:none;padding-bottom:6px}
+.tabsrow .chrome .store{font-weight:600;cursor:pointer;padding:6px;margin:-6px;border-radius:6px}
+.tabsrow .chrome .avbtn{width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;margin-right:-6px}
+.tabsrow .chrome .avbtn .av{width:28px;height:28px;border-radius:50%;background:var(--sidebar);color:#e0e5eb;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.cart-f2{padding:8px 12px 0;display:flex;gap:8px}
+.cart-f2 .btn{flex:1;height:36px}
+.cart-f .btn.od{flex:0 0 auto}
 .cart-h .cust{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:1px solid var(--border);border-radius:999px;background:#fff;font-size:12px}
 .cartline{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--border);font-size:13px}
 .cartline .q{width:26px;height:26px;border:1px solid var(--border);border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;background:#fff}
@@ -424,13 +444,15 @@ const DENOMS = [50,20,10,5,2,1,0.5,0.2,0.1,0.05,0.02,0.01];
 const CASHIERS = { demo:{name:'Demo Cashier', ini:'DC'}, amy:{name:'Amy Okafor', ini:'AO'}, sam:{name:'Sam Reilly', ini:'SR'} };
 const PRODUCTS = [['Flat white',3.2],['Sourdough loaf',4.2],['Tote bag',12],['Oat latte',3.6],['Croissant',2.4],['Beans 250g',9.5],['Cinnamon bun',3],['Gift card',20]];
 const CART = [['Flat white',2,3.2],['Sourdough loaf',1,4.2],['Tote bag',1,12]];
+const ORDERS = [{id:'a', items:CART},{id:'b', items:[['Oat latte',1,3.6],['Croissant',2,2.4]]}];
+const orderTotal = o => o.items.reduce((a,[,q,p])=>a+q*p,0);
 
 const S = {
   viewport:'tablet', page:'pos', floatMode:'default', phoneTab:'cart', header:'E', unread:0,
   sessionsOn:true, pro:true, online:true,
   caps:{ cash:true, reports:true, closures:true },
   now:'17:42', today:'Thu 11 Sep',
-  idea:'none', cartEmpty:false, stores:2, registers:3, register:{ exists:true, name:'Front counter', store:'UK Store', closeTime:'18:00', threshold:5, printer:'Epson TM-m30', defaultFloat:200 },
+  idea:'none', tabsPos:'below', cartEmpty:false, orders:1, currentOrder:'a', stores:2, registers:3, register:{ exists:true, name:'Front counter', store:'UK Store', closeTime:'18:00', threshold:5, printer:'Epson TM-m30', defaultFloat:200 },
   session:null,
   closures:[],
   sheet:null, panel:false, toast:null, settle:null, openForm:{}, setupName:'Front counter', reportsTab:'sales', selClosure:null, countOpen:{}, log:[]
@@ -599,8 +621,10 @@ function renderStrip(){
   const ck = (k,l) => `<label class="ck"><input type="checkbox" data-cap="${k}" ${S.caps[k]?'checked':''}> ${l}</label>`;
   document.getElementById('strip').innerHTML = `
     <div class="g"><b>Width</b>${seg('viewport',[['tablet','Tablet'],['phone','Phone']])}</div>
-    <div class="g"><b>Idea</b>${seg('idea',[['none','E as chosen'],['empty','1 · empty cart is the register'],['autoopen','2 · first cash sale opens'],['timed','3 · button knows the time'],['tapcount','4 · tap to count'],['drawer','5 · the drawer is a drawer']])}</div>
-    <div class="g"><b>Cart</b>${seg('cartEmpty',[[false,'3 items'],[true,'empty']])}</div>
+    <div class="g"><b>Idea</b>${seg('idea',[['none','E as chosen'],['autoopen','2 · first cash sale opens'],['timed','3 · button knows the time'],['tapcount','4 · tap to count'],['drawer','5 · the drawer is a drawer']])}</div>
+    <div class="g"><b>Cart tabs</b>${seg('tabsPos',[['below','their own row'],['bar','in the bar']])}</div>
+    <div class="g"><b>Cart</b>${seg('cartEmpty',[[false,'an order'],[true,'new (empty)']])}</div>
+    <div class="g"><b>Open orders</b>${seg('orders',[[1,'1'],[2,'2']])}</div>
     <div class="g"><b>Stores</b>${seg('stores',[[1,'1'],[2,'2 (Pro)']])}</div>
     <div class="g"><b>Registers</b>${seg('registers',[[1,'1 (default, silent)'],[3,'3 (pick once)']])}</div>
     <div class="g"><b>Alerts</b>${seg('unread',[[0,'quiet'],[2,'2 unread']])}</div>
@@ -665,10 +689,10 @@ function renderProducts(){
 function renderCartColumn(){
   const ses=S.session;
   let body;
-  const top = noHeader() && S.idea!=='empty' ? renderTopBar() : (S.idea==='empty' && S.sessionsOn && S.register.exists && ses && ses.state!=='open' ? renderTopBar() : '');
+  const top = noHeader() && S.idea!=='empty' ? renderTopBar() : (S.idea==='empty' && !(S.sessionsOn && ses && ses.state==='open') && !(S.sessionsOn && !ses && S.register.exists) ? renderTopBar() : '');
   if (S.sessionsOn && !S.register.exists) body = renderPickCard();
   else if (S.sessionsOn && !ses && S.idea==='autoopen') body = renderCart();
-  else if (S.sessionsOn && !ses) body = renderOpenCard();
+  else if (S.sessionsOn && !ses) body = (S.idea==='empty' ? renderTabsRow(true) : '') + renderOpenCard();
   else if (S.sessionsOn && ses.state==='counting') body = `<div class="gatecard narrow">${renderCounting()}</div>`;
   else body = renderCart();
   return `<div class="cartcol narrow">${top}${S.toast?`<div class="toast" role="status">${S.toast}</div>`:''}${body}${S.idea==='drawer'?renderPanel(true):''}</div>`;
@@ -693,6 +717,14 @@ function renderTopBar(){
   if (S.header==='D'||S.header==='E'){
     const off = !S.online ? `<span class="pill off">${I.cloudOff} Offline</span>` : '';
     const storeEl = `<span class="store ${S.stores>1?'':'static'}" ${S.stores>1?'data-act="openSheet" data-type="stores" title="Switch store"':''}>${S.register.store}</span>`;
+    const cartVisible = S.sessionsOn ? (S.session && S.session.state==='open') : true;
+    if (S.tabsPos==='bar' && cartVisible) {
+      const tabs = openOrders().map(o=>`<span class="tab ${S.currentOrder===o.id?'on':''}" data-act="selOrder" data-id="${o.id}">Cart: ${fmt(orderTotal(o))}</span>`).join('') + `<span class="tab plus ${S.currentOrder==='new'?'on':''}" data-act="selOrder" data-id="new" title="New order">+</span>`;
+      const panelBtn2 = st.tap ? `<span class="ibtn ${st.od?'warn':''}" data-act="openPanel" title="Register">${I.drawer.replace('16','20').replace('16','20')}</span>` : '';
+      const av2 = `<span class="avbtn" data-act="openSheet" data-type="user" title="Demo Cashier"><span class="av">DC</span></span>`;
+      const bg2 = phone ? `<span class="burger ${S.unread?'dot':''}">${I.bars}</span>` : '';
+      return `<div class="regbar quiet tabsbar ${st.od?'warn':''}">${bg2}<span class="scroll">${tabs}</span>${st.pill}${off}${panelBtn2}${av2}</div>`;
+    }
     const names = S.registers>1 && S.register.exists
       ? `<span class="names"><span class="b">${S.register.name}</span><span class="mut">·</span>${storeEl}${st.pill}${off}</span>`
       : `<span class="names"><span class="b">${storeEl}</span>${st.pill}${off}</span>`;
@@ -706,20 +738,25 @@ function renderTopBar(){
   return `<div class="regbar chrome ${st.od?'warn':''}">${burger}${regSeg}${chrome(S.header==='C')}</div>`;
 }
 
+function openOrders(){ return ORDERS.slice(0, S.orders); }
+function renderTabsRow(withChrome){
+  const st=regStatus(); const phone=S.viewport==='phone';
+  const tabs = openOrders().map(o=>`<span class="tab ${S.currentOrder===o.id?'on':''}" data-act="selOrder" data-id="${o.id}">Cart: ${fmt(orderTotal(o))}</span>`).join('')
+    + `<span class="tab plus ${S.currentOrder==='new'?'on':''}" data-act="selOrder" data-id="new" title="New order">+</span>`;
+  const chrome = withChrome ? `<span class="chrome">${st.pill}${!S.online?`<span class="pill off">${I.cloudOff} Offline</span>`:''}${phone?'':`<span class="store" ${S.stores>1?'data-act="openSheet" data-type="stores"':''}>${S.registers>1?S.register.name+' · ':''}${S.register.store}</span>`}<span class="avbtn" data-act="openSheet" data-type="user"><span class="av">DC</span></span></span>` : '';
+  return `<div class="tabsrow">${withChrome&&phone?`<span class="burger ${S.unread?'dot':''}" style="width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:6px">${I.bars}</span>`:''}<span class="scroll">${tabs}</span>${chrome}</div>`;
+}
 function renderCart(){
-  const ses=S.session; const items = S.cartEmpty ? [] : CART; const sub=items.reduce((a,[,q,p])=>a+q*p,0); const tax=+(sub-sub/1.2).toFixed(2);
-  const avatar = S.idea==='empty' ? `<span class="avbtn" data-act="openSheet" data-type="user"><span class="av">DC</span></span>` : '';
-  const head = `<div class="cart-h"><span class="cust">Guest ▾</span><span class="grow"></span><button class="btn sm g">+</button><button class="btn sm g">${I.more}</button>${avatar}</div>`;
-  // idea 1: the empty cart is the register
-  if (S.idea==='empty' && S.sessionsOn && ses && ses.state==='open' && !items.length) return `${head}${renderRegisterBody(true)}`;
-  // idea 2: closed but no gate — the first cash sale opens the register
+  const ses=S.session; const cur = openOrders().find(o=>o.id===S.currentOrder); const items = (S.currentOrder==='new' || !cur) ? [] : cur.items; const sub=items.reduce((a,[,q,p])=>a+q*p,0); const tax=+(sub-sub/1.2).toFixed(2);
+  const tabsRow = S.tabsPos==='bar' && S.idea!=='empty' ? '' : renderTabsRow(S.idea==='empty');
+  const head = `<div class="cart-h"><span class="mut sm">Customer:</span><span class="cust">Guest ▾</span><span class="grow"></span><button class="btn sm g">+</button><button class="btn sm g">${I.settings.replace('20','16').replace('20','16')}</button></div>`;
+  if (S.idea==='empty' && S.sessionsOn && ses && ses.state==='open' && !items.length) return `${tabsRow}${renderRegisterBody(true)}`;
   const autoNote = S.idea==='autoopen' && S.sessionsOn && !ses ? `<div class="mut sm" style="padding:8px 12px;border-bottom:1px solid var(--border)">Register opens with the first cash sale · float ${fmt(suggestedFloat())} ${S.floatMode==='default'?'default':'carried'}</div>` : '';
-  // idea 3: the primary button knows the time
   const timed = S.idea==='timed' && ses && ses.state==='open' && overdue() && !items.length;
   const footer = timed
     ? `<div class="cart-f"><button class="btn p xl w" data-act="startCounting">Close register</button></div>`
-    : `<div class="cart-f"><button class="btn" style="flex:1">Note</button><button class="btn p xl" style="flex:2" ${items.length?'':'disabled'} data-act="${S.idea==='autoopen' && !ses ? 'checkoutCash' : 'noop'}">Checkout ${fmt(sub)}</button></div>`;
-  return `${head}${autoNote}
+    : `${items.length?`<div class="cart-f2"><button class="btn">Note</button><button class="btn">Meta</button><button class="btn">Save</button></div>`:''}<div class="cart-f"><button class="btn od" ${items.length?'':'disabled'}>Void</button><button class="btn p xl" style="flex:1" ${items.length?'':'disabled'} data-act="${S.idea==='autoopen' && !ses ? 'checkoutCash' : 'noop'}">Checkout ${fmt(sub)}</button></div>`;
+  return `${tabsRow}${head}${autoNote}
     <div class="inner">
       ${items.length ? items.map(([n,q,p])=>`<div class="cartline"><span class="q">${q}</span><span class="grow">${n}</span><span class="money">${fmt(q*p)}</span></div>`).join('') : `<div class="emptycart">${I.cart.replace('20','36').replace('20','36')}<span class="sm">${timed?`Past ${S.register.closeTime} · nothing in the cart`:'Tap a product to start a sale'}</span></div>`}
       ${items.length?`<div class="totals"><div class="r2 mut"><span>Subtotal</span><span class="num">${fmt(sub-tax)}</span></div><div class="r2 mut"><span>VAT 20%</span><span class="num">${fmt(tax)}</span></div><div class="r2 big"><span>Total</span><span class="num">${fmt(sub)}</span></div></div>`:''}
@@ -1011,7 +1048,7 @@ function refocus(sel){ const n=document.querySelector(sel); if(n){ const pos=n.v
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-set],[data-scn],[data-act],[data-close],[data-closepanel]');
   if (!t) return;
-  if (t.dataset.set){ e.preventDefault(); let v=t.dataset.v; if (v==='true') v=true; if (v==='false') v=false; if (t.dataset.set==='unread'||t.dataset.set==='registers'||t.dataset.set==='stores') v=+v; if (t.dataset.set==='cartEmpty') v=(v===true||v==='true'); if (t.dataset.set==='registers' && v===1) { S.register.exists=true; S.register.name='Front counter'; } A.set(t.dataset.set, v); S.selClosure=null; return render(); }
+  if (t.dataset.set){ e.preventDefault(); let v=t.dataset.v; if (v==='true') v=true; if (v==='false') v=false; if (t.dataset.set==='unread'||t.dataset.set==='registers'||t.dataset.set==='stores') v=+v; if (t.dataset.set==='cartEmpty') { v=(v===true||v==='true'); S.currentOrder = v ? 'new' : 'a'; } if (t.dataset.set==='orders') v=+v; if (t.dataset.set==='registers' && v===1) { S.register.exists=true; S.register.name='Front counter'; } A.set(t.dataset.set, v); S.selClosure=null; return render(); }
   if (t.dataset.scn){ A.scenario(t.dataset.scn); return render(); }
   if (t.dataset.close && e.target===t){ A.closeSheet(); return render(); }
   if (t.dataset.closepanel && e.target===t){ A.closePanel(); return render(); }
@@ -1022,6 +1059,7 @@ document.addEventListener('click', e => {
     case 'kick': A.kick(); break;
     case 'clearDen': A.clearDen(); break;
     case 'noop': break;
+    case 'selOrder': S.currentOrder=t.dataset.id; S.cartEmpty = t.dataset.id==='new'; break;
     case 'closePanel': A.closePanel(); break;
     case 'openSheet': A.openSheet(t.dataset.type, t.dataset.mtype?{mtype:t.dataset.mtype}:t.dataset.id?{id:+t.dataset.id}:{}); break;
     case 'closeSheet': A.closeSheet(); break;
@@ -1068,7 +1106,7 @@ document.addEventListener('input', e => {
   if(q.get('scn')) A.scenario(q.get('scn'));
   for (const k of ['header','viewport','page']) if(q.get(k)) S[k]=q.get(k);
   if(q.get('unread')!==null) S.unread=+q.get('unread'); if(q.get('online')!==null) S.online=q.get('online')==='true';
-  if(q.get('idea')) S.idea=q.get('idea'); if(q.get('cart')==='empty') S.cartEmpty=true; if(q.get('panel')) S.panel=true; if(q.get('taps')) { S.countOpen.d20=8; S.countOpen.d5=3; S.countOpen.d1=2; S.countOpen['d0.5']=1; if(S.session) S.session.counted.cash='177.50'; }
+  if(q.get('idea')) S.idea=q.get('idea'); if(q.get('cart')==='empty') { S.cartEmpty=true; S.currentOrder='new'; } if(q.get('orders')) S.orders=+q.get('orders'); if(q.get('tabs')) S.tabsPos=q.get('tabs'); if(q.get('panel')) S.panel=true; if(q.get('taps')) { S.countOpen.d20=8; S.countOpen.d5=3; S.countOpen.d1=2; S.countOpen['d0.5']=1; if(S.session) S.session.counted.cash='177.50'; }
   if(q.get('embed')) document.body.classList.add('embed');
 })();
 render();
