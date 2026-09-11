@@ -61,6 +61,13 @@
   .sel .m{height:48px;font-size:15px;padding:0 16px;border-radius:12px;background:var(--pay-2);color:var(--pay-dim)}
   .sel .m.on{background:var(--pay-fg);color:var(--pay);font-weight:700}
   .sel .m .ic{width:20px;height:20px}
+  .sel .m .st{display:inline-flex;flex-direction:row;align-items:center;gap:5px;margin-left:4px;font-size:12px;font-weight:600;color:var(--pay-dim);white-space:nowrap;line-height:1;flex:none}
+  .sel .m.on .st{color:var(--pay)}
+  .sel .m .st i{width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;flex:none;font-style:normal}
+  .sel .m .st i.off{background:#8d95a3}
+  .sel .m .st i.busy{background:#e6963c}
+  .unav li .st{display:inline-flex;align-items:center;gap:5px;margin-left:auto;font-size:12px;color:var(--pay-faint)}
+  .unav li .st i{width:8px;height:8px;border-radius:50%;background:#8d95a3;display:inline-block}
   .unav{text-align:center;margin-top:8px;font-size:12.5px;color:var(--pay-faint)}
   .unav .h{cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:8px;color:var(--pay-dim)}
   .unav .h:hover{background:var(--pay-2)}
@@ -243,6 +250,8 @@
     <button data-jump="splitpct">Percent tab</button>
     <button data-jump="splititem">Item tab</button>
     <button data-jump="splititems-after">Items · after leg 1</button>
+    <button data-jump="splititems-share">Items · scarf shared by 2</button>
+    <button data-jump="splititems-loop">Items · pick the next</button>
     <button data-jump="partpaid">After a cash leg</button>
     <button data-jump="terminal">On the terminal</button>
     <button data-jump="paid">Paid</button>
@@ -301,9 +310,9 @@ const I = {
 const METHODS = [
   { id:'cash',   kind:'cash',     title:'Cash',   primary:true, change:true, offline:true },
   { id:'card',   kind:'card',     title:'Card',   primary:true, offline:true },
-  { id:'sumup',  kind:'terminal', title:'SumUp',  server:true, reader:'Counter 1', model:'SumUp Solo' },
-  { id:'sim-t',  kind:'terminal', title:'Simulated terminal', server:true, reader:'Front desk', model:'Simulated' },
-  { id:'sim-r',  kind:'reader',   title:'Simulated reader',   device:true, reader:'M2', model:'Simulated M2' },
+  { id:'sumup',  kind:'terminal', title:'SumUp',  server:true, reader:'Counter 1', model:'SumUp Solo', status:'connected', battery:82 },
+  { id:'sim-t',  kind:'terminal', title:'Simulated terminal', server:true, reader:'Front desk', model:'Simulated', status:'connected' },
+  { id:'sim-r',  kind:'reader',   title:'Simulated reader',   device:true, reader:'M2', model:'Simulated M2', status:'connected', battery:64 },
   { id:'mollie', kind:'terminal', title:'Mollie', server:true, why:'no terminals set up' },
   { id:'stripe', kind:'reader',   title:'Stripe', device:true, why:'not available in the browser' },
 ];
@@ -327,6 +336,23 @@ function figures(){
       thisPay = left > 1 ? each : remaining;
       for (let i=0;i<left;i++){ const v = i===left-1 ? Math.round((remaining - each*(left-1))*100)/100 : each; legs.push({k:i===0?'now':'', v}); }
       planInfo = { n: idx+1, ways: S.plan.ways, legs, label: `Payment ${idx+1} of ${S.plan.ways}` };
+    } else if (S.plan.kind === 'items'){
+      const ways = S.plan.ways || 1;
+      const groupPaid = taken.reduce((a,l)=>a+l.amount,0);
+      const group = Math.round(S.plan.first*100)/100;
+      if (idx < ways){
+        const each = Math.round(group / ways * 100) / 100;
+        thisPay = idx === ways-1 ? Math.round((group - groupPaid)*100)/100 : each;
+        legs.push({k:'now', v:thisPay, title: idx===0 ? S.plan.title : ''});
+        for (let i=idx+1;i<ways;i++) legs.push({k:'', v: i===ways-1 ? Math.round((group - each*(ways-1))*100)/100 : each});
+        const rest = Math.round((remaining - (group - groupPaid))*100)/100;
+        if (rest > 0.004) legs.push({k:'rest', v:rest});
+        planInfo = { n: idx+1, ways, legs, kind:'items', label: ways>1 ? `${S.plan.title} · ${idx+1} of ${ways}` : `${S.plan.title}` , more: rest > 0.004 };
+      } else {
+        thisPay = remaining;
+        legs.push({k:'now', v:remaining, title:'Rest'});
+        planInfo = { n: idx+1, ways, legs, kind:'items', label: `Rest of the order`, more: true, afterGroup:true };
+      }
     } else {
       const first = Math.min(S.plan.first, remaining);
       thisPay = idx === 0 ? first : remaining;
@@ -363,14 +389,14 @@ function keypadView(f){
     const notes = [5,10,20,50,100].filter(n => n > f.thisPay).slice(0,2);
     helpers = `<div class="quick">${notes.map(n=>`<span class="q ${entry===n?'on':''}" data-q="${n}">${fmt(n)}</span>`).join('')}<span class="q ${ghost?'on':''}" data-q="exact">Exact ${fmt(f.thisPay)}</span></div>`;
   } else if (m && (m.server || m.device)){
-    helpers = `<span class="reader">${m.device ? I.reader : I.terminal} ${m.model} · ${m.reader} · <span class="dot"></span> connected · 82% <a>Change</a></span><span class="q ${ghost?'on':''}" data-q="exact">Full balance ${fmt(f.thisPay)}</span>`;
+    helpers = `<span class="reader">${m.device ? I.reader : I.terminal} ${m.model} · ${m.reader} · <span class="dot"></span> connected${m.battery ? ' · ' + m.battery + '%' : ''} <a>Change</a></span><span class="q ${ghost?'on':''}" data-q="exact">Full balance ${fmt(f.thisPay)}</span>`;
   } else if (m){
     helpers = `<span class="q ${ghost?'on':''}" data-q="exact">Full balance ${fmt(f.thisPay)}</span>`;
   }
   const leftAfter = Math.round((f.remaining - applied)*100)/100;
-  const tail = f.plan ? ` · ${f.plan.n} of ${f.plan.ways}` : (leftAfter > 0 ? ` · ${fmt(leftAfter)} left` : '');
+  const tail = f.plan ? (f.plan.afterGroup ? (leftAfter > 0 ? ` · ${fmt(leftAfter)} left` : ' · pays it off') : (f.plan.ways > 1 ? ` · ${f.plan.n} of ${f.plan.ways}` : (leftAfter > 0 ? ` · ${fmt(leftAfter)} left` : ' · pays it off'))) : (leftAfter > 0 ? ` · ${fmt(leftAfter)} left` : '');
   const commitLabel = !m ? 'Choose how the customer is paying' : ((m.server||m.device) ? `Send ${fmt(applied)} to ${m.title}` : `Take ${fmt(applied)} in ${m.title}`) + tail;
-  const planStrip = f.plan ? `<div class="plan">${f.plan.legs.map(l=>`<span class="pleg ${l.k}">${l.k==='done' ? I.check : ''}${l.title ? l.title + ' ' : ''}${fmt(l.v)}</span>`).join('')}<span class="edit" data-split>Change split</span></div>` : '';
+  const planStrip = f.plan ? `<div class="plan">${f.plan.legs.map(l=>`<span class="pleg ${l.k==='rest'?'':l.k}" ${l.k==='rest'?'style="border-style:dashed"':''}>${l.k==='done' ? I.check : ''}${l.k==='rest' ? 'then ' : ''}${l.title ? l.title + ' ' : ''}${fmt(l.v)}</span>`).join('')}${f.plan.kind==='items' && f.plan.more ? `<span class="edit" data-split data-tab-open="item">Pick next items</span>` : ''}<span class="edit" data-split>Change split</span></div>` : '';
   const half = f.remaining/2, third = f.remaining/3, quarter = f.remaining/4;
   const sheet = '';
   const canCommit = m && applied > 0 && !(m && !m.change && entry > f.thisPay);
@@ -387,8 +413,8 @@ function keypadView(f){
     <div class="line">${line}</div>
     ${planStrip}
   </div>
-  <div class="sel">${ons.map(x=>`<span class="m ${x.id===S.method?'on':''}" data-pick="${x.id}"><span class="ic">${I[x.kind]}</span>${x.title}</span>`).join('')}</div>
-  ${offs.length ? `<div class="unav ${S.unavailOpen?'':'closed'}"><span class="h" data-unavail><span class="car">${I.caret}</span>${offs.length} not available right now</span><ul>${offs.map(x=>`<li><span class="ic">${I[x.kind]}</span><b>${x.title}</b><span class="why">${x.why}</span></li>`).join('')}</ul></div>` : ''}
+  <div class="sel">${ons.map(x=>`<span class="m ${x.id===S.method?'on':''}" data-pick="${x.id}"><span class="ic">${I[x.kind]}</span>${x.title}${x.status ? `<span class="st"><i class="${S.offline?'off':''}"></i>${x.battery ? x.battery + '%' : ''}</span>` : ''}</span>`).join('')}</div>
+  ${offs.length ? `<div class="unav ${S.unavailOpen?'':'closed'}"><span class="h" data-unavail><span class="car">${I.caret}</span>${offs.length} not available right now</span><ul>${offs.map(x=>`<li><span class="ic">${I[x.kind]}</span><b>${x.title}</b>${x.reader ? '<span class="st" style="margin-left:0"><i></i></span>' : ''}<span class="why" style="margin-left:auto">${x.why}</span></li>`).join('')}</ul></div>` : ''}
   <div class="helpers">${helpers}</div>
   <div class="keys">${['1','2','3','4','5','6','7','8','9'].map(k=>`<span class="k" data-key="${k}">${k}</span>`).join('')}<span class="k sub" data-key="C">C</span><span class="k" data-key="0">0</span><span class="k sub" data-key="⌫">${I.del}</span></div>
   <div class="commit"><span class="btn white ${canCommit?'':'disabled'}" ${canCommit && m ? `data-take="${m.id}"` : ''}>${commitLabel}</span></div>
@@ -403,9 +429,11 @@ function splitView(f){
     amount: `<div class="opts">${[5,10,20,50].filter(v=>v<f.remaining).map(v=>`<span class="opt" data-first="${v}"><span class="t">${fmt(v)}</span><span class="s">then ${fmt(f.remaining-v)}</span></span>`).join('')}<span class="opt" data-first="${f.remaining/2}"><span class="t">Half</span><span class="s">${fmt(f.remaining/2)}</span></span><span class="opt wide" data-ways="custom"><span class="t">Type the first payment</span><span class="s">on the keypad, the rest comes after</span></span></div>`,
     percent: `<div class="opts">${[10,20,25,30,50,75].map(q=>`<span class="opt" data-first="${pctOf(q)}" data-pct="${q}"><span class="t">${q} %</span><span class="s">${fmt(pctOf(q))}</span></span>`).join('')}</div>`,
     item: `<div class="items">${ITEMS.map(i=>`<div class="it ${S.itemsPaid[i.id]?'taken':''} ${S.pickItems.includes(i.id)&&!S.itemsPaid[i.id]?'on':''}" ${S.itemsPaid[i.id]?'':`data-item="${i.id}"`}><span class="cb"></span><span class="nm">${i.name}${S.itemsPaid[i.id]?`<small>paid · ${S.itemsPaid[i.id]}</small>`:''}</span><span class="pr">${fmt(i.price)}</span></div>`).join('')}</div>
-           <div class="go"><span class="btn white ${pickedSum>0?'':'disabled'}" ${pickedSum>0?'data-items-go':''}>${pickedSum>0 ? `Pay for these · ${fmt(pickedSum)}` : 'Tick the items this payment covers'}</span></div>`,
+           <div class="go"><span class="btn white ${pickedSum>0?'':'disabled'}" ${pickedSum>0?'data-items-go="1"':''}>${pickedSum>0 ? `Pay for these · ${fmt(pickedSum)}` : 'Tick the items this payment covers'}</span></div>
+           ${pickedSum>0 ? `<div class="helpers" style="margin-top:10px"><span style="font-size:13px;color:var(--pay-dim)">or share these between</span>${[2,3,4].map(n=>`<span class="q" data-items-go="${n}">${n} · ${fmt(Math.round(pickedSum/n*100)/100)} each</span>`).join('')}</div>` : ''}`,
   }[S.tab];
-  const tabHint = { even:'Any method for each payment · change the split at any time', amount:'The first payment is this much, the rest is one more payment', percent:'The first payment is this share, the rest is one more payment', item:'The receipt shows who paid for what' }[S.tab];
+  const paidCount = ITEMS.filter(i=>S.itemsPaid[i.id]).length;
+  const tabHint = { even:'Any method for each payment · change the split at any time', amount:'The first payment is this much, the rest is one more payment', percent:'The first payment is this share, the rest is one more payment', item: paidCount ? `${paidCount} of ${ITEMS.length} items paid · tick the next ones, or close to take the rest` : 'Tick what this customer is paying for · pick the next items after' }[S.tab];
   return `
   <div class="hd">
     <span class="x" data-sheet-close>${I.close}</span>
@@ -433,7 +461,7 @@ function terminalView(f){
     <div class="amt"><div class="lbl">On the terminal</div><div class="big" style="font-size:80px">${fmt(t.amount)}</div><div class="line"><span class="plan">${t.step<1?'Sending to the terminal…':t.step<2?'Waiting for the customer':t.step<3?'Approved, capturing…':'Captured'}</span></div></div>
     <div class="ring"></div>
     <div class="tcard">
-      <div class="t"><span>${m.model} · ${m.reader}</span><span><span class="dot"></span>connected · 82%</span></div>
+      <div class="t"><span>${m.model} · ${m.reader}</span><span><span class="dot"></span>connected${m.battery ? ' · ' + m.battery + '%' : ''}</span></div>
       <div class="steps">${steps.map((s,i)=>`<div class="st ${i<t.step?'done':i===t.step?'now':''}"><i></i>${s}</div>`).join('')}</div>
     </div>
     <span class="btn ghost" data-cancel-terminal>Cancel on terminal</span>
@@ -494,8 +522,8 @@ function take(id){
 function land(m, applied, change, detail){
   S.legs.push({ title: m.title, amount: applied, change, detail, fresh:true });
   S.entry = null; S.term = null; S.view = 'keypad';
-  if (S.plan && S.plan.kind==='items' && S.legs.length - S.plan.from === 1){ S.plan.ids.forEach(id => S.itemsPaid[id] = m.title); S.pickItems = []; }
-  if (S.plan && ((S.plan.kind==='even' && S.legs.length - S.plan.from >= S.plan.ways) || (S.plan.kind!=='even' && (figures().remaining <= 0 || S.legs.length - S.plan.from >= 2)))) S.plan = null;
+  if (S.plan && S.plan.kind==='items' && S.legs.length - S.plan.from === (S.plan.ways||1)){ const who = S.legs.slice(S.plan.from).map(l=>l.title).filter((v,i,a)=>a.indexOf(v)===i).join(' + '); S.plan.ids.forEach(id => S.itemsPaid[id] = who); S.pickItems = []; }
+  if (S.plan && ((S.plan.kind==='even' && S.legs.length - S.plan.from >= S.plan.ways) || (S.plan.kind==='fixed' && (figures().remaining <= 0 || S.legs.length - S.plan.from >= 2)) || (S.plan.kind==='items' && figures().remaining <= 0))) S.plan = null;
   const f = figures();
   if (f.remaining <= 0) S.view = 'paid';
   render();
@@ -509,7 +537,9 @@ function jump(name){
   if (name==='split') S.plan = { kind:'even', ways:2, from:0 };
   if (name==='splitpct'){ S.sheet = 1; S.tab='percent'; }
   if (name==='splititem'){ S.sheet = 1; S.tab='item'; S.pickItems=['scarf','socks']; }
-  if (name==='splititems-after'){ S.itemsPaid={belt:'Cash'}; S.legs=[{title:'Cash', amount:18, change:2, detail:'Tendered 20,00 £ · change 2,00 £'}]; S.plan={kind:'items', first:28, ids:['scarf','socks'], from:1, title:'Scarf + Socks'}; S.method='card'; }
+  if (name==='splititems-after'){ S.itemsPaid={belt:'Cash'}; S.legs=[{title:'Cash', amount:18, change:2, detail:'Tendered 20,00 £ · change 2,00 £'}]; S.plan={kind:'items', first:28, ids:['scarf','socks'], ways:1, from:1, title:'Scarf + Socks'}; S.method='card'; }
+  if (name==='splititems-share'){ S.itemsPaid={belt:'Cash'}; S.legs=[{title:'Cash', amount:18, change:2, detail:'Tendered 20,00 £ · change 2,00 £'}, {title:'Card', amount:11, change:0, detail:'Manual entry'}]; S.plan={kind:'items', first:22, ids:['scarf'], ways:2, from:1, title:'Scarf'}; S.method='sumup'; }
+  if (name==='splititems-loop'){ S.itemsPaid={belt:'Cash', scarf:'Card + SumUp'}; S.legs=[{title:'Cash', amount:18, change:2, detail:'Tendered 20,00 £ · change 2,00 £'}, {title:'Card', amount:11, change:0, detail:'Manual entry'}, {title:'SumUp', amount:11, change:0, detail:'SumUp Solo · Counter 1'}]; S.plan={kind:'items', first:22, ids:['scarf'], ways:2, from:1, title:'Scarf'}; S.method='cash'; }
   if (name==='splitsheet') S.sheet = 1;
   if (name==='split3after'){ S.plan = { kind:'even', ways:3, from:0 }; S.legs = [{title:'Cash', amount:6, change:0, detail:'Tendered 6,00 £ · change 0,00 £'}]; S.method='card'; }
   if (name==='partpaid') S.legs = [{title:'Cash', amount:20, change:0, detail:'Tendered 20,00 £ · change 0,00 £'}];
@@ -548,14 +578,14 @@ document.getElementById('pay').addEventListener('click', e => {
   }
   const tb = t.closest('[data-tab]'); if (tb){ S.tab = tb.dataset.tab; return render(); }
   const it = t.closest('[data-item]'); if (it){ const id = it.dataset.item; S.pickItems = S.pickItems.includes(id) ? S.pickItems.filter(x=>x!==id) : [...S.pickItems, id]; return render(); }
-  if (t.closest('[data-items-go]')){
+  const ig = t.closest('[data-items-go]'); if (ig){
     const ids = ITEMS.filter(i => S.pickItems.includes(i.id) && !S.itemsPaid[i.id]).map(i=>i.id);
     const first = Math.round(ITEMS.filter(i=>ids.includes(i.id)).reduce((a,i)=>a+i.price,0)*100)/100;
-    S.plan = { kind:'items', first, ids, from:S.legs.length, title: ITEMS.filter(i=>ids.includes(i.id)).map(i=>i.name).join(' + ') };
+    S.plan = { kind:'items', first, ids, ways:+ig.dataset.itemsGo, from:S.legs.length, title: ITEMS.filter(i=>ids.includes(i.id)).map(i=>i.name).join(' + ') };
     S.entry = null; S.sheet = 0; return render();
   }
   if (t.closest('[data-sheet-close]')){ S.sheet = 0; return render(); }
-  if (t.closest('[data-split]')){ S.sheet = 1; return render(); }
+  const sp = t.closest('[data-split]'); if (sp){ S.sheet = 1; if (sp.dataset.tabOpen) S.tab = sp.dataset.tabOpen; return render(); }
   if (t.closest('[data-close]') || t.closest('[data-new]')) return jump('fresh');
   if (t.closest('[data-cancel-terminal]')){ clearTimers(); S.view='keypad'; S.term=null; return render(); }
   if (t.closest('[data-cancel-payment]')){ S.legs=[]; S.entry=null; return render(); }
