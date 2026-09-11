@@ -79,6 +79,7 @@ a{color:var(--primary)}
 .tile .n{font-size:13px;font-weight:600;line-height:1.2}
 .tile .p{font-size:12px;color:var(--muted-fg);margin-top:auto}
 .tile:hover{border-color:#9ec5ea}
+.tile{transition:border-color .12s ease-out,transform .1s ease-out}
 .prodcol .gate{position:absolute;inset:0;background:rgba(240,246,252,.72);display:flex;align-items:center;justify-content:center;z-index:2}
 .prodcol .gate div{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;font-size:13px;color:var(--muted-fg);box-shadow:0 2px 8px rgba(0,0,0,.08)}
 .prodcol .notice{background:#e9f3fb;border-bottom:1px solid #bcd9ef;color:#0b4a73;font-size:12px;padding:5px 12px;flex:none}
@@ -160,9 +161,10 @@ a{color:var(--primary)}
 .tabbar .badge.warn{background:var(--warning)}
 
 /* ---------- register panel ---------- */
-.panel-wrap{position:absolute;inset:0;background:rgba(0,0,0,.7);z-index:15;display:flex;justify-content:flex-end}
-.panel{width:440px;max-width:100%;height:100%;background:var(--bg);display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(0,0,0,.3);animation:slidein .25s ease-out}
-@keyframes slidein{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.panel-wrap{position:absolute;inset:0;background:rgba(0,0,0,.7);z-index:15;display:flex;justify-content:flex-end;animation:fadein .15s ease-out}
+.cartcol{position:relative}
+.panel{width:440px;max-width:100%;height:100%;background:var(--bg);display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(0,0,0,.3);animation:slidein .22s ease-out}
+@keyframes slidein{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
 @keyframes slideup{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .phone .panel-wrap{align-items:flex-end}
 .phone .panel{width:100%;height:94%;border-radius:16px 16px 0 0;animation:slideup .25s ease-out}
@@ -172,7 +174,7 @@ a{color:var(--primary)}
 .panel-h .x{margin-left:auto;border:0;background:transparent;font-size:20px;cursor:pointer;color:var(--muted-fg);line-height:1}
 .panel-b{padding:14px;overflow:auto;display:flex;flex-direction:column;gap:12px;flex:1}
 .panel-f{padding:10px 14px;border-top:1px solid var(--border);background:var(--footer);display:flex;gap:8px;flex:none}
-.panel-h .amt{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1.1}
+.panel-h .amt{font-size:32px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1.1}
 .tiles3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .tiles3 .btn{height:56px;font-size:14px;font-weight:600}
 .list{background:#fff;border:1px solid var(--border);border-radius:var(--radius)}
@@ -182,7 +184,8 @@ a{color:var(--primary)}
 .list .lr.click{cursor:pointer}
 .list .lr.click:hover{background:#f6f9fc}
 .vline{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:2px 2px}
-.vline b{font-size:15px;font-variant-numeric:tabular-nums}
+.vline b{font-size:16px;font-variant-numeric:tabular-nums;transition:color .15s ease-out}
+.vline .ok{display:inline-flex;align-items:center;gap:5px;color:var(--success)}
 
 /* app primitives */
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 1px 3px rgba(0,0,0,.06)}
@@ -190,7 +193,10 @@ a{color:var(--primary)}
 .card-h .sub{font-weight:400;color:var(--muted-fg);font-size:12px}
 .card-b{padding:12px}
 .card-f{background:var(--footer);border-top:1px solid var(--border);padding:8px 10px;display:flex;justify-content:flex-end;gap:8px;border-radius:0 0 var(--radius) var(--radius)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 14px;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--fg);font:inherit;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 14px;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--fg);font:inherit;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:background .12s ease-out,transform .1s ease-out,box-shadow .12s ease-out;-webkit-tap-highlight-color:transparent}
+.btn:active,.tile:active,.list .lr.click:active,.regbar .ibtn:active,.regbar .avbtn:active,.regbar .store:active,.collapse>button:active{transform:scale(.985);background:#e9eff5}
+.btn.p:active{background:#00518f}
+.btn:focus-visible,input.in:focus-visible{outline:2px solid #9ec5ea;outline-offset:1px}
 .btn:hover{background:#f7f9fb}
 .btn.p{background:var(--primary);border-color:var(--primary);color:var(--primary-fg)}
 .btn.p:hover{background:#005ea9}
@@ -214,7 +220,7 @@ a{color:var(--primary)}
 .pill.dotp::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
 .mut{color:var(--muted-fg)}
 .sm{font-size:12px}
-.xs{font-size:11px}
+.xs{font-size:12px}
 .num{font-variant-numeric:tabular-nums}
 .b{font-weight:600}
 .row{display:flex;align-items:center;gap:8px}
@@ -248,9 +254,12 @@ table.t tr.void td:last-child{text-decoration:none}
 .narrow .cols3{grid-template-columns:1fr 1fr}
 .actions{display:flex;flex-wrap:wrap;gap:8px}
 .actions .btn{flex:1 1 30%}
-.gatecard .actions .btn{flex:0 0 auto}
+.gatecard .actions .btn{flex:0 0 auto;height:44px;padding:0 14px;font-size:13px}
 input.in,select.in{height:36px;border:1px solid var(--border);border-radius:6px;padding:0 10px;font:inherit;font-size:14px;background:#fff;width:100%;color:var(--fg)}
-input.in.big{height:52px;font-size:26px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+input.in.big{height:64px;font-size:32px;font-weight:700;text-align:left;font-variant-numeric:tabular-nums;letter-spacing:-.01em;padding-right:14px}
+.amtwrap{position:relative}
+.amtwrap .cur{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:26px;font-weight:700;color:var(--fg);pointer-events:none}
+.amtwrap input.in.big{padding-left:34px}
 input.in:focus{outline:2px solid #9ec5ea;border-color:var(--primary)}
 .fld{display:flex;flex-direction:column;gap:4px}
 .fld label{font-size:12px;color:var(--muted-fg);font-weight:600}
@@ -267,6 +276,8 @@ input.in:focus{outline:2px solid #9ec5ea;border-color:var(--primary)}
 .filterbar{background:var(--card-header);border:1px solid var(--border);border-radius:var(--radius);padding:6px 8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .receipt{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;line-height:1.35;background:#fff;color:#111;padding:14px 16px;width:300px;box-shadow:0 2px 10px rgba(0,0,0,.15);border-radius:3px;white-space:pre}
 .receipt.copy{position:relative}
+.receipt .printed{position:absolute;bottom:14px;right:14px;border:2px solid var(--success);color:var(--success);padding:1px 8px;font-weight:700;transform:rotate(-6deg);font-family:var(--sys);font-size:12px;letter-spacing:.06em}
+.receipt{position:relative}
 .receipt.copy::after{content:"COPY";position:absolute;top:10px;right:12px;border:2px solid #b91c1c;color:#b91c1c;padding:1px 6px;font-weight:700;transform:rotate(-8deg);opacity:.85}
 .hero{padding:18px 14px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
 .hero .big{font-size:38px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
@@ -280,7 +291,21 @@ input.in:focus{outline:2px solid #9ec5ea;border-color:var(--primary)}
 .collapse>button{width:100%;display:flex;align-items:center;gap:8px;border:0;background:transparent;padding:11px 12px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;text-align:left}
 .collapse>button .mut{margin-left:auto;font-weight:400}
 .collapse .in-b{padding:0 12px 12px}
-.sheet-wrap{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:20}
+.sheet-wrap{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:20;animation:fadein .15s ease-out}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@keyframes popin{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes stamp{0%{opacity:0;transform:scale(1.15)}60%{opacity:1;transform:scale(.98)}100%{transform:none}}
+@keyframes settle{0%{background:#e6f2fb}100%{background:transparent}}
+@keyframes toastin{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.sheet{animation:popin .2s ease-out}
+.phone .sheet{animation:slideup .22s ease-out}
+.stamp{animation:stamp .25s ease-out}
+.settle{animation:settle .8s ease-out}
+.toast{position:absolute;left:12px;right:12px;top:56px;z-index:12;background:var(--fg);color:#fff;border-radius:8px;padding:10px 12px;font-size:13px;display:flex;align-items:center;gap:8px;box-shadow:0 6px 20px rgba(0,0,0,.2);animation:toastin .2s ease-out;pointer-events:none}
+.toast .ck{width:18px;height:18px;border-radius:50%;background:var(--success);display:inline-flex;align-items:center;justify-content:center;flex:none}
+.toast .num{font-weight:700}
+.toast .undo{margin-left:auto;color:#fff;text-decoration:underline;font-weight:600;cursor:pointer;pointer-events:auto;padding:6px 8px;margin:-6px -8px -6px auto;min-height:44px;display:inline-flex;align-items:center}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 .phone .sheet-wrap{align-items:flex-end}
 .sheet{background:#fff;border-radius:10px;border:1px solid var(--border);width:440px;max-width:92%;max-height:92%;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.3)}
 .sheet.wide{width:640px}
@@ -394,7 +419,7 @@ const S = {
   stores:2, registers:3, register:{ exists:true, name:'Front counter', store:'UK Store', closeTime:'18:00', threshold:5, printer:'Epson TM-m30', defaultFloat:200 },
   session:null,
   closures:[],
-  sheet:null, panel:false, openForm:{}, setupName:'Front counter', reportsTab:'sales', selClosure:null, countOpen:{}, log:[]
+  sheet:null, panel:false, toast:null, settle:null, openForm:{}, setupName:'Front counter', reportsTab:'sales', selClosure:null, countOpen:{}, log:[]
 };
 
 function seedClosures(){
@@ -438,6 +463,9 @@ const overdue = () => S.session && S.session.state==='open' && S.now > S.registe
 const gated = () => S.sessionsOn && (!S.register.exists || !S.session || S.session.state==='counting');
 
 function log(msg){ S.log.unshift(`${S.now} · ${msg}`); if (S.log.length>40) S.log.pop(); }
+let toastTimer=null; const CK='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+function toast(html, undoId){ S.toast=html + (undoId?`<span class="undo" data-act="undoMove" data-id="${undoId}">Undo</span>`:''); clearTimeout(toastTimer); toastTimer=setTimeout(()=>{ S.toast=null; render(); }, undoId?4000:2200); }
+function settleKey(k){ S.settle=k; setTimeout(()=>{ if(S.settle===k){ S.settle=null; } }, 900); }
 function tick(min){ const [h,m]=S.now.split(':').map(Number); const t=h*60+m+min; S.now=`${String(Math.floor(t/60)%24).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`; }
 // the float the open card suggests: the register's default float when one is set, else what was counted at the last closure
 function suggestedFloat(){ const lc=lastClosure(); return S.floatMode==='default' && S.register.defaultFloat!=null ? S.register.defaultFloat : (lc?lc.counted:0); }
@@ -473,20 +501,20 @@ const A = {
     const exp = suggestedFloat(); tick(2);
     S.session = { state:'open', openedAt:S.now, openedBy:'demo', floatExpected:exp, floatCounted:c, cashSales:0, cashRefunds:0, orders:0, refundsN:0,
       card:{sales:0, refunds:0}, unsyncedN:0, unsyncedTotal:0, movements:[], nextId:1, ranBy:['demo'], counted:{}, override:null };
-    S.openForm={}; log(`Register opened · float counted ${fmt(c)} (expected ${fmt(exp)}, opening variance ${fmt(c-exp,true)}) — the cart is back`);
+    S.openForm={}; toast(`<span class="ck">${CK}</span>Register open · float <span class="num">${fmt(c)}</span>`); log(`Register opened · float counted ${fmt(c)} (expected ${fmt(exp)}, opening variance ${fmt(c-exp,true)}) — the cart is back`);
   },
   doMove(type, amount, reason){
     const a = type==='no_sale' ? 0 : parseFloat(amount); if (type!=='no_sale' && (isNaN(a) || a<=0)) return; if (!reason) return;
-    tick(4); S.session.movements.push({id:S.session.nextId++, type, amount:a, reason, by:'demo', at:S.now});
-    S.sheet=null; log(`${label(type)} ${type==='no_sale'?'':fmt(a)} — "${reason}"`);
+    tick(4); const mid=S.session.nextId++; S.session.movements.push({id:mid, type, amount:a, reason, by:'demo', at:S.now});
+    S.sheet=null; settleKey('mov'); toast(`<span class="ck">${CK}</span>${label(type)}${type==='no_sale'?'':` <span class="num">${fmt(a)}</span>`} · ${reason}`, type==='no_sale'?null:mid); log(`${label(type)} ${type==='no_sale'?'':fmt(a)} — "${reason}"`);
   },
   voidMove(id){
     const m = S.session.movements.find(x=>x.id===id); if(!m || m.voidedBy) return; tick(1);
     const v = {id:S.session.nextId++, type:'void', of:id, amount:m.amount, reason:`Voids ${label(m.type).toLowerCase()} ${fmt(m.amount)}`, by:'demo', at:S.now};
-    m.voidedBy = v.id; S.session.movements.push(v); S.sheet=null; log(`Voided movement #${id} with a new row #${v.id}`);
+    m.voidedBy = v.id; S.session.movements.push(v); S.sheet=null; settleKey('mov'); toast(`<span class="ck">${CK}</span>Voided ${label(m.type).toLowerCase()} <span class="num">${fmt(m.amount)}</span>`); log(`Voided movement #${id} with a new row #${v.id}`);
   },
   startCounting(){ tick(3); S.session.state='counting'; S.session.countingAt=S.now; S.sheet=null; S.panel=false; S.phoneTab='cart'; log('Close register → counting; the cart column is now the count, no sales until it reopens'); },
-  resume(){ S.session.state='open'; delete S.session.countingAt; log('Back to selling — counting abandoned, nothing recorded, the cart is back'); },
+  resume(){ S.session.state='open'; delete S.session.countingAt; toast(`<span class="ck">${CK}</span>Back to selling — nothing recorded`); log('Back to selling — counting abandoned, nothing recorded, the cart is back'); },
   setCount(tender, v){ S.session.counted[tender] = v; },
   tryClose(){
     const ses=S.session; const counted=parseFloat(ses.counted.cash); if (isNaN(counted)) return;
@@ -509,7 +537,7 @@ const A = {
     S.closures.push(c); S.session=null; S.sheet={type:'zprint', number:n};
     log(`Closure ${n} · ${S.register.name} written — counted ${fmt(counted)}, expected ${fmt(c.expected)}, ${varianceWord(variance)}${unsyncedN?` · ${unsyncedN} sales unsynced`:''}`);
   },
-  print(n){ const c=S.closures.find(x=>x.number===n&&x.register===S.register.name); if(!c) return; if(!c.printed){ c.printed=S.now; log(`Z-report for closure ${n} printed once on ${S.register.printer}`);} else { c.copies++; log(`Closure ${n} reprinted — copy ${c.copies}`);} },
+  print(n){ const c=S.closures.find(x=>x.number===n&&x.register===S.register.name); if(!c) return; if(!c.printed){ c.printed=S.now; settleKey('printed'); log(`Z-report for closure ${n} printed once on ${S.register.printer}`);} else { c.copies++; log(`Closure ${n} reprinted — copy ${c.copies}`);} },
   xprint(){ log('X-report printed (not stored)'); S.sheet=null; },
   reportsTab(t){ S.reportsTab=t; S.selClosure=null; },
   selClosure(n, reg){ S.selClosure={n,reg}; },
@@ -622,7 +650,7 @@ function renderCartColumn(){
   else if (S.sessionsOn && !ses) body = renderOpenCard();
   else if (S.sessionsOn && ses.state==='counting') body = `<div class="gatecard narrow">${renderCounting()}</div>`;
   else body = renderCart();
-  return `<div class="cartcol narrow">${top}${body}</div>`;
+  return `<div class="cartcol narrow">${top}${S.toast?`<div class="toast" role="status">${S.toast}</div>`:''}${body}</div>`;
 }
 
 /* ---- no-title-bar variants: the bar above the cart carries store, status, notifications, user ---- */
@@ -696,7 +724,7 @@ function renderOpenCard(){
   return `<div class="gatecard">
     ${noHeader()?`<div class="mut sm">${lc?`Last closed ${lc.closed} · closure ${lc.number}`:'Never opened'}${!S.online?` · <span class="pill bad">${I.cloudOff} Offline</span>`:''}</div>`:`<div class="head"><span class="ic">${I.drawer.replace('16','22').replace('16','22')}</span><div class="grow"><div class="row" style="gap:8px"><span class="b" style="font-size:16px">${S.register.name}</span><span class="pill closed dotp">Closed</span>${!S.online?`<span class="pill bad">${I.cloudOff} Offline</span>`:''}</div><div class="mut sm">${lc?`Last closed ${lc.closed} · closure ${lc.number}`:'Never opened'}</div></div></div>`}
     ${can('cash') ? `
-    <div class="fld"><label>Cash in the drawer</label><input class="in big" data-open="counted" value="${raw}" inputmode="decimal"></div>
+    <div class="fld"><label>Cash in the drawer</label><div class="amtwrap"><span class="cur">${CUR}</span><input class="in big" data-open="counted" value="${raw}" inputmode="decimal"></div></div>
     <div class="actions">${chips.map(([v,l])=>`<button class="btn sm ${has&&c===v?'p':''}" data-act="useFloat" data-v="${v.toFixed(2)}">${fmt(v)} <span class="${has&&c===v?'':'mut'}" style="font-weight:400">${l}</span></button>`).join('')}</div>
     ${has && c!==exp ? `<div class="alert ${Math.abs(c-exp)>S.register.threshold?'w':'i'}">Opening ${varianceWord(c-exp)} against ${fmt(exp)}</div>`:''}
     <button class="btn p xl w" data-act="doOpen" ${has?'':'disabled'}>Open register</button>`
@@ -719,7 +747,7 @@ function renderPanel(){
       <div class="list">
         ${can('reports')?`<div class="lr"><span>Cash</span><span class="mut xs">${ses.orders} sales${ses.refundsN?` · ${ses.refundsN} refund`:''}</span><span class="v">${fmt(ses.cashSales-ses.cashRefunds)}</span></div>
         <div class="lr"><span>Card</span><span class="v">${fmt(ses.card.sales-ses.card.refunds)}</span></div>`:`<div class="lr"><span>${ses.orders} sales</span><span class="mut xs">${I.lock} totals are counted at close</span></div>`}
-        <div class="lr click" data-act="toggleCollapse" data-k="mov"><span>Paid in / out</span><span class="mut xs">${ses.movements.filter(m=>m.type!=='void'&&!m.voidedBy).length} movements</span><span class="v ${net<0?'money neg':net>0?'money pos':''}">${fmt(net,true)}</span><span class="chev" style="transform:rotate(${S.countOpen.mov?90:0}deg)">${I.chev}</span></div>
+        <div class="lr click ${S.settle==='mov'?'settle':''}" data-act="toggleCollapse" data-k="mov"><span>Paid in / out</span><span class="mut xs">${ses.movements.filter(m=>m.type!=='void'&&!m.voidedBy).length} movements</span><span class="v ${net<0?'money neg':net>0?'money pos':''}">${fmt(net,true)}</span><span class="chev" style="transform:rotate(${S.countOpen.mov?90:0}deg)">${I.chev}</span></div>
         ${S.countOpen.mov?`<div style="padding:0 4px 4px">${movementsTable(ses)}</div>`:''}
         ${can('reports')?`<div class="lr click" data-act="openSheet" data-type="xreport"><span>${I.print} Print X-report</span><span class="mut xs">reads the session, stores nothing</span></div>`:''}
       </div>
@@ -769,8 +797,8 @@ function renderCounting(){
   const overT = has && Math.abs(v) > S.register.threshold;
   return `<div class="row"><div class="grow mut sm">Counting since ${ses.countingAt} · no sales until it reopens</div>${can('cash')?`<button class="btn sm" data-act="resume">Back to selling</button>`:''}</div>
     ${!S.online&&ses.unsyncedN?`<div class="alert w">${I.cloudOff} ${ses.unsyncedN} sales (${fmt(ses.unsyncedTotal)}) not on the server yet — the closure will say so</div>`:''}
-    <div class="fld"><label>Cash counted, float included</label><input class="in big" data-count="cash" value="${ses.counted.cash??''}" placeholder="0.00" inputmode="decimal"></div>
-    ${blind?'':`<div class="vline"><span class="mut">Expected ${fmt(exp)}</span><b class="${has?(v<0?'money neg':v>0?'money pos':''):'mut'}">${has?(v===0?'Exact':fmt(v,true)+(v<0?' short':' over')):'—'}</b></div>`}
+    <div class="fld"><label>Cash counted, float included</label><div class="amtwrap"><span class="cur">${CUR}</span><input class="in big" data-count="cash" value="${ses.counted.cash??''}" placeholder="0.00" inputmode="decimal"></div></div>
+    ${blind?'':`<div class="vline"><span class="mut">Expected ${fmt(exp)}</span><b class="${has?(v<0?'money neg':v>0?'money pos':''):'mut'}">${has?(v===0?`<span class="ok"><span class="toast-ck" style="width:16px;height:16px;border-radius:50%;background:var(--success);display:inline-flex;align-items:center;justify-content:center">${CK}</span>Exact</span>`:fmt(v,true)+(v<0?' short':' over')):'—'}</b></div>`}
     ${overT&&!blind?`<div class="alert w">Over the ${fmt(S.register.threshold)} limit · ${ses.override?`approved by ${who(ses.override.by).name}`:'a manager approves the close'}</div>`:''}
     <div class="collapse"><button data-act="toggleCollapse" data-k="den">${I.chev} Count by denomination</button>${S.countOpen.den?`<div class="in-b"><div class="denoms">${DENOMS.map(d=>`<div class="den"><b>${d>=1?CUR+d:(d*100)+'p'}</b><input type="number" min="0" data-den="${d}" value="${S.countOpen['d'+d]||''}" placeholder="0"><div class="sub">${fmt((S.countOpen['d'+d]||0)*d)}</div></div>`).join('')}</div></div>`:''}</div>
     <div class="collapse"><button data-act="toggleCollapse" data-k="cardc">${I.chev} Card counted <span class="mut">optional · ${fmt(ses.card.sales-ses.card.refunds)} reported</span></button>${S.countOpen.cardc?`<div class="in-b"><input class="in" data-count="card" value="${ses.counted.card??''}" placeholder="${fmt(ses.card.sales-ses.card.refunds)}" inputmode="decimal"></div>`:''}</div>
@@ -807,7 +835,7 @@ function renderSheet(){
       const t = sh.mtype; const isNS = t==='no_sale';
       return sheet('Cash movement', `${S.register.name} · ${who('demo').name} · ${S.now}`,
         `<div class="seg2"><button class="${t==='paid_in'?'on':''}" data-act="sheetSet" data-k="mtype" data-v="paid_in">Paid in</button><button class="${t==='paid_out'?'on out':''}" data-act="sheetSet" data-k="mtype" data-v="paid_out">Paid out</button><button class="${t==='no_sale'?'on ns':''}" data-act="sheetSet" data-k="mtype" data-v="no_sale">No sale</button></div>
-         ${isNS?`<div class="alert i">Opens the drawer without a sale. Recorded with your name and the reason.</div>`:`<div class="fld"><label>Amount ${t==='paid_out'?'taken out':'put in'}</label><input class="in big" data-sheet="amount" value="${sh.amount??''}" placeholder="0.00" inputmode="decimal" autofocus></div>`}
+         ${isNS?`<div class="alert i">Opens the drawer without a sale. Recorded with your name and the reason.</div>`:`<div class="fld"><label>Amount ${t==='paid_out'?'taken out':'put in'}</label><div class="amtwrap"><span class="cur">${CUR}</span><input class="in big" data-sheet="amount" value="${sh.amount??''}" placeholder="0.00" inputmode="decimal" autofocus></div></div>`}
          <div class="fld"><label>Reason</label><input class="in" data-sheet="reason" value="${sh.reason??''}" placeholder="${t==='paid_out'?'e.g. Window cleaner':t==='paid_in'?'e.g. Change from the bank':'e.g. Customer needed change'}"></div>`,
         `<button class="btn" data-act="closeSheet">Cancel</button><button class="btn ${t==='paid_out'?'d':'p'}" data-act="doMove" ${(sh.reason && (isNS || parseFloat(sh.amount)>0))?'':'disabled'}>${isNS?'Open drawer':label(t)}</button>`);
     }
@@ -824,10 +852,13 @@ function renderSheet(){
         `<button class="btn" data-act="closeSheet">Back to count</button><button class="btn p" data-act="approve">Approve & close</button>`);
     }
     case 'zprint': {
-      const c=S.closures.find(x=>x.number===sh.number&&x.register===S.register.name);
-      return sheet(`Closure ${c.number} · ${S.register.name}`, `Written ${c.closed}${c.unsynced?` · <b style="color:#b45309">Unsynced — ${c.unsynced} sales not on the server</b>`:''}`,
-        `<div style="display:flex;justify-content:center">${receipt(c, false, 'Z-REPORT')}</div>`,
-        `${c.printed?`<span class="mut sm" style="margin-right:auto;align-self:center">Printed ${c.printed} on ${S.register.printer}</span><button class="btn" data-act="closeSheet">Done</button>`:`<button class="btn g" data-act="closeSheet">Print later</button><button class="btn p" data-act="print" data-n="${c.number}">${I.print} Print</button>`}`, true);
+      const c=S.closures.find(x=>x.number===sh.number&&x.register===S.register.name); const v=+(c.counted-c.expected).toFixed(2); const blind=!can('reports');
+      const cell=(l,val,cls='')=>`<div class="kpi"><div class="l">${l}</div><div class="v ${cls}" style="font-size:20px">${val}</div></div>`;
+      return sheet(`<span class="row" style="gap:10px"><span class="stamp" style="width:40px;height:40px;border-radius:50%;background:#e3f4ea;display:inline-flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007936" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Closure ${c.number} written</span>`, `${S.registers>1?S.register.name:S.register.store} · ${c.closed}${c.unsynced?` · <b style="color:#b45309">Unsynced — ${c.unsynced} sales not on the server</b>`:''}`,
+        `<div class="${blind?'':'cols3'}" style="${blind?'':''}">${cell('Counted', fmt(c.counted))}${blind?'':cell('Expected', fmt(c.expected))+cell('Variance', v===0?'Exact':fmt(v,true), v<0?'money neg':v>0?'money pos':'')}</div>
+         ${c.override?`<div class="mut sm">Approved by ${who(c.override.by).name}</div>`:''}
+         <div class="collapse"><button data-act="toggleCollapse" data-k="zprev">${I.chev} Z-report <span class="mut">${c.printed?`printed ${c.printed}`:'preview'}</span></button>${S.countOpen.zprev?`<div class="in-b" style="display:flex;justify-content:center">${receipt(c, false, 'Z-REPORT')}</div>`:''}</div>`,
+        `${c.printed?`<span class="row sm" style="margin-right:auto;gap:6px;color:var(--success)"><span style="width:16px;height:16px;border-radius:50%;background:var(--success);display:inline-flex;align-items:center;justify-content:center">${CK}</span>Printed on ${S.register.printer}</span><button class="btn p" data-act="closeSheet">Done</button>`:`<button class="btn g" data-act="closeSheet">Print later</button><button class="btn p lg" data-act="print" data-n="${c.number}">${I.print} Print Z-report</button>`}`, false);
     }
     case 'reprint': {
       if(!lc) return '';
@@ -863,7 +894,7 @@ function receipt(c, copy, kind){
     c.perpetual?rule:'', c.perpetual?C('GRAND TOTALS'):'', c.perpetual?L('Period sales', fmt(c.cashSales+c.card.sales)):'', c.perpetual?L('Period refunds', fmt(c.cashRefunds+c.card.refunds)):'', c.perpetual?L('Perpetual sales', fmt(c.perpetual.sales)):'', c.perpetual?L('Perpetual refunds', fmt(c.perpetual.refunds)):'',
     rule, C('WCPOS 1.11.0'),
   ].filter(x=>x!=='');
-  return `<div class="receipt ${copy?'copy':''}">${lines.join('\n')}</div>`;
+  return `<div class="receipt ${copy?'copy':''}">${lines.join('\n')}${(!copy && c.printed && c.number)?`<span class="printed ${S.settle==='printed'?'stamp':''}">PRINTED ${c.printed}</span>`:''}</div>`;
 }
 
 /* ============================ reports page ============================ */
@@ -956,6 +987,7 @@ document.addEventListener('click', e => {
     case 'signOut': A.signOut(); break;
     case 'doMove': A.doMove(S.sheet.mtype, S.sheet.amount, S.sheet.reason); break;
     case 'voidMove': A.voidMove(+t.dataset.id); break;
+    case 'undoMove': S.toast=null; A.voidMove(+t.dataset.id); break;
     case 'startCounting': A.startCounting(); break;
     case 'resume': A.resume(); break;
     case 'tryClose': A.tryClose(); break;

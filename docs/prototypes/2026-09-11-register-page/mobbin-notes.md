@@ -94,3 +94,43 @@ Convention: **avatar as the rail's last item, opening a panel; no caret.** That 
 - **Square (web)** — https://mobbin.com/screens/f4cd018c-ee3c-4fb6-93db-6599ffbcc115 — one 48 px strip: × and settings left, running total centred, Create order / Reset / Charge right; alerts are an inline peach banner, never in the strip.
 
 Convention: **the POS screen's only chrome is one thin strip carrying the sale's state**, and alerts go inline in the pane. Removing our title bar is the conventional move, not the radical one.
+
+## Round three — polish: the beat at completion, calm money entry
+
+Six searches, ~80 results, calm examples only (Careem, Canva, Care.com, Workable, AutoSend excluded for sparkles, confetti, poppers, thumbs-up and glossy 3D checks).
+
+### Completion is a state change, not a new page
+- **Wise** — https://mobbin.com/flows/bcb39266-2ceb-4c95-83b6-ec7a1f755211 — after "Mark as paid" nothing navigates: the avatar gains an 18 px green check badge, a row changes to "Paid on Wednesday", the buttons disappear.
+- **Kit** — https://mobbin.com/flows/93424cea-0e3d-497a-8a7b-90c71532cca1 — checking off a job: the checkbox fills, a small "Done today ✓" pill appears, the total updates in place. No modal, no button.
+- **PayPal** — https://mobbin.com/flows/34e1ed64-0a44-414e-ace8-b585ddc13f30 — a 24 px green "Completed" pill top-left of the detail sheet.
+
+Applied: **Paid in / out / No sale** never leave the panel — the Paid in/out row settles with a short highlight and its figure updates in place; a dark toast at the top of the cart names the exact movement. **Open register** returns the cart with one toast: `✓ Register open · float £195.00`.
+
+### When a moment deserves its own screen
+- **Jobber, Payment Recorded** — https://mobbin.com/screens/ffc24d22-55cf-4e32-afa6-39c76c713375 — a 40 px pale-green disc with a thin dark-green check, one line with the amount, outlined *View Receipt* and filled *Done*. The closest to a till.
+- **Starling, Transfer approved** — https://mobbin.com/screens/cfef74cd-7dc3-4f7e-8385-7b1ff8598a34 — a 72 px mint disc with a thin check and three words. Nothing else.
+- **Chime, Vivid** — outlined green circle-check 32–56 px, the amount, one *Done*.
+
+Applied: **Closure N written** is the only moment with its own sheet: a 40 px pale disc with a thin check (stamps in at 250 ms), the three figures (counted, expected, variance — counted only for a blind cashier), the Z-report as a preview fold, and one primary action *Print Z-report*. After printing, a green *Printed on Epson TM-m30* line and *Done*; a PRINTED stamp lands on the receipt.
+
+### Toasts
+- **Klarna** — https://mobbin.com/screens/ac043613-ee27-4614-9bdc-cc0380e5b411 — pale-green bar under the status bar, 18 px check, copy naming the object, underlined *Undo* at the right.
+- **Medium, Kitchen Stories, Julienne** — a dark inset bar near the top, copy naming exactly what changed, *Undo* at the right, no icon or a small one.
+
+Applied: the toast is a dark inset bar at the top of the cart column, an 18 px check, the exact object (`Paid out £10.00 · Parking`), and **Undo** at the right for Paid in / Paid out (undo = the voiding row the model already has). 2.2 s, or 4 s when Undo is offered.
+
+### Money entry
+- **Cash App, Chase UK, Oportun, Wealthfront** — one oversized amount with the symbol locked to the figures, a grey secondary line, a bare keypad, one *Next*.
+
+Applied: the big inputs (float, cash counted, movement amount) are 64 px, 32 px tabular figures, the `£` adjacent to the digits in the same weight, left-aligned so the symbol and the number read as one token. One line under, one button.
+
+### Receipt preview
+- **Satispay** — https://mobbin.com/screens/0f78d64c-f57e-4c3e-839c-6b022bff3440 — the page on top, then stacked full-width *Share / Download / Print*: print is a first-class button, not buried in a share sheet.
+- **Apple Wallet, Klima** — rendered page with a page badge; export as one pill.
+
+Applied: *Print Z-report* is the sheet's primary button; the preview is a fold. The reprint sheet keeps the COPY stamp.
+
+### Pressed states and motion (from the rules, confirmed by every calm example above)
+- Every tap target shows a pressed state within 100 ms: 1.5 % scale and a tint on buttons, tiles, list rows, the bar's icon buttons and chips.
+- Sheets fade and rise 150–200 ms ease-out; the panel slides 220 ms; the toast drops in 200 ms; the settle highlight fades over 800 ms. `prefers-reduced-motion` switches all of it off.
+- Nothing below 12 px; chips are 44 pt; tiles 56 pt; rows 44 pt.
