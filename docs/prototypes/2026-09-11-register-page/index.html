@@ -354,7 +354,7 @@ body.embed .stage{padding:0}
 
 <div class="doc">
   <h1>Register in the POS screen — live</h1>
-  <p class="lead">Second cut after Paul's reaction (2026-09-11). The register is not a page. With sessions on and no session open, the cart column <i>is</i> the Open register card; while counting, the cart column <i>is</i> the count screen; while open, a bar at the top of the cart opens the Register panel (paid in / out, no sale, X-report, close, last closure). No menu item, no sign-in state — the cashier is whoever the app is signed in as. Everything in the frame works; nothing persists.</p>
+  <p class="lead">Third cut (2026-09-11, late). No title bar: the bar above the cart names the place and carries the cashier. The register is not a page. With sessions on and no session open, the cart column <i>is</i> the Open register card; while counting, the cart column <i>is</i> the count screen; while open, a bar at the top of the cart opens the Register panel (paid in / out, no sale, X-report, close, last closure). No menu item, no sign-in state — the cashier is whoever the app is signed in as. Everything in the frame works; nothing persists.</p>
 </div>
 
 <div class="strip" id="strip"></div>
@@ -367,8 +367,6 @@ body.embed .stage{padding:0}
     <div class="box">
       <ul>
         <li><b>The gate</b> — <i>Register closed</i>: the cart column is the Open register card, with the float pair inline (expected, then what you counted). Products stay browsable for price checks; tapping one logs why nothing was added. Is the card the right size, and is the last closure the right thing to see under it?</li>
-        <li><b>No title bar</b> — Header → <i>No bar</i>: the app's title bar goes and the store name, online dot, notifications and user move into the bar above the cart, which is now there in every state. <b>A</b> one line (the store name moves under the avatar menu; there is no room for it beside the register at cart width); <b>B</b> two lines (store row, then register row); <b>C</b> chrome on the search row, register alone on the bar (phone falls back to A). Reports gets a page bar; the rail gets a logo tile.</li>
-        <li><b>D · rail</b> and <b>E · cashier on bar</b> (round two, from Mobbin's work-tool conventions): the bar carries the register only — name, store (Pro), status, expected, chevron — at 48 pt. <b>Offline</b> is an amber pill in the bar that exists only while offline; online is the absence of a badge (Substack, Aboard). <b>Notifications</b> are a bell in the rail's bottom cluster with a count badge only when there is a count (Gorgias, Hootsuite, Patreon). <b>Identity</b>: D puts a 28 px avatar as the rail's last item (Hootsuite, Shop, Fabric) that opens the user panel; E keeps the avatar on the bar because the session records who acted. No caret anywhere. Toggle <i>Alerts</i> to compare quiet vs alerting; Network → Offline for the pill.</li>
         <li><b>The bar names the place, not the money</b> (Paul, 2026-09-11 late): the expected figure is gone from the bar and lives in the panel one tap away. Names on the left are places you can change; icons on the right are things you open. One register → `UK Store`; several → `Front counter · UK Store`. Stores → 2: the store name is a tap target that opens a store switcher (a register belongs to one store, so switching re-binds the register). The drawer icon button opens the panel while a session is open. <b>The avatar</b> opens the user sheet: your sales today, Switch user (the device's stored users, or another account via WordPress login), Switch register when the store has more than one, Sign out apart at the bottom. Status pill only when the state is not the normal one.</li>
         <li><b>The bar</b> — <i>Session open</i>: one line at the top of the cart: register, status, expected cash (blind cashiers see none). Tap it for the panel. Overdue turns it amber with the close time. Would you rather it sat in the app header?</li>
         <li><b>The panel</b> (pass 2) — the amount is the title; three 56 pt tiles Paid in / Paid out / No sale; one list: Cash, Card, Paid in/out (tap for the rows), Print X-report; one row for the last closure with its reprint; Close register alone in the footer, neutral not red. The status row, the hero card, the breakdown sentence, the three folds and the Reports link are gone.</li>
@@ -581,7 +579,6 @@ function renderStrip(){
   const ck = (k,l) => `<label class="ck"><input type="checkbox" data-cap="${k}" ${S.caps[k]?'checked':''}> ${l}</label>`;
   document.getElementById('strip').innerHTML = `
     <div class="g"><b>Width</b>${seg('viewport',[['tablet','Tablet'],['phone','Phone']])}</div>
-    <div class="g"><b>Header</b>${seg('header',[['E','E · chosen'],['bar','Title bar (today)'],['D','D'],['A','A'],['B','B'],['C','C']])}</div>
     <div class="g"><b>Stores</b>${seg('stores',[[1,'1'],[2,'2 (Pro)']])}</div>
     <div class="g"><b>Registers</b>${seg('registers',[[1,'1 (default, silent)'],[3,'3 (pick once)']])}</div>
     <div class="g"><b>Alerts</b>${seg('unread',[[0,'quiet'],[2,'2 unread']])}</div>
