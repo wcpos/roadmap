@@ -36,7 +36,9 @@
   .rail i{width:20px;height:20px;border-radius:5px;background:#9fb0c8;opacity:.6;display:block}
   .rail i.on{background:#fff;opacity:1;box-shadow:-4px 0 0 0 var(--sidebar), -6px 0 0 0 #4d9ae6}
   .rail .v{margin-top:auto;margin-bottom:10px;color:#8593a6;font-size:10px}
-  .columns{display:grid;grid-template-columns:1fr 440px;min-height:0}
+  .columns{display:grid;grid-template-columns:1fr 440px;min-height:0;position:relative}
+  .paywrap{position:relative;min-height:0;min-width:0;display:flex;overflow:hidden}
+  .paywrap .pay{flex:1;min-width:0}
   .frame.phone .columns{grid-template-columns:1fr;grid-template-rows:1fr auto}
   /* ---- the pay surface ---- */
   .pay{background:var(--pay);color:var(--pay-fg);display:flex;flex-direction:column;padding:14px 28px 22px;min-height:0;position:relative;overflow:auto;transition:background .2s ease-out}
@@ -74,6 +76,30 @@
   .helpers .reader{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--pay-dim);height:36px;padding:0 12px;border-radius:99px;background:var(--pay-2)}
   .helpers .reader svg{width:16px;height:16px}
   .helpers .reader a{color:var(--pay-fg);font-weight:600;cursor:pointer;margin-left:4px}
+  .plan{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+  .plan .pleg{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:99px;font-size:13px;font-variant-numeric:tabular-nums;border:1px solid var(--pay-3);color:var(--pay-dim)}
+  .plan .pleg.done{background:var(--pay-accent);color:#0f1a15;border-color:transparent;font-weight:600}
+  .plan .pleg.now{border-color:var(--pay-fg);color:var(--pay-fg);font-weight:700}
+  .plan .pleg svg{width:14px;height:14px}
+  .plan .edit{color:var(--pay-dim);font-size:13px;cursor:pointer;padding:6px 8px;border-radius:8px;text-decoration:underline;text-underline-offset:3px}
+  .plan .edit:hover{background:var(--pay-2)}
+  .sheet{position:absolute;inset:0;background:rgba(10,14,20,.55);display:flex;align-items:flex-end;justify-content:center;z-index:5}
+  .sheet .panel{width:100%;max-width:560px;background:var(--pay);color:var(--pay-fg);border-radius:20px 20px 0 0;padding:18px 20px 22px;box-shadow:0 -12px 40px rgba(0,0,0,.4);border:1px solid var(--pay-3);border-bottom:0;animation:up .22s cubic-bezier(.2,.9,.3,1) both}
+  .frame.light .sheet .panel{background:#fff}
+  @keyframes up{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+  .sheet .ph{display:flex;justify-content:space-between;align-items:center;font-size:17px;font-weight:700;margin-bottom:4px}
+  .sheet .ph .x{width:36px;height:36px;border-radius:10px;background:var(--pay-2);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+  .sheet .ph .x svg{width:18px;height:18px}
+  .sheet .ps{font-size:13px;color:var(--pay-dim);margin-bottom:14px}
+  .opts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .opt{height:84px;border-radius:14px;background:var(--pay-2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;transition:transform .08s;user-select:none}
+  .opt:active{transform:scale(.97)}
+  .opt.on{background:var(--pay-fg);color:var(--pay)}
+  .opt .t{font-size:17px;font-weight:700}
+  .opt .s{font-size:12.5px;opacity:.8;font-variant-numeric:tabular-nums}
+  .opts .opt.wide{grid-column:span 3;height:56px;flex-direction:row;gap:10px}
+  .opts .opt.wide .s{opacity:.7}
+  .frame.phone .opts{grid-template-columns:repeat(3,1fr)}
   .commit{display:flex;justify-content:center;margin-top:10px;flex:none}
   .commit .btn{width:100%;max-width:440px;height:58px;font-size:18px}
   .commit .btn.disabled{opacity:.45;cursor:default}
@@ -190,7 +216,9 @@
     <button data-jump="typed">Typed 20</button>
     <button data-jump="card">Card selected</button>
     <button data-jump="sumup">SumUp selected</button>
+    <button data-jump="splitsheet">Split chooser</button>
     <button data-jump="split">Split 2 ways</button>
+    <button data-jump="split3after">3 ways · after leg 1</button>
     <button data-jump="partpaid">After a cash leg</button>
     <button data-jump="terminal">On the terminal</button>
     <button data-jump="paid">Paid</button>
@@ -207,7 +235,7 @@
     <div class="topbar">POS – UK Store<div class="right"><span class="dot" id="dot"></span><span>🔔</span><span class="avatar">DC</span><span>Demo Cashier ▾</span></div></div>
     <div class="rail"><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><span class="v">v 1.11.0</span></div>
     <div class="columns">
-      <div class="pay" id="pay"></div>
+      <div class="paywrap"><div class="pay" id="pay"></div></div>
       <div class="ledger" id="ledger"></div>
       <div class="balbar" id="balbar"></div>
     </div>
@@ -221,7 +249,7 @@
     <li><b>The method is the commit.</b> Cash and Card are white and carry the amount they will take. Terminals and readers sit beside them in the same row, in POS-settings order; six gateways wrap to a second row, they never hide. Unavailable ones are faded with one quiet line under the row saying why.</li>
     <li><b>Card goes straight to the terminal moment.</b> No confirm screen: the surface becomes the amount, the terminal's live steps and a way out, then the Paid moment. Cash goes to Paid at once.</li>
     <li><b>Paid is a full-bleed beat.</b> The surface turns green, the tick draws, the change is the headline for cash, then Print / Email / No receipt · New sale. This is the joy, and it is over in a second.</li>
-    <li><b>Split and Legacy are text actions in the header.</b> Split turns the amount into a plan (Payment 1 of 2 · 9,00 | 9,00) and pre-types the leg. Custom amounts need no control: type.</li>
+    <li><b>Split is a chooser, then a plan you can see.</b> 2 / 3 / 4 ways with the amount each, or type a part payment. The strip under the number shows every leg: done ones green with their method, this one outlined, the rest dim; <i>Change split</i> re-plans the remainder at any time. The label and the commit button both say which payment this is and what is left.</li>
     <li><b>Three surfaces to choose from:</b> slate (the app's sidebar colour), the brand blue, and light. Same layout, same tokens.</li>
     <li><b>Close, not an arrow.</b> Esc on desktop.</li>
   </ul>
@@ -256,15 +284,27 @@ const METHODS = [
   { id:'stripe', kind:'reader',   title:'Stripe', device:true, why:'not available in the browser' },
 ];
 const TOTAL = 18.00;
-const S = { entry:null, split:'0', offline:0, surface:'slate', phone:0, legs:[], view:'keypad', term:null, timers:[], method:'cash', unavailOpen:0 };
+const S = { entry:null, plan:null, sheet:0, offline:0, surface:'slate', phone:0, legs:[], view:'keypad', term:null, timers:[], method:'cash', unavailOpen:0 };
+I.split='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4v16M4 12h16"/></svg>';
 I.caret='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
 
 const paidSoFar = () => S.legs.reduce((a,l)=>a+l.amount,0);
 function figures(){
   const paid = paidSoFar(), remaining = Math.max(0, TOTAL - paid);
-  let thisPay = remaining, plan = null;
-  if (S.split==='2' && remaining>0){ const n=S.legs.length; thisPay = n===0 ? remaining/2 : remaining; plan = {txt:`Payment ${n+1} of 2`, legs:[{v:TOTAL/2,k:n>0?'done':'now'},{v:TOTAL/2,k:n>0?'now':''}]}; }
-  return { paid, remaining, thisPay, plan };
+  let thisPay = remaining, planInfo = null;
+  if (S.plan && remaining > 0){
+    const done = S.legs.length;                   // legs taken since the plan was made are counted from the start of the plan
+    const taken = S.legs.slice(S.plan.from);
+    const idx = taken.length;                     // index of the leg we are on
+    const left = S.plan.ways - idx;               // planned legs still to take, including this one
+    const each = left > 0 ? Math.round(remaining / left * 100) / 100 : remaining;
+    thisPay = left > 1 ? each : remaining;
+    const legs = [];
+    taken.forEach(l => legs.push({k:'done', v:l.amount, title:l.title}));
+    for (let i=0;i<left;i++){ const v = i===left-1 ? Math.round((remaining - each*(left-1))*100)/100 : each; legs.push({k:i===0?'now':'', v}); }
+    planInfo = { n: idx+1, ways: S.plan.ways, legs, left };
+  }
+  return { paid, remaining, thisPay, plan: planInfo };
 }
 const methods = () => METHODS.map(m => { let why = m.why || null; if (S.offline && (m.server||m.device)) why = 'needs a connection'; return {...m, why, off: !!why}; });
 const clearTimers = () => { S.timers.forEach(clearTimeout); S.timers = []; };
@@ -282,8 +322,8 @@ function keypadView(f){
   let line = '';
   if (change>0) line = `<span class="chg">Change ${fmt(change)}</span>`;
   else if (m && !m.change && entry > f.thisPay) line = `<span class="short">Only ${fmt(f.thisPay)} is due — ${m.title} can't give change</span>`;
-  else if (short>0 && entry>0) line = `<span class="short">${fmt(short)} still to take after this</span>`;
-  else if (f.plan) line = `<span class="plan">${f.plan.txt}</span>${f.plan.legs.map(l=>`<span class="leg ${l.k}">${fmt(l.v)}</span>`).join('')}`;
+  else if (short>0 && entry>0 && !f.plan) line = `<span class="short">Part payment · ${fmt(short)} left after this</span>`;
+  else if (short>0 && entry>0 && f.plan) line = `<span class="short">Less than planned · ${fmt(short)} moves to the next payment</span>`;
   const offline = S.offline ? `<span class="badge warn">${I.wifi} Offline · cash and card only</span>` : '';
   // helpers change with the selected method
   let helpers = '';
@@ -295,7 +335,25 @@ function keypadView(f){
   } else if (m){
     helpers = `<span class="q ${ghost?'on':''}" data-q="exact">Full balance ${fmt(f.thisPay)}</span>`;
   }
-  const commitLabel = !m ? 'Choose how the customer is paying' : (m.server||m.device) ? `Send ${fmt(applied)} to ${m.title}` : `Take ${fmt(applied)} in ${m.title}`;
+  const leftAfter = Math.round((f.remaining - applied)*100)/100;
+  const tail = f.plan ? ` · ${f.plan.n} of ${f.plan.ways}` : (leftAfter > 0 ? ` · ${fmt(leftAfter)} left` : '');
+  const commitLabel = !m ? 'Choose how the customer is paying' : ((m.server||m.device) ? `Send ${fmt(applied)} to ${m.title}` : `Take ${fmt(applied)} in ${m.title}`) + tail;
+  const planStrip = f.plan ? `<div class="plan">${f.plan.legs.map(l=>`<span class="pleg ${l.k}">${l.k==='done' ? I.check : ''}${l.title ? l.title + ' ' : ''}${fmt(l.v)}</span>`).join('')}<span class="edit" data-split>Change split</span></div>` : '';
+  const half = f.remaining/2, third = f.remaining/3, quarter = f.remaining/4;
+  const sheet = S.sheet ? `
+  <div class="sheet" data-sheet-bg>
+    <div class="panel">
+      <div class="ph"><span>Split ${fmt(f.remaining)}</span><span class="x" data-sheet-close>${I.close}</span></div>
+      <div class="ps">Any method for each payment · change the split at any time</div>
+      <div class="opts">
+        <span class="opt ${S.plan && S.plan.ways===2?'on':''}" data-ways="2"><span class="t">2 ways</span><span class="s">${fmt(half)} each</span></span>
+        <span class="opt ${S.plan && S.plan.ways===3?'on':''}" data-ways="3"><span class="t">3 ways</span><span class="s">${fmt(third)} each</span></span>
+        <span class="opt ${S.plan && S.plan.ways===4?'on':''}" data-ways="4"><span class="t">4 ways</span><span class="s">${fmt(quarter)} each</span></span>
+        <span class="opt wide" data-ways="custom"><span class="t">Type an amount</span><span class="s">take part now, the rest after</span></span>
+        ${S.plan ? `<span class="opt wide" data-ways="0"><span class="t">No split</span><span class="s">take the ${fmt(f.remaining)} in one payment</span></span>` : ''}
+      </div>
+    </div>
+  </div>` : '';
   const canCommit = m && applied > 0 && !(m && !m.change && entry > f.thisPay);
   return `
   <div class="hd">
@@ -305,22 +363,24 @@ function keypadView(f){
     <div class="seg"><span class="on">Payments</span><span>Legacy</span></div>
   </div>
   <div class="amt">
-    <div class="lblrow"><span class="lbl">${f.paid>0 ? 'Remaining' : 'To pay'} ${fmt(f.thisPay)}</span>${f.remaining>0 ? `<span class="splitchip ${S.split!=='0'?'on':''}" data-split>${S.split!=='0' ? 'Split 2 ways' : 'Split'}</span>` : ''}${offline}</div>
+    <div class="lblrow"><span class="lbl">${f.plan ? `Payment ${f.plan.n} of ${f.plan.ways} · ${fmt(f.remaining)} left` : (f.paid>0 ? 'Remaining' : 'To pay') + ' ' + fmt(f.thisPay)}</span>${f.remaining>0 && !f.plan ? `<span class="splitchip" data-split>Split</span>` : ''}${offline}</div>
     <div class="big ${ghost?'ghost':''}" id="big">${fmt(entry)}</div>
     <div class="line">${line}</div>
+    ${planStrip}
   </div>
   <div class="sel">${ons.map(x=>`<span class="m ${x.id===S.method?'on':''}" data-pick="${x.id}"><span class="ic">${I[x.kind]}</span>${x.title}</span>`).join('')}</div>
   ${offs.length ? `<div class="unav ${S.unavailOpen?'':'closed'}"><span class="h" data-unavail><span class="car">${I.caret}</span>${offs.length} not available right now</span><ul>${offs.map(x=>`<li><span class="ic">${I[x.kind]}</span><b>${x.title}</b><span class="why">${x.why}</span></li>`).join('')}</ul></div>` : ''}
   <div class="helpers">${helpers}</div>
   <div class="keys">${['1','2','3','4','5','6','7','8','9'].map(k=>`<span class="k" data-key="${k}">${k}</span>`).join('')}<span class="k sub" data-key="C">C</span><span class="k" data-key="0">0</span><span class="k sub" data-key="⌫">${I.del}</span></div>
-  <div class="commit"><span class="btn white ${canCommit?'':'disabled'}" ${canCommit && m ? `data-take="${m.id}"` : ''}>${commitLabel}</span></div>`;
+  <div class="commit"><span class="btn white ${canCommit?'':'disabled'}" ${canCommit && m ? `data-take="${m.id}"` : ''}>${commitLabel}</span></div>
+  ${sheet}`;
 }
 
 function terminalView(f){
   const t = S.term; const m = METHODS.find(x=>x.id===t.method);
   const steps = ['Sent','On terminal','Approved','Captured'];
   return `
-  <div class="hd"><span class="title">Order <b>#102476</b> · 1 item</span><span class="lnk">${f.plan ? f.plan.txt : 'Payment 1 of 1'}</span></div>
+  <div class="hd"><span class="title">Order <b>#102476</b> · 1 item</span><span class="lnk">${f.plan ? `Payment ${f.plan.n} of ${f.plan.ways}` : 'Payment 1 of 1'}</span></div>
   <div class="term">
     <div class="amt"><div class="lbl">On the terminal</div><div class="big" style="font-size:80px">${fmt(t.amount)}</div><div class="line"><span class="plan">${t.step<1?'Sending to the terminal…':t.step<2?'Waiting for the customer':t.step<3?'Approved, capturing…':'Captured'}</span></div></div>
     <div class="ring"></div>
@@ -339,7 +399,7 @@ function paidView(f){
   <div class="paidwrap">
     <div class="tick">${I.check}</div>
     <div class="h">${change>0 ? 'Change ' + fmt(change) : 'Paid ' + fmt(TOTAL)}</div>
-    <div class="s">${change>0 ? `Paid <b>${fmt(TOTAL)}</b> · tendered <b>${fmt(last.amount + change)}</b> in cash` : (last.title + (last.detail ? ' · ' + last.detail : ''))}${S.legs.length>1 ? ` · ${S.legs.length} payments` : ''}</div>
+    <div class="s">${change>0 ? `Paid <b>${fmt(TOTAL)}</b> · tendered <b>${fmt(last.amount + change)}</b> in cash` : (last.title + (last.detail ? ' · ' + last.detail : ''))}${S.legs.length>1 ? ` · ${S.legs.length} payments: ${S.legs.map(l=>l.title+' '+fmt(l.amount)).join(', ')}` : ''}</div>
     <div class="acts"><span class="btn white" data-new>Print receipt · New sale</span><span class="btn ghost" data-new>Email receipt</span><span class="btn ghost" data-new>No receipt · New sale</span></div>
   </div>`;
 }
@@ -386,17 +446,20 @@ function take(id){
 function land(m, applied, change, detail){
   S.legs.push({ title: m.title, amount: applied, change, detail, fresh:true });
   S.entry = null; S.term = null; S.view = 'keypad';
+  if (S.plan && S.legs.length - S.plan.from >= S.plan.ways) S.plan = null;
   const f = figures();
   if (f.remaining <= 0) S.view = 'paid';
   render();
 }
 function jump(name){
-  clearTimers(); S.entry=null; S.split='0'; S.legs=[]; S.view='keypad'; S.term=null; S.method='cash'; S.unavailOpen=0;
+  clearTimers(); S.entry=null; S.plan=null; S.sheet=0; S.legs=[]; S.view='keypad'; S.term=null; S.method='cash'; S.unavailOpen=0;
   if (name==='typed') S.entry = 20;
   if (name==='card') S.method = 'card';
   if (name==='sumup') S.method = 'sumup';
   if (name==='unavail') S.unavailOpen = 1;
-  if (name==='split') S.split = '2';
+  if (name==='split') S.plan = { ways:2, from:0 };
+  if (name==='splitsheet') S.sheet = 1;
+  if (name==='split3after'){ S.plan = { ways:3, from:0 }; S.legs = [{title:'Cash', amount:6, change:0, detail:'Tendered 6,00 £ · change 0,00 £'}]; S.method='card'; }
   if (name==='partpaid') S.legs = [{title:'Cash', amount:10, change:0, detail:'Tendered 10,00 £ · change 0,00 £'}];
   if (name==='terminal'){ S.view='terminal'; S.term={method:'sumup', amount:18, step:1}; }
   if (name==='paid'){ S.legs=[{title:'Cash', amount:18, change:2, detail:'Tendered 20,00 £ · change 2,00 £'}]; S.view='paid'; }
@@ -421,12 +484,20 @@ document.getElementById('pay').addEventListener('click', e => {
   const pk = t.closest('[data-pick]'); if (pk){ S.method = pk.dataset.pick; S.entry = null; return render(); }
   if (t.closest('[data-unavail]')){ S.unavailOpen = S.unavailOpen ? 0 : 1; return render(); }
   const m = t.closest('[data-take]'); if (m) return take(m.dataset.take);
-  if (t.closest('[data-split]')){ S.split = S.split==='0' ? '2' : '0'; S.entry=null; return render(); }
+  const w = t.closest('[data-ways]'); if (w){
+    const ways = w.dataset.ways;
+    if (ways==='custom'){ S.plan = null; S.entry = 0; S.sheet = 0; return render(); }
+    if (ways==='0'){ S.plan = null; S.entry = null; S.sheet = 0; return render(); }
+    S.plan = { ways:+ways, from:S.legs.length }; S.entry = null; S.sheet = 0; return render();
+  }
+  if (t.closest('[data-sheet-close]') || (t.closest('[data-sheet-bg]') && !t.closest('.panel'))){ S.sheet = 0; return render(); }
+  if (t.closest('[data-split]')){ S.sheet = 1; return render(); }
   if (t.closest('[data-close]') || t.closest('[data-new]')) return jump('fresh');
   if (t.closest('[data-cancel-terminal]')){ clearTimers(); S.view='keypad'; S.term=null; return render(); }
   if (t.closest('[data-cancel-payment]')){ S.legs=[]; S.entry=null; return render(); }
 });
 document.addEventListener('keydown', e => {
+  if (S.sheet && e.key==='Escape'){ S.sheet=0; return render(); }
   if (S.view!=='keypad') { if (e.key==='Escape') jump('fresh'); return; }
   if (/^[0-9]$/.test(e.key) || e.key==='Backspace' || e.key==='Escape'){
     if (e.key==='Escape') return jump('fresh');
