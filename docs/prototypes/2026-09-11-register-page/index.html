@@ -102,6 +102,31 @@ a{color:var(--primary)}
 .regbar.warn .ic{background:var(--warning)}
 .regbar .exp{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:600}
 .regbar .chev{color:var(--muted-fg)}
+.regbar.chrome{cursor:default;background:#fff;white-space:nowrap}
+.regbar.chrome .reg .b{overflow:hidden;text-overflow:ellipsis}
+.regbar2 .r2{white-space:nowrap}
+.regbar.chrome .reg{display:flex;align-items:center;gap:8px;cursor:pointer;flex:1;min-width:0;border-radius:6px;padding:2px 4px;margin:-2px -4px}
+.regbar.chrome .reg:hover{background:#eef3f8}
+.regbar .exp{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:600}
+.chrome-r{display:flex;align-items:center;gap:10px;margin-left:auto;flex:none}
+.chrome-r .dot{width:10px;height:10px;border-radius:50%;background:var(--success)}
+.chrome-r .dot.off{background:var(--destructive)}
+.chrome-r .av{width:24px;height:24px;border-radius:50%;background:var(--sidebar);color:#e0e5eb;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.chrome-r .bell{color:var(--muted-fg);display:inline-flex}
+.chrome-r .store{font-weight:600;color:var(--fg)}
+.chrome-r .burger,.regbar .burger{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;color:var(--fg);flex:none}
+.regbar2{border-bottom:1px solid var(--border);background:#fff;flex:none}
+.regbar2 .r1{display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--border);background:var(--card-header);font-size:13px}
+.regbar2 .r2{display:flex;align-items:center;gap:8px;padding:8px 12px;font-size:13px;cursor:pointer}
+.regbar2 .r2:hover{background:#f6f9fc}
+.regbar2.warn .r2{background:#fff4e8}
+.regbar2 .ic,.regbar.chrome .ic{width:26px;height:26px;border-radius:6px;background:var(--sidebar);color:#e0e5eb;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.regbar2.warn .ic{background:var(--warning)}
+.prodcol .search .chrome-r{margin-left:6px}
+.pagebar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);background:#fff;flex:none;font-size:13px}
+.pagebar .ttl2{font-size:16px;font-weight:700}
+.rail .logo{height:44px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--sidebar-border);margin-bottom:4px}
+.rail .logo i{width:22px;height:22px;border-radius:6px;background:#4da3ff;display:block}
 .gatecard{padding:14px;display:flex;flex-direction:column;gap:12px;overflow:auto;flex:1}
 .gatecard .head{display:flex;align-items:center;gap:10px}
 .gatecard .head .ic{width:40px;height:40px;border-radius:10px;background:var(--sidebar);color:#e0e5eb;display:inline-flex;align-items:center;justify-content:center;flex:none}
@@ -279,6 +304,7 @@ kbd{font-family:ui-monospace,Menlo,monospace;background:#eef2f6;border:1px solid
     <div class="box">
       <ul>
         <li><b>The gate</b> — <i>Register closed</i>: the cart column is the Open register card, with the float pair inline (expected, then what you counted). Products stay browsable for price checks; tapping one logs why nothing was added. Is the card the right size, and is the last closure the right thing to see under it?</li>
+        <li><b>No title bar</b> — Header → <i>No bar</i>: the app's title bar goes and the store name, online dot, notifications and user move into the bar above the cart, which is now there in every state. <b>A</b> one line (the store name moves under the avatar menu; there is no room for it beside the register at cart width); <b>B</b> two lines (store row, then register row); <b>C</b> chrome on the search row, register alone on the bar (phone falls back to A). Reports gets a page bar; the rail gets a logo tile.</li>
         <li><b>The bar</b> — <i>Session open</i>: one line at the top of the cart: register, status, expected cash (blind cashiers see none). Tap it for the panel. Overdue turns it amber with the close time. Would you rather it sat in the app header?</li>
         <li><b>The panel</b> — right panel on tablet, sheet on phone, the same overlay pattern the app is moving to. It is the old "Focus" layout: one number, the three cash actions, X-report, and the folds. Close register is in its footer.</li>
         <li><b>Counting</b> — the cart column becomes the count; the product grid is dimmed with one line. <i>Back to selling</i> returns the cart. Nothing to navigate.</li>
@@ -321,7 +347,7 @@ const PRODUCTS = [['Flat white',3.2],['Sourdough loaf',4.2],['Tote bag',12],['Oa
 const CART = [['Flat white',2,3.2],['Sourdough loaf',1,4.2],['Tote bag',1,12]];
 
 const S = {
-  viewport:'tablet', page:'pos', floatMode:'default', phoneTab:'cart',
+  viewport:'tablet', page:'pos', floatMode:'default', phoneTab:'cart', header:'bar',
   sessionsOn:true, pro:true, online:true,
   caps:{ cash:true, reports:true, closures:true },
   now:'17:42', today:'Thu 11 Sep',
@@ -483,6 +509,7 @@ function renderStrip(){
   const ck = (k,l) => `<label class="ck"><input type="checkbox" data-cap="${k}" ${S.caps[k]?'checked':''}> ${l}</label>`;
   document.getElementById('strip').innerHTML = `
     <div class="g"><b>Width</b>${seg('viewport',[['tablet','Tablet'],['phone','Phone']])}</div>
+    <div class="g"><b>Header</b>${seg('header',[['bar','Title bar'],['A','No bar · A one line'],['B','No bar · B two lines'],['C','No bar · C split']])}</div>
     <div class="g"><b>Page</b>${seg('page',[['pos','POS'],['reports','Reports']])}</div>
     <div class="g"><b>Jump to</b><span class="seg">${[['new','First sign-in'],['off','Sessions off'],['closed','Register closed'],['open','Session open'],['counting','Counting'],['overdue','Overdue']].map(([v,l])=>`<button data-scn="${v}">${l}</button>`).join('')}</span></div>
     <div class="g"><b>Can</b>${ck('cash','manage cash')}${ck('reports','view reports')}${ck('closures','manager override')}</div>
@@ -495,10 +522,16 @@ function renderRail(){
   const items = [['pos','POS'],['products','Products'],['orders','Orders'],['coupons','Coupons'],['customers','Customers'],['reports','Reports']];
   const bottom = [['health','Store health'],['settings','Settings'],['support','Support']];
   const it = ([k,l]) => `<div class="it ${S.page===k?'on':''}" ${['pos','reports'].includes(k)?`data-set="page" data-v="${k}"`:''}>${I[k]}<span class="tip">${l}</span></div>`;
-  return `<div class="rail">${items.map(it).join('')}<div class="sp"></div>${bottom.map(it).join('')}<div class="ver">v 1.11.0</div></div>`;
+  return `<div class="rail">${noHeader()?`<div class="logo"><i></i></div>`:''}${items.map(it).join('')}<div class="sp"></div>${bottom.map(it).join('')}<div class="ver">v 1.11.0</div></div>`;
 }
 
+function chrome(withStore=false){
+  const phone=S.viewport==='phone';
+  return `<span class="chrome-r">${withStore?`<span class="store">${S.register.store}</span>`:''}<span class="dot ${S.online?'':'off'}" title="${S.online?'Online':'No internet connection'}"></span><span class="bell">${I.bell}</span><span class="av" title="Demo Cashier">DC</span>${phone?'':`<span class="mut sm">▾</span>`}</span>`;
+}
+const noHeader = () => S.header!=='bar';
 function renderHeader(){
+  if (noHeader()) return '';
   const title = S.page==='reports' ? 'Reports' : 'POS';
   const phone = S.viewport==='phone';
   return `<div class="hdr">${phone?`<div class="burger">${I.bars}</div>`:''}<div class="ttl">${title} - ${S.register.store}</div>
@@ -508,7 +541,7 @@ function renderHeader(){
 function renderFrame(){
   const f = document.getElementById('frame');
   f.className = `frame ${S.viewport}`;
-  const content = S.page==='reports' ? `<div class="pad">${renderReports()}</div>` : renderPOS();
+  const content = S.page==='reports' ? `${noHeader()?`<div class="pagebar">${S.viewport==='phone'?`<span class="burger">${I.bars}</span>`:''}<span class="ttl2">Reports</span>${chrome(true)}</div>`:''}<div class="pad">${renderReports()}</div>` : renderPOS();
   f.innerHTML = `${renderHeader()}<div class="body">${S.viewport==='tablet' ? renderRail() : ''}<div class="main">${!S.pro ? `<div class="upgrade"><span>Upgrade to WCPOS Pro</span><span>Learn more</span></div>` : ''}${content}${renderPanel()}${renderSheet()}</div></div>`;
 }
 
@@ -528,23 +561,43 @@ function renderProducts(){
   else if (S.sessionsOn && !ses) notice = `<div class="notice">Register closed · price check only. Open it to add to a cart.</div>`;
   else if (S.sessionsOn && ses.state==='counting') over = `<div class="gate"><div>No sales while the register is counting.</div></div>`;
   return `<div class="prodcol">${notice}
-    <div class="search"><input class="in" placeholder="Search products" style="height:32px"><button class="btn sm">Barcode</button></div>
+    <div class="search">${S.header==='C'&&S.viewport==='phone'?`<span class="burger">${I.bars}</span>`:''}<input class="in" placeholder="Search products" style="height:32px"><button class="btn sm">Barcode</button>${S.header==='C'&&S.viewport==='tablet'?chrome(true):''}</div>
     <div class="tiles">${PRODUCTS.map(([n,p])=>`<div class="tile" data-act="tapProduct" data-name="${n}"><div class="img"></div><div class="n">${n}</div><div class="p">${fmt(p)}</div></div>`).join('')}</div>${over}</div>`;
 }
 
 function renderCartColumn(){
   const ses=S.session;
   let body;
+  const top = noHeader() ? renderTopBar() : '';
   if (S.sessionsOn && !S.register.exists) body = renderSetupCard();
   else if (S.sessionsOn && !ses) body = renderOpenCard();
   else if (S.sessionsOn && ses.state==='counting') body = `<div class="gatecard narrow">${renderCounting()}</div>`;
   else body = renderCart();
-  return `<div class="cartcol narrow">${body}</div>`;
+  return `<div class="cartcol narrow">${top}${body}</div>`;
+}
+
+/* ---- no-title-bar variants: the bar above the cart carries store, status, notifications, user ---- */
+function regStatus(){
+  const ses=S.session;
+  if(!S.sessionsOn) return {pill:'', exp:'', tap:false};
+  if(!S.register.exists) return {pill:`<span class="pill warn dotp">Set up</span>`, exp:'', tap:false};
+  if(!ses) return {pill:`<span class="pill closed dotp">Closed</span>`, exp:'', tap:false};
+  if(ses.state==='counting') return {pill:`<span class="pill count dotp">Counting</span>`, exp:'', tap:false};
+  const od=overdue();
+  return {pill: od?`<span class="pill warn dotp" title="Past the expected close time ${S.register.closeTime}">Overdue</span>`:`<span class="pill open dotp">Open</span>`, exp: can('reports')?fmt(expected(ses)):'', tap:true, od};
+}
+function renderTopBar(){
+  const phone=S.viewport==='phone'; const st=regStatus(); const name=S.register.exists?S.register.name:'This device';
+  const burger = phone ? `<span class="burger">${I.bars}</span>` : '';
+  const regSeg = `<span class="reg" ${st.tap?'data-act="openPanel"':''}><span class="ic">${I.drawer}</span><span class="b">${name}</span>${st.pill}${st.exp?`<span class="exp">${st.exp}</span>`:''}${st.tap?`<span class="chev">${I.chev}</span>`:''}</span>`;
+  if (S.header==='B') return `<div class="regbar2 ${st.od?'warn':''}"><div class="r1">${burger}<span class="b">${S.register.store}</span>${chrome(false)}</div><div class="r2" ${st.tap?'data-act="openPanel"':''}><span class="ic">${I.drawer}</span><span class="b">${name}</span>${st.pill}${st.exp?`<span class="exp">${st.exp}</span>`:''}${st.tap?`<span class="chev">${I.chev}</span>`:''}</div></div>`;
+  if (S.header==='C' && !phone) return `<div class="regbar chrome ${st.od?'warn':''}">${regSeg}</div>`;
+  return `<div class="regbar chrome ${st.od?'warn':''}">${burger}${regSeg}${chrome(S.header==='C')}</div>`;
 }
 
 function renderCart(){
   const ses=S.session; const sub=CART.reduce((a,[,q,p])=>a+q*p,0); const tax=+(sub-sub/1.2).toFixed(2);
-  return `${S.sessionsOn?renderRegBar():''}
+  return `${S.sessionsOn&&!noHeader()?renderRegBar():''}
     <div class="cart-h"><span class="cust">Guest ▾</span><span class="grow"></span><button class="btn sm g">+</button><button class="btn sm g">${I.more}</button></div>
     <div class="inner">
       ${CART.map(([n,q,p])=>`<div class="cartline"><span class="q">${q}</span><span class="grow">${n}</span><span class="money">${fmt(q*p)}</span></div>`).join('')}
@@ -562,7 +615,7 @@ function renderRegBar(){
 
 function renderSetupCard(){
   return `<div class="gatecard">
-    <div class="head"><span class="ic">${I.drawer.replace('16','22').replace('16','22')}</span><div><div class="b" style="font-size:16px">Set up this register</div><div class="mut sm">First sign-in to ${S.register.store} on this device</div></div></div>
+    ${noHeader()?`<div><div class="b" style="font-size:16px">Set up this register</div><div class="mut sm">First sign-in to ${S.register.store} on this device</div></div>`:`<div class="head"><span class="ic">${I.drawer.replace('16','22').replace('16','22')}</span><div><div class="b" style="font-size:16px">Set up this register</div><div class="mut sm">First sign-in to ${S.register.store} on this device</div></div></div>`}
     <div class="sm">Name the register. It belongs to <b>${S.register.store}</b> from now on; an administrator can move it to another store while it has no open session. Its closures are numbered from 1.</div>
     <div class="fld"><label>Register name</label><input class="in" data-setup="name" value="${S.setupName}" placeholder="e.g. Front counter"></div>
     <div class="line1 sm"><span class="mut">Store</span><b>${S.register.store}</b><span class="mut">· register 2 of this store</span></div>
@@ -574,7 +627,7 @@ function renderSetupCard(){
 function renderOpenCard(){
   const lc=lastClosure(); const exp=suggestedFloat(); const c=parseFloat(S.openForm.counted ?? ''); const has=!isNaN(c);
   return `<div class="gatecard">
-    <div class="head"><span class="ic">${I.drawer.replace('16','22').replace('16','22')}</span><div class="grow"><div class="row" style="gap:8px"><span class="b" style="font-size:16px">${S.register.name}</span><span class="pill closed dotp">Closed</span>${!S.online?`<span class="pill bad">${I.cloudOff} Offline</span>`:''}</div><div class="mut sm">${lc?`Last closed ${lc.closed} · closure ${lc.number}`:'Never opened'}</div></div></div>
+    ${noHeader()?`<div class="mut sm">${lc?`Last closed ${lc.closed} · closure ${lc.number}`:'Never opened'}${!S.online?` · <span class="pill bad">${I.cloudOff} Offline</span>`:''}</div>`:`<div class="head"><span class="ic">${I.drawer.replace('16','22').replace('16','22')}</span><div class="grow"><div class="row" style="gap:8px"><span class="b" style="font-size:16px">${S.register.name}</span><span class="pill closed dotp">Closed</span>${!S.online?`<span class="pill bad">${I.cloudOff} Offline</span>`:''}</div><div class="mut sm">${lc?`Last closed ${lc.closed} · closure ${lc.number}`:'Never opened'}</div></div></div>`}
     ${can('cash') ? `
     <div class="vari"><span>Expected float <span class="mut xs">${suggestedFloatWhy()}</span></span><b class="num">${fmt(exp)}</b></div>
     <div class="fld"><label>Count the cash in the drawer now</label><input class="in big" data-open="counted" value="${S.openForm.counted??''}" placeholder="${exp.toFixed(2)}" inputmode="decimal"></div>
@@ -648,7 +701,7 @@ function renderCounting(){
   const ses=S.session; const exp=expected(ses); const blind=!can('reports');
   const counted = parseFloat(ses.counted.cash); const has=!isNaN(counted); const v = has? +(counted-exp).toFixed(2) : null;
   const overT = has && Math.abs(v) > S.register.threshold;
-  return `<div class="row"><div class="grow"><div class="row" style="gap:8px"><span class="b" style="font-size:16px">${S.register.name}</span><span class="pill count dotp">Counting</span>${!S.online?`<span class="pill bad">${I.cloudOff} Offline</span>`:''}</div><div class="mut sm">Since ${ses.countingAt} · no sales until it reopens</div></div>${can('cash')?`<button class="btn sm" data-act="resume">Back to selling</button>`:''}</div>
+  return `<div class="row"><div class="grow">${noHeader()?'':`<div class="row" style="gap:8px"><span class="b" style="font-size:16px">${S.register.name}</span><span class="pill count dotp">Counting</span>${!S.online?`<span class="pill bad">${I.cloudOff} Offline</span>`:''}</div>`}<div class="mut sm">Counting since ${ses.countingAt} · no sales until it reopens</div></div>${can('cash')?`<button class="btn sm" data-act="resume">Back to selling</button>`:''}</div>
     ${!S.online&&ses.unsyncedN?`<div class="alert e">${I.cloudOff} ${ses.unsyncedN} sales (${fmt(ses.unsyncedTotal)}) are not on the server yet. The closure will say so.</div>`:''}
     <div class="card"><div class="card-h">Count the drawer <span class="sub">everything in it, float included</span></div>
       <div class="card-b stack">

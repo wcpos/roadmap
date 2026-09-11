@@ -54,6 +54,16 @@ What Paul's walk-through of the first cut changed, and the defaults he accepted 
 6. **First sign-in names the register on the POS screen**, not on the store picker (default accepted).
 7. Questions from the first cut that this settles: landing page after sign-in (POS), menu position and icon (none), the sessions-off state (nothing shows), back-to-selling (exists).
 
+## No title bar (Paul's suggestion, 2026-09-11 evening)
+
+Strip → **Header**. *Title bar* is the app as today. The three *No bar* variants remove the app's title bar and move the store name, online dot, notifications and user into the bar above the cart, which then exists in **every** state (set up, closed, open, counting, overdue), not only while open:
+
+- **A · one line** — `[drawer] Front counter [Open] £480.80 › … ● 🔔 DC ▾`. The store name does not fit beside the register at cart width, so it moves under the avatar menu. The gate cards drop their own heading because the bar carries it.
+- **B · two lines** — a store row (`UK Store … ● 🔔 DC`) above a register row (`[drawer] Front counter [Open] £480.80 ›`). Costs ~34 px; keeps "where and who" apart from "the drawer".
+- **C · split** — chrome sits on the product search row (`UK Store ● 🔔 DC`) and the bar carries the register alone. Phone falls back to A because the search row is on the other tab.
+
+On phone the hamburger moves into the bar. Reports gets a page bar (`Reports … UK Store ● 🔔 DC`). The rail gains a logo tile so it has a top. Captures: `screens/header/{bar,A,B,C}-*`; `node shoot-header.js` regenerates them (run it after `shoot.js`, which clears `screens/`).
+
 ## Questions still open
 
 Listed at the foot of the page: where the bar sits (cart column vs app header); products while closed (browsable vs dimmed vs no gate at all); opening-float semantics; blind count after close; card counted at close; where register settings live.
