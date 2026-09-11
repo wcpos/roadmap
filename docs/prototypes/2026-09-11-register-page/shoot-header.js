@@ -13,7 +13,7 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   const shot = async (n) => { await page.locator('#frame').screenshot({ path: path.join(OUT, n + '.png'), animations: 'disabled' }); console.log('shot', n); };
   const set = (k, v) => page.click(`.strip button[data-set="${k}"][data-v="${v}"]`);
   const scn = (v) => page.click(`.strip button[data-scn="${v}"]`);
-  for (const h of ['bar','A','B','C']) {
+  for (const h of ['bar','D','E','A','B','C']) {
     await set('viewport','tablet'); await set('header', h);
     await scn('open'); await shot(`${h}-tablet-open`);
     await scn('closed'); await shot(`${h}-tablet-closed`);
@@ -23,6 +23,12 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
     await set('viewport','phone');
     await scn('open'); await shot(`${h}-phone-open`);
     await scn('closed'); await shot(`${h}-phone-closed`);
+  }
+  // D/E: quiet vs alerting, offline pill, phone hamburger dot
+  for (const h of ['D','E']) {
+    await set('viewport','tablet'); await set('header',h); await set('unread','0'); await scn('open'); await shot(`${h}-tablet-open-quiet`);
+    await set('unread','2'); await set('online','false'); await shot(`${h}-tablet-open-offline`); await set('online','true');
+    await set('viewport','phone'); await scn('open'); await shot(`${h}-phone-open-alert`); await set('online','false'); await shot(`${h}-phone-open-offline`); await set('online','true');
   }
   await set('viewport','tablet'); await set('header','A'); await scn('open');
   await page.click('[data-act="openPanel"]'); await shot('A-tablet-panel');

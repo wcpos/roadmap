@@ -15,20 +15,22 @@ iframe.t{width:1182px;height:762px}
 iframe.p{width:392px;height:782px}
 .note{margin:4px 24px 30px;font-size:13px;color:#4b5563;max-width:110ch}
 </style></head><body>
-<div class="top"><b>State</b><span class="seg" id="scn"></span><b>Width</b><span class="seg" id="vp"></span><span style="margin-left:auto;color:#9ca3af">Each frame is the live prototype; click inside them.</span></div>
+<div class="top"><b>State</b><span class="seg" id="scn"></span><b>Width</b><span class="seg" id="vp"></span><b>Alerts</b><span class="seg" id="al"></span><b>Network</b><span class="seg" id="net"></span><span style="margin-left:auto;color:#9ca3af">Each frame is the live prototype; click inside them.</span></div>
 <div id="out"></div>
 <script>
-const V=[['bar','Title bar — as today'],['A','A · one line — chrome joins the register bar; store under the avatar'],['B','B · two lines — store row over register row'],['C','C · split — chrome on the search row, register alone on the bar']];
-let scn='open', vp='tablet';
+const V=[['bar','Title bar — as today'],['D','D · rail — bar is the register only; bell with count and the cashier avatar live in the rail; Offline is a pill only while offline'],['E','E · cashier on bar — as D, but the cashier avatar sits on the bar because the session records who acted'],['A','A · one line — chrome joins the register bar; store under the avatar'],['B','B · two lines — store row over register row'],['C','C · split — chrome on the search row, register alone on the bar']];
+let scn='open', vp='tablet', unread=2, online=true;
 function build(){
   document.getElementById('scn').innerHTML=[['new','First sign-in'],['closed','Register closed'],['open','Session open'],['counting','Counting'],['overdue','Overdue']].map(([v,l])=>`<button class="${scn===v?'on':''}" data-scn="${v}">${l}</button>`).join('');
   document.getElementById('vp').innerHTML=[['tablet','Tablet'],['phone','Phone']].map(([v,l])=>`<button class="${vp===v?'on':''}" data-vp="${v}">${l}</button>`).join('');
-  const cls=vp==='tablet'?'t':'p';
+  document.getElementById('al').innerHTML=[[0,'quiet'],[2,'2 unread']].map(([v,l])=>`<button class="${unread===v?'on':''}" data-al="${v}">${l}</button>`).join('');
+  document.getElementById('net').innerHTML=[[true,'online'],[false,'offline']].map(([v,l])=>`<button class="${online===v?'on':''}" data-net="${v}">${l}</button>`).join('');
+  const cls=vp==='tablet'?'t':'p'; const q=`&unread=${unread}&online=${online}`;
   document.getElementById('out').innerHTML = vp==='tablet'
-    ? V.map(([h,l])=>`<h2>${l}</h2><div class="row"><iframe class="${cls}" src="index.html?embed=1&header=${h}&viewport=${vp}&scn=${scn}"></iframe></div>`).join('')
-    : `<h2>Phone <span>— title bar, then A, B, C</span></h2><div class="row">${V.map(([h])=>`<iframe class="${cls}" src="index.html?embed=1&header=${h}&viewport=${vp}&scn=${scn}"></iframe>`).join('')}</div>`;
+    ? V.map(([h,l])=>`<h2>${l}</h2><div class="row"><iframe class="${cls}" src="index.html?embed=1&header=${h}&viewport=${vp}&scn=${scn}${q}"></iframe></div>`).join('')
+    : `<h2>Phone <span>— title bar, then A, B, C</span></h2><div class="row">${V.map(([h])=>`<iframe class="${cls}" src="index.html?embed=1&header=${h}&viewport=${vp}&scn=${scn}${q}"></iframe>`).join('')}</div>`;
 }
-document.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; if(b.dataset.scn) scn=b.dataset.scn; if(b.dataset.vp) vp=b.dataset.vp; build();});
+document.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; if(b.dataset.scn) scn=b.dataset.scn; if(b.dataset.vp) vp=b.dataset.vp; if(b.dataset.al!==undefined) unread=+b.dataset.al; if(b.dataset.net!==undefined) online=b.dataset.net==='true'; build();});
 build();
 </script>
 </body></html>

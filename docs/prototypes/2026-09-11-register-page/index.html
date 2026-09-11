@@ -127,6 +127,23 @@ a{color:var(--primary)}
 .pagebar .ttl2{font-size:16px;font-weight:700}
 .rail .logo{height:44px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--sidebar-border);margin-bottom:4px}
 .rail .logo i{width:22px;height:22px;border-radius:6px;background:#4da3ff;display:block}
+.rail .it .cnt{position:absolute;top:8px;right:9px;min-width:15px;height:15px;border-radius:8px;background:var(--destructive);color:#fff;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid var(--sidebar)}
+.rail .it.avatar{height:56px}
+.rail .it.avatar .av{width:28px;height:28px;border-radius:50%;background:#e0e5eb;color:#142a41;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.regbar.quiet{height:48px;padding:0 12px;background:#fff;cursor:default;white-space:nowrap}
+.regbar.quiet .reg{display:flex;align-items:center;gap:8px;cursor:pointer;flex:1;min-width:0;height:40px;border-radius:6px;padding:0 4px;margin:0 -4px}
+.regbar.quiet .reg:hover{background:#eef3f8}
+.regbar.quiet .reg .b{min-width:0;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis}
+.regbar.quiet .reg .pill,.regbar.quiet .reg .exp,.regbar.quiet .reg .chev,.regbar.quiet .reg .mut{flex:none}
+.regbar.quiet .ic{width:26px;height:26px;border-radius:6px;background:var(--sidebar);color:#e0e5eb;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.regbar.quiet.warn .ic{background:var(--warning)}
+.regbar.quiet .exp{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:600}
+.regbar.quiet .avbtn{width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;margin-right:-8px;flex:none;cursor:pointer;border-radius:8px}
+.regbar.quiet .avbtn:hover{background:#eef3f8}
+.regbar.quiet .avbtn .av{width:28px;height:28px;border-radius:50%;background:var(--sidebar);color:#e0e5eb;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.regbar .burger.dot::after{content:"";position:absolute;margin:-16px 0 0 14px;width:8px;height:8px;border-radius:50%;background:var(--destructive);border:2px solid #fff}
+.pill.off{background:#fff1e6;color:var(--warning)}
+.tabbar .av{width:22px;height:22px;border-radius:50%;background:var(--sidebar);color:#e0e5eb;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700}
 .gatecard{padding:14px;display:flex;flex-direction:column;gap:12px;overflow:auto;flex:1}
 .gatecard .head{display:flex;align-items:center;gap:10px}
 .gatecard .head .ic{width:40px;height:40px;border-radius:10px;background:var(--sidebar);color:#e0e5eb;display:inline-flex;align-items:center;justify-content:center;flex:none}
@@ -308,6 +325,7 @@ body.embed .stage{padding:0}
       <ul>
         <li><b>The gate</b> — <i>Register closed</i>: the cart column is the Open register card, with the float pair inline (expected, then what you counted). Products stay browsable for price checks; tapping one logs why nothing was added. Is the card the right size, and is the last closure the right thing to see under it?</li>
         <li><b>No title bar</b> — Header → <i>No bar</i>: the app's title bar goes and the store name, online dot, notifications and user move into the bar above the cart, which is now there in every state. <b>A</b> one line (the store name moves under the avatar menu; there is no room for it beside the register at cart width); <b>B</b> two lines (store row, then register row); <b>C</b> chrome on the search row, register alone on the bar (phone falls back to A). Reports gets a page bar; the rail gets a logo tile.</li>
+        <li><b>D · rail</b> and <b>E · cashier on bar</b> (round two, from Mobbin's work-tool conventions): the bar carries the register only — name, store (Pro), status, expected, chevron — at 48 pt. <b>Offline</b> is an amber pill in the bar that exists only while offline; online is the absence of a badge (Substack, Aboard). <b>Notifications</b> are a bell in the rail's bottom cluster with a count badge only when there is a count (Gorgias, Hootsuite, Patreon). <b>Identity</b>: D puts a 28 px avatar as the rail's last item (Hootsuite, Shop, Fabric) that opens the user panel; E keeps the avatar on the bar because the session records who acted. No caret anywhere. Toggle <i>Alerts</i> to compare quiet vs alerting; Network → Offline for the pill.</li>
         <li><b>The bar</b> — <i>Session open</i>: one line at the top of the cart: register, status, expected cash (blind cashiers see none). Tap it for the panel. Overdue turns it amber with the close time. Would you rather it sat in the app header?</li>
         <li><b>The panel</b> — right panel on tablet, sheet on phone, the same overlay pattern the app is moving to. It is the old "Focus" layout: one number, the three cash actions, X-report, and the folds. Close register is in its footer.</li>
         <li><b>Counting</b> — the cart column becomes the count; the product grid is dimmed with one line. <i>Back to selling</i> returns the cart. Nothing to navigate.</li>
@@ -350,7 +368,7 @@ const PRODUCTS = [['Flat white',3.2],['Sourdough loaf',4.2],['Tote bag',12],['Oa
 const CART = [['Flat white',2,3.2],['Sourdough loaf',1,4.2],['Tote bag',1,12]];
 
 const S = {
-  viewport:'tablet', page:'pos', floatMode:'default', phoneTab:'cart', header:'bar',
+  viewport:'tablet', page:'pos', floatMode:'default', phoneTab:'cart', header:'bar', unread:2,
   sessionsOn:true, pro:true, online:true,
   caps:{ cash:true, reports:true, closures:true },
   now:'17:42', today:'Thu 11 Sep',
@@ -512,7 +530,8 @@ function renderStrip(){
   const ck = (k,l) => `<label class="ck"><input type="checkbox" data-cap="${k}" ${S.caps[k]?'checked':''}> ${l}</label>`;
   document.getElementById('strip').innerHTML = `
     <div class="g"><b>Width</b>${seg('viewport',[['tablet','Tablet'],['phone','Phone']])}</div>
-    <div class="g"><b>Header</b>${seg('header',[['bar','Title bar'],['A','No bar · A one line'],['B','No bar · B two lines'],['C','No bar · C split']])}</div>
+    <div class="g"><b>Header</b>${seg('header',[['bar','Title bar'],['D','No bar · D rail'],['E','No bar · E cashier on bar'],['A','A'],['B','B'],['C','C']])}</div>
+    <div class="g"><b>Alerts</b>${seg('unread',[[0,'quiet'],[2,'2 unread']])}</div>
     <div class="g"><b>Page</b>${seg('page',[['pos','POS'],['reports','Reports']])}</div>
     <div class="g"><b>Jump to</b><span class="seg">${[['new','First sign-in'],['off','Sessions off'],['closed','Register closed'],['open','Session open'],['counting','Counting'],['overdue','Overdue']].map(([v,l])=>`<button data-scn="${v}">${l}</button>`).join('')}</span></div>
     <div class="g"><b>Can</b>${ck('cash','manage cash')}${ck('reports','view reports')}${ck('closures','manager override')}</div>
@@ -523,9 +542,11 @@ function renderStrip(){
 
 function renderRail(){
   const items = [['pos','POS'],['products','Products'],['orders','Orders'],['coupons','Coupons'],['customers','Customers'],['reports','Reports']];
-  const bottom = [['health','Store health'],['settings','Settings'],['support','Support']];
-  const it = ([k,l]) => `<div class="it ${S.page===k?'on':''}" ${['pos','reports'].includes(k)?`data-set="page" data-v="${k}"`:''}>${I[k]}<span class="tip">${l}</span></div>`;
-  return `<div class="rail">${noHeader()?`<div class="logo"><i></i></div>`:''}${items.map(it).join('')}<div class="sp"></div>${bottom.map(it).join('')}<div class="ver">v 1.11.0</div></div>`;
+  const de = S.header==='D'||S.header==='E';
+  const bottom = de ? [['bell','Notifications'],['health','Store health'],['settings','Settings'],['support','Support']] : [['health','Store health'],['settings','Settings'],['support','Support']];
+  const it = ([k,l]) => `<div class="it ${S.page===k?'on':''}" ${['pos','reports'].includes(k)?`data-set="page" data-v="${k}"`:''}>${k==='bell'?I.bell.replace('width="16" height="16"','width="20" height="20"'):I[k]}${k==='bell'&&S.unread?`<span class="cnt">${S.unread}</span>`:''}<span class="tip">${l}${k==='bell'&&S.unread?` · ${S.unread} unread`:''}</span></div>`;
+  const avatar = S.header==='D' ? `<div class="it avatar" title="Demo Cashier · UK Store"><span class="av">DC</span><span class="tip">Demo Cashier · UK Store · switch user, switch store, sign out</span></div>` : '';
+  return `<div class="rail">${noHeader()?`<div class="logo"><i></i></div>`:''}${items.map(it).join('')}<div class="sp"></div>${bottom.map(it).join('')}${avatar}<div class="ver">v 1.11.0</div></div>`;
 }
 
 function chrome(withStore=false){
@@ -544,7 +565,7 @@ function renderHeader(){
 function renderFrame(){
   const f = document.getElementById('frame');
   f.className = `frame ${S.viewport}`;
-  const content = S.page==='reports' ? `${noHeader()?`<div class="pagebar">${S.viewport==='phone'?`<span class="burger">${I.bars}</span>`:''}<span class="ttl2">Reports</span>${chrome(true)}</div>`:''}<div class="pad">${renderReports()}</div>` : renderPOS();
+  const content = S.page==='reports' ? `${noHeader()?`<div class="pagebar">${S.viewport==='phone'?`<span class="burger ${S.unread?'dot':''}">${I.bars}</span>`:''}<span class="ttl2">Reports</span>${(S.header==='D'||S.header==='E')?`<span class="chrome-r">${!S.online?`<span class="pill off">${I.cloudOff} Offline</span>`:''}${S.pro?`<span class="mut sm">${S.register.store}</span>`:''}${S.header==='E'?`<span class="av">DC</span>`:''}</span>`:chrome(true)}</div>`:''}<div class="pad">${renderReports()}</div>` : renderPOS();
   f.innerHTML = `${renderHeader()}<div class="body">${S.viewport==='tablet' ? renderRail() : ''}<div class="main">${!S.pro ? `<div class="upgrade"><span>Upgrade to WCPOS Pro</span><span>Learn more</span></div>` : ''}${content}${renderPanel()}${renderSheet()}</div></div>`;
 }
 
@@ -593,6 +614,15 @@ function renderTopBar(){
   const phone=S.viewport==='phone'; const st=regStatus(); const name=S.register.exists?S.register.name:'This device';
   const burger = phone ? `<span class="burger">${I.bars}</span>` : '';
   const regSeg = `<span class="reg" ${st.tap?'data-act="openPanel"':''}><span class="ic">${I.drawer}</span><span class="b">${name}</span>${st.pill}${st.exp?`<span class="exp">${st.exp}</span>`:''}${st.tap?`<span class="chev">${I.chev}</span>`:''}</span>`;
+  if (S.header==='D'||S.header==='E'){
+    const off = !S.online ? `<span class="pill off">${I.cloudOff} Offline</span>` : '';
+    const store = S.pro && !phone && S.online ? `<span class="mut">· ${S.register.store}</span>` : '';
+    const exp = st.exp && !(phone && !S.online) ? `<span class="exp">${st.exp}</span>` : '';
+    const seg = `<span class="reg" ${st.tap?'data-act="openPanel"':''}><span class="ic">${I.drawer}</span><span class="b">${name}</span>${store}${st.pill}${off}${exp}${st.tap?`<span class="chev">${I.chev}</span>`:''}</span>`;
+    const av = S.header==='E' ? `<span class="avbtn" title="Demo Cashier · switch user"><span class="av">DC</span></span>` : '';
+    const bg = phone ? `<span class="burger ${S.unread?'dot':''}">${I.bars}</span>` : '';
+    return `<div class="regbar quiet ${st.od?'warn':''}">${bg}${seg}${av}</div>`;
+  }
   if (S.header==='B') return `<div class="regbar2 ${st.od?'warn':''}"><div class="r1">${burger}<span class="b">${S.register.store}</span>${chrome(false)}</div><div class="r2" ${st.tap?'data-act="openPanel"':''}><span class="ic">${I.drawer}</span><span class="b">${name}</span>${st.pill}${st.exp?`<span class="exp">${st.exp}</span>`:''}${st.tap?`<span class="chev">${I.chev}</span>`:''}</div></div>`;
   if (S.header==='C' && !phone) return `<div class="regbar chrome ${st.od?'warn':''}">${regSeg}</div>`;
   return `<div class="regbar chrome ${st.od?'warn':''}">${burger}${regSeg}${chrome(S.header==='C')}</div>`;
@@ -867,7 +897,7 @@ function refocus(sel){ const n=document.querySelector(sel); if(n){ const pos=n.v
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-set],[data-scn],[data-act],[data-close],[data-closepanel]');
   if (!t) return;
-  if (t.dataset.set){ e.preventDefault(); let v=t.dataset.v; if (v==='true') v=true; if (v==='false') v=false; A.set(t.dataset.set, v); S.selClosure=null; return render(); }
+  if (t.dataset.set){ e.preventDefault(); let v=t.dataset.v; if (v==='true') v=true; if (v==='false') v=false; if (t.dataset.set==='unread') v=+v; A.set(t.dataset.set, v); S.selClosure=null; return render(); }
   if (t.dataset.scn){ A.scenario(t.dataset.scn); return render(); }
   if (t.dataset.close && e.target===t){ A.closeSheet(); return render(); }
   if (t.dataset.closepanel && e.target===t){ A.closePanel(); return render(); }
@@ -910,6 +940,7 @@ document.addEventListener('input', e => {
 (function(){ const q=new URLSearchParams(location.search);
   if(q.get('scn')) A.scenario(q.get('scn'));
   for (const k of ['header','viewport','page']) if(q.get(k)) S[k]=q.get(k);
+  if(q.get('unread')!==null) S.unread=+q.get('unread'); if(q.get('online')!==null) S.online=q.get('online')==='true';
   if(q.get('embed')) document.body.classList.add('embed');
 })();
 render();

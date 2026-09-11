@@ -62,6 +62,13 @@ Strip → **Header**. *Title bar* is the app as today. The three *No bar* varian
 - **B · two lines** — a store row (`UK Store … ● 🔔 DC`) above a register row (`[drawer] Front counter [Open] £480.80 ›`). Costs ~34 px; keeps "where and who" apart from "the drawer".
 - **C · split** — chrome sits on the product search row (`UK Store ● 🔔 DC`) and the bar carries the register alone. Phone falls back to A because the search row is on the other tab.
 
+**Round two (same evening), after "online status somewhere else, notifications in the sidebar, no cashier dropdown"** — two more variants built from Mobbin's work-tool conventions (see `mobbin-notes.md`, round two):
+
+- **D · rail** — the bar is the register only: drawer icon, name, store (Pro), status pill, expected cash, chevron, 48 pt tall. **Offline** is an amber pill in the bar that exists only while offline; online is the absence of a badge (rule 5: one badge, one place, top of the pane). **Notifications** are a bell in the rail's bottom cluster with a red count only when there is a count. **Identity** is a 28 px initials avatar as the rail's last item, no caret; tapping it opens the user panel (switch user, switch store, sign out). Phone: hamburger in the bar with a dot when unread; the offline pill replaces the amount, which is one tap away in the panel.
+- **E · cashier on bar** — as D, but the avatar sits at the right end of the bar (44 pt target, no caret) because the session records who acted and Switch User is a till action. The rail's bottom cluster is bell, health, settings, support.
+
+Strip → *Alerts* switches quiet (no badge anywhere) and 2 unread; *Network* → Offline shows the pill.
+
 On phone the hamburger moves into the bar. Reports gets a page bar (`Reports … UK Store ● 🔔 DC`). The rail gains a logo tile so it has a top. Captures: `screens/header/{bar,A,B,C}-*`; `node shoot-header.js` regenerates them (run it after `shoot.js`, which clears `screens/`).
 
 ## Questions still open

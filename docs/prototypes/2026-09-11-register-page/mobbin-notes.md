@@ -60,3 +60,37 @@ The bar already does this. One change: when overdue, colour the pill, not the wh
 3. **Denomination rows with steppers** replace the free-input grid. Same data, fewer mis-taps on a phone.
 
 Everything else above is a refinement of the second cut and can land in it without a ruling.
+
+## Round two (same evening) — no title bar: where offline, notifications and identity go
+
+Asked Mobbin the three placement questions directly instead of asking for POS screens. Seven searches, ~90 results, work tools preferred. Images viewed, not just descriptions.
+
+### Offline
+- **Substack editor** — https://mobbin.com/screens/9fd25f36-21d5-4081-bf84-91a254993ffd — a ~20 px amber `● Offline` pill top-left of the pane's toolbar row; nothing blocked; quiet state is *no pill*.
+- **Aboard** — https://mobbin.com/screens/304bebf4-8055-4ada-883b-24e938686783 — the only top chrome is a 24 px strip with a yellow "Trial mode · 1 day left" pill centred; the rail and content carry no alert.
+- **Asana / Podia / Alta** — a full-width tinted banner only where an action is actually blocked; **n8n** — a green toast on reconnect, then nothing.
+- **iOS (Particle, Alta, Qantas)** — a floating capsule under the status bar or a tinted banner between header and content; retry lives in the page body.
+
+Convention: **status is a small pill in the pane's top row while true, absent otherwise; a banner only where something is blocked.** This is rule 5 verbatim. So: no green dot anywhere. An amber `Offline` pill appears in the register bar only while offline. If a tender is blocked offline (card via server), that tender's tile says so, not the bar.
+
+### Notifications
+- **Gorgias** — https://mobbin.com/screens/6c590e83-4434-467e-ad4a-5bf202e11459 — dark ~40 px rail, bell third from top, unread = red 14 px circle with the count on the glyph's corner; panel opens flush against the rail.
+- **Hootsuite** (quiet) — https://mobbin.com/screens/997eeac9-7b55-46f2-87ca-d59e79dfb473 — bell at the *bottom* of the rail above help and avatar; no badge when nothing is unread.
+- **Patreon / Homerun / Copilot** — labelled sidebars put the count as a pill on the row; quiet rows have no pill.
+
+Convention: **rail bell in the bottom cluster; a count badge only when there is a count.** Done in D and E. Phone: a dot on the hamburger.
+
+### Identity, no caret
+- **Hootsuite** — https://mobbin.com/screens/155a6fa5-52e6-466e-b3b3-6333eb747dd6 — bottom cluster bell → help → avatar as the last item; clicking the avatar slides a 300 px account panel out beside the rail.
+- **Shop (Shopify)** — https://mobbin.com/screens/e759e521-b2e4-440b-8ef5-0f6532962be0 — 40 px rail, single initials avatar pinned bottom-left, no header row at all.
+- **Fabric** — https://mobbin.com/screens/8b1dee7d-68a4-4f99-b7ef-4f3eb374983f — avatar last in the rail with a corner dot as the only status signal.
+- **Patreon** — https://mobbin.com/flows/63dda702-ffb9-4b29-a69e-a58be8bf9ad9 — sidebar footer row (avatar, name, role) whose kebab opens a popover of accounts with a check on the current one — the Switch User shape.
+- **Postman** — avatar with no caret opens a popover; the caret is not needed for discoverability on an avatar.
+
+Convention: **avatar as the rail's last item, opening a panel; no caret.** That is D. E moves the avatar to the bar for one reason only: the session records who acted, and the till is where a second cashier steps in. Both are conventional; the choice is whether "who is ringing" is till state or app state.
+
+### The layout itself
+- **Fresha POS** — https://mobbin.com/screens/bcbc7fb0-545b-42c7-9451-608eef1f5747 — dark icon rail, catalogue centre, ~240 px cart column right, **no app bar**; the only header is a 24 px breadcrumb `Cart › Tip › Payment` at the top of the centre pane that doubles as a step strip.
+- **Square (web)** — https://mobbin.com/screens/f4cd018c-ee3c-4fb6-93db-6599ffbcc115 — one 48 px strip: × and settings left, running total centred, Create order / Reset / Charge right; alerts are an inline peach banner, never in the strip.
+
+Convention: **the POS screen's only chrome is one thin strip carrying the sale's state**, and alerts go inline in the pane. Removing our title bar is the conventional move, not the radical one.
