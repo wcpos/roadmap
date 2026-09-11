@@ -120,7 +120,7 @@ Recommendation after 1 was dropped: **3** and **4** into the design, **2** as a 
 
 The app's cart column has a tab row: one tab per open order (`Cart: £22.60`, from `pos_cart.cart`), a `+` tab for a new order, scrollable; then the card with `Customer: [Guest]`, the add-items `+` and the cart settings gear, the lines, totals, a Note / Meta / Save row, and Void beside Checkout. The prototype now rehosts that (strip → *Open orders* 1 / 2; *Cart* → new (empty) selects the `+` tab). Two placements, `ideas.html` top:
 
-- **Their own row** — under the bar, exactly as the app today. Bar = place + drawer icon + avatar; tabs = orders. Two strips.
+- **Bottom** — under the card, as the app renders it today (`OpenOrderTabs` after the card in `pos/cart/index.tsx`). **Top** — under the bar. Top or bottom is a user choice (Paul, 2026-09-11 late). Either way the bar = place + drawer icon + avatar; tabs = orders.
 - **In the bar** — the tabs share the bar's row: tabs on the left, status pill, drawer icon and avatar on the right; the store name moves under the avatar. One strip fewer. On phone the hamburger sits left of the tabs.
 
 Closing with open orders is allowed (ruling above); the tabs stay when the register closes and the count replaces the card.

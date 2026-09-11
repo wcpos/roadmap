@@ -106,6 +106,10 @@ a{color:var(--primary)}
 .tabsrow .chrome .store{font-weight:600;cursor:pointer;padding:6px;margin:-6px;border-radius:6px}
 .tabsrow .chrome .avbtn{width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;margin-right:-6px}
 .tabsrow .chrome .avbtn .av{width:28px;height:28px;border-radius:50%;background:var(--sidebar);color:#e0e5eb;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.tabsrow.bottom{padding:0 8px 6px;border-bottom:0;border-top:1px solid var(--border);align-items:flex-start}
+.tabsrow.bottom .scroll{align-items:flex-start}
+.tabsrow.bottom .tab{border-radius:0 0 8px 8px;border:1px solid var(--border);border-top:0;margin-bottom:0;margin-top:-1px}
+.tabsrow.bottom .tab.on{border-top:1px solid #fff}
 .cart-f2{padding:8px 12px 0;display:flex;gap:8px}
 .cart-f2 .btn{flex:1;height:36px}
 .cart-f .btn.od{flex:0 0 auto}
@@ -452,7 +456,7 @@ const S = {
   sessionsOn:true, pro:true, online:true,
   caps:{ cash:true, reports:true, closures:true },
   now:'17:42', today:'Thu 11 Sep',
-  idea:'none', tabsPos:'below', cartEmpty:false, orders:1, currentOrder:'a', stores:2, registers:3, register:{ exists:true, name:'Front counter', store:'UK Store', closeTime:'18:00', threshold:5, printer:'Epson TM-m30', defaultFloat:200 },
+  idea:'none', tabsPos:'bottom', cartEmpty:false, orders:1, currentOrder:'a', stores:2, registers:3, register:{ exists:true, name:'Front counter', store:'UK Store', closeTime:'18:00', threshold:5, printer:'Epson TM-m30', defaultFloat:200 },
   session:null,
   closures:[],
   sheet:null, panel:false, toast:null, settle:null, openForm:{}, setupName:'Front counter', reportsTab:'sales', selClosure:null, countOpen:{}, log:[]
@@ -622,7 +626,7 @@ function renderStrip(){
   document.getElementById('strip').innerHTML = `
     <div class="g"><b>Width</b>${seg('viewport',[['tablet','Tablet'],['phone','Phone']])}</div>
     <div class="g"><b>Idea</b>${seg('idea',[['none','E as chosen'],['autoopen','2 · first cash sale opens'],['timed','3 · button knows the time'],['tapcount','4 · tap to count'],['drawer','5 · the drawer is a drawer']])}</div>
-    <div class="g"><b>Cart tabs</b>${seg('tabsPos',[['below','their own row'],['bar','in the bar']])}</div>
+    <div class="g"><b>Cart tabs</b>${seg('tabsPos',[['bottom','bottom (app today)'],['top','top'],['bar','in the bar']])}</div>
     <div class="g"><b>Cart</b>${seg('cartEmpty',[[false,'an order'],[true,'new (empty)']])}</div>
     <div class="g"><b>Open orders</b>${seg('orders',[[1,'1'],[2,'2']])}</div>
     <div class="g"><b>Stores</b>${seg('stores',[[1,'1'],[2,'2 (Pro)']])}</div>
@@ -739,16 +743,17 @@ function renderTopBar(){
 }
 
 function openOrders(){ return ORDERS.slice(0, S.orders); }
-function renderTabsRow(withChrome){
+function renderTabsRow(withChrome, pos='top'){
   const st=regStatus(); const phone=S.viewport==='phone';
   const tabs = openOrders().map(o=>`<span class="tab ${S.currentOrder===o.id?'on':''}" data-act="selOrder" data-id="${o.id}">Cart: ${fmt(orderTotal(o))}</span>`).join('')
     + `<span class="tab plus ${S.currentOrder==='new'?'on':''}" data-act="selOrder" data-id="new" title="New order">+</span>`;
   const chrome = withChrome ? `<span class="chrome">${st.pill}${!S.online?`<span class="pill off">${I.cloudOff} Offline</span>`:''}${phone?'':`<span class="store" ${S.stores>1?'data-act="openSheet" data-type="stores"':''}>${S.registers>1?S.register.name+' · ':''}${S.register.store}</span>`}<span class="avbtn" data-act="openSheet" data-type="user"><span class="av">DC</span></span></span>` : '';
-  return `<div class="tabsrow">${withChrome&&phone?`<span class="burger ${S.unread?'dot':''}" style="width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:6px">${I.bars}</span>`:''}<span class="scroll">${tabs}</span>${chrome}</div>`;
+  return `<div class="tabsrow ${pos}">${withChrome&&phone?`<span class="burger ${S.unread?'dot':''}" style="width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:6px">${I.bars}</span>`:''}<span class="scroll">${tabs}</span>${chrome}</div>`;
 }
 function renderCart(){
   const ses=S.session; const cur = openOrders().find(o=>o.id===S.currentOrder); const items = (S.currentOrder==='new' || !cur) ? [] : cur.items; const sub=items.reduce((a,[,q,p])=>a+q*p,0); const tax=+(sub-sub/1.2).toFixed(2);
-  const tabsRow = S.tabsPos==='bar' && S.idea!=='empty' ? '' : renderTabsRow(S.idea==='empty');
+  const tabsRow = S.idea==='empty' ? renderTabsRow(true) : (S.tabsPos==='top' ? renderTabsRow(false,'top') : '');
+  const tabsBottom = S.idea!=='empty' && S.tabsPos==='bottom' ? renderTabsRow(false,'bottom') : '';
   const head = `<div class="cart-h"><span class="mut sm">Customer:</span><span class="cust">Guest ▾</span><span class="grow"></span><button class="btn sm g">+</button><button class="btn sm g">${I.settings.replace('20','16').replace('20','16')}</button></div>`;
   if (S.idea==='empty' && S.sessionsOn && ses && ses.state==='open' && !items.length) return `${tabsRow}${renderRegisterBody(true)}`;
   const autoNote = S.idea==='autoopen' && S.sessionsOn && !ses ? `<div class="mut sm" style="padding:8px 12px;border-bottom:1px solid var(--border)">Register opens with the first cash sale · float ${fmt(suggestedFloat())} ${S.floatMode==='default'?'default':'carried'}</div>` : '';
@@ -761,7 +766,7 @@ function renderCart(){
       ${items.length ? items.map(([n,q,p])=>`<div class="cartline"><span class="q">${q}</span><span class="grow">${n}</span><span class="money">${fmt(q*p)}</span></div>`).join('') : `<div class="emptycart">${I.cart.replace('20','36').replace('20','36')}<span class="sm">${timed?`Past ${S.register.closeTime} · nothing in the cart`:'Tap a product to start a sale'}</span></div>`}
       ${items.length?`<div class="totals"><div class="r2 mut"><span>Subtotal</span><span class="num">${fmt(sub-tax)}</span></div><div class="r2 mut"><span>VAT 20%</span><span class="num">${fmt(tax)}</span></div><div class="r2 big"><span>Total</span><span class="num">${fmt(sub)}</span></div></div>`:''}
     </div>
-    ${footer}`;
+    ${footer}${tabsBottom}`;
 }
 
 /* shared register body: the panel's content, also the empty cart in idea 1 */
