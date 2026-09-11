@@ -186,8 +186,9 @@ Applying the rules: one leading amount; a fixed three-column grid of equal tiles
 gateways; kind as an icon, title as the only text; unavailable methods folded into one row with
 their reasons; the keypad opening under the grid with the change line updating as digits are
 typed; a close affordance instead of a left arrow because the pane is on the left; the paragraph
-gone. The mockups in `docs/prototypes/2026-09-11-tender-pane-mockups/` predate these rules and
-are the next thing to be reworked against them.
+gone; once a method is chosen the grid folds to a chip row so the keypad and Take stay on
+screen. The reworked mockup is `docs/prototypes/2026-09-11-tender-pane-mockups/index.html`
+(PR #259); the pre-rules first round is kept beside it as `index-v1-three-layouts.html`.
 
 ## Sources
 
