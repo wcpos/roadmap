@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Printer setup — design pass (2026-09-05)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{--bg:#f4f5f7;--panel:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--blue:#0b6bcb;--blue-soft:#e8f1fb;--ok:#15803d;--ok-soft:#e6f4ea;--warn:#b45309;--warn-soft:#fdf3e1;--bad:#b91c1c;--bad-soft:#fdecec;--radius:12px}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,sans-serif;color:var(--ink)}
+  header{padding:22px 28px 6px}
+  header h1{margin:0;font-size:20px} header p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:24px;padding:22px 28px 40px}
+  .screen{display:flex;flex-direction:column;gap:8px}
+  .cap{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .dialog{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 30px rgba(15,23,42,.08);padding:22px 24px 18px;display:flex;flex-direction:column;gap:18px;position:relative}
+  .dialog .title{display:flex;justify-content:space-between;align-items:center}
+  .dialog .title h2{margin:0;font-size:18px;font-weight:650}
+  .x{color:var(--muted);font-size:20px;line-height:1}
+  .status{display:flex;align-items:center;gap:12px;font-size:19px;font-weight:600}.status span.t{display:inline}.status b{font-weight:750}
+  .spin{width:18px;height:18px;border:2.5px solid var(--line);border-top-color:var(--blue);border-radius:50%;animation:s 1s linear infinite;flex:none}
+  @keyframes s{to{transform:rotate(360deg)}}
+  .help{color:var(--muted);font-size:14px;margin:-8px 0 0 30px}
+  .lede{color:var(--muted);margin:6px 0 0}
+  h3{margin:0;font-size:17px;font-weight:650}
+  .card{border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:14px;cursor:pointer;background:#fff}
+  .card:hover{border-color:#94a3b8}
+  .card .name{font-weight:650;font-size:16px}
+  .card .sub{color:var(--muted);font-size:13px;margin-top:2px}
+  .card.muted{cursor:default;background:#fafafa}
+  .pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;white-space:nowrap}
+  .pill i{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
+  .pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
+  .src{color:var(--muted);font-size:12px;border:1px solid var(--line);border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:1px}
+  .headline{font-size:24px;font-weight:700;letter-spacing:-.01em;margin:0}
+  .meta{color:var(--muted);font-size:14px;margin-top:2px}
+  .answers{display:flex;flex-direction:column;gap:10px}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:12px 14px;font:inherit;font-weight:600;text-align:left;cursor:pointer;display:flex;align-items:center;gap:10px}
+  .btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+  .btn.sm{padding:8px 12px;font-size:14px;display:inline-flex;width:auto}
+  .btn .ic{width:22px;text-align:center}
+  .foot{color:var(--muted);font-size:12px}
+  .empty ul{margin:0;padding-left:18px;color:var(--muted)} .empty li{margin:4px 0}
+  .trouble{margin:0;padding-left:18px;color:var(--ink)} .trouble li{margin:8px 0} .trouble b{font-weight:650}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .finish{text-align:center;padding:26px 0 8px;display:flex;flex-direction:column;align-items:center;gap:8px}
+  .finish .tick{width:56px;height:56px;border-radius:50%;background:var(--ok-soft);color:var(--ok);display:flex;align-items:center;justify-content:center;font-size:28px}
+  details{margin-top:4px;border-top:1px solid var(--line);padding-top:12px}
+  summary{cursor:pointer;color:var(--muted);font-size:14px;font-weight:600;list-style:none;display:flex;align-items:center;gap:6px}
+  summary::before{content:"▸";font-size:12px} details[open] summary::before{content:"▾"}
+  .fields{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin-top:12px}
+  .fields .full{grid-column:1/-1}
+  label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px}
+  input,select{width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 10px;font:inherit;background:#fff}
+  .toggles{display:flex;flex-direction:column;gap:8px;margin-top:12px;font-size:14px}
+  .toggles label{display:flex;align-items:center;gap:10px;font-weight:500;color:var(--ink);font-size:14px}
+  .sw{width:34px;height:20px;border-radius:999px;background:var(--blue);position:relative;flex:none} .sw::after{content:"";position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:#fff}
+  .sw.off{background:#cbd5e1} .sw.off::after{right:auto;left:2px}
+  .footer{display:flex;justify-content:center;gap:10px}
+  .err{border:1px solid #fecaca;background:var(--bad-soft);color:var(--bad);border-radius:10px;padding:10px 12px;font-size:14px}
+  .note{background:#fff;border:1px dashed var(--line);border-radius:12px;padding:14px 16px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Printer setup — design pass</h1>
+  <p>The scan-first "Add printer" (Variant C from 2 Sep) as it should look, one dialog, one status line, lists only when there is a choice or a problem. Static mockup; the copy is the shipped M1 copy where it exists. Sources: USB and paired-Bluetooth printers appear on their own; BLE printers use the visible "Find a Bluetooth printer" entry point, including while scanning.</p>
+</header>
+<div class="grid">
+
+  <div class="screen"><div class="cap">1 · Scanning (opens like this; USB and paired printers appear at once, Wi-Fi keeps looking)</div>
+    <div class="dialog">
+      <div class="title"><h2>Add printer</h2><span class="x">×</span></div>
+      <div class="status"><span class="spin"></span>Looking for printers on USB, Bluetooth and Wi-Fi…</div>
+      <div class="card"><div><div class="name">USB Portable Printer</div><div class="sub">Generic ESC/POS <span class="src">USB</span></div></div><span class="pill ok"><i></i>Ready to print</span></div>
+      <div class="row"><button class="btn sm">Find a Bluetooth printer</button><button class="btn sm">Enter an address</button></div>
+      <details><summary>Options</summary></details>
+    </div>
+  </div>
+
+  <div class="screen"><div class="cap">1b · Bluetooth-only shop: tap the button, the system chooser lists nearby printers</div>
+    <div class="dialog">
+      <div class="title"><h2>Add printer</h2><span class="x">×</span></div>
+      <div class="status"><span class="spin"></span>Looking for printers on USB, Bluetooth and Wi-Fi…</div>
+      <div class="row"><button class="btn sm primary">Find a Bluetooth printer</button><button class="btn sm">Enter an address</button></div>
+      <div class="help">Searching for Bluetooth printers…</div>
+      <div class="card" style="border-color:var(--blue);background:var(--blue-soft)"><div><div class="name">BlueTooth Printer</div></div><span class="pill ok"><i></i>Likely a printer</span></div>
+      <div class="card"><div><div class="name">Paul’s AirPods</div></div></div>
+      <div class="card"><div><div class="name">LG TV</div></div></div>
+      <button class="btn sm" style="border:0;color:var(--blue);padding-left:0">Show 23 unnamed devices</button>
+      <details><summary>Options</summary></details>
+    </div>
+  </div>
+
+  <div class="screen"><div class="cap">2 · Found one → pre-selected, the test page is your tap</div>
+    <div class="dialog">
+      <div class="title"><h2>Add printer</h2><span class="x">×</span></div>
+      <h3>Found your printer</h3>
+      <div class="card" style="border-color:var(--blue);background:var(--blue-soft)"><div><div class="name">TM-m30III</div><div class="sub">192.168.1.131 · Epson <span class="src">Wi-Fi</span></div></div><span class="pill ok"><i></i>Ready to print</span></div>
+      <button class="btn primary"><span class="ic">⎙</span>Print a test page</button>
+      <div class="row"><button class="btn sm">Find a Bluetooth printer</button><button class="btn sm">Enter an address</button></div>
+      <details><summary>Options</summary></details>
+    </div>
+  </div>
+
+  <div class="screen"><div class="cap">2a · Width unknown (Bluetooth / USB generic): ask the paper before the first page</div>
+    <div class="dialog">
+      <div class="title"><h2>Add printer</h2><span class="x">×</span></div>
+      <h3>Found your printer</h3>
+      <div class="card" style="border-color:var(--blue);background:var(--blue-soft)"><div><div class="name">BlueTooth Printer</div><div class="sub">Generic ESC/POS <span class="src">Bluetooth</span></div></div><span class="pill ok"><i></i>Ready to print</span></div>
+      <div class="row"><span class="foot" style="align-self:center">Paper width</span><button class="btn sm primary">58 mm</button><button class="btn sm">80 mm</button></div>
+      <button class="btn primary"><span class="ic">⎙</span>Print a test page</button>
+      <div class="row"><button class="btn sm">Find a Bluetooth printer</button><button class="btn sm">Enter an address</button></div>
+      <details><summary>Options</summary></details>
+    </div>
+  </div>
+
+  <div class="screen"><div class="cap">2b · Printing (after the tap)</div>
+    <div class="dialog">
+      <div class="title"><h2>Add printer</h2><span class="x">×</span></div>
+      <div class="status"><span class="spin"></span><span class="t">Found <b>TM-m30III</b>. Printing a test page…</span></div>
+      <div class="help">Look at the printer.</div>
+      <details><summary>Options</summary></details>
+    </div>
+  </div>
+
+  <div class="screen"><div class="cap">3 · The question</div>
+    <div class="dialog">
+      <div class="title"><h2>Add printer</h2><span class="x">×</span></div>
+      <div><p class="headline">TM-m30III</p><div class="meta">192.168.1.131 · Epson · secure connection <span class="src">Wi-Fi</span></div></div>
+      <h3>Did the test page print?</h3>
+      <div class="answers">
+        <button class="btn primary"><span class="ic">✓</span>Yes, and it looks right</button>
+        <button class="btn"><span class="ic">↔</span>Yes, but the ruler stops before the edge</button>
+        <button class="btn"><span class="ic">✕</span>Nothing came out</button>
+      </div>
+      <div class="foot">Test page 1 · 48 characters per line</div>
+      <details><summary>Options</summary></details>
+    </div>
+  </div>
+
+  <div class="screen"><div class="cap">3b · "Ruler stops before the edge" → pick the paper, then it prints again</div>
+    <div class="dialog">
+      <div class="title"><h2>Add printer</h2><span class="x">×</span></div>
+      <div><p class="headline">BlueTooth Printer</p><div class="meta">Bluetooth · Generic ESC/POS</div></div>
+      <h3>Which paper is in the printer?</h3>
+      <div class="answers">
+        <button class="btn primary">32 — 58 mm paper</button>
+        <button class="btn">42 — 80 mm, older printers</button>
+        <button class="btn">48 — 80 mm, most Epson &amp; Star</button>
+        <button class="btn">64 — 80 mm, small font</button>
+      </div>
+      <details><summary>Options</summary></details>
+    </div>
+  </div>
+
+  <div class="screen"><div class="cap">4 · Finished</div>
+    <div class="dialog">
+      <div class="title"><h2>Add printer</h2><span class="x">×</span></div>
+      <div class="finish"><div class="tick">✓</div><p class="headline">TM-m30III is set up</p><div class="meta">It is your default printer.</div></div>
+      <div class="footer"><button class="btn primary sm">Done</button></div>
+    </div>
+  </div>
+
+  <div class="screen"><div class="cap">5 · More than one found (cards are the tap target)</div>
+    <div class="dialog">
+      <div class="title"><h2>Add printer</h2><span class="x">×</span></div>
+      <h3>Which printer is yours?</h3>
+      <div class="card" style="border-color:var(--blue);background:var(--blue-soft)"><div><div class="name">TM-m30III</div><div class="sub">192.168.1.131 · Epson <span class="src">Wi-Fi</span></div></div><span class="pill ok"><i></i>Ready to print</span></div>
+      <div class="card"><div><div class="name">USB Portable Printer</div><div class="sub">Generic ESC/POS <span class="src">USB</span></div></div><span class="pill ok"><i></i>Ready to print</span></div>
+      <div class="card"><div><div class="name">Receipt Printer</div><div class="sub">192.168.1.150 <span class="src">Wi-Fi</span></div></div><span class="pill warn"><i></i>Found — test needed</span></div>
+      <div class="card muted"><div><div class="name">HP OfficeJet 9010</div><div class="sub">192.168.1.22 <span class="src">Wi-Fi</span></div></div><span class="pill bad"><i></i>Not a receipt printer</span></div>
+      <button class="btn primary"><span class="ic">⎙</span>Print a test page</button>
+      <div class="row"><button class="btn sm">Find a Bluetooth printer</button><button class="btn sm">Scan again</button><button class="btn sm">Enter an address</button></div>
+      <details><summary>Options</summary></details>
+    </div>
+  </div>
+
+  <div class="screen"><div class="cap">6 · Nothing printed → trouble</div>
+    <div class="dialog">
+      <div class="title"><h2>Add printer</h2><span class="x">×</span></div>
+      <div><p class="headline">Receipt Printer</p><div class="meta">192.168.1.150 · port 9100 <span class="src">Wi-Fi</span></div></div>
+      <h3>Nothing printed</h3><p class="lede" style="margin-top:-8px">Check the printer is on and on the same Wi-Fi as this computer, then try again.</p>
+      <div class="err"><strong>Having trouble?</strong> We could not confirm that the printer received the test page. Try the steps above or open the printer guide.</div>
+      <p class="foot">Bluetooth printers say: "Turn the printer off and on again, then try again." USB: "Check the cable and that the printer is switched on, then try again."</p>
+      <div class="row"><button class="btn primary sm">Try again</button><button class="btn sm">Save without testing</button><button class="btn sm" style="border:0;color:var(--blue);padding-left:0">Open the printer guide</button></div>
+      <details><summary>Options</summary></details>
+    </div>
+  </div>
+
+  <div class="screen"><div class="cap">7 · Nothing found</div>
+    <div class="dialog">
+      <div class="title"><h2>Add printer</h2><span class="x">×</span></div>
+      <h3>No printer found</h3>
+      <p class="lede" style="margin-top:-8px">Check the printer is on, then plug it in by USB or connect it over Bluetooth.</p>
+      <div class="row"><button class="btn primary sm">Find a Bluetooth printer</button><button class="btn sm">Scan again</button><button class="btn sm">Enter an address</button><button class="btn sm" style="border:0;color:var(--blue);padding-left:0">Open the printer guide</button></div>
+      <details><summary>Options</summary></details>
+    </div>
+  </div>
+
+  <div class="screen"><div class="cap">8 · "Enter an address" stops the scan and opens the address form right there</div>
+    <div class="dialog">
+      <div class="title"><h2>Add printer</h2><span class="x">×</span></div>
+      <h3>Enter the printer address</h3>
+      <div style="border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px">
+        <div class="fields"><div><label>IP address</label><input value="192.168.1.131"></div><div style="max-width:110px"><label>Port</label><input value="8008"></div></div>
+        <div class="row"><button class="btn primary sm">Check this address</button><button class="btn sm" style="border:0;color:var(--muted)">Cancel</button></div>
+      </div>
+      <details><summary>Options</summary>
+        <div class="fields">
+          <div class="full"><label>Printer name</label><input value="Receipt printer"></div>
+          <div><label>Vendor</label><select><option selected>Epson</option><option>Star Micronics</option><option>Generic (ESC/POS)</option></select></div>
+          <div><label>Characters per line</label><select><option>32 — 58 mm paper</option><option>42 — 80 mm, older printers</option><option selected>48 — 80 mm, most Epson &amp; Star</option><option>64 — 80 mm, small font</option></select></div>
+        </div>
+        <div class="toggles">
+          <label><span class="sw"></span>Auto-cut paper</label>
+          <label><span class="sw off"></span>Auto-open cash drawer</label>
+          <label><span class="sw"></span>Set as default printer</label>
+        </div>
+
+      </details>
+    </div>
+  </div>
+
+  <div class="screen"><div class="cap">Rules the mockup follows</div>
+    <div class="note">
+      One scan covers USB, paired Bluetooth and Wi-Fi at once; a plugged-in printer shows the moment it is found. Bluetooth LE needs a tap, so "Find a Bluetooth printer" stays in view on every scan screen, never under Options.<br><br>
+      One large status line while the app works; the printer name becomes the headline once found; everything else is secondary.<br><br>
+      Candidates are cards, the whole card is the tap target and selects; the test page is always its own tap ("Print a test page"), never automatic (Paul, 2026-09-05). Status is a coloured pill, the source a small tag.<br><br>
+      The question has three full-width answers, the affirmative primary. The finish screen has one tick, one name, one sentence, one button.<br><br>
+      Options (name, vendor, width, toggles) is a quiet disclosure on every screen except Saved, closed by default; the address form lives beside its Check button; once a test page is on its way the screen holds nothing but the question. No progress bar unless the scan runs long. The app never explains: one line, the actions, and a link to the printer guide on docs.wcpos.com.
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
