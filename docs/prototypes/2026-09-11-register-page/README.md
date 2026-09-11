@@ -52,7 +52,8 @@ What Paul's walk-through of the first cut changed, and the defaults he accepted 
 4. **Menu item dropped entirely** rather than kept as a shortcut to the panel (default accepted).
 5. **Closing with unpaid carts open is allowed** — open carts are unsynced orders, not tendered money (default accepted).
 6. ~~First sign-in names the register on the POS screen~~ **Superseded the same night:** registers are created on the server (one per store by default, more in the plugin's admin); the device only picks one, and only when the store has more than one. Creating on the device would lose the register on a wipe or duplicate it.
-7. Questions from the first cut that this settles: landing page after sign-in (POS), menu position and icon (none), the sessions-off state (nothing shows), back-to-selling (exists).
+7. **Several devices may point at one register** (Paul, 2026-09-11 late): two cashiers with their own tablets sharing one cash drawer ring on the same session; each row is stamped with its actor. The picker's "Open since 09:02 · Amy Okafor" line is that case. Shopify's 2026-04 CashDrawer model is the same shape.
+8. Questions from the first cut that this settles: landing page after sign-in (POS), menu position and icon (none), the sessions-off state (nothing shows), back-to-selling (exists).
 
 ## No title bar (Paul's suggestion, 2026-09-11 evening)
 
