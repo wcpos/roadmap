@@ -181,15 +181,18 @@
   .tcard .t span{font-size:12px;color:var(--pay-dim);font-weight:500;display:flex;gap:6px;align-items:center}
   .steps{display:flex;margin-top:14px}
   .st{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--pay-dim);position:relative}
-  .st i{width:14px;height:14px;border-radius:50%;border:2px solid var(--pay-3);background:var(--pay-2);display:block;z-index:1}
+  .st i{width:14px;height:14px;border-radius:50%;border:2px solid var(--pay-3);background:var(--pay-2);display:block;z-index:1;transition:background .2s ease-out,border-color .2s ease-out}
   .st.done i{background:var(--pay-accent);border-color:var(--pay-accent)}
   .st.now i{border-color:var(--pay-fg);box-shadow:0 0 0 5px rgba(255,255,255,.12)}
   .st.now{color:var(--pay-fg);font-weight:600}
   .st:not(:last-child)::after{content:"";position:absolute;top:6px;left:50%;width:100%;height:2px;background:var(--pay-3)}
+  .term-status.phase{animation:crossfade .15s}
+  @keyframes crossfade{from{opacity:0}to{opacity:1}}
   .btn{height:52px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;padding:0 22px;font-size:16px;font-weight:600;cursor:pointer;user-select:none;transition:transform .08s}
   .btn:active{transform:scale(.97)}
   .btn.ghost{background:var(--pay-2);color:var(--pay-fg)}
   .btn.white{background:var(--pay-fg);color:var(--pay);font-weight:700}
+  .term .actions{display:flex;gap:10px}
   /* paid moment */
   .pay.paid{background:var(--success);color:#fff}
   .paidwrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;animation:pop .4s cubic-bezier(.2,.9,.3,1.15) both}
@@ -232,7 +235,7 @@
   .balbar b{font-variant-numeric:tabular-nums}
   .balbar .s{color:var(--muted-foreground);font-size:12px}
   .empty{color:var(--muted-foreground);font-size:14px}
-  @media (prefers-reduced-motion: reduce){ *{animation-duration:.01ms!important;transition-duration:.01ms!important} }
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:.01ms!important;transition-duration:.01ms!important} .ring{animation:none!important} }
   .notes{max-width:1280px;margin:0 auto;padding:0 16px 40px;color:#c8ccd4;font-size:13px;line-height:1.5}
   .notes h2{color:#fff;font-size:15px;margin:22px 0 8px}.notes ul{padding-left:18px}.notes li{margin:0 0 6px}.notes a{color:#8ab4f8}
 </style>
@@ -254,6 +257,11 @@
     <button data-jump="splititems-loop">Items · pick the next</button>
     <button data-jump="partpaid">After a cash leg</button>
     <button data-jump="terminal">On the terminal</button>
+    <button data-jump="terminal-failed">Terminal failed</button>
+    <button data-jump="terminal-cancelled">Terminal cancelled</button>
+    <button data-jump="terminal-expired">Terminal expired</button>
+    <button data-jump="terminal-cancel-requested">Cancel requested</button>
+    <button data-jump="terminal-cancelling">Terminal cancelling</button>
     <button data-jump="paid">Paid</button>
     <button data-jump="unavail">Unavailable list open</button>
   </div>
@@ -340,19 +348,27 @@ function figures(){
       const ways = S.plan.ways || 1;
       const groupPaid = taken.reduce((a,l)=>a+l.amount,0);
       const group = Math.round(S.plan.first*100)/100;
-      if (idx < ways){
-        const each = Math.round(group / ways * 100) / 100;
-        thisPay = idx === ways-1 ? Math.round((group - groupPaid)*100)/100 : each;
+      const groupLeft = Math.max(0, Math.round((group-groupPaid)*100)/100);
+      if (groupLeft > 0.004){
+        const left = Math.max(1, ways-idx);
+        const each = Math.round(groupLeft / left * 100) / 100;
+        thisPay = left === 1 ? groupLeft : each;
         legs.push({k:'now', v:thisPay, title: idx===0 ? S.plan.title : ''});
-        for (let i=idx+1;i<ways;i++) legs.push({k:'', v: i===ways-1 ? Math.round((group - each*(ways-1))*100)/100 : each});
-        const rest = Math.round((remaining - (group - groupPaid))*100)/100;
+        for (let i=1;i<left;i++) legs.push({k:'', v: i===left-1 ? Math.round((groupLeft - each*(left-1))*100)/100 : each});
+        const rest = Math.round((remaining-groupLeft)*100)/100;
         if (rest > 0.004) legs.push({k:'rest', v:rest});
-        planInfo = { n: idx+1, ways, legs, kind:'items', label: ways>1 ? `${S.plan.title} · ${idx+1} of ${ways}` : `${S.plan.title}` , more: rest > 0.004 };
+        const plannedWays = Math.max(ways, idx+1);
+        planInfo = { n:idx+1, ways:plannedWays, legs, kind:'items', label:plannedWays>1 ? `${S.plan.title} · ${idx+1} of ${plannedWays}` : `${S.plan.title}` };
       } else {
         thisPay = remaining;
         legs.push({k:'now', v:remaining, title:'Rest'});
         planInfo = { n: idx+1, ways, legs, kind:'items', label: `Rest of the order`, more: true, afterGroup:true };
       }
+    } else if (S.plan.kind === 'custom'){
+      thisPay = S.entry > 0 ? Math.min(S.entry, remaining) : remaining;
+      legs.push({k:'now', v:thisPay, title:'Type first'});
+      if (remaining - thisPay > 0.004) legs.push({k:'', v:Math.round((remaining-thisPay)*100)/100});
+      planInfo = { n:1, ways:legs.length, legs, label:'Type the first payment' };
     } else {
       const first = Math.min(S.plan.first, remaining);
       thisPay = idx === 0 ? first : remaining;
@@ -438,6 +454,8 @@ function splitView(f){
   <div class="hd">
     <span class="x" data-sheet-close>${I.close}</span>
     <span class="title">Order <b>#102476</b> · 3 items · Guest${f.paid>0 ? ` · <b>${fmt(f.paid)}</b> paid` : ''}</span>
+    ${S.legs.length ? '<span class="lnk danger" data-cancel-payment>Cancel payment</span>' : ''}
+    <div class="seg"><span class="on">Payments</span><span>Legacy</span></div>
   </div>
   <div class="amt">
     <div class="lblrow"><span class="lbl">Split ${f.paid>0 ? 'the remaining' : ''}</span></div>
@@ -452,20 +470,28 @@ function splitView(f){
   </div>`;
 }
 
+const terminalStatus = t => ({ failed:'Payment failed', cancelled:'Payment cancelled', expired:'Payment expired', cancelRequested:'Requesting cancellation…', cancelling:'Cancelling on the terminal…' })[t.state] || (t.step<1?'Sending to the terminal…':t.step<2?'Waiting for the customer':t.step<3?'Approved, capturing…':'Captured');
+const terminalActions = t => ['failed','cancelled','expired'].includes(t.state) ? '<span class="btn white" data-terminal-retry>Try again</span><span class="btn ghost" data-terminal-choose>Choose another way</span>' : t.state ? `<span class="btn ghost">${terminalStatus(t)}</span>` : '<span class="btn ghost" data-cancel-terminal>Cancel on terminal</span>';
 function terminalView(f){
   const t = S.term; const m = METHODS.find(x=>x.id===t.method);
   const steps = ['Sent','On terminal','Approved','Captured'];
   return `
-  <div class="hd"><span class="title">Order <b>#102476</b> · 1 item</span><span class="lnk">${f.plan ? f.plan.label : 'Payment 1 of 1'}</span></div>
+  <div class="hd"><span class="title">Order <b>#102476</b> · ${ITEMS.length} items</span><span class="lnk">${f.plan ? f.plan.label : 'Payment 1 of 1'}</span></div>
   <div class="term">
-    <div class="amt"><div class="lbl">On the terminal</div><div class="big" style="font-size:80px">${fmt(t.amount)}</div><div class="line"><span class="plan">${t.step<1?'Sending to the terminal…':t.step<2?'Waiting for the customer':t.step<3?'Approved, capturing…':'Captured'}</span></div></div>
+    <div class="amt"><div class="lbl">On the terminal</div><div class="big" style="font-size:80px">${fmt(t.amount)}</div><div class="line"><span class="plan term-status phase" data-terminal-status>${terminalStatus(t)}</span></div></div>
     <div class="ring"></div>
     <div class="tcard">
       <div class="t"><span>${m.model} · ${m.reader}</span><span><span class="dot"></span>connected${m.battery ? ' · ' + m.battery + '%' : ''}</span></div>
-      <div class="steps">${steps.map((s,i)=>`<div class="st ${i<t.step?'done':i===t.step?'now':''}"><i></i>${s}</div>`).join('')}</div>
+      <div class="steps">${steps.map((s,i)=>`<div class="st ${i<t.step?'done':i===t.step?'now':''}" data-terminal-step><i></i>${s}</div>`).join('')}</div>
     </div>
-    <span class="btn ghost" data-cancel-terminal>Cancel on terminal</span>
+    <div class="actions" data-terminal-actions>${terminalActions(t)}</div>
   </div>`;
+}
+function updateTerminal(){
+  if (S.view!=='terminal' || !S.term) return;
+  const status = document.querySelector('[data-terminal-status]'); status.textContent = terminalStatus(S.term); status.classList.remove('phase'); void status.offsetWidth; status.classList.add('phase');
+  document.querySelectorAll('[data-terminal-step]').forEach((step,i)=>step.className=`st ${i<S.term.step?'done':i===S.term.step?'now':''}`);
+  document.querySelector('[data-terminal-actions]').innerHTML = terminalActions(S.term);
 }
 
 function paidView(f){
@@ -509,20 +535,21 @@ function take(id){
   const entry = S.entry ?? f.thisPay;
   const applied = Math.min(entry, f.thisPay);
   if (applied <= 0) return;
+  if (!m.change && entry > f.thisPay) return;
+  if (S.plan && S.plan.kind==='custom') S.plan = { kind:'fixed', first:applied, from:S.plan.from };
   if (m.server || m.device){
     S.view = 'terminal'; S.term = { method:id, amount:applied, step:0 }; render();
-    const tick = (n, ms) => S.timers.push(setTimeout(()=>{ S.term.step = n; if (S.view==='terminal') render(); if (n===4) land(m, applied, 0, `${m.model} · ${m.reader} · contactless`); }, ms));
+    const tick = (n, ms) => S.timers.push(setTimeout(()=>{ if (S.view!=='terminal') return; S.term.step = n; updateTerminal(); if (n===4) S.timers.push(setTimeout(()=>land(m, applied, 0, `${m.model} · ${m.reader} · contactless`), 250)); }, ms));
     tick(1, 700); tick(2, 2400); tick(3, 3200); tick(4, 3900);
     return;
   }
   const change = m.change ? entry - applied : 0;
-  if (!m.change && entry > applied) return;
   land(m, applied, change, m.change ? `Tendered ${fmt(applied+change)} · change ${fmt(change)}` : 'Manual entry');
 }
 function land(m, applied, change, detail){
   S.legs.push({ title: m.title, amount: applied, change, detail, fresh:true });
   S.entry = null; S.term = null; S.view = 'keypad';
-  if (S.plan && S.plan.kind==='items' && S.legs.length - S.plan.from === (S.plan.ways||1)){ const who = S.legs.slice(S.plan.from).map(l=>l.title).filter((v,i,a)=>a.indexOf(v)===i).join(' + '); S.plan.ids.forEach(id => S.itemsPaid[id] = who); S.pickItems = []; }
+  if (S.plan && S.plan.kind==='items' && S.plan.ids.some(id=>!S.itemsPaid[id]) && S.legs.slice(S.plan.from).reduce((sum,l)=>sum+l.amount,0) >= S.plan.first-.004){ const who = S.legs.slice(S.plan.from).map(l=>l.title).filter((v,i,a)=>a.indexOf(v)===i).join(' + '); S.plan.ids.forEach(id => S.itemsPaid[id] = who); S.pickItems = []; }
   if (S.plan && ((S.plan.kind==='even' && S.legs.length - S.plan.from >= S.plan.ways) || (S.plan.kind==='fixed' && (figures().remaining <= 0 || S.legs.length - S.plan.from >= 2)) || (S.plan.kind==='items' && figures().remaining <= 0))) S.plan = null;
   const f = figures();
   if (f.remaining <= 0) S.view = 'paid';
@@ -544,6 +571,7 @@ function jump(name){
   if (name==='split3after'){ S.plan = { kind:'even', ways:3, from:0 }; S.legs = [{title:'Cash', amount:6, change:0, detail:'Tendered 6,00 £ · change 0,00 £'}]; S.method='card'; }
   if (name==='partpaid') S.legs = [{title:'Cash', amount:20, change:0, detail:'Tendered 20,00 £ · change 0,00 £'}];
   if (name==='terminal'){ S.view='terminal'; S.term={method:'sumup', amount:TOTAL, step:1}; }
+  if (name.startsWith('terminal-')){ const state = name.slice(9).replace(/-([a-z])/g,(_,c)=>c.toUpperCase()); S.view='terminal'; S.term={method:'sumup', amount:TOTAL, step:state==='failed'?2:1, state}; }
   if (name==='paid'){ S.legs=[{title:'Cash', amount:TOTAL, change:4, detail:'Tendered 50,00 £ · change 4,00 £'}]; S.view='paid'; }
   render();
 }
@@ -555,20 +583,20 @@ document.querySelector('.strip').addEventListener('click', e => {
 document.getElementById('pay').addEventListener('click', e => {
   const t = e.target;
   const k = t.closest('[data-key]'); if (k){
-    const cur = S.entry===null ? '' : Math.round(S.entry*100).toString().replace(/^0+/,'');
+    const cur = S.entry===null ? '' : Math.floor(S.entry).toString().replace(/^0+/,'');
     let next = cur;
     if (k.dataset.key==='C') next = '';
     else if (k.dataset.key==='⌫') next = cur.slice(0,-1);
     else next = (cur + k.dataset.key).slice(0,7);
-    S.entry = next==='' ? 0 : +next/100; return render();
+    S.entry = next==='' ? 0 : +next; return render();
   }
   const q = t.closest('[data-q]'); if (q){ S.entry = q.dataset.q==='exact' ? null : +q.dataset.q; return render(); }
-  const pk = t.closest('[data-pick]'); if (pk){ S.method = pk.dataset.pick; S.entry = null; return render(); }
+  const pk = t.closest('[data-pick]'); if (pk){ S.method = pk.dataset.pick; const m = METHODS.find(x=>x.id===S.method); if (S.entry!==null && !m.change && S.entry>figures().thisPay) S.entry=null; return render(); }
   if (t.closest('[data-unavail]')){ S.unavailOpen = S.unavailOpen ? 0 : 1; return render(); }
   const m = t.closest('[data-take]'); if (m) return take(m.dataset.take);
   const w = t.closest('[data-ways]'); if (w){
     const ways = w.dataset.ways;
-    if (ways==='custom'){ S.plan = null; S.entry = 0; S.sheet = 0; return render(); }
+    if (ways==='custom'){ S.plan = { kind:'custom', from:S.legs.length }; S.entry = 0; S.sheet = 0; return render(); }
     if (ways==='0'){ S.plan = null; S.entry = null; S.sheet = 0; return render(); }
     S.plan = { kind:'even', ways:+ways, from:S.legs.length }; S.entry = null; S.sheet = 0; return render();
   }
@@ -587,17 +615,19 @@ document.getElementById('pay').addEventListener('click', e => {
   if (t.closest('[data-sheet-close]')){ S.sheet = 0; return render(); }
   const sp = t.closest('[data-split]'); if (sp){ S.sheet = 1; if (sp.dataset.tabOpen) S.tab = sp.dataset.tabOpen; return render(); }
   if (t.closest('[data-close]') || t.closest('[data-new]')) return jump('fresh');
-  if (t.closest('[data-cancel-terminal]')){ clearTimers(); S.view='keypad'; S.term=null; return render(); }
-  if (t.closest('[data-cancel-payment]')){ S.legs=[]; S.entry=null; return render(); }
+  if (t.closest('[data-terminal-retry]')){ clearTimers(); const method=S.term.method, amount=S.term.amount; S.view='keypad'; S.term=null; S.entry=amount; return take(method); }
+  if (t.closest('[data-terminal-choose]')){ clearTimers(); S.view='keypad'; S.term=null; S.method='cash'; S.entry=null; return render(); }
+  if (t.closest('[data-cancel-terminal]')){ clearTimers(); S.term.state='cancelRequested'; updateTerminal(); S.timers.push(setTimeout(()=>{ S.term.state='cancelling'; updateTerminal(); },500)); S.timers.push(setTimeout(()=>{ S.term.state='cancelled'; updateTerminal(); },1200)); return; }
+  if (t.closest('[data-cancel-payment]')){ S.legs=[]; S.entry=null; S.plan=null; S.itemsPaid={}; S.pickItems=[]; S.sheet=0; return render(); }
 });
 document.addEventListener('keydown', e => {
-  if (S.sheet && e.key==='Escape'){ S.sheet=0; return render(); }
+  if (S.sheet){ if (e.key==='Escape'){ S.sheet=0; render(); } return; }
   if (S.view!=='keypad') { if (e.key==='Escape') jump('fresh'); return; }
   if (/^[0-9]$/.test(e.key) || e.key==='Backspace' || e.key==='Escape'){
     if (e.key==='Escape') return jump('fresh');
-    const cur = S.entry===null ? '' : Math.round(S.entry*100).toString().replace(/^0+/,'');
+    const cur = S.entry===null ? '' : Math.floor(S.entry).toString().replace(/^0+/,'');
     const next = e.key==='Backspace' ? cur.slice(0,-1) : (cur + e.key).slice(0,7);
-    S.entry = next==='' ? 0 : +next/100; render();
+    S.entry = next==='' ? 0 : +next; render();
   }
   if (e.key==='Enter' && S.method) take(S.method);
 });

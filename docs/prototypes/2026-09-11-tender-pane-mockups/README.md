@@ -16,7 +16,7 @@ The dark strip at the top is not part of the design.
 
 | Control | What it changes |
 |---|---|
-| **Jump to** | Fresh sale · Typed 20 · Card selected · SumUp selected · Split chooser · Split 2 ways · 3 ways after leg 1 · Percent tab · Item tab · Items after leg 1 · Items shared by 2 · Items pick the next · After a cash leg · On the terminal · Paid · Unavailable list open |
+| **Jump to** | Fresh sale · Typed 20 · Card selected · SumUp selected · Split chooser · Split 2 ways · 3 ways after leg 1 · Percent tab · Item tab · Items after leg 1 · Items shared by 2 · Items pick the next · After a cash leg · On the terminal · terminal failure, cancellation, and expiry states · Paid · Unavailable list open |
 | **Network** | offline: one badge by the label, the dot in the top bar, terminal pills faded with one line under the row saying why |
 | **Surface** | Slate (the sidebar colour) · Blue (brand) · Light |
 | **Width** | Tablet (1280, ledger beside) or Phone (390, ledger folded to a balance bar, method row scrolls) |
@@ -35,6 +35,13 @@ Keyboard: digits and Backspace type, Enter takes cash, Esc closes.
 ## Screens
 
 `screens/` holds Playwright captures of every jump state, the three surfaces, offline and phone. Regenerate with `node docs/prototypes/2026-09-11-tender-pane-mockups/shoot.mjs` run from the monorepo root (uses its Playwright). `screens-v1/`, `screens-v2/` and `screens/direction-0N.png` are the earlier rounds.
+
+Run the interaction checks from that same installed monorepo workspace, pointing `ROADMAP_CHECKOUT` at this checkout:
+
+```sh
+node "$ROADMAP_CHECKOUT/docs/prototypes/2026-09-11-tender-pane-mockups/keyboard.test.mjs"
+node "$ROADMAP_CHECKOUT/docs/prototypes/2026-09-11-tender-pane-mockups/shoot.test.mjs"
+```
 
 ## Open questions
 

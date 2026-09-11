@@ -1,9 +1,12 @@
 // Run from the monorepo root: node docs/.../shoot.mjs  (uses the monorepo's Playwright)
-import { chromium } from '/Users/kilbot/Projects/monorepo-v2/node_modules/playwright/index.mjs';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+const checkoutRequire = createRequire(path.join(process.cwd(), 'package.json'));
+const { chromium } = checkoutRequire('playwright');
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const url = 'file://' + path.join(dir, 'index.html');
+if (process.argv.includes('--check')) { console.log('Playwright resolved from the invoking checkout:', checkoutRequire.resolve('playwright')); process.exit(0); }
 // [name, jump, {set: val}]
 const shots = [
   ['fresh', 'fresh', {}], ['typed', 'typed', {}], ['card', 'card', {}], ['sumup', 'sumup', {}], ['split-sheet', 'splitsheet', {}], ['split', 'split', {}], ['split3-after', 'split3after', {}], ['split-percent', 'splitpct', {}], ['split-item', 'splititem', {}], ['split-items-after', 'splititems-after', {}], ['split-items-share', 'splititems-share', {}], ['split-items-loop', 'splititems-loop', {}], ['phone-split-item', 'splititem', {phone:'1'}], ['phone-split-sheet', 'splitsheet', {phone:'1'}], ['partpaid', 'partpaid', {}],
