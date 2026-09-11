@@ -52,3 +52,7 @@ Pulled through the Mobbin MCP on 2026-09-11; its library is consumer apps, so th
 ## Reaction
 
 _To be recorded after Paul has walked it._
+
+## Direction board (third round)
+
+`directions.html` — five structurally different takes on the pay step, each with the Mobbin references it steals from beside it: **01 the keypad is the screen** (Cash App), **02 the wallet sheet** (Apple Pay), **03 the receipt tape** (Blackbird), **04 no navigation at all** (SumUp Lite / Toast Fast Cash), **05 design the terminal moment** (Apple Pay tick, Chase, Revolut). Built after Paul's verdict on the second round: *moderately better, not something we could ever ship.* Frames are static; `screens/direction-0N.png` are their captures. Rebuild from `directions.template.html` + `directions-thumbs.json` (thumbnails are Mobbin captures, internal reference only).
