@@ -146,9 +146,9 @@ borders and one radius; hierarchy comes from spacing, weight and colour, in that
 Refactoring UI's advice to "use fewer borders" and "start with too much white space" is what
 stops a dense screen looking busy.
 
-Open decision, not silently resolved here: the brand document names red as the primary action
-colour and the app's `--primary` is blue, with red reserved for destructive. Both are internally
-consistent. Paul decides; until then the app keeps blue.
+Ruled 2026-09-11: the brand document names red as the primary action colour for marketing, but
+in the app **primary is blue and brand red is destructive only**. On a till red means void,
+cancel or refund, which is what every cashier expects; Pay never shares a colour with Void.
 
 ### 9. Words the cashier uses
 
