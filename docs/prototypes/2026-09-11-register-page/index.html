@@ -1,0 +1,1120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Register in the POS screen — live</title>
+<!--
+  PROTOTYPE — throwaway. wcpos/roadmap#214: where the register lives. Second cut (2026-09-11,
+  after Paul's reaction to the first): the register is NOT a page. It is a state of the POS screen
+  (closed → the cart column becomes "Open register"; counting → the cart column becomes the count)
+  plus one Register panel opened from a bar at the top of the cart. No menu item, no sign-in state.
+  The open / paid in / paid out / no sale / count / close / print flows are live against an
+  in-memory session; permission, edition, network and width toggles change what a cashier sees.
+  Nothing persists. Language, session model, closure document and permission rows are the decided
+  ones (#207, #210, #211, #212, #213) — except the "Register" menu item from #207, which this cut
+  removes.
+-->
+<style>
+:root{
+  --primary:#0069bd;--primary-fg:#f3faff;--bg:#f0f6fc;--fg:#162330;--card:#fff;--card-header:#dfe5ec;
+  --footer:#e6ecf2;--row-alt:#f8fafd;--border:#d2d8df;--muted:#f0f4f9;--muted-fg:#495766;--secondary:#5b748e;
+  --success:#007936;--warning:#e46212;--destructive:#d40924;--attention:#fed252;--info:#0079ce;
+  --sidebar:#142a41;--sidebar-fg:#e0e5eb;--sidebar-border:#0b1c2c;--radius:8px;
+  --sys:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{font-size:14px}
+body{margin:0;background:#e9edf2;color:var(--fg);font-family:var(--sys);-webkit-font-smoothing:antialiased;line-height:1.4}
+h1{font-size:22px;margin:0 0 4px}
+.lead{margin:0;color:var(--muted-fg);max-width:100ch}
+.doc{padding:28px 32px 0}
+a{color:var(--primary)}
+
+/* ---------- control strip (not part of the design) ---------- */
+.strip{position:sticky;top:0;z-index:50;background:#111827;color:#e5e7eb;padding:10px 32px;display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.strip .g{display:flex;align-items:center;gap:6px}
+.strip .g>b{color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:10px;margin-right:2px}
+.seg{display:inline-flex;border:1px solid #374151;border-radius:6px;overflow:hidden}
+.seg button{border:0;background:transparent;color:#d1d5db;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit}
+.seg button.on{background:#f3f4f6;color:#111827;font-weight:600}
+.strip label.ck{display:inline-flex;align-items:center;gap:5px;cursor:pointer;color:#d1d5db}
+.strip label.ck input{accent-color:#60a5fa}
+
+/* ---------- app frame ---------- */
+.stage{padding:22px 32px 10px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.frame{background:var(--bg);border:1px solid #c7ced6;box-shadow:0 12px 34px rgba(0,0,0,.18);overflow:hidden;position:relative;display:flex;flex-direction:column}
+.frame.tablet{width:1180px;height:760px;border-radius:10px}
+.frame.phone{width:390px;height:780px;border-radius:30px;border:8px solid #111}
+.hdr{height:40px;background:var(--sidebar);border-bottom:1px solid var(--sidebar-border);display:flex;align-items:center;color:var(--sidebar-fg);flex:none;position:relative}
+.hdr .ttl{position:absolute;left:0;right:0;text-align:center;font-size:17px;pointer-events:none}
+.hdr .rgt{margin-left:auto;display:flex;align-items:center;gap:12px;padding-right:12px;font-size:13px}
+.hdr .dot{width:12px;height:12px;border-radius:50%;background:var(--success)}
+.hdr .dot.off{background:var(--destructive)}
+.hdr .av{width:22px;height:22px;border-radius:50%;background:#e5e7eb;color:#334155;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.hdr .burger{width:40px;height:40px;display:flex;align-items:center;justify-content:center;color:var(--sidebar-fg)}
+.body{flex:1;display:flex;min-height:0}
+.rail{width:52px;background:var(--sidebar);border-right:1px solid var(--sidebar-border);display:flex;flex-direction:column;padding:0;flex:none}
+.rail .it{height:48px;display:flex;align-items:center;justify-content:center;color:var(--sidebar-fg);border-left:4px solid transparent;border-right:4px solid transparent;position:relative;cursor:pointer}
+.rail .it.on{border-left-color:var(--primary);color:#4da3ff}
+.rail .it.on svg{color:#4da3ff}
+.rail .sp{margin-top:auto}
+.rail .ver{font-size:9px;opacity:.5;text-align:center;padding:6px 0 8px;color:var(--sidebar-fg)}
+.rail .tip{position:absolute;left:54px;background:#fff;color:var(--fg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:12px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.15);display:none;z-index:3}
+.rail .it:hover .tip{display:block}
+.main{flex:1;min-width:0;overflow:hidden;position:relative;display:flex;flex-direction:column}
+.upgrade{background:#fff7e6;border-bottom:1px solid #f5d9a8;color:#7a4b00;font-size:12px;padding:5px 12px;display:flex;justify-content:space-between;flex:none}
+.pad{padding:14px;overflow:auto;flex:1}
+.phone .pad{padding:12px}
+
+/* ---------- POS screen ---------- */
+.pos{flex:1;display:flex;min-height:0}
+.prodcol{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
+.prodcol .search{padding:10px 12px;border-bottom:1px solid var(--border);background:#fff;display:flex;gap:8px;align-items:center;flex:none}
+.prodcol .search input{flex:1}
+.tiles{padding:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;overflow:auto;align-content:start}
+.phone .tiles{grid-template-columns:1fr 1fr}
+.tile{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:10px;display:flex;flex-direction:column;gap:6px;cursor:pointer;min-height:96px}
+.tile .img{height:44px;border-radius:5px;background:linear-gradient(135deg,#dbe4ee,#eef2f6)}
+.tile .n{font-size:13px;font-weight:600;line-height:1.2}
+.tile .p{font-size:12px;color:var(--muted-fg);margin-top:auto}
+.tile:hover{border-color:#9ec5ea}
+.tile{transition:border-color .12s ease-out,transform .1s ease-out}
+.prodcol .gate{position:absolute;inset:0;background:rgba(240,246,252,.72);display:flex;align-items:center;justify-content:center;z-index:2}
+.prodcol .gate div{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;font-size:13px;color:var(--muted-fg);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.prodcol .notice{background:#e9f3fb;border-bottom:1px solid #bcd9ef;color:#0b4a73;font-size:12px;padding:5px 12px;flex:none}
+.cartcol{width:420px;flex:none;border-left:1px solid var(--border);background:#fff;display:flex;flex-direction:column;min-height:0}
+.phone .cartcol{width:100%;border-left:0;flex:1}
+.phone .prodcol{flex:1}
+.phone .ph-hide{display:none}
+.cartcol .inner{flex:1;overflow:auto;display:flex;flex-direction:column}
+.cart-h{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--border);background:var(--card-header);flex:none}
+.tabsrow{display:flex;align-items:center;gap:4px;padding:6px 8px 0;background:var(--bg);border-bottom:1px solid var(--border);flex:none;min-height:48px;white-space:nowrap}
+.tabsrow .tab{height:40px;padding:0 14px;border:1px solid var(--border);border-bottom:0;border-radius:8px 8px 0 0;background:#e6ecf2;color:var(--muted-fg);font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-variant-numeric:tabular-nums;margin-bottom:-1px;transition:background .12s ease-out}
+.tabsrow .tab.on{background:#fff;color:var(--fg);font-weight:600;border-bottom:1px solid #fff}
+.tabsrow .tab.plus{padding:0 12px;font-size:18px;line-height:1}
+.tabsrow .tab:active{transform:none;background:#dfe5ec}
+.tabsrow .scroll{display:flex;gap:4px;overflow-x:auto;flex:1;min-width:0;scrollbar-width:none;align-items:flex-end;height:42px}
+.regbar.tabsbar{padding:0 8px 0 8px;align-items:flex-end;background:var(--bg)}
+.regbar.tabsbar .scroll{display:flex;gap:4px;overflow-x:auto;flex:1;min-width:0;scrollbar-width:none;align-items:flex-end;height:48px}
+.regbar.tabsbar .tab{height:38px;padding:0 12px;border:1px solid var(--border);border-bottom:0;border-radius:8px 8px 0 0;background:#e6ecf2;color:var(--muted-fg);font-size:13px;font-weight:500;display:inline-flex;align-items:center;cursor:pointer;font-variant-numeric:tabular-nums;margin-bottom:-1px}
+.regbar.tabsbar .tab.on{background:#fff;color:var(--fg);font-weight:600;border-bottom:1px solid #fff}
+.regbar.tabsbar .tab.plus{padding:0 12px;font-size:18px}
+.regbar.tabsbar .pill,.regbar.tabsbar .ibtn,.regbar.tabsbar .avbtn,.regbar.tabsbar .burger{align-self:center}
+.regbar.tabsbar .ibtn{margin-left:4px}
+.tabsrow .chrome{display:flex;align-items:center;gap:8px;flex:none;padding-bottom:6px}
+.tabsrow .chrome .store{font-weight:600;cursor:pointer;padding:6px;margin:-6px;border-radius:6px}
+.tabsrow .chrome .avbtn{width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;margin-right:-6px}
+.tabsrow .chrome .avbtn .av{width:28px;height:28px;border-radius:50%;background:var(--sidebar);color:#e0e5eb;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.tabsrow.bottom{padding:0 8px 6px;border-bottom:0;border-top:1px solid var(--border);align-items:flex-start}
+.tabsrow.bottom .scroll{align-items:flex-start}
+.tabsrow.bottom .tab{border-radius:0 0 8px 8px;border:1px solid var(--border);border-top:0;margin-bottom:0;margin-top:-1px}
+.tabsrow.bottom .tab.on{border-top:1px solid #fff}
+.cart-f2{padding:8px 12px 0;display:flex;gap:8px}
+.cart-f2 .btn{flex:1;height:36px}
+.cart-f .btn.od{flex:0 0 auto}
+.cart-h .cust{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:1px solid var(--border);border-radius:999px;background:#fff;font-size:12px}
+.cartline{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--border);font-size:13px}
+.cartline .q{width:26px;height:26px;border:1px solid var(--border);border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;background:#fff}
+.totals{padding:10px 12px;font-size:13px;display:flex;flex-direction:column;gap:5px;border-top:1px solid var(--border);margin-top:auto}
+.totals .r2{display:flex;justify-content:space-between}
+.totals .r2.big{font-size:18px;font-weight:700;padding-top:4px}
+.cart-f{padding:10px 12px;border-top:1px solid var(--border);background:var(--footer);display:flex;gap:8px;flex:none}
+.regbar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);background:#f6f9fc;cursor:pointer;flex:none;font-size:13px}
+.regbar:hover{background:#eef3f8}
+.regbar .ic{width:26px;height:26px;border-radius:6px;background:var(--sidebar);color:#e0e5eb;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.regbar.warn{background:#fff4e8;border-bottom-color:#f5cfae}
+.regbar.warn .ic{background:var(--warning)}
+.regbar .exp{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:600}
+.regbar .chev{color:var(--muted-fg)}
+.regbar.chrome{cursor:default;background:#fff;white-space:nowrap}
+.regbar.chrome .reg .b{overflow:hidden;text-overflow:ellipsis}
+.regbar2 .r2{white-space:nowrap}
+.regbar.chrome .reg{display:flex;align-items:center;gap:8px;cursor:pointer;flex:1;min-width:0;border-radius:6px;padding:2px 4px;margin:-2px -4px}
+.regbar.chrome .reg:hover{background:#eef3f8}
+.regbar .exp{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:600}
+.chrome-r{display:flex;align-items:center;gap:10px;margin-left:auto;flex:none}
+.chrome-r .dot{width:10px;height:10px;border-radius:50%;background:var(--success)}
+.chrome-r .dot.off{background:var(--destructive)}
+.chrome-r .av{width:24px;height:24px;border-radius:50%;background:var(--sidebar);color:#e0e5eb;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.chrome-r .bell{color:var(--muted-fg);display:inline-flex}
+.chrome-r .store{font-weight:600;color:var(--fg)}
+.chrome-r .burger,.regbar .burger{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;color:var(--fg);flex:none}
+.regbar2{border-bottom:1px solid var(--border);background:#fff;flex:none}
+.regbar2 .r1{display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--border);background:var(--card-header);font-size:13px}
+.regbar2 .r2{display:flex;align-items:center;gap:8px;padding:8px 12px;font-size:13px;cursor:pointer}
+.regbar2 .r2:hover{background:#f6f9fc}
+.regbar2.warn .r2{background:#fff4e8}
+.regbar2 .ic,.regbar.chrome .ic{width:26px;height:26px;border-radius:6px;background:var(--sidebar);color:#e0e5eb;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.regbar2.warn .ic{background:var(--warning)}
+.prodcol .search .chrome-r{margin-left:6px}
+.pagebar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);background:#fff;flex:none;font-size:13px}
+.pagebar .ttl2{font-size:16px;font-weight:700}
+.rail .logo{height:44px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--sidebar-border);margin-bottom:4px}
+.rail .logo i{width:22px;height:22px;border-radius:6px;background:#4da3ff;display:block}
+.rail .it .cnt{position:absolute;top:8px;right:9px;min-width:15px;height:15px;border-radius:8px;background:var(--destructive);color:#fff;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid var(--sidebar)}
+.rail .it.avatar{height:56px}
+.rail .it.avatar .av{width:28px;height:28px;border-radius:50%;background:#e0e5eb;color:#142a41;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.regbar.quiet{height:48px;padding:0 12px;background:#fff;cursor:default;white-space:nowrap}
+.regbar.quiet .reg{display:flex;align-items:center;gap:8px;cursor:pointer;flex:1;min-width:0;height:40px;border-radius:6px;padding:0 4px;margin:0 -4px}
+.regbar.quiet .reg:hover{background:#eef3f8}
+.regbar.quiet .reg .b{min-width:0;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis}
+.regbar.quiet .reg .pill,.regbar.quiet .reg .exp,.regbar.quiet .reg .chev,.regbar.quiet .reg .mut{flex:none}
+.regbar.quiet .ic{width:26px;height:26px;border-radius:6px;background:var(--sidebar);color:#e0e5eb;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.regbar.quiet.warn .ic{background:var(--warning)}
+.regbar.quiet .exp{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:600}
+.regbar.quiet .names{display:flex;align-items:center;gap:8px;flex:1;min-width:0;white-space:nowrap}
+.regbar.quiet .names .store{cursor:pointer;border-radius:6px;padding:6px 6px;margin:-6px -6px}
+.regbar.quiet .names .store:hover{background:#eef3f8}
+.regbar.quiet .ibtn{width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;flex:none;cursor:pointer;border-radius:8px;color:var(--fg)}
+.regbar.quiet .ibtn:hover{background:#eef3f8}
+.regbar.quiet .ibtn.warn{color:var(--warning)}
+.regbar.quiet .avbtn{width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;margin-right:-8px;flex:none;cursor:pointer;border-radius:8px}
+.regbar.quiet .avbtn:hover{background:#eef3f8}
+.regbar.quiet .avbtn .av{width:28px;height:28px;border-radius:50%;background:var(--sidebar);color:#e0e5eb;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.regbar .burger.dot::after{content:"";position:absolute;margin:-16px 0 0 14px;width:8px;height:8px;border-radius:50%;background:var(--destructive);border:2px solid #fff}
+.pill.off{background:#fff1e6;color:var(--warning)}
+.tabbar .av{width:22px;height:22px;border-radius:50%;background:var(--sidebar);color:#e0e5eb;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700}
+.gatecard{padding:14px;display:flex;flex-direction:column;gap:12px;overflow:auto;flex:1}
+.gatecard .head{display:flex;align-items:center;gap:10px}
+.gatecard .head .ic{width:40px;height:40px;border-radius:10px;background:var(--sidebar);color:#e0e5eb;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.tabbar{display:flex;border-top:1px solid var(--border);background:#fff;flex:none}
+.tabbar button{flex:1;border:0;background:transparent;padding:8px 0 10px;font:inherit;font-size:11px;color:var(--muted-fg);display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+.tabbar button.on{color:var(--primary)}
+.tabbar .badge{position:absolute;margin-left:22px;margin-top:-4px;background:var(--primary);color:#fff;border-radius:999px;font-size:9px;padding:1px 5px;font-weight:700}
+.tabbar .badge.warn{background:var(--warning)}
+
+/* ---------- register panel ---------- */
+.panel-wrap{position:absolute;inset:0;background:rgba(0,0,0,.7);z-index:15;display:flex;justify-content:flex-end;animation:fadein .15s ease-out}
+.cartcol{position:relative}
+.panel{width:440px;max-width:100%;height:100%;background:var(--bg);display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(0,0,0,.3);animation:slidein .22s ease-out}
+@keyframes slidein{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
+@keyframes slideup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.phone .panel-wrap{align-items:flex-end}
+.phone .panel{width:100%;height:94%;border-radius:16px 16px 0 0;animation:slideup .25s ease-out}
+.panel-h{padding:12px 14px;display:flex;align-items:flex-start;gap:8px;border-bottom:1px solid var(--border);background:#fff;flex:none}
+.panel-h .t{font-size:16px;font-weight:700}
+.panel-h .s{font-size:12px;color:var(--muted-fg)}
+.panel-h .x{margin-left:auto;border:0;background:transparent;font-size:20px;cursor:pointer;color:var(--muted-fg);line-height:1}
+.panel-b{padding:14px;overflow:auto;display:flex;flex-direction:column;gap:12px;flex:1}
+.panel-f{padding:10px 14px;border-top:1px solid var(--border);background:var(--footer);display:flex;gap:8px;flex:none}
+.panel-h .amt{font-size:32px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1.1}
+.tiles3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tiles3 .btn{height:56px;font-size:14px;font-weight:600}
+.list{background:#fff;border:1px solid var(--border);border-radius:var(--radius)}
+.list .lr{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;min-height:44px}
+.list .lr:last-child{border-bottom:0}
+.list .lr .v{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:600}
+.list .lr.click{cursor:pointer}
+.list .lr.click:hover{background:#f6f9fc}
+.vline{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:2px 2px}
+.cart-h .avbtn{width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;margin:-6px -6px -6px 0}
+.cart-h .avbtn .av{width:28px;height:28px;border-radius:50%;background:var(--sidebar);color:#e0e5eb;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.regbody{padding:14px;display:flex;flex-direction:column;gap:12px;overflow:auto;flex:1}
+.regbody .amt{font-size:32px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1.1}
+.emptycart{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted-fg);gap:6px}
+.drawer-wrap{position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:15;display:flex;align-items:flex-end;animation:fadein .15s ease-out}
+.drawer{width:100%;height:76%;background:var(--bg);border-radius:14px 14px 0 0;display:flex;flex-direction:column;box-shadow:0 -10px 30px rgba(0,0,0,.3);animation:slideup .22s ease-out}
+.drawer .handle{width:40px;height:5px;border-radius:3px;background:#c7ced6;margin:8px auto 0;flex:none}
+.dentiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.phone .dentiles{grid-template-columns:repeat(3,1fr)}
+.dentile{height:64px;border:1px solid var(--border);border-radius:8px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;position:relative;user-select:none;-webkit-user-select:none;transition:transform .1s ease-out,background .12s ease-out}
+.dentile:active{transform:scale(.96);background:#e9eff5}
+.dentile b{font-size:16px}
+.dentile .sub{font-size:12px;color:var(--muted-fg);font-variant-numeric:tabular-nums}
+.dentile .cnt{position:absolute;top:-6px;right:-6px;min-width:22px;height:22px;border-radius:11px;background:var(--primary);color:#fff;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 6px;animation:stamp .2s ease-out}
+.dentile.note{background:#f4f7fb}
+.vline b{font-size:16px;font-variant-numeric:tabular-nums;transition:color .15s ease-out}
+.vline .ok{display:inline-flex;align-items:center;gap:5px;color:var(--success)}
+
+/* app primitives */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card-h{background:var(--card-header);padding:8px 10px;border-bottom:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;display:flex;align-items:center;gap:8px;font-weight:600}
+.card-h .sub{font-weight:400;color:var(--muted-fg);font-size:12px}
+.card-b{padding:12px}
+.card-f{background:var(--footer);border-top:1px solid var(--border);padding:8px 10px;display:flex;justify-content:flex-end;gap:8px;border-radius:0 0 var(--radius) var(--radius)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 14px;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--fg);font:inherit;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:background .12s ease-out,transform .1s ease-out,box-shadow .12s ease-out;-webkit-tap-highlight-color:transparent}
+.btn:active,.tile:active,.list .lr.click:active,.regbar .ibtn:active,.regbar .avbtn:active,.regbar .store:active,.collapse>button:active{transform:scale(.985);background:#e9eff5}
+.btn.p:active{background:#00518f}
+.btn:focus-visible,input.in:focus-visible{outline:2px solid #9ec5ea;outline-offset:1px}
+.btn:hover{background:#f7f9fb}
+.btn.p{background:var(--primary);border-color:var(--primary);color:var(--primary-fg)}
+.btn.p:hover{background:#005ea9}
+.btn.d{background:var(--destructive);border-color:var(--destructive);color:#fff}
+.btn.od{color:var(--destructive);border-color:#f2b8c1}
+.btn.g{border-color:transparent;background:transparent}
+.btn.g:hover{background:#eef2f6}
+.btn.sm{height:30px;padding:0 10px;font-size:12px}
+.btn.lg{height:44px;padding:0 20px;font-size:15px}
+.btn.xl{height:52px;font-size:16px;font-weight:600}
+.btn.w{width:100%}
+.btn:disabled,.btn.dis{opacity:.5;cursor:not-allowed}
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:600;height:20px}
+.pill.open{background:#e3f4ea;color:var(--success)}
+.pill.closed{background:#e6ecf2;color:var(--muted-fg)}
+.pill.count{background:#fff1e6;color:var(--warning)}
+.pill.warn{background:#fff1e6;color:var(--warning)}
+.pill.bad{background:#fde8eb;color:var(--destructive)}
+.pill.info{background:#e6f2fb;color:var(--info)}
+.pill.pro{background:#f3e8ff;color:#7c3aed}
+.pill.dotp::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.mut{color:var(--muted-fg)}
+.sm{font-size:12px}
+.xs{font-size:12px}
+.num{font-variant-numeric:tabular-nums}
+.b{font-weight:600}
+.row{display:flex;align-items:center;gap:8px}
+.grow{flex:1;min-width:0}
+.right{text-align:right}
+.money{font-variant-numeric:tabular-nums;font-weight:600}
+.money.neg{color:var(--destructive)}
+.money.pos{color:var(--success)}
+table.t{width:100%;border-collapse:collapse;font-size:13px}
+table.t th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-fg);font-weight:600;padding:6px 8px;background:var(--footer);border-bottom:1px solid var(--border)}
+table.t td{padding:7px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+table.t tr:last-child td{border-bottom:0}
+table.t td.r,table.t th.r{text-align:right}
+table.t tr.sel td{background:#e6f2fb}
+table.t tr.click{cursor:pointer}
+table.t tr.click:hover td{background:#f4f7fa}
+table.t tr.void td{color:var(--muted-fg);text-decoration:line-through}
+table.t tr.void td:last-child{text-decoration:none}
+.narrow table.t td,.narrow table.t th,.phone table.t td,.phone table.t th{padding:6px 5px;font-size:12px}
+.who{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--muted-fg)}
+.who i{width:16px;height:16px;border-radius:50%;background:#dbe4ee;color:#334155;display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-style:normal;font-weight:700}
+.line1{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);background:#fff}
+.alert{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius);font-size:13px}
+.alert.w{background:#fff4e8;border:1px solid #f5cfae;color:#7a3e00}
+.alert.i{background:#e9f3fb;border:1px solid #bcd9ef;color:#0b4a73}
+.alert.e{background:#fde8eb;border:1px solid #f3b6c0;color:#8a0f22}
+.alert .btn{margin-left:auto}
+.stack{display:flex;flex-direction:column;gap:12px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.narrow .cols3{grid-template-columns:1fr 1fr}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.actions .btn{flex:1 1 30%}
+.gatecard .actions .btn{flex:0 0 auto;height:44px;padding:0 14px;font-size:13px}
+input.in,select.in{height:36px;border:1px solid var(--border);border-radius:6px;padding:0 10px;font:inherit;font-size:14px;background:#fff;width:100%;color:var(--fg)}
+input.in.big{height:64px;font-size:32px;font-weight:700;text-align:left;font-variant-numeric:tabular-nums;letter-spacing:-.01em;padding-right:14px}
+.amtwrap{position:relative}
+.amtwrap .cur{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:26px;font-weight:700;color:var(--fg);pointer-events:none}
+.amtwrap input.in.big{padding-left:34px}
+input.in:focus{outline:2px solid #9ec5ea;border-color:var(--primary)}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:12px;color:var(--muted-fg);font-weight:600}
+.seg2{display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;background:#fff}
+.seg2 button{border:0;background:transparent;padding:0 14px;height:36px;font:inherit;font-size:13px;cursor:pointer;color:var(--fg)}
+.seg2 button.on{background:var(--primary);color:#fff;font-weight:600}
+.seg2 button.on.out{background:var(--warning)}
+.seg2 button.on.ns{background:var(--secondary)}
+.tabs{display:inline-flex;background:var(--muted);border-radius:6px;padding:3px;gap:2px}
+.tabs button{border:0;background:transparent;padding:6px 12px;border-radius:5px;font:inherit;font-size:13px;color:var(--muted-fg);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.tabs button.on{background:#fff;color:var(--fg);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:1px solid var(--border);border-radius:999px;background:#fff;font-size:12px;color:var(--fg)}
+.chip.on{border-color:var(--primary);background:#e6f2fb;color:#0b4a73}
+.filterbar{background:var(--card-header);border:1px solid var(--border);border-radius:var(--radius);padding:6px 8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.receipt{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;line-height:1.35;background:#fff;color:#111;padding:14px 16px;width:300px;box-shadow:0 2px 10px rgba(0,0,0,.15);border-radius:3px;white-space:pre}
+.receipt.copy{position:relative}
+.receipt .printed{position:absolute;bottom:14px;right:14px;border:2px solid var(--success);color:var(--success);padding:1px 8px;font-weight:700;transform:rotate(-6deg);font-family:var(--sys);font-size:12px;letter-spacing:.06em}
+.receipt{position:relative}
+.receipt.copy::after{content:"COPY";position:absolute;top:10px;right:12px;border:2px solid #b91c1c;color:#b91c1c;padding:1px 6px;font-weight:700;transform:rotate(-8deg);opacity:.85}
+.hero{padding:18px 14px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
+.hero .big{font-size:38px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.hero .lbl{font-size:12px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.detail{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:13px}
+.detail div b{display:block;font-size:11px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.settled{color:var(--info);font-weight:600}
+.locked{display:inline-flex;align-items:center;gap:6px;color:var(--muted-fg);font-size:12px}
+.sect{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fg);font-weight:700;margin:4px 0 6px}
+.collapse{border:1px solid var(--border);border-radius:var(--radius);background:#fff}
+.collapse>button{width:100%;display:flex;align-items:center;gap:8px;border:0;background:transparent;padding:11px 12px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;text-align:left}
+.collapse>button .mut{margin-left:auto;font-weight:400}
+.collapse .in-b{padding:0 12px 12px}
+.sheet-wrap{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:20;animation:fadein .15s ease-out}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@keyframes popin{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes stamp{0%{opacity:0;transform:scale(1.15)}60%{opacity:1;transform:scale(.98)}100%{transform:none}}
+@keyframes settle{0%{background:#e6f2fb}100%{background:transparent}}
+@keyframes toastin{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.sheet{animation:popin .2s ease-out}
+.phone .sheet{animation:slideup .22s ease-out}
+.stamp{animation:stamp .25s ease-out}
+.settle{animation:settle .8s ease-out}
+.toast{position:absolute;left:12px;right:12px;top:56px;z-index:12;background:var(--fg);color:#fff;border-radius:8px;padding:10px 12px;font-size:13px;display:flex;align-items:center;gap:8px;box-shadow:0 6px 20px rgba(0,0,0,.2);animation:toastin .2s ease-out;pointer-events:none}
+.toast .ck{width:18px;height:18px;border-radius:50%;background:var(--success);display:inline-flex;align-items:center;justify-content:center;flex:none}
+.toast .num{font-weight:700}
+.toast .undo{margin-left:auto;color:#fff;text-decoration:underline;font-weight:600;cursor:pointer;pointer-events:auto;padding:6px 8px;margin:-6px -8px -6px auto;min-height:44px;display:inline-flex;align-items:center}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.phone .sheet-wrap{align-items:flex-end}
+.sheet{background:#fff;border-radius:10px;border:1px solid var(--border);width:440px;max-width:92%;max-height:92%;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.sheet.wide{width:640px}
+.phone .sheet{width:100%;max-width:100%;border-radius:16px 16px 0 0;max-height:94%}
+.sheet-h{padding:14px 16px 10px;display:flex;align-items:flex-start;gap:8px;border-bottom:1px solid var(--border)}
+.sheet-h .t{font-size:16px;font-weight:700}
+.sheet-h .s{font-size:12px;color:var(--muted-fg)}
+.sheet-h .x{margin-left:auto;border:0;background:transparent;font-size:18px;cursor:pointer;color:var(--muted-fg);line-height:1}
+.sheet-b{padding:14px 16px;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.sheet-f{padding:10px 16px;border-top:1px solid var(--border);background:var(--footer);display:flex;justify-content:flex-end;gap:8px;border-radius:0 0 10px 10px}
+.phone .sheet-f{border-radius:0}
+.denoms{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.den{border:1px solid var(--border);border-radius:6px;padding:6px;display:flex;flex-direction:column;gap:3px;background:#fff}
+.den b{font-size:12px}
+.den input{height:30px;border:1px solid var(--border);border-radius:5px;padding:0 6px;font:inherit;text-align:right;width:100%}
+.den .sub{font-size:10px;color:var(--muted-fg);text-align:right}
+.vari{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:var(--radius);background:var(--muted);font-size:13px}
+.vari b{font-size:16px}
+.reports-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+.phone .reports-grid{grid-template-columns:1fr}
+.rep-chart{height:120px;display:flex;align-items:flex-end;gap:6px;padding:8px 8px 0}
+.rep-chart i{flex:1;background:#e75c3a;border-radius:2px 2px 0 0;position:relative;display:block}
+.rep-chart i::after{content:"";position:absolute;left:0;right:0;top:0;height:18%;background:#007866;border-radius:2px 2px 0 0}
+.leaves{border:1px dashed #b45309;background:#fffbeb;color:#7a3e00;border-radius:6px;padding:6px 10px;font-size:12px;display:inline-flex;gap:6px;align-items:center}
+.leaves b{color:#b45309}
+
+/* ---------- below the frame ---------- */
+.notes{padding:10px 32px 60px;display:grid;grid-template-columns:1.1fr .9fr;gap:20px}
+.notes h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin:0 0 8px}
+.notes .box{background:#fff;border:1px solid #d9dee5;border-radius:10px;padding:14px 16px;font-size:13px}
+.notes ul{margin:0;padding-left:18px}
+.notes li{margin:0 0 6px}
+pre.state{margin:0;background:#0f172a;color:#cbd5e1;border-radius:10px;padding:12px 14px;font-size:11px;line-height:1.4;max-height:420px;overflow:auto}
+.log{background:#fff;border:1px solid #d9dee5;border-radius:10px;padding:10px 14px;font-size:12px;max-height:200px;overflow:auto}
+.log div{padding:3px 0;border-bottom:1px dashed #e5e7eb}
+.log div:last-child{border-bottom:0}
+kbd{font-family:ui-monospace,Menlo,monospace;background:#eef2f6;border:1px solid #d2d8df;border-radius:4px;padding:0 5px;font-size:11px}
+body.embed .strip,body.embed .doc,body.embed .notes{display:none}
+body.embed{background:transparent}
+body.embed .stage{padding:0}
+@media (max-width:1240px){body:not(.embed) .frame.tablet{transform-origin:top center;transform:scale(.9)}}
+@media (max-width:1000px){.notes{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="doc">
+  <h1>Register in the POS screen — live</h1>
+  <p class="lead">Third cut (2026-09-11, late). No title bar: the bar above the cart names the place and carries the cashier. The register is not a page. With sessions on and no session open, the cart column <i>is</i> the Open register card; while counting, the cart column <i>is</i> the count screen; while open, a bar at the top of the cart opens the Register panel (paid in / out, no sale, X-report, close, last closure). No menu item, no sign-in state — the cashier is whoever the app is signed in as. Everything in the frame works; nothing persists.</p>
+</div>
+
+<div class="strip" id="strip"></div>
+
+<div class="stage"><div id="frame"></div></div>
+
+<div class="notes">
+  <div>
+    <h2>What to react to</h2>
+    <div class="box">
+      <ul>
+        <li><b>The gate</b> — <i>Register closed</i>: the cart column is the Open register card, with the float pair inline (expected, then what you counted). Products stay browsable for price checks; tapping one logs why nothing was added. Is the card the right size, and is the last closure the right thing to see under it?</li>
+        <li><b>The bar names the place, not the money</b> (Paul, 2026-09-11 late): the expected figure is gone from the bar and lives in the panel one tap away. Names on the left are places you can change; icons on the right are things you open. One register → `UK Store`; several → `Front counter · UK Store`. Stores → 2: the store name is a tap target that opens a store switcher (a register belongs to one store, so switching re-binds the register). The drawer icon button opens the panel while a session is open. <b>The avatar</b> opens the user sheet: your sales today, Switch user (the device's stored users, or another account via WordPress login), Switch register when the store has more than one, Sign out apart at the bottom. Status pill only when the state is not the normal one.</li>
+        <li><b>The bar</b> — <i>Session open</i>: one line at the top of the cart: register, status, expected cash (blind cashiers see none). Tap it for the panel. Overdue turns it amber with the close time. Would you rather it sat in the app header?</li>
+        <li><b>The panel</b> (pass 2) — the amount is the title; three 56 pt tiles Paid in / Paid out / No sale; one list: Cash, Card, Paid in/out (tap for the rows), Print X-report; one row for the last closure with its reprint; Close register alone in the footer, neutral not red. The status row, the hero card, the breakdown sentence, the three folds and the Reports link are gone.</li>
+        <li><b>Counting</b> (pass 2) — one big input, one line under it (Expected · variance, live as you type), denomination and card counted folded, one button. The two cards, the breakdown sentence and the closure line are gone.</li>
+        <li><b>First sign-in</b> — registers are <b>server records</b> (Paul, 2026-09-11 late): every store gets one by default, more are created in the plugin's admin, never in the POS. The device holds only a pointer. Registers → <i>1</i>: binding is silent and the register is never named on screen (the bar says <i>Register</i>). Registers → <i>3</i>: a one-time picker replaces the cart; the choice is changed under the avatar. A wiped device re-binds and loses no numbering.</li>
+        <li><b>Blind count</b> — untick <i>view reports</i>: expected and variance vanish from the bar, the panel and the count.</li>
+        <li><b>Offline close</b> — Network → Offline: the count says how many sales are not on the server yet; the closure is marked <i>Unsynced</i>.</li>
+        <li><b>Reports</b> — unchanged in shape: <i>Sales</i> (the range report, renamed) and <i>Closures</i> (Pro). Free's upgrade card now points back to the POS screen for the last closure.</li>
+      </ul>
+    </div>
+    <h2 style="margin-top:18px">Decided on this cut (2026-09-11)</h2>
+    <div class="box">
+      <ul>
+        <li><b>No "Signed out" state.</b> The register is reached inside a signed-in app (web login at wcpos.com or the app's connect screen). A second sign-in was a Square/Shopify shape, not ours (#209, #217).</li>
+        <li><b>No "Register" menu item.</b> Reverses the menu half of #207. Register is a state of the POS screen plus one panel; managers who want history have Reports.</li>
+        <li><b>Sessions off</b> means the POS screen is exactly today's. Nothing appears anywhere.</li>
+        <li><b>Landing page after sign-in</b> is POS, with the gate inline. Moot as a question.</li>
+        <li><b>Back to selling</b> exists, because counting is a mode of the POS screen and leaving it must go somewhere.</li>
+        <li><b>Closing with unpaid carts open</b> is allowed. Open carts are unsynced orders, not tendered money; they belong to whoever opens next.</li>
+        <li><b>First sign-in</b> names the register on the POS screen, not on the store picker — a cashier choosing a store should not also be asked to name a till.</li>
+      </ul>
+    </div>
+    <h2 style="margin-top:18px">Questions still open</h2>
+    <div class="box" id="questions"></div>
+  </div>
+  <div>
+    <h2>State (live)</h2>
+    <pre class="state" id="statejson"></pre>
+    <h2 style="margin-top:14px">Action log</h2>
+    <div class="log" id="log"></div>
+  </div>
+</div>
+
+<script>
+/* ============================ data ============================ */
+const CUR = '£';
+const fmt = (n, sign=false) => { const a = Math.abs(n); const s = CUR + a.toFixed(2); if (n < 0) return '−' + s; return (sign && n > 0 ? '+' : '') + s; };
+const DENOMS = [50,20,10,5,2,1,0.5,0.2,0.1,0.05,0.02,0.01];
+const CASHIERS = { demo:{name:'Demo Cashier', ini:'DC'}, amy:{name:'Amy Okafor', ini:'AO'}, sam:{name:'Sam Reilly', ini:'SR'} };
+const PRODUCTS = [['Flat white',3.2],['Sourdough loaf',4.2],['Tote bag',12],['Oat latte',3.6],['Croissant',2.4],['Beans 250g',9.5],['Cinnamon bun',3],['Gift card',20]];
+const CART = [['Flat white',2,3.2],['Sourdough loaf',1,4.2],['Tote bag',1,12]];
+const ORDERS = [{id:'a', items:CART},{id:'b', items:[['Oat latte',1,3.6],['Croissant',2,2.4]]}];
+const orderTotal = o => o.items.reduce((a,[,q,p])=>a+q*p,0);
+
+const S = {
+  viewport:'tablet', page:'pos', floatMode:'default', phoneTab:'cart', header:'E', unread:0,
+  sessionsOn:true, pro:true, online:true,
+  caps:{ cash:true, reports:true, closures:true },
+  now:'17:42', today:'Thu 11 Sep',
+  idea:'none', tabsPos:'bottom', cartEmpty:false, orders:1, currentOrder:'a', stores:2, registers:3, register:{ exists:true, name:'Front counter', store:'UK Store', closeTime:'18:00', threshold:5, printer:'Epson TM-m30', defaultFloat:200 },
+  session:null,
+  closures:[],
+  sheet:null, panel:false, toast:null, settle:null, openForm:{}, setupName:'Front counter', reportsTab:'sales', selClosure:null, countOpen:{}, log:[]
+};
+
+function seedClosures(){
+  return [
+    { number:12, ts:20260910.1802, register:'Front counter', opened:'Wed 10 Sep 09:01', closed:'Wed 10 Sep 18:02', openedBy:'demo', closedBy:'demo',
+      floatExpected:200, floatCounted:200, cashSales:402.1, cashRefunds:0, paidIn:0, paidOut:30, expected:572.1, tillExpected:572.1, counted:570.1,
+      card:{sales:811.4, refunds:24}, unsynced:0, unsyncedTotal:0, orders:41, refundsN:1, firstReceipt:'FC-1187', lastReceipt:'FC-1227',
+      movements:[{type:'paid_out', amount:30, reason:'Milk & sugar', by:'amy', at:'11:40'}],
+      taxes:[{rate:'VAT 20%', net:1011.25, tax:202.25}], corrections:[], perpetual:{sales:48211.9, refunds:1210.4}, printed:'18:02', copies:0, settled:null },
+    { number:11, ts:20260909.1758, register:'Front counter', opened:'Tue 9 Sep 09:03', closed:'Tue 9 Sep 17:58', openedBy:'amy', closedBy:'sam',
+      floatExpected:200, floatCounted:195, cashSales:288.7, cashRefunds:15, paidIn:0, paidOut:0, expected:468.7, tillExpected:463.7, counted:468.7,
+      card:{sales:602, refunds:0}, unsynced:0, unsyncedTotal:0, orders:33, refundsN:1, firstReceipt:'FC-1151', lastReceipt:'FC-1186',
+      movements:[], taxes:[{rate:'VAT 20%', net:742.25, tax:148.45}],
+      corrections:[{type:'late_sale', at:'Wed 10 Sep 09:14', amount:5, note:'Order FC-1186a landed after close', by:'server'}],
+      perpetual:{sales:46998.4, refunds:1186.4}, printed:'17:58', copies:1, settled:{expected:473.7, variance:-5} },
+    { number:7, ts:20260910.1630, register:'Back office', opened:'Wed 10 Sep 10:10', closed:'Wed 10 Sep 16:30', openedBy:'sam', closedBy:'sam',
+      floatExpected:100, floatCounted:100, cashSales:56, cashRefunds:0, paidIn:0, paidOut:0, expected:156, tillExpected:156, counted:156,
+      card:{sales:1240, refunds:0}, unsynced:0, unsyncedTotal:0, orders:9, refundsN:0, firstReceipt:'BO-88', lastReceipt:'BO-96',
+      movements:[], taxes:[{rate:'VAT 20%', net:1080, tax:216}], corrections:[], perpetual:{sales:9120, refunds:0}, printed:'16:30', copies:0, settled:null },
+  ];
+}
+function sampleSession(){
+  return { state:'open', openedAt:'09:02', openedBy:'demo', floatExpected:200, floatCounted:200,
+    cashSales:318.4, cashRefunds:12, orders:14, refundsN:1, card:{sales:642.1, refunds:0}, unsyncedN:3, unsyncedTotal:61.2,
+    movements:[
+      {id:1, type:'paid_in',  amount:20,   reason:'Change from the bank', by:'demo', at:'10:15'},
+      {id:2, type:'no_sale',  amount:0,    reason:'Customer needed change for the meter', by:'amy', at:'12:31'},
+      {id:3, type:'paid_out', amount:45.6, reason:'Window cleaner', by:'amy', at:'14:05'},
+    ], nextId:4, ranBy:['demo','amy'], counted:{}, override:null };
+}
+S.closures = seedClosures();
+S.session = sampleSession();
+
+/* ============================ derived ============================ */
+const movSum = (ses, type) => ses.movements.filter(m => m.type===type && !m.voidedBy).reduce((a,m)=>a+m.amount,0);
+function expected(ses){ return +(ses.floatCounted + ses.cashSales - ses.cashRefunds + movSum(ses,'paid_in') - movSum(ses,'paid_out')).toFixed(2); }
+const lastClosure = () => S.register.exists ? S.closures.filter(c=>c.register===S.register.name).sort((a,b)=>b.number-a.number)[0] : null;
+const can = k => S.caps[k];
+const who = k => CASHIERS[k] || {name:k, ini:'?'};
+const overdue = () => S.session && S.session.state==='open' && S.now > S.register.closeTime;
+const gated = () => S.sessionsOn && (!S.register.exists || !S.session || S.session.state==='counting');
+
+function log(msg){ S.log.unshift(`${S.now} · ${msg}`); if (S.log.length>40) S.log.pop(); }
+let toastTimer=null; const CK='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+function toast(html, undoId){ S.toast=html + (undoId?`<span class="undo" data-act="undoMove" data-id="${undoId}">Undo</span>`:''); clearTimeout(toastTimer); toastTimer=setTimeout(()=>{ S.toast=null; render(); }, undoId?4000:2200); }
+function settleKey(k){ S.settle=k; setTimeout(()=>{ if(S.settle===k){ S.settle=null; } }, 900); }
+function tick(min){ const [h,m]=S.now.split(':').map(Number); const t=h*60+m+min; S.now=`${String(Math.floor(t/60)%24).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`; }
+// the float the open card suggests: the register's default float when one is set, else what was counted at the last closure
+function suggestedFloat(){ const lc=lastClosure(); return S.floatMode==='default' && S.register.defaultFloat!=null ? S.register.defaultFloat : (lc?lc.counted:0); }
+function suggestedFloatWhy(){ const lc=lastClosure(); return S.floatMode==='default' && S.register.defaultFloat!=null ? `this register's default float` : (lc?`everything counted at closure ${lc.number}`:'no previous closure'); }
+
+/* ============================ actions ============================ */
+const A = {
+  set(k,v){ S[k]=v; if(k==='page'){ S.panel=false; S.sheet=null; } },
+  cap(k){ S.caps[k]=!S.caps[k]; },
+  scenario(name){
+    S.sheet=null; S.panel=false; S.page='pos'; S.openForm={}; S.register.exists=true; S.phoneTab='cart';
+    switch(name){
+      case 'new': S.sessionsOn=true; S.session=null; S.now='08:50'; if (S.registers>1) S.register.exists=false; else log('Store has one register — bound silently, nothing to choose'); break;
+      case 'off': S.sessionsOn=false; S.session=null; S.now='10:12'; break;
+      case 'closed': S.sessionsOn=true; S.session=null; S.now='08:55'; break;
+      case 'open': S.sessionsOn=true; S.session=sampleSession(); S.now='17:42'; break;
+      case 'counting': S.sessionsOn=true; S.session=sampleSession(); S.session.state='counting'; S.session.countingAt='17:42'; S.now='17:44'; break;
+      case 'overdue': S.sessionsOn=true; S.session=sampleSession(); S.now='18:31'; break;
+    }
+    log(`Scenario → ${name}`);
+  },
+  pickRegister(name){ S.register.exists=true; S.register.name=name; tick(1); if (name==='Front counter') S.session=sampleSession(); else S.session=null; log(`This device is now bound to "${name}" (server register, ${S.register.store}). Numbering and counters live on the server; a wiped device re-binds and loses nothing.`); },
+  openPanel(){ S.panel=true; },
+  checkoutCash(){ const exp=suggestedFloat(); tick(1); S.session={ state:'open', openedAt:S.now, openedBy:'demo', floatExpected:exp, floatCounted:exp, cashSales:22.6, cashRefunds:0, orders:1, refundsN:0, card:{sales:0, refunds:0}, unsyncedN:0, unsyncedTotal:0, movements:[], nextId:1, ranBy:['demo'], counted:{}, override:null }; S.cartEmpty=true; toast(`<span class="ck">${CK}</span>Paid £22.60 in cash · register open, float <span class="num">${fmt(exp)}</span> ${S.floatMode==='default'?'default':'carried'}`); log(`First cash sale of the day — the register opened itself with the ${S.floatMode==='default'?'default':'carried'} float ${fmt(exp)} (Shopify auto-open shape)`); },
+  kick(){ tick(1); S.session.movements.push({id:S.session.nextId++, type:'no_sale', amount:0, reason:'Drawer opened', by:'demo', at:S.now}); toast(`<span class="ck">${CK}</span>Drawer opened · no sale`); log('No sale — the drawer kicked open (haptic on native)'); },
+  tapDen(d, n){ S.countOpen['d'+d]=(+(S.countOpen['d'+d]||0))+n; const total=DENOMS.reduce((a,x)=>a+(parseFloat(S.countOpen['d'+x])||0)*x,0); S.session.counted.cash=total.toFixed(2); },
+  clearDen(){ DENOMS.forEach(d=>delete S.countOpen['d'+d]); S.session.counted.cash=''; },
+  switchUser(name){ S.sheet=null; log(name==='another' ? 'Opens the WordPress login for a different account; the returned token is that person\'s (#217)' : `Switched to ${name} — their stored token; every row from now on records them`); },
+  rebindRegister(){ S.sheet=null; S.register.exists=false; S.session=null; log('Choose another register on this store'); },
+  signOut(){ S.sheet=null; log('Signed out — the register stays this device\'s; the next person signs in with their own account'); },
+  switchStore(name){ if(name===S.register.store) { S.sheet=null; return; } S.register.store=name; S.sheet=null; S.session=null; S.register.name = name==='Dublin Store' ? 'Dublin till' : 'Front counter'; if (S.registers>1 && name==='UK Store') S.register.exists=false; log(`Switched to ${name}. A register belongs to one store, so this device re-binds: ${S.registers>1?'pick one of its registers':'its only register, silently'}.`); },
+  closePanel(){ S.panel=false; },
+  openSheet(type, extra={}){ S.sheet={type, ...extra}; },
+  closeSheet(){ S.sheet=null; },
+  doOpen(counted){
+    const c = parseFloat(counted); if (isNaN(c)) return;
+    const exp = suggestedFloat(); tick(2);
+    S.session = { state:'open', openedAt:S.now, openedBy:'demo', floatExpected:exp, floatCounted:c, cashSales:0, cashRefunds:0, orders:0, refundsN:0,
+      card:{sales:0, refunds:0}, unsyncedN:0, unsyncedTotal:0, movements:[], nextId:1, ranBy:['demo'], counted:{}, override:null };
+    S.openForm={}; toast(`<span class="ck">${CK}</span>Register open · float <span class="num">${fmt(c)}</span>`); log(`Register opened · float counted ${fmt(c)} (expected ${fmt(exp)}, opening variance ${fmt(c-exp,true)}) — the cart is back`);
+  },
+  doMove(type, amount, reason){
+    const a = type==='no_sale' ? 0 : parseFloat(amount); if (type!=='no_sale' && (isNaN(a) || a<=0)) return; if (!reason) return;
+    tick(4); const mid=S.session.nextId++; S.session.movements.push({id:mid, type, amount:a, reason, by:'demo', at:S.now});
+    S.sheet=null; settleKey('mov'); toast(`<span class="ck">${CK}</span>${label(type)}${type==='no_sale'?'':` <span class="num">${fmt(a)}</span>`} · ${reason}`, type==='no_sale'?null:mid); log(`${label(type)} ${type==='no_sale'?'':fmt(a)} — "${reason}"`);
+  },
+  voidMove(id){
+    const m = S.session.movements.find(x=>x.id===id); if(!m || m.voidedBy) return; tick(1);
+    const v = {id:S.session.nextId++, type:'void', of:id, amount:m.amount, reason:`Voids ${label(m.type).toLowerCase()} ${fmt(m.amount)}`, by:'demo', at:S.now};
+    m.voidedBy = v.id; S.session.movements.push(v); S.sheet=null; settleKey('mov'); toast(`<span class="ck">${CK}</span>Voided ${label(m.type).toLowerCase()} <span class="num">${fmt(m.amount)}</span>`); log(`Voided movement #${id} with a new row #${v.id}`);
+  },
+  startCounting(){ tick(3); S.session.state='counting'; S.session.countingAt=S.now; S.sheet=null; S.panel=false; S.phoneTab='cart'; log('Close register → counting; the cart column is now the count, no sales until it reopens'); },
+  resume(){ S.session.state='open'; delete S.session.countingAt; toast(`<span class="ck">${CK}</span>Back to selling — nothing recorded`); log('Back to selling — counting abandoned, nothing recorded, the cart is back'); },
+  setCount(tender, v){ S.session.counted[tender] = v; },
+  tryClose(){
+    const ses=S.session; const counted=parseFloat(ses.counted.cash); if (isNaN(counted)) return;
+    const variance = +(counted - expected(ses)).toFixed(2);
+    if (Math.abs(variance) > S.register.threshold && !ses.override){ S.sheet={type:'override', variance}; return; }
+    A.writeClosure(counted, variance);
+  },
+  approve(user){ S.session.override = {by:user||'sam', at:S.now}; S.sheet=null; log(`Override approved by ${who(S.session.override.by).name}`); A.tryClose(); },
+  writeClosure(counted, variance){
+    const ses=S.session; const lc=lastClosure(); const n=(lc?lc.number:0)+1; tick(6);
+    const cardCounted = ses.counted.card!==undefined && ses.counted.card!=='' ? parseFloat(ses.counted.card) : null;
+    const unsyncedN = S.online?0:ses.unsyncedN, unsyncedTotal=S.online?0:ses.unsyncedTotal;
+    const c = { number:n, ts:20260911+parseFloat('0.'+S.now.replace(':','')), register:S.register.name, opened:`${S.today} ${ses.openedAt}`, closed:`${S.today} ${S.now}`, openedBy:ses.openedBy, closedBy:'demo',
+      floatExpected:ses.floatExpected, floatCounted:ses.floatCounted, cashSales:ses.cashSales, cashRefunds:ses.cashRefunds,
+      paidIn:movSum(ses,'paid_in'), paidOut:movSum(ses,'paid_out'), expected: unsyncedN? +(expected(ses)-unsyncedTotal).toFixed(2) : expected(ses), tillExpected:expected(ses), counted,
+      card:{...ses.card, counted:cardCounted}, unsynced:unsyncedN, unsyncedTotal, orders:ses.orders, refundsN:ses.refundsN, firstReceipt:'FC-1228', lastReceipt:'FC-1241',
+      movements:ses.movements.filter(m=>m.type!=='void'&&!m.voidedBy), taxes:[{rate:'VAT 20%', net:+((ses.cashSales+ses.card.sales)/1.2).toFixed(2), tax:+((ses.cashSales+ses.card.sales)-(ses.cashSales+ses.card.sales)/1.2).toFixed(2)}],
+      corrections:[], perpetual:{sales:+((lc?lc.perpetual.sales:0)+ses.cashSales+ses.card.sales).toFixed(2), refunds:+((lc?lc.perpetual.refunds:0)+ses.cashRefunds+ses.card.refunds).toFixed(2)},
+      override:ses.override, printed:null, copies:0, settled:null, ranBy:ses.ranBy };
+    S.closures.push(c); S.session=null; S.sheet={type:'zprint', number:n};
+    log(`Closure ${n} · ${S.register.name} written — counted ${fmt(counted)}, expected ${fmt(c.expected)}, ${varianceWord(variance)}${unsyncedN?` · ${unsyncedN} sales unsynced`:''}`);
+  },
+  print(n){ const c=S.closures.find(x=>x.number===n&&x.register===S.register.name); if(!c) return; if(!c.printed){ c.printed=S.now; settleKey('printed'); log(`Z-report for closure ${n} printed once on ${S.register.printer}`);} else { c.copies++; log(`Closure ${n} reprinted — copy ${c.copies}`);} },
+  xprint(){ log('X-report printed (not stored)'); S.sheet=null; },
+  reportsTab(t){ S.reportsTab=t; S.selClosure=null; },
+  selClosure(n, reg){ S.selClosure={n,reg}; },
+  turnOn(){ S.sessionsOn=true; log('Register sessions turned on for UK Store (store setting)'); },
+  tapProduct(name){
+    if (!S.sessionsOn || (S.session && S.session.state==='open')) { log(`${name} added to the cart`); return; }
+    if (!S.register.exists) log(`${name} — not added: choose this device's register first`);
+    else if (!S.session) log(`${name} — not added: the register is closed. Price check only.`);
+    else log(`${name} — not added: the register is counting`);
+  },
+};
+const label = t => ({paid_in:'Paid in', paid_out:'Paid out', no_sale:'No sale', void:'Void'})[t]||t;
+const varianceWord = v => v===0 ? 'exact' : (v>0 ? `over ${fmt(v)}` : `short ${fmt(-v)}`);
+
+/* ============================ icons ============================ */
+const I = {
+  pos:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="10" width="18" height="10" rx="1.5"/><path d="M7 10V6h10v4M3 14h18M8 17h2M14 17h2"/></svg>',
+  products:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8h16v12H4zM4 8l2-4h12l2 4M12 8v12M9 4v4M15 4v4"/></svg>',
+  orders:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21zM9 8h6M9 12h6M9 16h4"/></svg>',
+  coupons:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4z"/><path d="M9 9l6 6M9.5 9.5h0M14.5 14.5h0" stroke-linecap="round"/></svg>',
+  customers:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19c0-3 2.7-5 6-5s6 2 6 5M15 15.5c2.6 0 5 1.5 5 3.5"/></svg>',
+  reports:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M7 15l3-4 3 2 4-6"/></svg>',
+  health:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/><path d="M6 12h3l1.5-2.5 2 5 1.5-2.5H18"/></svg>',
+  settings:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>',
+  support:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H9l-5 4z"/><path d="M10 9.5a2 2 0 1 1 3 1.7c-.7.4-1 .8-1 1.5M12 14.8h0" stroke-linecap="round"/></svg>',
+  drawer:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M3 12h18M10 8h4M10 16h4"/></svg>',
+  cart:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 4h2l2.4 11h11L21 7H6.2"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/></svg>',
+  bell:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22a2.5 2.5 0 0 0 2.4-2h-4.8A2.5 2.5 0 0 0 12 22zm7-6V11a7 7 0 0 0-5-6.7V3a2 2 0 1 0-4 0v1.3A7 7 0 0 0 5 11v5l-2 2v1h18v-1z"/></svg>',
+  bars:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+  print:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 8V4h10v4M5 8h14a2 2 0 0 1 2 2v6h-4v4H7v-4H3v-6a2 2 0 0 1 2-2zM7 14h10"/></svg>',
+  lock:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+  more:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>',
+  chev:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>',
+  search:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',
+  cloudOff:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6.2 9.5 4 4 0 0 0 7 18zM4 4l16 16"/></svg>',
+};
+
+/* ============================ shell ============================ */
+function renderStrip(){
+  const seg = (k, opts) => `<span class="seg">${opts.map(([v,l])=>`<button class="${S[k]===v?'on':''}" data-set="${k}" data-v="${v}">${l}</button>`).join('')}</span>`;
+  const ck = (k,l) => `<label class="ck"><input type="checkbox" data-cap="${k}" ${S.caps[k]?'checked':''}> ${l}</label>`;
+  document.getElementById('strip').innerHTML = `
+    <div class="g"><b>Width</b>${seg('viewport',[['tablet','Tablet'],['phone','Phone']])}</div>
+    <div class="g"><b>Idea</b>${seg('idea',[['none','E as chosen'],['autoopen','2 · first cash sale opens'],['timed','3 · button knows the time'],['tapcount','4 · tap to count'],['drawer','5 · the drawer is a drawer']])}</div>
+    <div class="g"><b>Cart tabs</b>${seg('tabsPos',[['bottom','bottom (app today)'],['top','top'],['bar','in the bar']])}</div>
+    <div class="g"><b>Cart</b>${seg('cartEmpty',[[false,'an order'],[true,'new (empty)']])}</div>
+    <div class="g"><b>Open orders</b>${seg('orders',[[1,'1'],[2,'2']])}</div>
+    <div class="g"><b>Stores</b>${seg('stores',[[1,'1'],[2,'2 (Pro)']])}</div>
+    <div class="g"><b>Registers</b>${seg('registers',[[1,'1 (default, silent)'],[3,'3 (pick once)']])}</div>
+    <div class="g"><b>Alerts</b>${seg('unread',[[0,'quiet'],[2,'2 unread']])}</div>
+    <div class="g"><b>Page</b>${seg('page',[['pos','POS'],['reports','Reports']])}</div>
+    <div class="g"><b>Jump to</b><span class="seg">${[['new','First sign-in (no pointer)'],['off','Sessions off'],['closed','Register closed'],['open','Session open'],['counting','Counting'],['overdue','Overdue']].map(([v,l])=>`<button data-scn="${v}">${l}</button>`).join('')}</span></div>
+    <div class="g"><b>Can</b>${ck('cash','manage cash')}${ck('reports','view reports')}${ck('closures','manager override')}</div>
+    <div class="g"><b>Edition</b>${seg('pro',[[true,'Pro'],[false,'Free']])}</div>
+    <div class="g"><b>Network</b>${seg('online',[[true,'Online'],[false,'Offline']])}</div>
+    <div class="g"><b>Float</b>${seg('floatMode',[['default','default £200'],['carry','carry last count']])}</div>`;
+}
+
+function renderRail(){
+  const items = [['pos','POS'],['products','Products'],['orders','Orders'],['coupons','Coupons'],['customers','Customers'],['reports','Reports']];
+  const de = S.header==='D'||S.header==='E';
+  const bottom = de ? [['bell','Notifications'],['health','Store health'],['settings','Settings'],['support','Support']] : [['health','Store health'],['settings','Settings'],['support','Support']];
+  const it = ([k,l]) => `<div class="it ${S.page===k?'on':''}" ${['pos','reports'].includes(k)?`data-set="page" data-v="${k}"`:''}>${k==='bell'?I.bell.replace('width="16" height="16"','width="20" height="20"'):I[k]}${k==='bell'&&S.unread?`<span class="cnt">${S.unread}</span>`:''}<span class="tip">${l}${k==='bell'&&S.unread?` · ${S.unread} unread`:''}</span></div>`;
+  const avatar = S.header==='D' ? `<div class="it avatar" title="Demo Cashier · UK Store"><span class="av">DC</span><span class="tip">Demo Cashier · UK Store · switch user, switch store, sign out</span></div>` : '';
+  return `<div class="rail">${noHeader()?`<div class="logo"><i></i></div>`:''}${items.map(it).join('')}<div class="sp"></div>${bottom.map(it).join('')}${avatar}<div class="ver">v 1.11.0</div></div>`;
+}
+
+function chrome(withStore=false){
+  const phone=S.viewport==='phone';
+  return `<span class="chrome-r">${withStore?`<span class="store">${S.register.store}</span>`:''}<span class="dot ${S.online?'':'off'}" title="${S.online?'Online':'No internet connection'}"></span><span class="bell">${I.bell}</span><span class="av" title="Demo Cashier">DC</span>${phone?'':`<span class="mut sm">▾</span>`}</span>`;
+}
+const noHeader = () => S.header!=='bar';
+function renderHeader(){
+  if (noHeader()) return '';
+  const title = S.page==='reports' ? 'Reports' : 'POS';
+  const phone = S.viewport==='phone';
+  return `<div class="hdr">${phone?`<div class="burger">${I.bars}</div>`:''}<div class="ttl">${title} - ${S.register.store}</div>
+    <div class="rgt"><span class="dot ${S.online?'':'off'}" title="${S.online?'Online':'No internet connection'}"></span>${I.bell}<span class="row" style="gap:6px"><span class="av">DC</span>${phone?'':'Demo Cashier ▾'}</span></div></div>`;
+}
+
+function renderFrame(){
+  const f = document.getElementById('frame');
+  f.className = `frame ${S.viewport}`;
+  const content = S.page==='reports' ? `${noHeader()?`<div class="pagebar">${S.viewport==='phone'?`<span class="burger ${S.unread?'dot':''}">${I.bars}</span>`:''}<span class="ttl2">Reports</span>${(S.header==='D'||S.header==='E')?`<span class="chrome-r">${!S.online?`<span class="pill off">${I.cloudOff} Offline</span>`:''}${S.pro?`<span class="mut sm">${S.register.store}</span>`:''}${S.header==='E'?`<span class="av">DC</span>`:''}</span>`:chrome(true)}</div>`:''}<div class="pad">${renderReports()}</div>` : renderPOS();
+  f.innerHTML = `${renderHeader()}<div class="body">${S.viewport==='tablet' ? renderRail() : ''}<div class="main">${!S.pro ? `<div class="upgrade"><span>Upgrade to WCPOS Pro</span><span>Learn more</span></div>` : ''}${content}${S.idea==='drawer'?'':renderPanel()}${renderSheet()}</div></div>`;
+}
+
+/* ============================ POS screen ============================ */
+function renderPOS(){
+  const phone = S.viewport==='phone';
+  if (!phone) return `<div class="pos">${renderProducts()}${renderCartColumn()}</div>`;
+  const g = gated();
+  const nItems = S.cartEmpty ? 0 : 3; const nb = nItems ? `<span class="badge">${nItems}</span>` : '';
+  const badge = !S.sessionsOn ? nb : !S.register.exists ? `<span class="badge warn">Pick</span>` : !S.session ? `<span class="badge warn">Open</span>` : S.session.state==='counting' ? `<span class="badge warn">Count</span>` : nb;
+  return `<div class="pos" style="flex-direction:column">${S.phoneTab==='products' ? renderProducts() : renderCartColumn()}
+    <div class="tabbar"><button class="${S.phoneTab==='products'?'on':''}" data-set="phoneTab" data-v="products">${I.products}Products</button><button class="${S.phoneTab==='cart'?'on':''}" data-set="phoneTab" data-v="cart">${badge}${I.cart}${g?'Register':'Cart'}</button></div></div>`;
+}
+
+function renderProducts(){
+  const ses=S.session; let over='', notice='';
+  if (S.sessionsOn && !S.register.exists) notice = `<div class="notice">Choose this device's register before selling.</div>`;
+  else if (S.sessionsOn && !ses) notice = `<div class="notice">Price check only until the register is open.</div>`;
+  else if (S.sessionsOn && ses.state==='counting') over = `<div class="gate"><div>No sales while the register is counting.</div></div>`;
+  return `<div class="prodcol">${notice}
+    <div class="search">${S.header==='C'&&S.viewport==='phone'?`<span class="burger">${I.bars}</span>`:''}<input class="in" placeholder="Search products" style="height:32px"><button class="btn sm">Barcode</button>${S.header==='C'&&S.viewport==='tablet'?chrome(true):''}</div>
+    <div class="tiles">${PRODUCTS.map(([n,p])=>`<div class="tile" data-act="tapProduct" data-name="${n}"><div class="img"></div><div class="n">${n}</div><div class="p">${fmt(p)}</div></div>`).join('')}</div>${over}</div>`;
+}
+
+function renderCartColumn(){
+  const ses=S.session;
+  let body;
+  const top = noHeader() && S.idea!=='empty' ? renderTopBar() : (S.idea==='empty' && !(S.sessionsOn && ses && ses.state==='open') && !(S.sessionsOn && !ses && S.register.exists) ? renderTopBar() : '');
+  if (S.sessionsOn && !S.register.exists) body = renderPickCard();
+  else if (S.sessionsOn && !ses && S.idea==='autoopen') body = renderCart();
+  else if (S.sessionsOn && !ses) body = (S.idea==='empty' ? renderTabsRow(true) : '') + renderOpenCard();
+  else if (S.sessionsOn && ses.state==='counting') body = `<div class="gatecard narrow">${renderCounting()}</div>`;
+  else body = renderCart();
+  return `<div class="cartcol narrow">${top}${S.toast?`<div class="toast" role="status">${S.toast}</div>`:''}${body}${S.idea==='drawer'?renderPanel(true):''}</div>`;
+}
+
+/* ---- no-title-bar variants: the bar above the cart carries store, status, notifications, user ---- */
+function regStatus(){
+  const ses=S.session;
+  if(!S.sessionsOn) return {pill:'', exp:'', tap:false};
+  if(!S.register.exists) return {pill:`<span class="pill warn dotp">Choose register</span>`, exp:'', tap:false};
+  if(!ses) return {pill: S.idea==='autoopen' ? '' : `<span class="pill closed dotp">Closed</span>`, exp:'', tap:false};
+  if(ses.state==='counting') return {pill:`<span class="pill count dotp">Counting</span>`, exp:'', tap:false};
+  const od=overdue();
+  const quiet = S.header==='D'||S.header==='E';
+  if (S.idea==='timed' && od && S.cartEmpty) return {pill:'', exp:'', tap:true, od:false};
+  return {pill: od?`<span class="pill warn dotp" title="Past the expected close time ${S.register.closeTime}">Overdue</span>`:(quiet?'':`<span class="pill open dotp">Open</span>`), exp: can('reports')?fmt(expected(ses)):'', tap:true, od};
+}
+function renderTopBar(){
+  const phone=S.viewport==='phone'; const st=regStatus(); const name=!S.register.exists?'This device':(S.registers>1?S.register.name:S.register.store);
+  const burger = phone ? `<span class="burger">${I.bars}</span>` : '';
+  const regSeg = `<span class="reg" ${st.tap?'data-act="openPanel"':''}><span class="ic">${I.drawer}</span><span class="b">${name}</span>${st.pill}${st.exp?`<span class="exp">${st.exp}</span>`:''}${st.tap?`<span class="chev">${I.chev}</span>`:''}</span>`;
+  if (S.header==='D'||S.header==='E'){
+    const off = !S.online ? `<span class="pill off">${I.cloudOff} Offline</span>` : '';
+    const storeEl = `<span class="store ${S.stores>1?'':'static'}" ${S.stores>1?'data-act="openSheet" data-type="stores" title="Switch store"':''}>${S.register.store}</span>`;
+    const cartVisible = S.sessionsOn ? (S.session && S.session.state==='open') : true;
+    if (S.tabsPos==='bar' && cartVisible) {
+      const tabs = openOrders().map(o=>`<span class="tab ${S.currentOrder===o.id?'on':''}" data-act="selOrder" data-id="${o.id}">Cart: ${fmt(orderTotal(o))}</span>`).join('') + `<span class="tab plus ${S.currentOrder==='new'?'on':''}" data-act="selOrder" data-id="new" title="New order">+</span>`;
+      const panelBtn2 = st.tap ? `<span class="ibtn ${st.od?'warn':''}" data-act="openPanel" title="Register">${I.drawer.replace('16','20').replace('16','20')}</span>` : '';
+      const av2 = `<span class="avbtn" data-act="openSheet" data-type="user" title="Demo Cashier"><span class="av">DC</span></span>`;
+      const bg2 = phone ? `<span class="burger ${S.unread?'dot':''}">${I.bars}</span>` : '';
+      return `<div class="regbar quiet tabsbar ${st.od?'warn':''}">${bg2}<span class="scroll">${tabs}</span>${st.pill}${off}${panelBtn2}${av2}</div>`;
+    }
+    const names = S.registers>1 && S.register.exists
+      ? `<span class="names"><span class="b">${S.register.name}</span><span class="mut">·</span>${storeEl}${st.pill}${off}</span>`
+      : `<span class="names"><span class="b">${storeEl}</span>${st.pill}${off}</span>`;
+    const panelBtn = st.tap ? `<span class="ibtn ${st.od?'warn':''}" data-act="openPanel" title="Register">${I.drawer.replace('16','20').replace('16','20')}</span>` : '';
+    const av = S.header==='E' ? `<span class="avbtn" data-act="openSheet" data-type="user" title="Demo Cashier"><span class="av">DC</span></span>` : '';
+    const bg = phone ? `<span class="burger ${S.unread?'dot':''}">${I.bars}</span>` : '';
+    return `<div class="regbar quiet ${st.od?'warn':''}">${bg}${names}${panelBtn}${av}</div>`;
+  }
+  if (S.header==='B') return `<div class="regbar2 ${st.od?'warn':''}"><div class="r1">${burger}<span class="b">${S.register.store}</span>${chrome(false)}</div><div class="r2" ${st.tap?'data-act="openPanel"':''}><span class="ic">${I.drawer}</span><span class="b">${name}</span>${st.pill}${st.exp?`<span class="exp">${st.exp}</span>`:''}${st.tap?`<span class="chev">${I.chev}</span>`:''}</div></div>`;
+  if (S.header==='C' && !phone) return `<div class="regbar chrome ${st.od?'warn':''}">${regSeg}</div>`;
+  return `<div class="regbar chrome ${st.od?'warn':''}">${burger}${regSeg}${chrome(S.header==='C')}</div>`;
+}
+
+function openOrders(){ return ORDERS.slice(0, S.orders); }
+function renderTabsRow(withChrome, pos='top'){
+  const st=regStatus(); const phone=S.viewport==='phone';
+  const tabs = openOrders().map(o=>`<span class="tab ${S.currentOrder===o.id?'on':''}" data-act="selOrder" data-id="${o.id}">Cart: ${fmt(orderTotal(o))}</span>`).join('')
+    + `<span class="tab plus ${S.currentOrder==='new'?'on':''}" data-act="selOrder" data-id="new" title="New order">+</span>`;
+  const chrome = withChrome ? `<span class="chrome">${st.pill}${!S.online?`<span class="pill off">${I.cloudOff} Offline</span>`:''}${phone?'':`<span class="store" ${S.stores>1?'data-act="openSheet" data-type="stores"':''}>${S.registers>1?S.register.name+' · ':''}${S.register.store}</span>`}<span class="avbtn" data-act="openSheet" data-type="user"><span class="av">DC</span></span></span>` : '';
+  return `<div class="tabsrow ${pos}">${withChrome&&phone?`<span class="burger ${S.unread?'dot':''}" style="width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:6px">${I.bars}</span>`:''}<span class="scroll">${tabs}</span>${chrome}</div>`;
+}
+function renderCart(){
+  const ses=S.session; const cur = openOrders().find(o=>o.id===S.currentOrder); const items = (S.currentOrder==='new' || !cur) ? [] : cur.items; const sub=items.reduce((a,[,q,p])=>a+q*p,0); const tax=+(sub-sub/1.2).toFixed(2);
+  const tabsRow = S.idea==='empty' ? renderTabsRow(true) : (S.tabsPos==='top' ? renderTabsRow(false,'top') : '');
+  const tabsBottom = S.idea!=='empty' && S.tabsPos==='bottom' ? renderTabsRow(false,'bottom') : '';
+  const head = `<div class="cart-h"><span class="mut sm">Customer:</span><span class="cust">Guest ▾</span><span class="grow"></span><button class="btn sm g">+</button><button class="btn sm g">${I.settings.replace('20','16').replace('20','16')}</button></div>`;
+  if (S.idea==='empty' && S.sessionsOn && ses && ses.state==='open' && !items.length) return `${tabsRow}${renderRegisterBody(true)}`;
+  const autoNote = S.idea==='autoopen' && S.sessionsOn && !ses ? `<div class="mut sm" style="padding:8px 12px;border-bottom:1px solid var(--border)">Register opens with the first cash sale · float ${fmt(suggestedFloat())} ${S.floatMode==='default'?'default':'carried'}</div>` : '';
+  const timed = S.idea==='timed' && ses && ses.state==='open' && overdue() && !items.length;
+  const footer = timed
+    ? `<div class="cart-f"><button class="btn p xl w" data-act="startCounting">Close register</button></div>`
+    : `${items.length?`<div class="cart-f2"><button class="btn">Note</button><button class="btn">Meta</button><button class="btn">Save</button></div>`:''}<div class="cart-f"><button class="btn od" ${items.length?'':'disabled'}>Void</button><button class="btn p xl" style="flex:1" ${items.length?'':'disabled'} data-act="${S.idea==='autoopen' && !ses ? 'checkoutCash' : 'noop'}">Checkout ${fmt(sub)}</button></div>`;
+  return `${tabsRow}${head}${autoNote}
+    <div class="inner">
+      ${items.length ? items.map(([n,q,p])=>`<div class="cartline"><span class="q">${q}</span><span class="grow">${n}</span><span class="money">${fmt(q*p)}</span></div>`).join('') : `<div class="emptycart">${I.cart.replace('20','36').replace('20','36')}<span class="sm">${timed?`Past ${S.register.closeTime} · nothing in the cart`:'Tap a product to start a sale'}</span></div>`}
+      ${items.length?`<div class="totals"><div class="r2 mut"><span>Subtotal</span><span class="num">${fmt(sub-tax)}</span></div><div class="r2 mut"><span>VAT 20%</span><span class="num">${fmt(tax)}</span></div><div class="r2 big"><span>Total</span><span class="num">${fmt(sub)}</span></div></div>`:''}
+    </div>
+    ${footer}${tabsBottom}`;
+}
+
+/* shared register body: the panel's content, also the empty cart in idea 1 */
+function renderRegisterBody(inline){
+  const ses=S.session; const exp=expected(ses); const lc=lastClosure(); const net=movSum(ses,'paid_in')-movSum(ses,'paid_out');
+  const regName = S.registers>1 ? S.register.name : S.register.store;
+  const head = inline
+    ? `<div>${can('reports')?`<div class="amt">${fmt(exp)}</div><div class="mut sm">in the drawer · ${S.registers>1?`${S.register.name} · `:''}${S.register.store} · opened ${ses.openedAt} by ${who(ses.openedBy).name}</div>`:`<div class="b" style="font-size:18px">${regName}</div><div class="mut sm">opened ${ses.openedAt} by ${who(ses.openedBy).name}</div>`}</div>`
+    : '';
+  return `<div class="regbody">${head}
+      ${overdue()?`<div class="alert w">Past the close time ${S.register.closeTime}</div>`:''}
+      ${!S.online?`<div class="alert w">${I.cloudOff} Offline · ${ses.unsyncedN} sales not on the server</div>`:''}
+      ${can('cash')?`<div class="tiles3"><button class="btn" data-act="openSheet" data-type="movement" data-mtype="paid_in">Paid in</button><button class="btn" data-act="openSheet" data-type="movement" data-mtype="paid_out">Paid out</button><button class="btn" data-act="${S.idea==='drawer'?'kick':'openSheet'}" data-type="movement" data-mtype="no_sale">No sale</button></div>`:`<div class="alert i">${I.lock} Cash actions need cash permission</div>`}
+      <div class="list">
+        ${can('reports')?`<div class="lr"><span>Cash</span><span class="mut xs">${ses.orders} sales${ses.refundsN?` · ${ses.refundsN} refund`:''}</span><span class="v">${fmt(ses.cashSales-ses.cashRefunds)}</span></div>
+        <div class="lr"><span>Card</span><span class="v">${fmt(ses.card.sales-ses.card.refunds)}</span></div>`:`<div class="lr"><span>${ses.orders} sales</span><span class="mut xs">${I.lock} totals are counted at close</span></div>`}
+        <div class="lr click ${S.settle==='mov'?'settle':''}" data-act="toggleCollapse" data-k="mov"><span>Paid in / out</span><span class="mut xs">${ses.movements.filter(m=>m.type!=='void'&&!m.voidedBy).length} movements</span><span class="v ${net<0?'money neg':net>0?'money pos':''}">${fmt(net,true)}</span><span class="chev" style="transform:rotate(${S.countOpen.mov?90:0}deg)">${I.chev}</span></div>
+        ${S.countOpen.mov?`<div style="padding:0 4px 4px">${movementsTable(ses)}</div>`:''}
+        ${can('reports')?`<div class="lr click" data-act="openSheet" data-type="xreport"><span>${I.print} Print X-report</span><span class="mut xs">reads the session, stores nothing</span></div>`:''}
+      </div>
+      ${lc?`<div class="list"><div class="lr click" data-act="openSheet" data-type="reprint"><span>Last closure</span><span class="mut xs">${lc.number} · ${lc.closed}</span><span class="v">${fmt(lc.counted)}</span><span class="mut xs">${I.print} copy</span></div></div>`:''}
+    </div>
+    ${inline?`<div class="cart-f">${can('cash')?`<button class="btn lg w" data-act="startCounting">Close register</button>`:`<span class="locked grow">${I.lock} Closing needs cash permission</span>`}</div>`:''}`;
+}
+
+function renderRegBar(){
+  const ses=S.session; const od=overdue(); const exp=expected(ses);
+  return `<div class="regbar ${od?'warn':''}" data-act="openPanel"><span class="ic">${I.drawer}</span><span class="b">${S.register.name}</span>
+    ${od?`<span class="pill warn dotp">Open · past ${S.register.closeTime}</span>`:`<span class="pill open dotp">Open</span>`}${!S.online?`<span class="pill bad">${I.cloudOff}</span>`:''}
+    <span class="exp">${can('reports')?fmt(exp):''}</span><span class="chev">${I.chev}</span></div>`;
+}
+
+function renderPickCard(){
+  const lc7 = S.closures.find(c=>c.register==='Back office');
+  const regs = [
+    ['Front counter', `<span class="pill open dotp">Open</span> since 09:02 · Amy Okafor`],
+    ['Back office', `Closed · last closure ${lc7?lc7.number:'—'}`],
+    ['Till 3', `Never opened`],
+  ];
+  return `<div class="gatecard">
+    <div><div class="b" style="font-size:16px">Which register is this device?</div><div class="mut sm">${S.register.store} has ${regs.length} registers. Asked once; change it under your avatar.</div></div>
+    <div class="stack" style="gap:8px">${regs.map(([n,sub])=>`<button class="btn w" style="height:56px;justify-content:flex-start;gap:12px" data-act="pickRegister" data-name="${n}"><span class="grow" style="text-align:left"><span class="b" style="display:block">${n}</span><span class="mut xs">${sub}</span></span>${I.chev}</button>`).join('')}</div>
+    <div class="mut xs">Registers are created in the plugin's admin, not here.</div>
+  </div>`;
+}
+
+function renderOpenCard(){
+  const lc=lastClosure(); const exp=suggestedFloat(); const raw = S.openForm.counted ?? exp.toFixed(2); const c=parseFloat(raw); const has=!isNaN(c);
+  const chips = [];
+  if (S.register.defaultFloat!=null) chips.push([S.register.defaultFloat, 'default float']);
+  if (lc && lc.counted!==S.register.defaultFloat) chips.push([lc.counted, `closure ${lc.number} count`]);
+  return `<div class="gatecard">
+    ${noHeader()?`<div class="mut sm">${lc?`Last closed ${lc.closed} · closure ${lc.number}`:'Never opened'}${!S.online?` · <span class="pill bad">${I.cloudOff} Offline</span>`:''}</div>`:`<div class="head"><span class="ic">${I.drawer.replace('16','22').replace('16','22')}</span><div class="grow"><div class="row" style="gap:8px"><span class="b" style="font-size:16px">${S.register.name}</span><span class="pill closed dotp">Closed</span>${!S.online?`<span class="pill bad">${I.cloudOff} Offline</span>`:''}</div><div class="mut sm">${lc?`Last closed ${lc.closed} · closure ${lc.number}`:'Never opened'}</div></div></div>`}
+    ${can('cash') ? `
+    <div class="fld"><label>Cash in the drawer</label><div class="amtwrap"><span class="cur">${CUR}</span><input class="in big" data-open="counted" value="${raw}" inputmode="decimal"></div></div>
+    <div class="actions">${chips.map(([v,l])=>`<button class="btn sm ${has&&c===v?'p':''}" data-act="useFloat" data-v="${v.toFixed(2)}">${fmt(v)} <span class="${has&&c===v?'':'mut'}" style="font-weight:400">${l}</span></button>`).join('')}</div>
+    ${has && c!==exp ? `<div class="alert ${Math.abs(c-exp)>S.register.threshold?'w':'i'}">Opening ${varianceWord(c-exp)} against ${fmt(exp)}</div>`:''}
+    <button class="btn p xl w" data-act="doOpen" ${has?'':'disabled'}>Open register</button>`
+    : `<div class="alert i">${I.lock} Opening the register needs cash permission.</div>`}
+    ${lc?`<div class="collapse"><button data-act="toggleCollapse" data-k="lastc">${I.chev} Last closure <span class="mut">Closure ${lc.number}${lc.unsynced?' · Unsynced':''}</span></button>${S.countOpen.lastc?`<div class="in-b">${lastClosureCard(true)}</div>`:''}</div>`:''}
+  </div>`;
+}
+
+/* ---- Register panel (open session) ---- */
+function renderPanel(asDrawer=false){
+  if(!S.panel) return ''; const ses=S.session; if(!ses || ses.state!=='open') return '';
+  const exp=expected(ses); const regName = S.registers>1 ? S.register.name : S.register.store;
+  const header = `<div class="panel-h"><div>${can('reports')?`<div class="amt">${fmt(exp)}</div><div class="s">in the drawer · ${regName} · opened ${ses.openedAt} by ${who(ses.openedBy).name}</div>`:`<div class="t">${regName}</div><div class="s">opened ${ses.openedAt} by ${who(ses.openedBy).name}</div>`}</div><button class="x" data-act="closePanel">×</button></div>`;
+  const body = renderRegisterBody(false).replace('class="regbody"','class="panel-b"');
+  const foot = `<div class="panel-f">${can('cash')?`<button class="btn lg w" data-act="startCounting">Close register</button>`:`<span class="locked grow">${I.lock} Closing needs cash permission</span>`}</div>`;
+  if (asDrawer) return `<div class="drawer-wrap" data-closepanel="1"><div class="drawer narrow"><div class="handle"></div>${header}${body}${foot}</div></div>`;
+  return `<div class="panel-wrap" data-closepanel="1"><div class="panel narrow">${header}${body}${foot}</div></div>`;
+}
+
+function lastClosureCard(compact=false){
+  const lc = lastClosure(); if(!lc) return `<div class="card"><div class="card-b mut sm">No closure yet on this register.</div></div>`;
+  const v = +(lc.counted-lc.expected).toFixed(2);
+  return `<div class="card">
+    <div class="card-h">Last closure <span class="sub">Closure ${lc.number} · ${lc.closed}</span>${lc.unsynced?`<span class="pill warn" style="margin-left:auto">Unsynced ${lc.unsynced}</span>`:''}</div>
+    <div class="card-b">
+      <div class="cols3">
+        <div><div class="xs mut b">COUNTED</div><div class="money" style="font-size:18px">${fmt(lc.counted)}</div></div>
+        ${can('reports')?`<div><div class="xs mut b">EXPECTED</div><div class="money" style="font-size:18px">${fmt(lc.expected)}</div></div>
+        <div><div class="xs mut b">VARIANCE</div><div class="money ${v<0?'neg':v>0?'pos':''}" style="font-size:18px">${v===0?'Exact':fmt(v,true)}</div></div>`:`<div class="locked" style="grid-column:span 2">${I.lock} Expected and variance hidden</div>`}
+      </div>
+      <div class="mut xs" style="margin-top:8px">Closed by ${who(lc.closedBy).name}${lc.override?` · approved by ${who(lc.override.by).name}`:''} · ${lc.printed?`printed ${lc.printed}${lc.copies?` · ${lc.copies} cop${lc.copies>1?'ies':'y'}`:''}`:'not printed'}</div>
+    </div>
+    <div class="card-f"><button class="btn sm" data-act="openSheet" data-type="reprint">${I.print} Reprint copy</button></div>
+  </div>`;
+}
+
+function movementActions(){ if(!can('cash')) return `<span class="locked">${I.lock} Cash actions need cash permission</span>`; return `<button class="btn" data-act="openSheet" data-type="movement" data-mtype="paid_in">Paid in</button><button class="btn" data-act="openSheet" data-type="movement" data-mtype="paid_out">Paid out</button><button class="btn" data-act="openSheet" data-type="movement" data-mtype="no_sale">No sale</button>`; }
+
+function movementsTable(ses){
+  if(!ses.movements.length) return `<div class="mut sm" style="padding:8px">No cash movements this session.</div>`;
+  return `<table class="t"><thead><tr><th class="ph-hide">Time</th><th>Movement</th><th>Reason</th><th class="ph-hide">By</th><th class="r">Amount</th><th></th></tr></thead><tbody>
+  ${ses.movements.map(m=>`<tr class="${m.voidedBy?'void':''}"><td class="num mut ph-hide">${m.at}</td><td>${label(m.type)}</td><td>${m.reason}</td><td class="ph-hide"><span class="who"><i>${who(m.by).ini}</i></span></td><td class="r money ${m.type==='paid_out'?'neg':m.type==='paid_in'?'pos':''}">${m.type==='no_sale'?'—':m.type==='void'?fmt(0):fmt(m.type==='paid_out'?-m.amount:m.amount,true)}</td><td class="r">${!m.voidedBy && m.type!=='void' && m.type!=='no_sale' && can('cash') && ses.state==='open' ? `<button class="btn sm g" data-act="openSheet" data-type="void" data-id="${m.id}">Void</button>`:''}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+function tendersTable(ses){
+  return `<table class="t"><thead><tr><th>Tender</th><th class="r">Sales</th><th class="r">Refunds</th></tr></thead><tbody>
+    <tr><td>Cash</td><td class="r money">${fmt(ses.cashSales)}</td><td class="r money ${ses.cashRefunds?'neg':''}">${ses.cashRefunds?fmt(-ses.cashRefunds):'—'}</td></tr>
+    <tr><td>Card · terminal</td><td class="r money">${fmt(ses.card.sales)}</td><td class="r money ${ses.card.refunds?'neg':''}">${ses.card.refunds?fmt(-ses.card.refunds):'—'}</td></tr>
+    <tr><td class="mut">${ses.orders} sales · ${ses.refundsN} refund${ses.refundsN===1?'':'s'}${!S.online&&ses.unsyncedN?` · <span class="pill warn">${ses.unsyncedN} not on server</span>`:''}</td><td class="r money">${fmt(ses.cashSales+ses.card.sales)}</td><td class="r money">${fmt(-(ses.cashRefunds+ses.card.refunds))}</td></tr>
+  </tbody></table>`;
+}
+
+/* ---- counting (in the cart column) ---- */
+function renderCounting(){
+  const ses=S.session; const exp=expected(ses); const blind=!can('reports');
+  const counted = parseFloat(ses.counted.cash); const has=!isNaN(counted); const v = has? +(counted-exp).toFixed(2) : null;
+  const overT = has && Math.abs(v) > S.register.threshold;
+  return `<div class="row"><div class="grow mut sm">Counting since ${ses.countingAt} · no sales until it reopens</div>${can('cash')?`<button class="btn sm" data-act="resume">Back to selling</button>`:''}</div>
+    ${!S.online&&ses.unsyncedN?`<div class="alert w">${I.cloudOff} ${ses.unsyncedN} sales (${fmt(ses.unsyncedTotal)}) not on the server yet — the closure will say so</div>`:''}
+    <div class="fld"><label>Cash counted, float included</label><div class="amtwrap"><span class="cur">${CUR}</span><input class="in big" data-count="cash" value="${ses.counted.cash??''}" placeholder="0.00" inputmode="decimal"></div></div>
+    ${blind?'':`<div class="vline"><span class="mut">Expected ${fmt(exp)}</span><b class="${has?(v<0?'money neg':v>0?'money pos':''):'mut'}">${has?(v===0?`<span class="ok"><span class="toast-ck" style="width:16px;height:16px;border-radius:50%;background:var(--success);display:inline-flex;align-items:center;justify-content:center">${CK}</span>Exact</span>`:fmt(v,true)+(v<0?' short':' over')):'—'}</b></div>`}
+    ${overT&&!blind?`<div class="alert w">Over the ${fmt(S.register.threshold)} limit · ${ses.override?`approved by ${who(ses.override.by).name}`:'a manager approves the close'}</div>`:''}
+    ${S.idea==='tapcount' ? `<div class="row"><span class="sect grow" style="margin:0">Tap each note and coin · hold for ×10</span>${DENOMS.some(d=>S.countOpen['d'+d])?`<button class="btn sm g" data-act="clearDen">Clear</button>`:''}</div>
+    <div class="dentiles">${DENOMS.map(d=>{const n=+(S.countOpen['d'+d]||0); return `<div class="dentile ${d>=5?'note':''}" data-den-tap="${d}"><b>${d>=1?CUR+d:(d*100)+'p'}</b><span class="sub">${n?fmt(n*d):''}</span>${n?`<span class="cnt">${n}</span>`:''}</div>`;}).join('')}</div>` : `<div class="collapse"><button data-act="toggleCollapse" data-k="den">${I.chev} Count by denomination</button>${S.countOpen.den?`<div class="in-b"><div class="denoms">${DENOMS.map(d=>`<div class="den"><b>${d>=1?CUR+d:(d*100)+'p'}</b><input type="number" min="0" data-den="${d}" value="${S.countOpen['d'+d]||''}" placeholder="0"><div class="sub">${fmt((S.countOpen['d'+d]||0)*d)}</div></div>`).join('')}</div></div>`:''}</div>`}
+    ${S.idea==='autoopen'?`<div class="vline"><span class="mut">Started with ${fmt(ses.floatCounted)} ${ses.floatExpected===ses.floatCounted?'carried':''}</span><button class="btn sm g" data-act="noop">Change</button></div>`:''}
+    <div class="collapse"><button data-act="toggleCollapse" data-k="cardc">${I.chev} Card counted <span class="mut">optional · ${fmt(ses.card.sales-ses.card.refunds)} reported</span></button>${S.countOpen.cardc?`<div class="in-b"><input class="in" data-count="card" value="${ses.counted.card??''}" placeholder="${fmt(ses.card.sales-ses.card.refunds)}" inputmode="decimal"></div>`:''}</div>
+    <button class="btn p xl w ${has?'':'dis'}" ${has?'':'disabled'} data-act="tryClose">${overT && !ses.override ? 'Approve & close' : 'Close & print'}</button>`;
+}
+
+/* ============================ sheets ============================ */
+function sheet(title, sub, body, foot, wide=false){
+  return `<div class="sheet-wrap" data-close="1"><div class="sheet ${wide?'wide':''}"><div class="sheet-h"><div><div class="t">${title}</div>${sub?`<div class="s">${sub}</div>`:''}</div><button class="x" data-act="closeSheet">×</button></div><div class="sheet-b">${body}</div>${foot?`<div class="sheet-f">${foot}</div>`:''}</div></div>`;
+}
+function renderSheet(){
+  const sh=S.sheet; if(!sh) return '';
+  const lc=lastClosure();
+  switch(sh.type){
+    case 'user': {
+      const ses=S.session; const mine = ses ? {n:9, total:412.3} : {n:0, total:0};
+      const others=[['amy','Amy Okafor','signed in on this device'],['sam','Sam Reilly','signed in on this device']];
+      return sheet('Demo Cashier', `Cashier · ${S.register.store}${S.registers>1&&S.register.exists?` · ${S.register.name}`:''}`,
+        `<div class="list">
+           <div class="lr"><span>Your sales today</span><span class="mut xs">${mine.n} sales</span><span class="v">${fmt(mine.total)}</span></div>
+         </div>
+         <div class="sect">Switch user</div>
+         <div class="list">${others.map(([k,n,sub])=>`<button class="lr click" style="width:100%;border:0;background:transparent;font:inherit;text-align:left" data-act="switchUser" data-name="${n}"><span class="who" style="font-size:13px;color:var(--fg)"><i>${who(k).ini}</i>${n}</span><span class="mut xs" style="margin-left:auto">${sub}</span>${I.chev}</button>`).join('')}<button class="lr click" style="width:100%;border:0;background:transparent;font:inherit;text-align:left" data-act="switchUser" data-name="another"><span>Another account…</span><span class="mut xs" style="margin-left:auto">WordPress login</span></button></div>
+         ${S.registers>1?`<div class="list"><button class="lr click" style="width:100%;border:0;background:transparent;font:inherit;text-align:left" data-act="rebindRegister"><span>Switch register</span><span class="mut xs" style="margin-left:auto">${S.register.name}</span>${I.chev}</button></div>`:''}`,
+        `<button class="btn od" data-act="signOut">Sign out</button><span class="grow"></span><button class="btn" data-act="closeSheet">Close</button>`);
+    }
+    case 'stores': {
+      const stores=[['UK Store','3 registers'],['Dublin Store','1 register']];
+      return sheet('Switch store', 'This device moves to that store\'s register',
+        `<div class="stack" style="gap:8px">${stores.map(([n,sub])=>`<button class="btn w" style="height:56px;justify-content:flex-start;gap:12px" data-act="switchStore" data-name="${n}"><span class="grow" style="text-align:left"><span class="b" style="display:block">${n}</span><span class="mut xs">${sub}</span></span>${n===S.register.store?'<span class="pill info">Current</span>':I.chev}</button>`).join('')}</div>`,
+        `<button class="btn" data-act="closeSheet">Cancel</button>`);
+    }
+    case 'movement': {
+      const t = sh.mtype; const isNS = t==='no_sale';
+      return sheet('Cash movement', `${S.register.name} · ${who('demo').name} · ${S.now}`,
+        `<div class="seg2"><button class="${t==='paid_in'?'on':''}" data-act="sheetSet" data-k="mtype" data-v="paid_in">Paid in</button><button class="${t==='paid_out'?'on out':''}" data-act="sheetSet" data-k="mtype" data-v="paid_out">Paid out</button><button class="${t==='no_sale'?'on ns':''}" data-act="sheetSet" data-k="mtype" data-v="no_sale">No sale</button></div>
+         ${isNS?`<div class="alert i">Opens the drawer without a sale. Recorded with your name and the reason.</div>`:`<div class="fld"><label>Amount ${t==='paid_out'?'taken out':'put in'}</label><div class="amtwrap"><span class="cur">${CUR}</span><input class="in big" data-sheet="amount" value="${sh.amount??''}" placeholder="0.00" inputmode="decimal" autofocus></div></div>`}
+         <div class="fld"><label>Reason</label><input class="in" data-sheet="reason" value="${sh.reason??''}" placeholder="${t==='paid_out'?'e.g. Window cleaner':t==='paid_in'?'e.g. Change from the bank':'e.g. Customer needed change'}"></div>`,
+        `<button class="btn" data-act="closeSheet">Cancel</button><button class="btn ${t==='paid_out'?'d':'p'}" data-act="doMove" ${(sh.reason && (isNS || parseFloat(sh.amount)>0))?'':'disabled'}>${isNS?'Open drawer':label(t)}</button>`);
+    }
+    case 'void': {
+      const m=S.session.movements.find(x=>x.id===sh.id);
+      return sheet('Void this movement?', `${label(m.type)} ${fmt(m.amount)} · "${m.reason}" · ${who(m.by).name} ${m.at}`,
+        `<div class="sm">A voiding row is added with your name. The original stays in the ledger, struck through.</div>`,
+        `<button class="btn" data-act="closeSheet">Keep it</button><button class="btn d" data-act="voidMove" data-id="${m.id}">Void</button>`);
+    }
+    case 'override': {
+      return sheet('Manager approval', `Variance ${fmt(sh.variance,true)} is above the ${fmt(S.register.threshold)} limit`,
+        `<div class="fld"><label>Manager username</label><input class="in" data-sheet="user" value="${sh.user??'sam'}"></div><div class="fld"><label>Password</label><input class="in" type="password" value="••••••••"></div>
+         <div class="mut xs">Checked on the server. The closure records both of you.</div>`,
+        `<button class="btn" data-act="closeSheet">Back to count</button><button class="btn p" data-act="approve">Approve & close</button>`);
+    }
+    case 'zprint': {
+      const c=S.closures.find(x=>x.number===sh.number&&x.register===S.register.name); const v=+(c.counted-c.expected).toFixed(2); const blind=!can('reports');
+      const cell=(l,val,cls='')=>`<div class="kpi"><div class="l">${l}</div><div class="v ${cls}" style="font-size:20px">${val}</div></div>`;
+      return sheet(`<span class="row" style="gap:10px"><span class="stamp" style="width:40px;height:40px;border-radius:50%;background:#e3f4ea;display:inline-flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007936" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Closure ${c.number} written</span>`, `${S.registers>1?S.register.name:S.register.store} · ${c.closed}${c.unsynced?` · <b style="color:#b45309">Unsynced — ${c.unsynced} sales not on the server</b>`:''}`,
+        `<div class="${blind?'':'cols3'}" style="${blind?'':''}">${cell('Counted', fmt(c.counted))}${blind?'':cell('Expected', fmt(c.expected))+cell('Variance', v===0?'Exact':fmt(v,true), v<0?'money neg':v>0?'money pos':'')}</div>
+         ${c.override?`<div class="mut sm">Approved by ${who(c.override.by).name}</div>`:''}
+         <div class="collapse"><button data-act="toggleCollapse" data-k="zprev">${I.chev} Z-report <span class="mut">${c.printed?`printed ${c.printed}`:'preview'}</span></button>${S.countOpen.zprev?`<div class="in-b" style="display:flex;justify-content:center">${receipt(c, false, 'Z-REPORT')}</div>`:''}</div>`,
+        `${c.printed?`<span class="row sm" style="margin-right:auto;gap:6px;color:var(--success)"><span style="width:16px;height:16px;border-radius:50%;background:var(--success);display:inline-flex;align-items:center;justify-content:center">${CK}</span>Printed on ${S.register.printer}</span><button class="btn p" data-act="closeSheet">Done</button>`:`<button class="btn g" data-act="closeSheet">Print later</button><button class="btn p lg" data-act="print" data-n="${c.number}">${I.print} Print Z-report</button>`}`, false);
+    }
+    case 'reprint': {
+      if(!lc) return '';
+      return sheet(`Reprint closure ${lc.number}`, `A copy — marked "copy ${lc.copies+1}", printed ${S.now}`,
+        `<div style="display:flex;justify-content:center">${receipt(lc, true, 'Z-REPORT')}</div>`,
+        `<button class="btn" data-act="closeSheet">Cancel</button><button class="btn p" data-act="print" data-n="${lc.number}">${I.print} Print copy</button>`, true);
+    }
+    case 'xreport': {
+      const ses=S.session; const x = {...ses, number:null, opened:`${S.today} ${ses.openedAt}`, closed:null, closedBy:null, expected:expected(ses), tillExpected:expected(ses), counted:null, paidIn:movSum(ses,'paid_in'), paidOut:movSum(ses,'paid_out'), movements:ses.movements.filter(m=>m.type!=='void'&&!m.voidedBy), taxes:[{rate:'VAT 20%', net:+((ses.cashSales+ses.card.sales)/1.2).toFixed(2), tax:+((ses.cashSales+ses.card.sales)-(ses.cashSales+ses.card.sales)/1.2).toFixed(2)}], perpetual:null, unsynced:S.online?0:ses.unsyncedN, unsyncedTotal:S.online?0:ses.unsyncedTotal};
+      return sheet('X-report', `Reads the open session without closing it · not stored`,
+        `<div style="display:flex;justify-content:center">${receipt(x, false, 'X-REPORT')}</div>`,
+        `<button class="btn" data-act="closeSheet">Close</button><button class="btn p" data-act="xprint">${I.print} Print</button>`, true);
+    }
+  }
+  return '';
+}
+
+function receipt(c, copy, kind){
+  const W=38; const L=(l,r)=> l.padEnd(W-r.length,' ')+r; const rule='-'.repeat(W); const C=s=>' '.repeat(Math.max(0,Math.floor((W-s.length)/2)))+s;
+  const v = c.counted!=null ? +(c.counted-c.expected).toFixed(2) : null;
+  const lines = [
+    C('UK STORE'), C(kind + (c.number?`  ·  CLOSURE ${c.number}`:'')), C(c.register || S.register.name), copy?C(`COPY ${c.copies+1} · printed ${S.now}`):'', rule,
+    L('Opened', `${c.opened}`), c.closed?L('Closed', c.closed):L('Printed', `${S.today} ${S.now}`),
+    L('Opened by', who(c.openedBy).name.slice(0,18)), c.closedBy?L('Closed by', who(c.closedBy).name.slice(0,18)):'', c.override?L('Approved by', who(c.override.by).name.slice(0,18)):'',
+    c.firstReceipt?L('Receipts', `${c.firstReceipt} – ${c.lastReceipt}`):'', rule, C('CASH'),
+    L('Opening float', fmt(c.floatCounted)), c.floatCounted!==c.floatExpected?L('  opening variance', fmt(c.floatCounted-c.floatExpected,true)):'',
+    L('Cash sales', fmt(c.cashSales)), L('Cash refunds', fmt(-c.cashRefunds)), L('Paid in', fmt(c.paidIn)), L('Paid out', fmt(-c.paidOut)),
+    L('EXPECTED', fmt(c.expected)), c.counted!=null?L('COUNTED', fmt(c.counted)):'', v!=null?L('VARIANCE', v===0?'EXACT':fmt(v,true)+(v<0?' SHORT':' OVER')):'',
+    c.unsynced?L('Unsynced sales', `${c.unsynced} · ${fmt(c.unsyncedTotal)}`):'', c.unsynced?L('Till expected', fmt(c.tillExpected)):'',
+    rule, C('TENDERS'), L('Cash', fmt(c.cashSales-c.cashRefunds)), L('Card · terminal', fmt(c.card.sales-c.card.refunds)), c.card.counted!=null?L('  card counted', fmt(c.card.counted)):'',
+    rule, C('TAX'), ...c.taxes.map(t=>L(`${t.rate}  net ${fmt(t.net)}`, fmt(t.tax))),
+    rule, L('Sales', `${c.orders}`), L('Refunds', `${c.refundsN}`),
+    c.perpetual?rule:'', c.perpetual?C('GRAND TOTALS'):'', c.perpetual?L('Period sales', fmt(c.cashSales+c.card.sales)):'', c.perpetual?L('Period refunds', fmt(c.cashRefunds+c.card.refunds)):'', c.perpetual?L('Perpetual sales', fmt(c.perpetual.sales)):'', c.perpetual?L('Perpetual refunds', fmt(c.perpetual.refunds)):'',
+    rule, C('WCPOS 1.11.0'),
+  ].filter(x=>x!=='');
+  return `<div class="receipt ${copy?'copy':''}">${lines.join('\n')}${(!copy && c.printed && c.number)?`<span class="printed ${S.settle==='printed'?'stamp':''}">PRINTED ${c.printed}</span>`:''}</div>`;
+}
+
+/* ============================ reports page ============================ */
+function renderReports(){
+  const phone=S.viewport==='phone';
+  const tabs = `<div class="row"><div class="tabs"><button class="${S.reportsTab==='sales'?'on':''}" data-act="reportsTab" data-t="sales">Sales</button><button class="${S.reportsTab==='closures'?'on':''}" data-act="reportsTab" data-t="closures">Closures ${S.pro?'':'<span class="pill pro">Pro</span>'}</button></div><span class="grow"></span>${S.reportsTab==='sales'?`<span class="leaves"><b>Leaves:</b> the "Z-report" name — this is a range report, not a closure</span>`:''}</div>`;
+  if (S.reportsTab==='sales') return `<div class="stack">${tabs}
+    <div class="filterbar"><span class="chip on">Completed</span><span class="chip">Customer</span><span class="chip on">Demo Cashier</span><span class="chip on">UK Store</span><span class="chip on">Today</span></div>
+    ${phone?'':`<div class="card"><div class="rep-chart">${[30,42,55,48,70,64,80,58,44,66,52,38].map(h=>`<i style="height:${h}%"></i>`).join('')}</div></div>`}
+    <div class="reports-grid">
+      <div class="card"><div class="card-h">Orders <span class="sub">14 · all selected</span></div><table class="t"><thead><tr><th></th><th>#</th><th>Time</th><th class="r">Total</th><th>Paid</th></tr></thead><tbody>
+        ${[['1241','17:31','12.40','Cash'],['1240','17:22','48.00','Card'],['1239','17:05','9.60','Cash'],['1238','16:48','120.00','Card'],['1237','16:30','22.10','Cash']].map(r=>`<tr><td><input type="checkbox" checked></td><td>${r[0]}</td><td class="mut">${r[1]}</td><td class="r money">${CUR}${r[2]}</td><td>${r[3]}</td></tr>`).join('')}
+      </tbody></table></div>
+      <div class="card"><div class="card-h">Sales report <span class="sub">Default (Offline)</span></div><div class="card-b"><div class="receipt" style="width:100%;box-shadow:none;padding:4px">${['UK STORE','Report generated: 2026-09-11 17:42','Period: today 00:00 – 23:59','Cashier: Demo Cashier','','SALES SUMMARY','Total Orders                    14','Total Net Sales            £800.42','Total Tax Collected        £160.08','Total Sales                £960.50','','PAYMENT METHODS','Cash                       £318.40','Card                       £642.10'].join('\n')}</div></div><div class="card-f"><button class="btn p">${I.print} Print</button></div></div>
+    </div></div>`;
+  if (!S.pro) return `<div class="stack">${tabs}<div class="card"><div class="hero"><div class="lbl">Closures across registers</div><div class="mut sm">Every register's closures, filters and reprints — in WCPOS Pro. This register's last closure is on the POS screen, under the register.</div><button class="btn p">Learn about Pro</button></div></div></div>`;
+  const list = [...S.closures].sort((a,b)=> b.ts-a.ts);
+  const sel = S.selClosure ? S.closures.find(c=>c.number===S.selClosure.n && c.register===S.selClosure.reg) : null;
+  const table = `<div class="card"><div class="card-h">Closures <span class="sub">${list.length}</span></div><table class="t"><thead><tr><th>#</th><th>Register</th><th>Closed</th>${phone?'':'<th>By</th>'}<th class="r">Counted</th><th class="r">Variance</th><th></th></tr></thead><tbody>
+    ${list.map(c=>{const v=+(c.counted-c.expected).toFixed(2); return `<tr class="click ${sel===c?'sel':''}" data-act="selClosure" data-n="${c.number}" data-reg="${c.register}"><td class="b">${c.number}</td><td>${c.register}</td><td class="mut">${c.closed}</td>${phone?'':`<td><span class="who"><i>${who(c.closedBy).ini}</i>${who(c.closedBy).name.split(' ')[0]}</span></td>`}<td class="r money">${fmt(c.counted)}</td><td class="r money ${v<0?'neg':v>0?'pos':''}">${v===0?'Exact':fmt(v,true)}</td><td>${c.unsynced?`<span class="pill warn">Unsynced</span>`:c.corrections.length?`<span class="pill info">Settled</span>`:''}</td></tr>`;}).join('')}
+  </tbody></table></div>`;
+  return `<div class="stack">${tabs}
+    <div class="filterbar"><span class="chip on">All registers</span><span class="chip">Closed by</span><span class="chip on">Last 7 days</span><span class="grow"></span><button class="btn sm">Export CSV</button></div>
+    ${phone && sel ? closureDetail(sel) : `<div class="reports-grid">${table}${sel?closureDetail(sel):`<div class="card"><div class="card-b mut sm" style="padding:40px;text-align:center">Select a closure to read it as recorded.</div></div>`}</div>`}
+  </div>`;
+}
+function closureDetail(c){
+  const v=+(c.counted-c.expected).toFixed(2); const st=c.settled;
+  return `<div class="card">
+    <div class="card-h">${S.viewport==='phone'?`<button class="btn sm g" data-act="selClosure" data-n="" data-reg="">‹</button>`:''}Closure ${c.number} · ${c.register}<span class="sub">as recorded ${c.closed}</span>${c.unsynced?`<span class="pill warn" style="margin-left:auto">Unsynced ${c.unsynced}</span>`:''}</div>
+    <div class="card-b stack">
+      <div class="detail">
+        <div><b>Opened</b>${c.opened} · ${who(c.openedBy).name}</div><div><b>Closed</b>${c.closed} · ${who(c.closedBy).name}${c.override?`<div class="xs mut">approved by ${who(c.override.by).name}</div>`:''}</div>
+        <div><b>Opening float</b>${fmt(c.floatCounted)}${c.floatCounted!==c.floatExpected?` <span class="mut xs">(expected ${fmt(c.floatExpected)})</span>`:''}</div><div><b>Receipts</b>${c.firstReceipt} – ${c.lastReceipt} · ${c.orders} sales, ${c.refundsN} refunds</div>
+        <div><b>Expected (server)</b>${fmt(c.expected)}${c.tillExpected!==c.expected?`<div class="xs mut">till saw ${fmt(c.tillExpected)}${c.unsynced?` · provisional until ${c.unsynced} sales land`:''}</div>`:''}</div><div><b>Counted</b>${fmt(c.counted)}</div>
+        <div><b>Variance</b><span class="money ${v<0?'neg':v>0?'pos':''}">${v===0?'Exact':fmt(v,true)}</span>${st?` <span class="settled">→ settled ${fmt(st.variance,true)}</span>`:''}</div><div><b>Perpetual totals</b>sales ${fmt(c.perpetual.sales)} · refunds ${fmt(c.perpetual.refunds)}</div>
+      </div>
+      <div class="sect">Tenders</div>
+      <table class="t"><thead><tr><th>Tender</th><th class="r">Sales</th><th class="r">Refunds</th><th class="r">Counted</th></tr></thead><tbody>
+        <tr><td>Cash</td><td class="r money">${fmt(c.cashSales)}</td><td class="r money">${fmt(-c.cashRefunds)}</td><td class="r money">${fmt(c.counted)}</td></tr>
+        <tr><td>Card · terminal</td><td class="r money">${fmt(c.card.sales)}</td><td class="r money">${fmt(-c.card.refunds)}</td><td class="r mut">${c.card.counted!=null?fmt(c.card.counted):'—'}</td></tr></tbody></table>
+      <div class="sect">Cash movements</div>
+      ${c.movements.length?`<table class="t"><tbody>${c.movements.map(m=>`<tr><td class="mut num">${m.at}</td><td>${label(m.type)}</td><td>${m.reason}</td><td><span class="who"><i>${who(m.by).ini}</i></span></td><td class="r money">${m.type==='no_sale'?'—':fmt(m.type==='paid_out'?-m.amount:m.amount,true)}</td></tr>`).join('')}</tbody></table>`:`<div class="mut sm">None</div>`}
+      <div class="sect">Corrections</div>
+      ${c.corrections.length?`<table class="t"><tbody>${c.corrections.map(k=>`<tr><td class="mut">${k.at}</td><td><span class="pill info">${k.type.replace('_',' ')}</span></td><td>${k.note}</td><td class="r money">${fmt(k.amount,true)}</td></tr>`).join('')}</tbody></table><div class="xs mut">The closure above reads as at close; the settled figures include these rows.</div>`:`<div class="mut sm">None — reads exactly as printed on the night.</div>`}
+    </div>
+    <div class="card-f"><button class="btn sm">Export PDF</button><button class="btn sm ${can('closures')?'':'dis'}" ${can('closures')?'':'disabled'}>Recount…</button><button class="btn sm p">${I.print} Reprint copy</button></div>
+  </div>`;
+}
+
+/* ============================ questions & state ============================ */
+const QUESTIONS = [
+  ['Where the bar sits', 'At the top of the cart column (this cut) or in the app header beside the online dot. The cart column is where the money is and it is what the gate replaces, so the bar and the card occupy the same spot in every state. The header would make it visible from Orders and Products too.'],
+  ['Products while closed', 'Browsable for price checks, with a one-line notice; a tap does nothing but log. Or dim the grid like counting does? Lightspeed opens the register the moment you reach the sell screen, which is the other answer: no gate at all, the float prompt is the first thing you see.'],
+  ['What the expected opening float means', 'The session ruling says the open suggests "the previous close\'s counted cash"; the permission ruling adds a per-register default float (blank = carry the last count). With a default of £200 the drawer is assumed banked down to the float overnight; with none, the whole count is assumed left in the drawer. Flip the Float toggle to see both. The count says "everything in it, float included" — is that the right physical assumption for WCPOS merchants?'],
+  ['Blind count after the close', 'A cashier without <i>view reports</i> never sees expected or variance on the bar, in the panel or while counting — but the Z-report they print at close carries both, and so does the last-closure card. Right, or should a blind register print the Z without the variance block?'],
+  ['Card counted at close', 'Ruled optional (#210). The count offers it as a second field pre-hinted with the reported figure. Show it always, or only when a terminal is configured?'],
+  ['Register settings entry', 'The setup card and the panel point at Settings › Register (default float, close time, drawer printer). That, or the WP admin register list? Left dim here, as the map says.'],
+];
+function renderNotes(){
+  document.getElementById('questions').innerHTML = `<ul>${QUESTIONS.map(([t,b])=>`<li><b>${t}.</b> ${b}</li>`).join('')}</ul>`;
+  const {log:_l, sheet, panel, countOpen, openForm, setupName, ...rest} = S;
+  document.getElementById('statejson').textContent = JSON.stringify({...rest, closures: rest.closures.map(c=>({number:c.number, register:c.register, closed:c.closed, expected:c.expected, counted:c.counted, unsynced:c.unsynced, corrections:c.corrections.length, printed:c.printed, copies:c.copies}))}, null, 1);
+  document.getElementById('log').innerHTML = S.log.length ? S.log.map(l=>`<div>${l}</div>`).join('') : '<div class="mut">Nothing yet — press something in the frame.</div>';
+}
+
+/* ============================ wiring ============================ */
+function render(){ renderStrip(); renderFrame(); renderNotes(); }
+function refocus(sel){ const n=document.querySelector(sel); if(n){ const pos=n.value.length; n.focus(); try{n.setSelectionRange(pos,pos);}catch(_){} } }
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-set],[data-scn],[data-act],[data-close],[data-closepanel]');
+  if (!t) return;
+  if (t.dataset.set){ e.preventDefault(); let v=t.dataset.v; if (v==='true') v=true; if (v==='false') v=false; if (t.dataset.set==='unread'||t.dataset.set==='registers'||t.dataset.set==='stores') v=+v; if (t.dataset.set==='cartEmpty') { v=(v===true||v==='true'); S.currentOrder = v ? 'new' : 'a'; } if (t.dataset.set==='orders') v=+v; if (t.dataset.set==='registers' && v===1) { S.register.exists=true; S.register.name='Front counter'; } A.set(t.dataset.set, v); S.selClosure=null; return render(); }
+  if (t.dataset.scn){ A.scenario(t.dataset.scn); return render(); }
+  if (t.dataset.close && e.target===t){ A.closeSheet(); return render(); }
+  if (t.dataset.closepanel && e.target===t){ A.closePanel(); return render(); }
+  const act = t.dataset.act; if (!act) return;
+  switch(act){
+    case 'openPanel': A.openPanel(); break;
+    case 'checkoutCash': A.checkoutCash(); break;
+    case 'kick': A.kick(); break;
+    case 'clearDen': A.clearDen(); break;
+    case 'noop': break;
+    case 'selOrder': S.currentOrder=t.dataset.id; S.cartEmpty = t.dataset.id==='new'; break;
+    case 'closePanel': A.closePanel(); break;
+    case 'openSheet': A.openSheet(t.dataset.type, t.dataset.mtype?{mtype:t.dataset.mtype}:t.dataset.id?{id:+t.dataset.id}:{}); break;
+    case 'closeSheet': A.closeSheet(); break;
+    case 'sheetSet': S.sheet[t.dataset.k]=t.dataset.v; break;
+    case 'useFloat': S.openForm.counted=t.dataset.v; break;
+    case 'doOpen': A.doOpen(S.openForm.counted ?? suggestedFloat().toFixed(2)); break;
+    case 'pickRegister': A.pickRegister(t.dataset.name); break;
+    case 'switchStore': A.switchStore(t.dataset.name); break;
+    case 'switchUser': A.switchUser(t.dataset.name); break;
+    case 'rebindRegister': A.rebindRegister(); break;
+    case 'signOut': A.signOut(); break;
+    case 'doMove': A.doMove(S.sheet.mtype, S.sheet.amount, S.sheet.reason); break;
+    case 'voidMove': A.voidMove(+t.dataset.id); break;
+    case 'undoMove': S.toast=null; A.voidMove(+t.dataset.id); break;
+    case 'startCounting': A.startCounting(); break;
+    case 'resume': A.resume(); break;
+    case 'tryClose': A.tryClose(); break;
+    case 'approve': A.approve(S.sheet.user); break;
+    case 'print': A.print(+t.dataset.n); break;
+    case 'xprint': A.xprint(); break;
+    case 'turnOn': A.turnOn(); break;
+    case 'tapProduct': A.tapProduct(t.dataset.name); break;
+    case 'toggleCollapse': S.countOpen[t.dataset.k]=!S.countOpen[t.dataset.k]; break;
+    case 'reportsTab': A.reportsTab(t.dataset.t); break;
+    case 'selClosure': t.dataset.n ? A.selClosure(+t.dataset.n, t.dataset.reg) : (S.selClosure=null); break;
+  }
+  render();
+});
+let holdT=null, held=false;
+document.addEventListener('pointerdown', e => { const t=e.target.closest('[data-den-tap]'); if(!t) return; held=false; holdT=setTimeout(()=>{ held=true; A.tapDen(+t.dataset.denTap, 10); render(); }, 450); });
+document.addEventListener('pointerup', e => { const t=e.target.closest('[data-den-tap]'); clearTimeout(holdT); if(!t) return; if(!held){ A.tapDen(+t.dataset.denTap, 1); render(); } });
+document.addEventListener('pointercancel', () => clearTimeout(holdT));
+document.addEventListener('change', e => { const c=e.target.closest('[data-cap]'); if (c){ A.cap(c.dataset.cap); render(); } });
+document.addEventListener('input', e => {
+  const el=e.target;
+  if (el.dataset.sheet){ S.sheet[el.dataset.sheet]=el.value; const name=el.dataset.sheet; render(); refocus(`[data-sheet="${name}"]`); return; }
+  if (el.dataset.open){ S.openForm[el.dataset.open]=el.value; const k=el.dataset.open; render(); refocus(`[data-open="${k}"]`); return; }
+  if (el.dataset.setup){ S.setupName=el.value; render(); refocus('[data-setup="name"]'); return; }
+  if (el.dataset.count){ A.setCount(el.dataset.count, el.value); const k=el.dataset.count; render(); refocus(`[data-count="${k}"]`); return; }
+  if (el.dataset.den){ S.countOpen['d'+el.dataset.den]=el.value; const total=DENOMS.reduce((a,d)=>a+(parseFloat(S.countOpen['d'+d])||0)*d,0); S.session.counted.cash = total.toFixed(2); const d=el.dataset.den; render(); refocus(`[data-den="${d}"]`); return; }
+});
+// URL parameters for embedding: ?header=A&viewport=phone&scn=open&page=reports&embed=1
+(function(){ const q=new URLSearchParams(location.search);
+  if(q.get('scn')) A.scenario(q.get('scn'));
+  for (const k of ['header','viewport','page']) if(q.get(k)) S[k]=q.get(k);
+  if(q.get('unread')!==null) S.unread=+q.get('unread'); if(q.get('online')!==null) S.online=q.get('online')==='true';
+  if(q.get('idea')) S.idea=q.get('idea'); if(q.get('cart')==='empty') { S.cartEmpty=true; S.currentOrder='new'; } if(q.get('orders')) S.orders=+q.get('orders'); if(q.get('tabs')) S.tabsPos=q.get('tabs'); if(q.get('panel')) S.panel=true; if(q.get('taps')) { S.countOpen.d20=8; S.countOpen.d5=3; S.countOpen.d1=2; S.countOpen['d0.5']=1; if(S.session) S.session.counted.cash='177.50'; }
+  if(q.get('embed')) document.body.classList.add('embed');
+})();
+render();
+</script>
+</body>
+</html>
