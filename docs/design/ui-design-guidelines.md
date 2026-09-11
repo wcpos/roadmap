@@ -147,7 +147,9 @@ Refactoring UI's advice to "use fewer borders" and "start with too much white sp
 stops a dense screen looking busy.
 
 Ruled 2026-09-11: the brand document names red as the primary action colour for marketing, but
-in the app **primary is blue and brand red is destructive only**. On a till red means void,
+in the app **primary is the theme's accent, never red, and brand red is destructive only**.
+`--primary` is blue in the default light and dark themes and varies by theme (Ocean teal, Sunset
+orange, Monochrome grey); components use the token and let it vary. On a till red means void,
 cancel or refund, which is what every cashier expects; Pay never shares a colour with Void.
 
 ### 9. Words the cashier uses
