@@ -39,7 +39,7 @@
   .columns{display:grid;grid-template-columns:1fr 440px;min-height:0}
   .frame.phone .columns{grid-template-columns:1fr;grid-template-rows:1fr auto}
   /* ---- the pay surface ---- */
-  .pay{background:var(--pay);color:var(--pay-fg);display:flex;flex-direction:column;padding:14px 28px 22px;min-height:0;position:relative;overflow:hidden;transition:background .2s ease-out}
+  .pay{background:var(--pay);color:var(--pay-fg);display:flex;flex-direction:column;padding:14px 28px 22px;min-height:0;position:relative;overflow:auto;transition:background .2s ease-out}
   .frame.phone .pay{padding:10px 16px 16px}
   .hd{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--pay-dim);min-height:44px}
   .hd .x{width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;color:var(--pay-fg);background:var(--pay-2);cursor:pointer;margin-left:-8px}
@@ -99,7 +99,7 @@
   .q{height:36px;padding:0 14px;border-radius:99px;background:var(--pay-2);color:var(--pay-fg);font-weight:600;font-size:14px;display:inline-flex;align-items:center;cursor:pointer;font-variant-numeric:tabular-nums;transition:transform .08s}
   .q:active{transform:scale(.96)}
   .q.on{background:var(--pay-fg);color:var(--pay)}
-  .keys{display:grid;grid-template-columns:repeat(3,1fr);gap:4px 6px;max-width:440px;width:100%;margin:6px auto 0;flex:1;min-height:0}
+  .keys{display:grid;grid-template-columns:repeat(3,1fr);gap:4px 6px;max-width:440px;width:100%;margin:6px auto 0;flex:1;min-height:224px}
   .frame.phone .keys{max-width:none;flex:none;grid-auto-rows:54px;margin-top:2px}
   .frame.phone .pay{overflow:auto}
   .frame.phone .sel{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;padding-bottom:4px;margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}
