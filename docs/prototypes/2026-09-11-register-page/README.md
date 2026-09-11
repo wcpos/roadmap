@@ -1,10 +1,20 @@
-# Register page prototype — wcpos/roadmap#214
+# Register in the POS screen — prototype for wcpos/roadmap#214
 
 Throwaway, self-contained HTML. Open `index.html` in a browser (double-click; no server, no build).
 
-**Question it answers:** what the **Register** page looks like in the left-hand menu, what a cashier sees in each state, how the open / move cash / count / close / print chain flows, and how the page divides from **Reports**.
+**Question it answers:** where the register lives, what a cashier sees in each session state, how the open / move cash / count / close / print chain flows, and how that divides from **Reports**.
 
-Built on the decided language (#207), session model (#210), offline binding (#211), closure document (#212) and permission rows (#213). One in-memory register, *Front counter* at *UK Store*; nothing persists.
+**Second cut (2026-09-11).** The first cut drew a Register *page* in the left-hand menu with a sign-in state. Paul's reaction: the cashier is already signed in by the time any page is visible, and the page overlapped Reports. This cut makes the register **a state of the POS screen plus one panel**:
+
+- **Register closed** → the cart column *is* the Open register card (expected float, counted float, opening variance, Open register). Products stay browsable for price checks.
+- **Session open** → the cart, with a **register bar** at the top (register, status, expected cash). Tapping it opens the **Register panel** (right panel on tablet, sheet on phone): expected in drawer, Paid in / Paid out / No sale, X-report, cash movements, tenders, last closure with reprint, and **Close register** in its footer.
+- **Counting** → the cart column *is* the count screen; the product grid is dimmed. *Back to selling* returns the cart.
+- **Overdue** → the bar turns amber with the close time.
+- **Sessions off** → the POS screen exactly as today.
+- **First sign-in** → the cart column asks for the register's name before anything else; the register binds to the store.
+- **No menu item, no sign-in state.**
+
+Built on the decided language (#207 minus its menu item), session model (#210), offline binding (#211), closure document (#212) and permission rows (#213). One in-memory register, *Front counter* at *UK Store*; nothing persists.
 
 ## Driving it
 
@@ -12,78 +22,43 @@ The dark strip at the top is not part of the design.
 
 | Control | What it changes |
 |---|---|
-| **Width** | Tablet (≥ 1024, icon rail) or Phone (390, hamburger) |
-| **Layout** | A · Board / B · Ledger / C · Focus — the register page body only; `←` `→` also cycle |
-| **Page** | Register or Reports |
-| **Jump to** | Signed out · Sessions off · Register closed · Session open · Counting · Overdue |
+| **Width** | Tablet (≥ 1024, icon rail, cart column) or Phone (390, Products / Cart tabs) |
+| **Page** | POS or Reports |
+| **Jump to** | First sign-in · Sessions off · Register closed · Session open · Counting · Overdue |
 | **Can** | `manage_woocommerce_pos_cash`, `view_woocommerce_pos_reports` (untick = blind count), `manage_woocommerce_pos_closures` (manager override) |
 | **Edition** | Pro / Free — the Closures view on Reports is Pro |
 | **Network** | Offline puts 3 unsynced sales into the count and marks the closure *Unsynced* |
-| **Menu** | Register after POS, or before Reports |
 | **Float** | Register default float £200, or carry the last closure's counted cash |
 
-Everything inside the frame is live: Open register → Paid in / Paid out / No sale (void by a new row) → X-report → Close register → count (typed or by denomination) → manager approval above the £5 threshold → Closure N written → Z-report printed once → Reprint copy. The state and an action log render under the frame.
+Everything inside the frame is live: name the register → Open register → Paid in / Paid out / No sale (void by a new row) → X-report → Close register → count (typed or by denomination) → manager approval above the £5 threshold → Closure N written → Z-report printed once → Reprint copy. The state and an action log render under the frame.
 
 ## Screens
 
-`screens/` holds Playwright captures of every state (`A|B|C-tablet-*`, `*-phone-*`, `flow-1…14-*` for the full chain, `*-blind`, `*-offline-*`, `reports-*`). Regenerate with `node shoot.js` (uses the monorepo's Playwright).
-
-## Layouts
-
-- **A · Board** — status, four figures, action row, movements beside tenders, last closure. The manager's view of the drawer.
-- **B · Ledger** — the session as one running ledger with the arithmetic on show; actions pinned to the bottom. Shows *which line moved*.
-- **C · Focus** — one number, one button, three small ones; the rest folds. Phone-first.
-
-The sheets (open, movement, void, manager approval, Z print, reprint, X-report), the counting screen and the Reports page are shared across layouts.
+`screens/` holds Playwright captures: `tablet-*` and `phone-*` for every state, `flow-01…14-*` for the full chain from first sign-in to reprint, `tablet-blind-*`, `tablet-no-cash-*`, `tablet-offline-*`, `reports-*`. Regenerate with `node shoot.js` (uses the monorepo's Playwright); it also asserts each step of the chain and fails on any page or console error.
 
 ## Reports split
 
 - **Sales** — today's range report, renamed away from "Z-report" (its Print stays).
 - **Closures** (Pro) — every register's closures; a row opens the closure *as recorded* with its corrections and settled figures; Export CSV/PDF, Recount… (gated), Reprint copy.
-- Free sees an upgrade card on the Closures tab; the Register page's last-closure card and reprint are Free.
+- Free sees an upgrade card on the Closures tab; the last closure and its reprint live under the register on the POS screen, Free.
 
-## Questions the prototype raised
+## Reaction (2026-09-11)
 
-Listed at the bottom of the page (opening-float semantics, blind count after close, "back to selling" from counting, landing page after sign-in, menu position and icon, the sessions-off state, card counted at close, where register settings live).
+What Paul's walk-through of the first cut changed, and the defaults he accepted for the second:
 
-## Morning checklist
+1. **No signed-out state.** The register is reached inside a signed-in app; a second sign-in was a Square/Shopify shape (device account + PIN), not ours (#209, #217 parked PIN).
+2. **No Register page, no menu item.** Reverses the menu half of #207. A cashier opens the register to see the cart, and closes it from the cart. Lightspeed opens the register on reaching the sell screen; Square and SumUp prompt for the starting cash when the POS opens with cash management on.
+3. **Reports overlap removed.** Free's till features (open, move, count, close, print once, reprint last) live in the POS screen as cards, panel and sheets; everything that looks back across registers is Pro on Reports. This is the #213 line ("the document is Free, reading it back is Pro") with no page in between.
+4. **Menu item dropped entirely** rather than kept as a shortcut to the panel (default accepted).
+5. **Closing with unpaid carts open is allowed** — open carts are unsynced orders, not tendered money (default accepted).
+6. **First sign-in names the register on the POS screen**, not on the store picker (default accepted).
+7. Questions from the first cut that this settles: landing page after sign-in (POS), menu position and icon (none), the sessions-off state (nothing shows), back-to-selling (exists).
 
-Reopen: `open ~/Projects/roadmap-worktrees/docs-register-page-prototype/docs/prototypes/2026-09-11-register-page/index.html`
+## Questions still open
 
-**Pick the page shape**
-- [ ] Cycle A → B → C with `←`/`→` on *Session open*, tablet width. Which one would a cashier want at 5 pm? Note any pieces to steal from the others.
-- [ ] Same three on *Register closed*. Is the last-closure card the right thing to see before opening?
-- [ ] Width → Phone, layout C, then A and B. Does anything clip or need scrolling that shouldn't?
-- [ ] Menu toggle: after POS or before Reports. Drawer icon for Register acceptable?
+Listed at the foot of the page: where the bar sits (cart column vs app header); products while closed (browsable vs dimmed vs no gate at all); opening-float semantics; blind count after close; card counted at close; where register settings live.
 
-**Walk the chain as a cashier** (Jump to *Register closed* first)
-- [ ] Open register → type a float that differs from £200 → does the opening-variance line read right? Toggle Float to *carry last count* and do it again.
-- [ ] Paid out £10 with a reason → Void it → the struck-through row and the voiding row: clear, or clutter?
-- [ ] No sale → is one line of copy enough?
-- [ ] X-report → print → back on the page: nothing changed, correct?
-- [ ] Close register → *counting* banner → Back to selling: should that button exist?
-- [ ] Count by denomination → total fills → variance over £5 → Approve & close → manager code sheet: right words, right fields?
-- [ ] Closure written → Print once → Done → last-closure card shows closure 13 → ⋮ → Reprint copy: is the COPY stamp enough?
+## Next
 
-**Who sees what**
-- [ ] Untick *view reports* on *Session open* and on *Counting*: is the blind count hidden in the right places? Should the Z print still carry the variance?
-- [ ] Untick *manage cash*: is the locked wording acceptable?
-- [ ] Jump to *Overdue*: banner and pill — enough, too much?
-- [ ] Jump to *Sessions off*: too empty? Hide the menu item instead?
-- [ ] Jump to *Signed out*: right that the register identity and last closure show before sign-in?
-
-**Offline**
-- [ ] Network → Offline, Jump to *Counting*, close with £480.80: the unsynced line on the count screen, the Unsynced pill on the closure, the Z's "Unsynced sales" line.
-
-**Reports**
-- [ ] Page → Reports: *Sales* tab — happy with the rename away from "Z-report"?
-- [ ] *Closures* tab → click closure 11 (Settled) and 14 (Unsynced): does "as recorded + corrections + settled" read the way you expect?
-- [ ] Edition → Free on the Closures tab: upgrade card wording.
-- [ ] Phone width on Closures: list → detail → back.
-
-**Then**
-- [ ] Answer the questions at the foot of the page (or say "defaults") — I record the resolution on #214, fill in *Reaction* below, and mark PR #254 ready.
-
-## Reaction
-
-_To be recorded after Paul has walked it — which layout, which pieces from the others, what changed._
+- Paul walks the second cut; the resolution on #214 records which of the open questions changed anything.
+- `CONTEXT.md` in the monorepo: the **Register** entry's "left-hand menu item is Register … the cashier signs in inside it" sentence is superseded by this cut (separate docs PR).
