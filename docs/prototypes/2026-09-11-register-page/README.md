@@ -124,3 +124,27 @@ The app's cart column has a tab row: one tab per open order (`Cart: £22.60`, fr
 - **In the bar** — the tabs share the bar's row: tabs on the left, status pill, drawer icon and avatar on the right; the store name moves under the avatar. One strip fewer. On phone the hamburger sits left of the tabs.
 
 Closing with open orders is allowed (ruling above); the tabs stay when the register closes and the count replaces the card.
+
+## What to build on `next` (handoff, 2026-09-11 late — Paul: "start implementing on next, refine once the basics are in place")
+
+The design as decided, in the order the app needs it. Language: `CONTEXT.md` → *Language — Cashiers & till* (register entry amended in wcpos/monorepo#1979). Everything below is Free unless marked Pro.
+
+**Server (plugin, `next`)**
+1. Register as a server record: one per store created with the store, more in the plugin's admin; `store_id`, `default_float`, close time and variance threshold as store settings (#213). The device holds only the register id.
+2. Session (register-keyed, `open → counting → closed`), cash movements (paid in / paid out / no sale, void by a new row), the stored numbered closure (#212, #249), the override by code above the threshold, the blind count as the absence of `view_woocommerce_pos_reports`.
+
+**App (core, `next`) — the POS screen**
+3. **No title bar.** The bar above the cart (48 pt): register name only when the store has more than one, then the store name (tap = Switch store when there is more than one, Pro); a status pill only when the state is not the normal one (Closed, Counting, Overdue, Choose register, Offline); the drawer icon button while a session is open; the cashier avatar. Notifications = bell in the rail's bottom cluster with a count only when there is one.
+4. **Avatar → user sheet**: Your sales today, Switch user (stored users + Another account…), Switch register (when more than one), Sign out.
+5. **Register closed → the cart column is the Open register card**: amount prefilled with the expected float (`£` locked to the digits), chips for default float / last count, opening variance line only when different, one button. Products browsable, price-check only. Cart tabs stay (open carts are allowed).
+6. **First sign-in**: silent bind when the store has one register; a one-time picker (register, status, who opened it) when more. A wiped device re-binds.
+7. **Drawer icon → Register panel** (right panel / phone sheet, the batch-0 overlay pattern): the amount as the title; three 56 pt tiles Paid in / Paid out / No sale; one list (Cash, Card, Paid in/out → rows + Void, Print X-report); last closure row with reprint; Close register alone in the footer, neutral. Blind cashiers: register name as title, sales count, no totals.
+8. **Counting → the cart column is the count**: one big input, one live line (Expected · variance; Exact with a check), manager line only over the limit, denomination and card counted folded, one button `Close & print` / `Approve & close`. Product grid dimmed. Back to selling. **Take idea 4**: denomination tiles, tap once per piece, hold for ×10.
+9. **Closure written** sheet: pale disc + thin check, the three figures, Z-report as a preview fold, one primary *Print Z-report*; after printing a green line, Done, PRINTED stamp. Reprint copy from the last-closure row.
+10. **Beats**: pressed state ≤ 100 ms everywhere; toast with Undo after Paid in/out; settle highlight on the row; 150–250 ms ease-out; reduce-motion honoured.
+11. **Take idea 3**: past close time with an empty cart, Checkout becomes Close register.
+12. Cart tabs: top or bottom, a user setting (bottom is today's default).
+
+**Reports (Pro)**: Sales (the range report, renamed) + Closures tab across registers with the Shopify-style stat strip (opened, closed, cash at open, activity, at close, variance), All / Open / Closed, drill-in as recorded, Export.
+
+**Rulings still open**: idea 2 (first cash sale opens the register — a session-model change); Open tab on Closures and whether a manager may start counting remotely; where register settings live (Settings › Register vs the plugin's admin list).
