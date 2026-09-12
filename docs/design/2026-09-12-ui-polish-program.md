@@ -1,5 +1,11 @@
 # v1.11.0 UI overhaul program — the language first, then the components (2026-09-12)
 
+> **Charting survey for the wayfinder map [UI overhaul for 1.11.0](https://github.com/wcpos/roadmap/issues/282).**
+> The map is canonical: its tickets are the decisions, its *Decisions so far* the record. This
+> document is the pre-map plan the map was charted from. Read it once for context; where its
+> phase order and the map disagree, the map wins. The gallery handoff it references is fog on
+> the map until the component map is decided.
+
 Paul's brief, 2026-09-12: 1.11.0 is a major UI change. The current design is not cohesive and
 gets an overhaul to a more modern language. Go over every component, from the lowest primitive
 to the whole screen, and apply intense design polish. The result is a high-performance point of

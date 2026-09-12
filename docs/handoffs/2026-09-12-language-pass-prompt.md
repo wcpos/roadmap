@@ -1,7 +1,13 @@
-# Phase A — the language on six system screens (handoff prompt, 2026-09-12)
+# The language on the system screens (handoff prompt, 2026-09-12)
 
-First session of the v1.11.0 UI overhaul program
-(`wcpos/roadmap docs/design/2026-09-12-ui-polish-program.md`, *Order of work*, Phase A).
+Session prompt for the wayfinder map [UI overhaul for 1.11.0](https://github.com/wcpos/roadmap/issues/282),
+tickets [Prototype: the register and the orders screens](https://github.com/wcpos/roadmap/issues/287)
+and, after Paul's ruling on those two, [Prototype: settings tab, connect, receipt and products, and the token sheet](https://github.com/wcpos/roadmap/issues/288).
+Both are blocked until [Decide the direction](https://github.com/wcpos/roadmap/issues/283) is
+resolved; run that grilling ticket first and paste its direction note into the prompt where it
+says "Direction from Paul". Work one ticket per session: claim it (`gh issue edit <n> --add-assignee @me`),
+scope the block below to that ticket's screens, resolve with a comment and close.
+
 Paste the block below into a fresh Claude Code session opened in `/Users/kilbot/Projects/monorepo-v2`.
 It reads the app there and writes prototypes into a roadmap worktree, as the register session did.
 
