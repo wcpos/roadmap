@@ -13,7 +13,70 @@
 
 ---
 
-## 1. The five adjectives
+## 1. What is actually incohesive
+
+Source audit of the six screens on `next` (HEAD `23f07bd`), every distinct value counted with
+`file:line`: [design cohesion audit](https://github.com/wcpos/monorepo/blob/research/design-cohesion/.claude/research/2026-09-12-design-cohesion-audit.md).
+It is a **frozen source audit — no screenshots, no runtime**. Hit rectangles, contrast and browser
+zoom are unverified; the visual walk happens per screen inside the prototype tickets.
+
+**The verdict is narrower than "the design is not cohesive" suggests: partially incoherent, not six
+unrelated designs.** The foundations are sound and the fractures are concentrated. Scatter ranking,
+worst first:
+
+| | Axis | What was measured |
+|---:|---|---|
+| 1 | **Control shapes** | 51 dimensional forms; control heights from `h-6` to `h-14`. The biggest touch inconsistency. |
+| 2 | **Feedback states** | Six coexisting treatments for waiting and failing: blank Suspense, explicit Loader, progress, muted bars, status badges, inline text. |
+| 3 | **Type** | 16 size utilities, 4 weights, **19 arbitrary-pixel declarations**; the calendar carries its own numeric scale. |
+| 4 | **Radius** | 16 utility forms across 8 radius families. |
+| 5 | **Borders and elevation** | **4 shadow strengths in reachable UI — against a flat-surface rule.** |
+| 6 | Overlays | 12 presentation families, though several are shared primitives or platform adaptations. |
+| 7 | Spacing | 87 forms but only 17 values, and **37% of all 687 declarations are just `gap-2`, `gap-4`, `p-2`, `gap-1`**. |
+| 8 | Colour | **950 semantic declarations** dominate; raw-colour exceptions are bounded and enumerable. |
+| 9 | Icons | One family, one 8-step size scale. Largely coherent already. |
+
+### The four findings that change the plan
+
+1. **The shared form-control core is consistent and wrong.** Input, Button, Select and Combobox all
+   default to `h-10` / `rounded-md`. `global.css` does not override `--spacing`, so Tailwind's
+   0.25rem default stands and `h-10` = `calc(var(--spacing) * 10)` = **40 native units against the
+   guidelines' 44 pt floor** (`ui-design-guidelines.md:62`); Button's `sm` and `compact` sizes are
+   `h-9` = 36 (`packages/components/src/button/index.tsx:119-120`). So the most-touched controls in
+   the app miss the touch minimum *by default*, everywhere, identically — verified independently of
+   the audit. That is a one-line fix with app-wide reach, and it
+   is the single highest-leverage change in the overhaul. It also lands squarely on the scale axis:
+   the compact step needs a floored tap-target token so it cannot make this worse.
+2. **Shadows exist despite the flat-surface rule.** Orders rests in a `shadow-md` Card while General
+   settings is a flat View — two competing surface grammars on adjacent screens. Removing elevation
+   is already mandated by the guidelines; the audit says where.
+3. **Spacing is a red herring.** 87 utility forms looks alarming and isn't: the distribution is
+   strongly concentrated and both stacks already share one 8-step gap mapping. A new spacing system
+   is *not* the first lever, and the token sheet should not pretend otherwise.
+4. **Colour is already disciplined** — one semantic pipeline, 950 declarations. The exceptions are
+   countable: a hardcoded `#F0F4F8` full-surface bypass on the splash screen, receipt-warning and
+   camera-overlay colours, and the receipt paper (deliberate — paper must stay paper).
+
+### The shape of the work this implies
+
+The overhaul is **mostly a change of shared defaults plus a states pass**, not a rewrite. Change
+`h-10` and `rounded-md` once in the form-control core rather than restyling six screens; unify the
+six feedback treatments; strike the arbitrary-pixel type declarations; remove the shadows. That is a
+much smaller and much safer change than "go over every component", and it is what the component map
+ticket should be built on.
+
+**Do not touch** (the audit's K list — already coherent, and load-bearing): the semantic colour
+pipeline and its light/dark contract; the `Text` base-plus-context mechanism that Button and the
+other controls inherit from; the single icon family and its 8 shared sizes; the HStack/VStack gap
+mapping; the shared `ErrorBoundary` fallback.
+
+**Hardest to unify** (the L list — these go straight to the platform-split ticket, not the
+prototypes): the overlay/navigation seam, where Dialog owns local state but Modal closes navigation
+and native Modal preserves Fabric view ownership across route transitions; the vendored calendar's
+own theme API and the native Toggle size overrides; and receipt paper versus app chrome, where
+changing document typography crosses into print-output ownership.
+
+## 2. The five adjectives
 
 These are the words a prototype is judged against. A screen that cannot be described by them is
 off-direction, whatever else is good about it.
@@ -28,7 +91,7 @@ off-direction, whatever else is good about it.
 
 ---
 
-## 2. The feel, and what it is not
+## 3. The feel, and what it is not
 
 **Calm instrument with a touch posture.** One palette, one set of hairlines, one radius. The
 difference between a counter tablet and a desk monitor is *scale*, not a different design: at the
@@ -69,7 +132,7 @@ Constraint 3 keeps the five colour themes, but a rare accent would make them inv
 
 ---
 
-## 3. Where the joy is
+## 4. Where the joy is
 
 **Anticipation.** The joy budget goes on the tap the cashier did not have to make. This is the
 thing we design deliberately, measure, and defend in review.
@@ -96,7 +159,7 @@ sliding rows, no ticking numbers, no gliding tabs. Each of those is time a cashi
 
 ---
 
-## 4. How depth arrives
+## 5. How depth arrives
 
 The affordances already exist — `UISettingsDialog` behind a `sliders` icon on POS, products,
 orders, coupons, customers and reports; `ellipsisVertical` row menus on every list; a `gear` to
@@ -126,7 +189,7 @@ certainly falls back to a sheet. That is a split to rule on, not to assume.
 
 ---
 
-## 5. Icons
+## 6. Icons
 
 135 FontAwesome **solid** glyphs, vendored as SVGR components under
 `packages/components/src/icon/svg/fontawesome/solid`, sized by `size-*` classes that already
@@ -147,7 +210,7 @@ tonal change the weight swap already delivers.
 
 ---
 
-## 6. The out-list
+## 7. The out-list
 
 Carried from [the guidelines](https://github.com/wcpos/roadmap/blob/main/docs/design/ui-design-guidelines.md):
 
@@ -169,7 +232,7 @@ New, from this direction:
 
 ---
 
-## 7. The reference set
+## 8. The reference set
 
 Checked by bare app name on both platforms in deep mode (the coverage rule). Business tools are
 web captures; the iOS entry under the same brand is the consumer app.
@@ -211,7 +274,7 @@ tie-breaker, so they are captured directly under
 
 ---
 
-## 8. What this direction does *not* settle
+## 9. What this direction does *not* settle
 
 Left to the tickets that own them, so the prototypes do not pre-empt them:
 
