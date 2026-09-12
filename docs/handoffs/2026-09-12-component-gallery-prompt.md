@@ -1,7 +1,12 @@
-# Component gallery on `next` — handoff prompt (2026-09-12)
+# Component gallery on `next` — handoff prompt (2026-09-12, runs in Phase D)
 
-First PR of the v1.11.0 UI polish program
-(`wcpos/roadmap docs/design/2026-09-12-ui-polish-program.md`, section *Missing*, item 1).
+**Not the first session.** Written before Paul's 2026-09-12 direction that the overhaul starts
+with the language, this prompt now belongs to Phase D of
+`wcpos/roadmap docs/design/2026-09-12-ui-polish-program.md`: the gallery is built for the
+component list Phase B produces, and grows as each component is rebuilt. Before running it,
+replace "every one of the 59 primitives" below with the Phase B map's list, and add a scale
+switch (compact / regular / spacious) beside the theme switch. Everything else stands.
+
 Paste the block below into a fresh Claude Code session opened in `/Users/kilbot/Projects/monorepo-v2`.
 
 ```

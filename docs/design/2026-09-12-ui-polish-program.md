@@ -1,195 +1,261 @@
-# v1.11.0 UI polish program — every component, one language (2026-09-12)
+# v1.11.0 UI overhaul program — the language first, then the components (2026-09-12)
 
-Paul's brief, 2026-09-12: 1.11.0 is a major UI change. Go over every component, from the
-lowest primitive to the whole screen, and apply intense design polish. The result is a
-high-performance point of sale with one consistent design language that follows industry
-usability standards and sparks joy. Cashiers should love using it. Simple and intuitive on the
-surface, with complex customisation one tap below it.
+Paul's brief, 2026-09-12: 1.11.0 is a major UI change. The current design is not cohesive and
+gets an overhaul to a more modern language. Go over every component, from the lowest primitive
+to the whole screen, and apply intense design polish. The result is a high-performance point of
+sale with one consistent language that follows industry usability standards and sparks joy.
+Cashiers should love using it. Simple and intuitive on the surface, with complex customisation
+one tap below it.
 
-This document is the operating plan for that work. It says what is already decided, what the
-tools are for, what is still missing, the loop each unit of work goes through, and the order of
-the sweep. It does not restate the design rules; those live in
-[`ui-design-guidelines.md`](ui-design-guidelines.md) and the monorepo's `.claude/rules/design.mdc`.
+This document is the operating plan. It says what is fixed, the three constraints Paul set, the
+order of work, the loop each unit goes through, and what is still to decide. It does not restate
+the design rules; those live in [`ui-design-guidelines.md`](ui-design-guidelines.md) and the
+monorepo's `.claude/rules/design.mdc`, and they bind every screen the overhaul produces.
 
-## Already decided — do not reopen
+## Fixed
 
-- **The rules.** `docs/design/ui-design-guidelines.md` (PR #260, 2026-09-11) and the monorepo
-  rule that mirrors it. Primary is the theme accent, never red. Flat surfaces, hairline borders,
-  one radius. System fonts, tabular numerals. Beats, not decoration. The definition of done is
-  in there and applies to every PR this program produces.
-- **The hero screen.** The register is a state of the POS screen plus one panel
-  (`docs/prototypes/2026-09-11-register-page/`, wcpos/roadmap#214, landing tickets #268–#274).
-  The tender pane is reworked (`docs/prototypes/2026-09-11-tender-pane-mockups/`, PR #259,
-  slices landing on `next`). The design language is therefore set by two decided screens before
-  the bottom-up sweep starts. The sweep applies that language; it does not invent a new one.
+- **The rules.** `docs/design/ui-design-guidelines.md` (PR #260, 2026-09-11). Primary is the
+  theme accent, never red. System fonts, tabular numerals. Beats, not decoration. Touch first.
+  The definition of done in there applies to every PR of this program.
+- **Structure and flow of the register and the tender pane.** The register is a state of the
+  POS screen plus one panel (wcpos/roadmap#214, tickets #268–#274); the tender pane's grid,
+  keypad and fold (PR #259). What the cashier does and in what order is decided. How it
+  *looks* is not: both get reskinned by the language pass below. Their landing tickets keep
+  moving on `next` because the checkout scope is due 2026-09-18; the reskin lands as a token
+  and primitive change on top, which is the reason the primitives are built the way section
+  *Order of work* says.
 - **The process.** Prototype as self-contained HTML on disk, states switchable in the page,
-  Playwright captures beside it. Decide in a roadmap issue. `/to-spec`, then `/to-tickets`,
-  then Codex implements on `next` in a worktree and Claude reviews against the captures and the
-  rules. Hosted-only mockups are rejected; Paul opens files, not links.
-- **The lane.** Everything lands on `next` and ships as 1.11.0 (wcpos/roadmap#195, due
-  2026-09-18 for the checkout scope; the polish sweep runs on past that date on the same lane).
-  Overlay primitives are already on `next` in batches (`DialogContent side`, POS overlays from
-  the products side, the phone sheet shell).
+  Playwright captures beside it. Decide in a roadmap issue or the prototype README.
+  `/to-spec`, `/to-tickets`, Codex implements on `next` in a worktree, Claude reviews against
+  the captures and the rules. Hosted-only mockups are rejected; Paul opens files, not links.
+- **The lane.** Everything lands on `next` and ships as 1.11.0 (wcpos/roadmap#195).
 
-## Superseded — the May redesign kit
+## Three constraints (Paul, 2026-09-12)
 
-`~/Projects/redesign/` (2026-05-02, never in git) is preserved under
-[`superseded/2026-05-redesign-kit/`](superseded/2026-05-redesign-kit/README.md) and is no
-longer a source of truth. What it got wrong against the September rulings: brand red as the
-primary accent; soft shadows for elevation; claude.ai/design as the drafting tool; and a
-nine-phase, one-component-per-release rollout. 1.11.0 is one release. What still holds and
-was lifted into this program: the screen inventory with its priority order, the component
-audit's gap list, and the three-surface idea (cashier, merchant, admin) as density tiers.
+### 1. Keep the learning in the existing components
 
-## Tools — verdicts
+The 59 primitives in `packages/components/src` wrap `@rn-primitives/*` and carry years of
+cross-platform fixes and feedback-driven customisation. The overhaul replaces their *skin*, not
+their *behaviour*. Concretely:
 
-**Mobbin, yes, at the reference step, with three rules.** Checked 2026-09-12 against the docs
-and by query. Business tools are indexed under the **web** platform; the iOS entry under the
-same brand is the consumer app. Fresha (web) has a complete POS checkout: cart column, Cash /
-Gift card / Split payment tiles, split-payment numpad with preset chips, tip picker, *Save
-unpaid*, sale activity. Shopify admin (web) has Point of Sale, Register sessions and Create
-order. Square (web) is the back-office dashboard. Genuinely absent, checked by bare app name in
-deep mode: Square POS, Zettle, SumUp, Lightspeed, Toast, Loyverse, Clover, Vend.
+- Every component gets a **behaviour ledger** before it is touched: the fixes and
+  customisations it carries, each with its evidence (the commit, the issue, the comment in the
+  code, the platform it protects). Codex builds the ledger read-only from history and source;
+  Claude checks it against the component. A rebuilt component is not done until every ledger
+  line is either preserved or struck with a stated reason.
+- The `@rn-primitives` layer stays as the behavioural base unless a ledger shows it is the
+  cause of a problem. New skin, same hooks.
+- The ledger is a section of the component's contract page, so the PR and the reviewer see it.
 
-1. One screen or one journey per query, phrased as what you would see. One named app per
-   query. No keyword lists, no negations, no combined intents.
-2. Coverage check before any "not on Mobbin" claim: bare app name, both platforms, deep mode.
-   Record the check in the prototype's `mobbin-notes.md`.
-3. Look at the images. Metadata says nothing about what a screen contains. Sixty requests a
-   minute is the limit; small `limit` values keep the context readable.
+### 2. Web and native may diverge where the experience is better
 
-**Claude Design, not now.** Its output is hosted; Paul cannot reliably open claude.ai links and
-the rule already rejects hosted-only mockups. It does not render `@wcpos/components`, so every
-mockup drifts from the library being polished. The HTML-on-disk loop produced a decided register
-in a week. Revisit once the component gallery exists: the design-system sync tool can push the
-gallery's rendered previews into a Claude Design project so its mockups use the real primitives.
-Until then it would be a second source of truth. The `/design` canvas skill inside Claude Code
-publishes an Artifact and is out for the same reason.
+Eight components already have `.web.tsx` files (tooltip, select trigger, virtualized list,
+toast, collapsible, keyboard controller, webview, image). The pattern is Metro platform
+extensions, and it is allowed anywhere the contract says so. The test is the experience, not
+convenience:
 
-**HTML prototypes on disk, yes.** Unchanged. Folder per prototype under `docs/prototypes/`,
-dated, with `index.html` (states switchable in the page), `shoot.js` (Playwright captures,
-asserts the flow, fails on console errors), `mobbin-notes.md`, and a README that states the
-question the prototype answers and the decision it produced.
+- Split when the two platforms have different idioms for the same job: a data table on the web
+  is a real table with column resize, keyboard and hover; on a tablet it is rows and sheets.
+  Menus and popovers on the web, sheets on a phone. Date and time pickers. Anything that leans
+  on hover or a pointer.
+- Do not split for styling differences; those are tokens and the scale axis.
+- The contract records the decision (`platform split: none | web/native`, with the reason) and
+  the gallery captures both.
 
-## Missing — the four pieces this program adds
+### 3. Two theme axes: colour, and scale
 
-### 1. A component gallery that renders the real library
+Colour themes exist (default, ocean, sunset, monochrome, each light and dark, plus system).
+They stay, get recalibrated to the new language, and remain the user's choice. The overhaul
+adds a **second, independent axis: scale.** A phone needs tighter padding and smaller type; a
+32-inch counter monitor needs more space and larger type, or the same layout looks lost.
 
-There are 59 primitives in `packages/components/src`, five themes (default, ocean, sunset,
-monochrome, plus system) in light and dark, and no Storybook, no snapshot, no place to see a
-component's variants side by side. The e2e suite already builds and serves the web app for
-Playwright. The gallery is a route in that web build that renders every component × variant ×
-state, switchable by theme and by width (phone 390, tablet 1024, desktop), with a Playwright
-script that captures each cell and compares against committed baselines.
+- **Named steps, not a slider:** `compact`, `regular`, `spacious`, with a possible fourth for
+  large displays if the prototypes show `spacious` is not enough. Each step sets the spacing
+  unit, the base font size, the minimum tap target and the radius.
+- **Auto by default, user override in Settings.** Auto picks from the width class and the
+  pointer type (coarse or fine). A window width cannot tell a 27-inch 4K screen from a
+  13-inch laptop, so the override is not optional; it is the honest control.
+- **Scale is the user's knob; surface density stays the designer's.** The cashier grid, the
+  orders table and a settings form still differ in density within a scale step. The two
+  multiply; they do not replace each other.
+- **Mechanism is a spike, not a decision.** Uniwind's themes are one flat list switched by a
+  single name, so scale cannot be a second Uniwind theme without fifteen combined blocks. Text
+  sizes are already rem-based with the web root at 87.5 %, so on the web a scale step can be a
+  root font-size plus a spacing variable; on native it needs a mechanism the spike finds
+  (a CSS variable set per scale, or a context that the primitives read). The spike answers
+  this before the token pass and is the first monorepo ticket after the language pass.
 
-It is the workbench for the whole sweep: review captures for every polish PR, visual-regression
-baselines so a token change cannot silently reshape a screen, and the previews Claude Design
-would need if it is ever adopted. Handoff prompt:
-[`docs/handoffs/2026-09-12-component-gallery-prompt.md`](../handoffs/2026-09-12-component-gallery-prompt.md).
+## Order of work
 
-### 2. A contract per component
+The old order (gallery first, then polish bottom-up) was wrong for an overhaul: a gallery of
+the current library is a safety net for keeping a design, not for changing one, and every
+baseline turns red at the first token change. The language comes first, the component list is
+derived from it, and the gallery is built for the new list.
 
-One page per component under `docs/design/components/<name>.md`, written before its polish
-ticket and cited by the ticket and the PR. Fields:
+### Phase A — the language, on system screens
+
+Prototype a small set of screens that between them exercise every kind of component, in the
+new language, tablet and phone, light and dark, at two scale steps. These are the **system
+screens**:
+
+| Screen | What it exercises |
+|---|---|
+| POS register, columns and tabs | Grid, cart lines, the bar and panel, tender tiles, numpad, beats. Structure decided; reskinned here. |
+| Orders list and one order | Data table (web) and rows (native), filters, status, money columns, detail pane, actions. |
+| One Settings tab | Forms: inputs, selects, switches, help text, sections, save and dirty state. |
+| Connect and first run | Onboarding, empty states, the one marketing-adjacent moment, errors in plain words. |
+| Receipt and print | Overlay flow, preview, primary print action, share, a completion beat. |
+| Products grid with a variation picker | Tiles, images, search, the sheet on phone and the popover on web. |
+
+Each prototype follows the existing folder shape under `docs/prototypes/` with the addition of
+a **scale switch** (compact, regular, spacious) beside the width and theme switches. The pass
+also produces the token sheet: the recalibrated colour themes and the scale steps as concrete
+values, in one HTML page that shows every token against every other.
+
+Exit: Paul has decided the language on the six screens and the token sheet. Rejected
+directions are recorded in each README so they are not proposed again.
+
+### Phase B — extract the component list
+
+From the decided prototypes, a map from the 59 current components to the new set, one line
+each: **keep · restyle · merge · split (web/native) · replace · delete · new**, with the reason.
+Inputs: the prototypes, the behaviour ledgers, and a **usage census** of the current library
+(where each component is used, how often, with which props), built by Codex read-only. The
+map is the contracts list and the ticket list. It also settles which learned behaviours have
+nowhere to go and need Paul's word before they are dropped.
+
+Exit: the map is in `docs/design/component-map.md` and Paul has ruled on every merge, replace
+and delete.
+
+### Phase C — tokens and the scale spike
+
+Land the recalibrated colour themes and the scale mechanism on `next`, both axes wired to
+Settings, before any component is rebuilt. The register and tender pane pick up the new
+tokens here. This is the one change that touches every screen at once, so it lands alone.
+
+### Phase D — rebuild bottom-up, gallery alongside
+
+Components in dependency order, each with a contract page written first, each rebuilt on its
+ledger, each captured in the gallery as it lands. The gallery (handoff:
+[`docs/handoffs/2026-09-12-component-gallery-prompt.md`](../handoffs/2026-09-12-component-gallery-prompt.md))
+is scoped to the new list and grows with it; baselines exist only for rebuilt components, at 1×,
+default light and dark, one scale step.
+
+| Tier | Components (current names; the map renames) |
+|---|---|
+| 1 Atoms | text, icon, pressable, hstack, vstack, loader, image, logo, label, format (money, dates), sort-icon |
+| 2 Controls | button, icon-button, input, textarea, numpad, checkbox, switch, toggle, toggle-group, radio-group, slider, select, combobox, calendar, badge, status-badge, avatar, progress, tooltip, docs-link |
+| 3 Containers and overlays | card, list-item, accordion, collapsible, tabs, table, data-table, virtualized-list, tree, tree-combobox, tree-select, dialog, alert-dialog, modal, popover, hover-card, dropdown-menu, toast, panels, portal, form, keyboard-controller, dnd, error-boundary, suspense, print, webview |
+| 4 Composed | `packages/core/src/components`: cart line, product tile, order row, customer row, register bar and panel, tender tiles, empty states |
+
+### Phase E — screens
+
+Every screen, in the May inventory's P0–P3 order (`superseded/2026-05-redesign-kit/02-screen-inventory.md`;
+the order still holds), re-hosted on the rebuilt components. The six system screens are
+already designed and go first; the rest apply the language.
+
+## The loop — one component or one screen at a time
+
+1. **Inventory the real thing.** Every state, every string, every place it is used, and its
+   behaviour ledger. Codex, read-only. A prototype of a simplified version evaluates a straw man.
+2. **References.** Mobbin per the three rules below, the reference corpus, the rule's competitor
+   list. Notes go in the prototype folder.
+3. **Prototype.** HTML on disk, states switchable, captures beside it. Claude (Fable or Opus)
+   drafts; this is the taste step. For a primitive in Phase D the prototype is its gallery page.
+4. **Decide.** Paul. Rejected ideas recorded.
+5. **Spec and tickets.** `/to-spec` then `/to-tickets`. Each ticket names its contract page and
+   carries the definition of done from the rules.
+6. **Implement.** Codex on `next` in a worktree, `-m gpt-6-astra`, effort `high`, added-line
+   budget stated. Claude reviews against the captures, the contract, the ledger and the rules.
+7. **Gate.** Every ledger line preserved or struck with a reason; gallery diff green or
+   explained; tablet and phone screenshots of changed states; both themes; two scale steps;
+   budgets green; testIDs present.
+
+## Contracts
+
+One page per component under `docs/design/components/<name>.md`, written in Phase D before the
+ticket, cited by the ticket and the PR:
 
 | Field | What it pins |
 |---|---|
 | Job | One sentence. What the cashier or merchant does with it. |
-| Variants and sizes | The closed list. Anything else is a new variant with a stated reason. |
-| States | default, pressed, focused, disabled (with the reason shown), loading, error, selected, long text, RTL where relevant. |
-| Surface density | cashier / merchant / admin: padding, font size, tap target for each. |
-| Tokens | The semantic tokens it uses. No hex, no `oklch()` in the component. |
-| Motion and beat | Durations, easing, the completion beat if it has one, reduce-motion behaviour. |
-| Touch | Minimum target, gap to neighbours, pressed feedback within 100 ms. |
-| Copy | Label rules, translation length check (German length, Spanish plurals). |
+| Map line | keep / restyle / merge / split / replace / new, from the Phase B map. |
+| Behaviour ledger | Every learned fix and customisation, with evidence; preserved or struck with a reason. |
+| Platform split | none, or web/native with the reason. |
+| Variants and sizes | The closed list. |
+| States | default, pressed, focused, disabled (with its reason shown), loading, error, selected, long text. |
+| Scale steps | Values at compact, regular, spacious. |
+| Surface density | cashier / merchant / admin within a scale step. |
+| Tokens | Semantic tokens only. No hex, no `oklch()` in the component. |
+| Motion and beat | Durations, easing, the completion beat, reduce-motion. |
+| Touch | Minimum target, gap, pressed feedback within 100 ms. |
+| Copy | Label rules, German length, Spanish plurals. |
 | testIDs | Stable names for every interactive part. |
-| Gallery cells | The variant × state cells the gallery must render. |
+| Gallery cells | The cells the gallery must render. |
 
-The May component audit's gap list (`superseded/2026-05-redesign-kit/03-component-audit.md`,
-sections *Gaps* and *Inconsistencies*) is the starting inventory of what the contracts must
-resolve.
+## Tools
 
-### 3. A reference corpus
+**Mobbin, yes, at the reference step, with three rules.** Business tools are indexed under the
+**web** platform; the iOS entry under the same brand is the consumer app. Fresha (web) has a
+complete POS checkout; Shopify admin (web) has Point of Sale, Register sessions and Create
+order; Square (web) is the dashboard. Genuinely absent, checked 2026-09-12 by bare app name in
+deep mode: Square POS, Zettle, SumUp, Lightspeed, Toast, Loyverse, Clover, Vend.
 
-`docs/design/references/`: our own captures of Square POS, Shopify POS, Lightspeed, SumUp,
-Zettle and Toast on tablet and phone, one folder per app, one file per screen named by the job
-(`checkout-tender.png`, `register-close.png`). Paul takes these on the iPad and phone; agents
-pull what the vendors' public help centres show. Mobbin links go in each prototype's notes,
-not here. The rule's tie-breaker is the cashier's expectation, and this corpus is how a
-prototype shows what that expectation is.
+1. One screen or one journey per query. One named app per query. No keyword lists, no
+   negations, no combined intents.
+2. Coverage check before any "not on Mobbin" claim: bare app name, both platforms, deep mode.
+   Record it in the prototype's `mobbin-notes.md`.
+3. Look at the images. Sixty requests a minute; small `limit` values.
 
-### 4. Performance budgets, measured
+**Reference corpus.** `docs/design/references/`: our own tablet and phone captures of Square
+POS, Shopify POS, Lightspeed, SumUp, Zettle and Toast, one folder per app, one file per job
+(`checkout-tender.png`, `register-close.png`). Paul takes these; agents pull what the vendors'
+help centres show. For a "more modern" language the look-at-all-day references (Linear, Stripe
+dashboard, Notion, Shopify admin) are on Mobbin's web side.
 
-A polish pass that slows the till is a regression whatever it looks like. Budgets, from the
-rules and from what a cashier notices:
+**Claude Design, not now.** Hosted output; does not render `@wcpos/components`; the HTML loop
+already works. Revisit after Phase D has a gallery that could feed it real previews.
+
+**Performance budgets, measured.** From the rules and from what a cashier notices; a budget
+script grows out of `apps/main/e2e/cart-add-timing.ts` and runs on the web build in CI from
+Phase C on.
 
 | Moment | Budget |
 |---|---|
 | Tap to visible pressed state | under 100 ms |
-| Tap on a product tile to the line appearing in the cart | under 150 ms on the web build |
+| Product tile tap to the line in the cart | under 150 ms on the web build |
 | Transition or sheet open | 150–250 ms, nothing over 400 ms on a waiting path |
 | Product grid and cart scroll | no dropped frames at 1,000 products |
 | Search keystroke to filtered results | under 100 ms per keystroke |
 
-`apps/main/e2e/cart-add-timing.ts` exists; extend it into a budget script that runs on the web
-build in CI and fails a PR that breaks a budget. Native is spot-checked on the dev client, not
-gated, because builds cost money.
-
-## The loop — one component or one screen at a time
-
-1. **Inventory the real thing.** Every state, every string, every place it is used. Codex,
-   read-only, writes the inventory into the contract page. A prototype of a simplified version
-   evaluates a straw man.
-2. **References.** Mobbin per the three rules, the corpus, and the rule's competitor list.
-   Notes go in the prototype folder.
-3. **Prototype.** HTML on disk, states switchable, captures beside it. Claude (Fable or Opus)
-   drafts; this is the taste step. For a primitive the prototype is its gallery page, not a
-   separate HTML file.
-4. **Decide.** Paul, in the roadmap issue or the prototype README. Rejected ideas are recorded
-   so they are not proposed again.
-5. **Spec and tickets.** `/to-spec` then `/to-tickets`. Each ticket names its contract page and
-   carries the definition of done from the rules.
-6. **Implement.** Codex on `next` in a worktree, `-m gpt-6-astra`, effort `high`, added-line
-   budget stated. Claude reviews against the captures, the contract and the rules.
-7. **Gate.** Gallery diff green or the diff is explained in the PR body; tablet and phone
-   screenshots of changed states; budgets green; testIDs present; both themes checked.
-
-## Sweep order
-
-Tokens first, then primitives in dependency order, then composed components in
-`packages/core`, then screens. A primitive is not "done" until every component above it that
-uses it has been re-captured in the gallery.
-
-| Tier | Components |
-|---|---|
-| 0 Tokens | `apps/main/global.css`: the five themes, light and dark, radius, spacing, motion constants |
-| 1 Atoms | text, icon, pressable, hstack, vstack, loader, image, logo, label, format (money, dates), sort-icon |
-| 2 Controls | button, icon-button, input, textarea, numpad, checkbox, switch, toggle, toggle-group, radio-group, slider, select, combobox, calendar, badge, status-badge, avatar, progress, tooltip, docs-link |
-| 3 Containers and overlays | card, list-item, accordion, collapsible, tabs, table, data-table, virtualized-list, tree, tree-combobox, tree-select, dialog, alert-dialog, modal, popover, hover-card, dropdown-menu, toast, panels, portal, form, keyboard-controller, dnd, error-boundary, suspense, print, webview |
-| 4 Composed | `packages/core/src/components`: the cart line, product tile, order row, customer row, the register bar and panel, the tender tiles, the empty states |
-| 5 Screens | Register and checkout (decided, landing), receipt, orders, products, customers, coupons, reports, settings tabs, health, support, connect and auth |
-
-Screen priority within tier 5 follows the May inventory's P0–P3 order; it is still right.
-
 ## Roles
 
-- **Fable** orchestrates: contracts, prototypes, review, merge decisions, anything the cashier
-  reads. **Opus** where Fable is overkill.
-- **Astra** implements: inventories, the gallery, the budget script, every ticket. Reviews as
-  a second opinion via `/codex-review`.
-- **Paul** decides at step 4 and takes the corpus captures. Nothing else in the loop needs him.
+- **Fable** orchestrates: the language pass, contracts, review, merge decisions, anything the
+  cashier reads. **Opus** where Fable is overkill.
+- **Astra** implements: ledgers, the census, the scale spike, every ticket. `/codex-review` as
+  the second opinion.
+- **Paul** decides at the end of Phase A and Phase B, rules on dropped behaviours, and takes
+  the corpus captures.
+
+## Superseded — the May redesign kit
+
+`~/Projects/redesign/` (2026-05-02) is preserved under
+[`superseded/2026-05-redesign-kit/`](superseded/2026-05-redesign-kit/README-SUPERSEDED.md).
+Overruled: brand red as primary, soft shadows, claude.ai/design as the tool, the nine-phase
+one-per-release rollout. Still used: the screen inventory order, the component audit's gaps,
+the three-surface density idea.
 
 ## Open decisions
 
-1. **Gallery baselines in the monorepo or a sibling repo.** Committed PNGs grow the repo; a
-   sibling `wcpos/gallery-baselines` keeps it clean but adds a second checkout to CI. Recommend
-   the monorepo at 1× for the default light and dark pair only, the other themes captured for
-   review and not committed.
-2. **Density tiers as a component prop or as a surface context.** A prop is explicit and
-   greppable; a context means a screen sets it once. Recommend context, with the prop as an
-   override, so a cashier surface cannot forget to opt in.
+1. **Scale steps: three or four.** Three named steps with auto-pick; a fourth only if the
+   Phase A prototypes show a 32-inch display needs more than `spacious`. Recommend three until
+   the prototype says otherwise.
+2. **Density as a surface context or a prop.** Recommend context set once per screen area with
+   a prop override, so a cashier surface cannot forget to opt in.
+3. **Gallery baselines in the monorepo or a sibling repo.** Recommend the monorepo at 1×,
+   default light and dark, one scale step.
 
 ## Next
 
-Open a fresh session in the monorepo with the gallery handoff prompt. The gallery is the first
-PR of the program; the token pass and the tier 1 contracts follow it.
+Phase A. Handoff prompt:
+[`docs/handoffs/2026-09-12-language-pass-prompt.md`](../handoffs/2026-09-12-language-pass-prompt.md).
