@@ -40,7 +40,7 @@ monorepo's `.claude/rules/design.mdc`, and they bind every screen the overhaul p
 
 ### 1. Keep the learning in the existing components
 
-The 59 primitives in `packages/components/src` wrap `@rn-primitives/*` and carry years of
+The 58 primitives in `packages/components/src` wrap `@rn-primitives/*` and carry years of
 cross-platform fixes and feedback-driven customisation. The overhaul replaces their *skin*, not
 their *behaviour*. Concretely:
 
@@ -123,7 +123,7 @@ directions are recorded in each README so they are not proposed again.
 
 ### Phase B — extract the component list
 
-From the decided prototypes, a map from the 59 current components to the new set, one line
+From the decided prototypes, a map from the 58 current components to the new set, one line
 each: **keep · restyle · merge · split (web/native) · replace · delete · new**, with the reason.
 Inputs: the prototypes, the behaviour ledgers, and a **usage census** of the current library
 (where each component is used, how often, with which props), built by Codex read-only. The

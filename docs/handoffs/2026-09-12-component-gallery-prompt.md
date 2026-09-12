@@ -4,7 +4,7 @@
 with the language, this prompt now belongs to Phase D of
 `wcpos/roadmap docs/design/2026-09-12-ui-polish-program.md`: the gallery is built for the
 component list Phase B produces, and grows as each component is rebuilt. Before running it,
-replace "every one of the 59 primitives" below with the Phase B map's list, and add a scale
+replace "every one of the 58 primitives" below with the Phase B map's list, and add a scale
 switch (compact / regular / spacious) beside the theme switch. Everything else stands.
 
 Paste the block below into a fresh Claude Code session opened in `/Users/kilbot/Projects/monorepo-v2`.
@@ -43,7 +43,7 @@ What to build:
 - A short README in packages/components explaining how to add cells and how to run the shoot.
 
 Scope and budget:
-- Every one of the 59 primitives gets a cells file. Start from the component's own props;
+- Every one of the 58 primitives gets a cells file. Start from the component's own props;
   where a component has no variants, one cell per state (default, disabled, loading, error,
   long text) is enough. Do not redesign anything while doing this; the gallery captures the
   library as it is today. Polishing is the program's later tickets.
