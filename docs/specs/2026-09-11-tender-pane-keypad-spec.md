@@ -143,7 +143,8 @@ New `pos_checkout.*` keys: `to_pay`, `remaining`, `split`, `change_split`, `no_s
 `checkout-unavailable-toggle`, `checkout-unavailable-<id>`, `checkout-quick-<value>`,
 `checkout-key-<k>`, `checkout-commit`, `checkout-split-tab-<even|amount|percent|item>`,
 `checkout-split-option-<value>`, `checkout-split-item-<lineId>`, `checkout-split-items-go`,
-`checkout-split-share-<n>`, `checkout-terminal-step-<i>`, `checkout-terminal-status` (exists),
+`checkout-split-share-<n>`, `checkout-reader-<id>-reason` (the *In use by order #N* line under a
+held reader chip), `checkout-terminal-step-<i>`, `checkout-terminal-status` (exists),
 `checkout-terminal-cancel`, `checkout-paid`, `checkout-paid-headline`, `checkout-paid-print`,
 `checkout-paid-email`, `checkout-paid-none`.
 
