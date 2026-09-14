@@ -37,6 +37,8 @@ fs.mkdirSync(OUT, { recursive: true });
     if (v === 'hold') await page.mouse.up();
   }
   await set('voidStyle', 'red');
+  for (const th of ['paper','bold','warm','market','stage','woo']) { await set('theme', th); await scn('open'); await page.waitForTimeout(300); await shot(`theme-${th}`); }
+  await set('theme', 'light');
   // phone: the ⋮ replaces the pair whatever the switch says
   await set('w', 'phone'); await scn('open'); await shot('void-phone-dots'); await page.click('[data-act="vmenu"]'); await shot('void-phone-dots-open'); await set('w', 'tablet');
   await browser.close();
