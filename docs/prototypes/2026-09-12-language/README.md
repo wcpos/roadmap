@@ -92,6 +92,28 @@ Each with the options and my pick. Answer in order; the first two move everythin
     app today mixes title case ("Search Orders", "Print Receipt"). One rule for the language pass.
     **Pick: sentence case.**
 
+Added in cut 2 of the register (2026-09-14, after Paul's nine points):
+
+13. **The footer button that opens the order modal:** *Order details* (drawn) · *Details* ·
+    *This order* · keep *Order Meta*. **Pick: Order details** — names what is inside (status,
+    cashier, note, currency, transaction ID, metadata) and reads as a cashier's word.
+14. **Tender close.** (a) top-left × (cut 1) · **(b) top-right ×** (drawn default) · (c) *Back to
+    cart* under the keypad. The pane sits left of the cart, so (b) puts the way out nearest what
+    the cashier returns to and where every sheet's × already lives; (c) is the most literal but
+    costs a row under the commit and reads like a second action. **Pick: (b).**
+15. **Legacy gateways.** **(a) dashed tiles in the same grid under a *Legacy* divider** (drawn
+    default) · (b) an *Other ways to pay ▾* link under the grid · (c) the Payments / Legacy toggle
+    (cut 1). A legacy gateway is a way to pay, so it belongs with the others; the toggle made it a
+    mode. (a) shows everything at once at the cost of a row; (b) hides it one tap away, which is
+    right for a store that rarely uses them. **Pick: (a)**, with (b) as the fallback when the grid
+    exceeds three rows.
+16. **Line actions.** Swipe to reveal *Edit* and *Remove* on touch; the same two on hover on the
+    web; name and price edit in place with one tap. **Pick: as drawn** — rule 2 (no hover-only
+    affordances on touch) is why both exist.
+17. **Open-order tabs.** A tab strip with amount over status, folding into *+N more* with a full
+    list. Alternatives: a dropdown *Cart 1 of 12 ▾* (one tap to see anything), or the strip
+    scrolling horizontally (nothing is countable). **Pick: as drawn.**
+
 ## Rejected while drawing
 
 - A dark toast for every line added — noise on the happy path.
