@@ -1,6 +1,6 @@
 # Reports page — prototype for wcpos/roadmap#304
 
-Throwaway, self-contained HTML. Open `index.html` in a browser (double-click; no server, no build). Deep links: `?pro=0|1&viewport=phone|tablet&theme=dark&view=closures&gran=week&cmp=yesterday`.
+Throwaway, self-contained HTML. Open `index.html` in a browser (double-click; no server, no build). Deep links, one example: `index.html?pro=0&viewport=phone&theme=dark` opens Free on a phone in dark mode. Parameters: `pro` (`0` or `1`), `viewport` (`phone` or `tablet`), `theme` (`dark`), `view` (`closures`), `gran` (`day`, `week`, `month`), `cmp` (`lastweek`, `yesterday`, `lastyear`).
 
 **Fourth pass (2026-09-14, same day, after "much better"):** the period title is now the date menu (Today, Yesterday, This week, Last week, This month, Last month, and a custom range capped at three months); the four reports the first cut had and this one lacked are back (Sales summary behind the print icon on the hero, Sales by register when the scope is All registers, Categories, Cash movements); the filter gained order status; and one template select sits in every panel header so the merchant's WP Admin templates are visible everywhere, with the pane rendering in the chosen one and Print printing what is shown.
 

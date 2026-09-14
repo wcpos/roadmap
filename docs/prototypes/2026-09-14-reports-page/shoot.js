@@ -1,5 +1,11 @@
 // Screenshot + smoke-test the Reports page prototype (third cut). Throwaway.
-const { chromium } = require('/Users/kilbot/Projects/monorepo-v2/node_modules/playwright');
+// Playwright is not a dependency of this repo. Resolve it from the environment first, then from a sibling monorepo checkout.
+const { chromium } = (() => {
+  const path = require('path');
+  const candidates = ['playwright', path.join(__dirname, '..', '..', '..', '..', 'monorepo-v2', 'node_modules', 'playwright'), path.join(__dirname, '..', '..', '..', '..', 'monorepo', 'node_modules', 'playwright')];
+  for (const c of candidates) { try { return require(c); } catch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e; } }
+  console.error('playwright not found: npm i -D playwright, or keep a monorepo checkout beside this repo'); process.exit(1);
+})();
 const path = require('path');
 const fs = require('fs');
 const DIR = __dirname;
