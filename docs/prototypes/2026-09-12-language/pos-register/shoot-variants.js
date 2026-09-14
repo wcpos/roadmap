@@ -39,6 +39,11 @@ fs.mkdirSync(OUT, { recursive: true });
   await set('voidStyle', 'red');
   for (const th of ['paper','bold','warm','market','stage','woo']) { await set('theme', th); await scn('open'); await page.waitForTimeout(300); await shot(`theme-${th}`); }
   await set('theme', 'light');
+  // the touches: open (pence, sold today), empty (doodle + voice), paid (stamp)
+  await scn('open'); await shot('touch-open'); await scn('empty'); await shot('touch-empty'); await scn('paid'); await page.waitForTimeout(500); await shot('touch-paid');
+  for (const k of ['roll','stamp','voice','pence','today','tear','doodle']) await page.click(`.strip button[data-tx="${k}"]`);
+  await scn('open'); await shot('touch-off-open'); await scn('paid'); await page.waitForTimeout(500); await shot('touch-off-paid');
+  for (const k of ['roll','stamp','voice','pence','today','tear','doodle']) await page.click(`.strip button[data-tx="${k}"]`);
   // phone: the ⋮ replaces the pair whatever the switch says
   await set('w', 'phone'); await scn('open'); await shot('void-phone-dots'); await page.click('[data-act="vmenu"]'); await shot('void-phone-dots-open'); await set('w', 'tablet');
   await browser.close();

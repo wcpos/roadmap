@@ -198,6 +198,23 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     behind it; (5) **the dark stage** (Linear) — near-black, violet as light, glow on the total;
     (6) **Woo, owned** — WooCommerce purple and Bricolage Grotesque, everything else as today.
     **Pick: (3) as the base, with (4)'s category colours on the tiles and (2)'s 44 pt total.**
+    The six are also live as *Theme* values in the register. Paul: *"The themes aren't bad,
+    except for the woo theme 🤮"* — Woo is out.
+26. **Personality, not a skin.** Paul: *"subtle changes that give this app its own personality."*
+    Research (Mobbin): Cash App makes the number the hero and moves it; Wise, giant numerals and
+    one loud colour; Duolingo, a character and a voice, restraint being what makes it land;
+    Tally, Typeform, Cake, one hand-drawn line per empty state; Linear and Gmail, undo instead of
+    dialogs; every fintech celebrates with confetti, which is the thing to avoid. Through-line:
+    **it is a till, run by a person.** Seven touches live in the register under *Touches*, each
+    on its own toggle: numbers roll (the total counts to the new value in 420 ms, the tab chip and
+    the Take button with it) · PAID stamp (a rubber stamp slams at 8°, no confetti) · a voice
+    (Sale, Till, Park this sale, Walk-in, "Nothing on the till yet.", "Drawer's open.") ·
+    price-tag pence (£24<sup>10</sup>) · sold today (×14 on the tiles) · the receipt tears off
+    after a sale and a fresh one rolls in · a doodle for the empty till. Listed for later: the
+    cashier's day (sales · takings · busiest hour, a sparkline, "First one. Have a good day."),
+    undo never dialogs, the scanner as a character, time of day, the receipt the customer keeps,
+    opt-in sounds, physical feedback. **Pick: all but the doodle stay; the doodle needs a better
+    drawing.**
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·

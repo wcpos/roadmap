@@ -367,6 +367,19 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .frame[data-theme="woo"]{--bg:#faf8fd;--card:#fff;--fg:#271c3b;--muted:#f1ecf8;--muted-fg:#6e6484;--border:#e5dff0;--primary:#7f54b3;--primary-fg:#fff;--ring:#7f54b3;--rail:#f1ecf8;--rail-fg:#4f4468;--rail-border:#e5dff0;--destructive:#c9364c;--destructive-fg:#fff;--scrim:rgba(39,28,59,.3);--ok:oklch(0.55 0.16 155);--ok-bg:oklch(0.96 0.03 155);--warn:oklch(0.68 0.16 70);--warn-bg:oklch(0.97 0.04 85);--bad:oklch(0.58 0.2 25);--bad-bg:oklch(0.97 0.02 25);--info:oklch(0.58 0.14 240);--neutral:oklch(0.62 0.01 250);--r:10px;--font:'DM Sans',sans-serif;--display:'Bricolage Grotesque',sans-serif;color-scheme:light}
 .frame[data-theme="woo"] .tile .img{display:flex;align-items:center;justify-content:center;color:#7f54b3;background:linear-gradient(135deg,#f1ecf8,#e8dff5);font-size:calc(var(--tile)*.38);font-family:var(--display);font-weight:500} .frame[data-theme="woo"] .tile .img::after{content:attr(data-i)} .frame[data-theme="woo"] .tile .n{font-family:var(--display);font-weight:700}
 .frame[data-theme="woo"] .totals .big{font-weight:800;font-size:calc(var(--fs)*1.8);color:#7f54b3} .frame[data-theme="woo"] .btn.p{box-shadow:0 6px 16px -8px rgba(127,84,179,.7)} .frame[data-theme="woo"] .chip{background:#f1ecf8;border-color:transparent;color:#7f54b3}
+
+/* ===== personality touches: small behaviours, each behind a strip toggle ===== */
+.pn{font-size:.72em;vertical-align:top;position:relative;top:.08em;margin-left:1px}   /* price-tag pence */
+.rolling{color:var(--primary)}
+.tile .img{position:relative} .tile .sold{position:absolute;right:6px;top:6px;height:20px;padding:0 7px;border-radius:999px;background:var(--fg);color:var(--bg);font-size:calc(var(--fs)*.75);font-weight:700;display:inline-flex;align-items:center;letter-spacing:.02em}
+.empty .doodle{width:calc(var(--fs)*7);height:auto;stroke-width:2;color:var(--muted-fg);opacity:.9;margin-bottom:calc(var(--u)*1)}
+.stampwrap{height:80px;display:flex;align-items:center;justify-content:center}
+.stamp{display:inline-block;padding:6px 14px;border:4px solid var(--destructive);border-radius:8px;color:var(--destructive);font-weight:800;font-size:calc(var(--fs)*2.2);letter-spacing:.12em;line-height:1;transform:rotate(-8deg);mix-blend-mode:multiply;animation:slam 380ms cubic-bezier(.2,1.4,.4,1) both;-webkit-mask-image:radial-gradient(circle at 30% 40%,#000 60%,rgba(0,0,0,.75) 100%);mask-image:radial-gradient(circle at 30% 40%,#000 60%,rgba(0,0,0,.75) 100%)}
+.frame[data-theme="stage"] .stamp,.frame[data-theme="dark"] .stamp,.frame[data-theme="ocean"] .stamp,.frame[data-theme="sunset"] .stamp,.frame[data-theme="monochrome"] .stamp{mix-blend-mode:screen}
+@keyframes slam{0%{transform:rotate(-14deg) scale(2.2);opacity:0}60%{transform:rotate(-8deg) scale(.96);opacity:1}100%{transform:rotate(-8deg) scale(1);opacity:1}}
+.cartcol.tearing{animation:tear 420ms cubic-bezier(.4,0,1,1) both;transform-origin:top center;-webkit-mask-image:linear-gradient(#000 calc(100% - 10px),transparent calc(100% - 10px)),radial-gradient(circle at 5px 100%,transparent 4px,#000 4.5px);-webkit-mask-size:100% 100%,10px 10px;-webkit-mask-repeat:no-repeat,repeat-x;-webkit-mask-position:0 0,0 100%}
+@keyframes tear{0%{transform:translateY(0) rotate(0)}30%{transform:translateY(6px) rotate(.6deg)}100%{transform:translateY(110%) rotate(2deg);opacity:.9}}
+.cartcol.rollin{animation:rollin 480ms cubic-bezier(.2,.9,.3,1) both} @keyframes rollin{from{transform:translateY(-14px);opacity:0}to{transform:none;opacity:1}}
 </style>
 </head>
 <body>
@@ -412,7 +425,7 @@ const I = {
   keypad:'<svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="1.6"/><circle cx="12" cy="6" r="1.6"/><circle cx="18" cy="6" r="1.6"/><circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/><circle cx="6" cy="18" r="1.6"/><circle cx="12" cy="18" r="1.6"/><circle cx="18" cy="18" r="1.6"/></svg>',
 };
 const CUR='£';
-const fmt=(n,sign=false)=>{const a=Math.abs(n).toFixed(2);const s=n<0?'−':(sign&&n>0?'+':'');return `${s}${CUR}${a}`;};
+const fmt=(n,sign=false)=>{const a=Math.abs(n).toFixed(2);const s=n<0?'−':(sign&&n>0?'+':'');if(S.tx&&S.tx.pence){const [w,p]=a.split('.');return `${s}${CUR}${w}<span class="pn">${p}</span>`;}return `${s}${CUR}${a}`;};
 const PRODUCTS_EN=[['Flat white',3.2],['Sourdough loaf',4.2],['Tote bag',12],['Oat latte',3.6],['Croissant',2.4],['Beans 250g',9.5],['Cinnamon bun',3],['Gift card',20],['Cold brew',3.8],['Granola jar',6.5],['Espresso cup',8],['Tea tin',7.5]];
 const PRODUCTS_DE=[['Flat White mit Hafermilch',3.2],['Handgemachter Sauerteig-Laib 800 g',4.2],['Jutebeutel mit Logoaufdruck',12],['Hafer-Latte groß',3.6],['Buttercroissant',2.4],['Espressobohnen 250 g Packung',9.5],['Zimtschnecke',3],['Geschenkgutschein',20],['Cold Brew Flasche',3.8],['Granola im Glas',6.5],['Espressotasse',8],['Teedose',7.5]];
 /* [name, qty, unit price, sub-line, kind] — fee and shipping are always last */
@@ -441,7 +454,9 @@ const S={ w:'tablet', theme:'light', scale:'regular', scn:'open',
   phoneTab:'cart', panel:false, sheet:null, tender:false, view:'keypad', entry:null, method:'cash', settle:null, online:true, long:false,
   pop:null, tabsPos:'bottom', registers:1, counted:'', open:'200.00', reveal:null, edit:null, orders:2, ordlist:false, view2:'grid',
   closePos:'tr', legacy:'header-text', termStep:1, sortCart:'newest-last', tabStyle:'line1',   /* Paul 2026-09-14: amount + dot, with a format setting */
-  voidStyle:'red', vmenu:false, toast:null };
+  voidStyle:'red', vmenu:false, toast:null,
+  /* personality touches (research: personality/ideas on the hub). Each is one small behaviour, not a skin. */
+  tx:{roll:1,stamp:1,voice:1,pence:1,today:1,tear:1,doodle:1} };
 const STR=()=>S.long?{
   search:'Produkte suchen',scan:'Scannen',priceCheck:'Nur Preisprüfung, bis die Kasse geöffnet ist.',counting:'Keine Verkäufe, während die Kasse gezählt wird.',
   customer:'Kunde',guest:'Gast',details:'Bestelldetails',save:'Bestellung speichern',void:'Stornieren',checkout:'Zur Kasse',subtotal:'Zwischensumme',fees:'Gebühren',tax:'MwSt. 19 %',total:'Gesamt',
@@ -491,7 +506,11 @@ function jump(scn){
   render();
 }
 const sessionOpen=()=>!['closed','pick','counting'].includes(S.scn);
-const T=STR;
+/* a voice: the words a person behind the counter would use. Sale, not order. Till, not register. Park, not save. */
+const VOICE={search:'Find or scan…',emptyT:'Nothing on the till yet.',emptyS:'Tap a product, or scan one.',checkout:'Take',details:'Sale details',save:'Park this sale',void:'Void',
+  register:'Till',openReg:'Open the till',closeReg:'Close the till',backSell:'Back to the till',counting:'The till is being counted. Back in a minute.',priceCheck:'Price checks only until the till is open.',
+  guest:'Walk-in',noResults:'Nothing called',clear:'Clear it',printNew:'Print it · Next sale',email:'Email it',noRcpt:'No receipt · Next sale',paid:'Paid',noSale:'Open the drawer',offline:'Offline, still selling',newOrder:'New sale',openOrders:'Open sales',backCart:'Back to the sale',otherWays:'Other ways to pay'};
+const T=()=>S.tx.voice?{...STR(),...VOICE}:STR();
 const lines=()=> S.scn==='empty' ? [] : (S.long?LINES_DE:LINES);
 const sub=()=>lines().reduce((a,[,q,p])=>a+q*p,0);
 
@@ -502,6 +521,7 @@ function renderStrip(){
     <div class="g"><b>Theme</b>${seg('theme',[['light','Default light'],['dark','Default dark'],['paper','Paper till'],['bold','Bold money'],['warm','Warm shop'],['market','Market stall'],['stage','Dark stage'],['woo','Woo, owned'],['ocean','Ocean'],['sunset','Sunset'],['monochrome','Monochrome']])}</div>
     <div class="g"><b>Scale</b>${seg('scale',[['compact','Compact'],['regular','Regular'],['spacious','Spacious']])}</div>
     <div class="g"><b>Tabs</b>${seg('tabsPos',[['bottom','bottom'],['top','top']])}</div>
+    <div class="g"><b>Touches</b><span class="seg">${[['roll','numbers roll'],['stamp','PAID stamp'],['voice','a voice'],['pence','price-tag pence'],['today','sold today'],['tear','receipt tears off'],['doodle','doodle']].map(([k,l])=>`<button class="${S.tx[k]?'on':''}" data-tx="${k}">${l}</button>`).join('')}</span></div>
     <div class="g"><b>Registers</b>${seg('registers',[[1,'1'],[3,'3']])}</div>
     <div class="g"><b>Tender close</b>${seg('closePos',[['tl','top-left ×'],['tr','top-right ×'],['bottom','Back to cart under keypad']])}</div>
     <div class="g"><b>Tab style</b>${seg('tabStyle',[['lines2','amount over status'],['line1','amount + dot'],['chips','chips'],['cards','cards'],['numbered','numbered'],['edge','status edge']])}</div>
@@ -515,6 +535,7 @@ function renderRail(){
   return `<nav class="rail"><div class="logo"></div>${items.map(([k,l],i)=>`<button class="it press ${i===0?'on':''}" aria-label="${l}">${I[k]}</button>`).join('')}<div class="sp"></div>${bottom.map(([k,l])=>`<button class="it press" aria-label="${l}">${I[k]}</button>`).join('')}</nav>`;
 }
 const EMO={'Flat white':'☕','Sourdough loaf':'🍞','Tote bag':'👜','Oat latte':'🥛','Croissant':'🥐','Beans 250g':'🫘','Cinnamon bun':'🥯','Gift card':'🎁','Cold brew':'🧊','Granola jar':'🥣','Espresso cup':'☕','Tea tin':'🍵'};
+const SOLD={'Flat white':14,'Oat latte':9,'Croissant':7,'Sourdough loaf':3,'Cold brew':2};
 function renderProducts(){
   const t=T(); const phone=S.w==='phone'; const prods=S.long?PRODUCTS_DE:PRODUCTS_EN;
   let notice='',body='',gate='';
@@ -535,7 +556,7 @@ function renderProducts(){
       <div class="tbody">${rowsHtml}</div>
       <div class="tfoot" style="display:flex;align-items:center;height:max(var(--ctl),var(--floor));border-top:var(--hair) solid var(--border);color:var(--muted-fg);padding:0 calc(var(--u)*3)">Showing 12 of 1,204</div></div>`;
   }
-  else body=`<div class="tiles">${prods.map(([n,p])=>`<button class="tile press" data-act="addLine"><div class="img" data-i="${n[0]}" data-e="${EMO[n]||'🛍️'}"></div><div class="n">${n}</div><div class="p money">${fmt(p)}</div></button>`).join('')}</div>`;
+  else body=`<div class="tiles">${prods.map(([n,p])=>`<button class="tile press" data-act="addLine"><div class="img" data-i="${n[0]}" data-e="${EMO[n]||'🛍️'}">${S.tx.today&&SOLD[n]?`<span class="sold">×${SOLD[n]}</span>`:''}</div><div class="n">${n}</div><div class="p money">${fmt(p)}</div></button>`).join('')}</div>`;
   const focus=['open','empty','offline','long'].includes(S.scn)?'ring':'';
   const side = '';
   return `<div class="prodcol">
@@ -654,6 +675,8 @@ function renderLine([n,q,p,s,kind],i){
     <div class="acts"><button class="press" data-act="openSheet" data-sheet="edit">${I.pen}${t.edit}</button><button class="del press" data-act="removeLine">${I.trash}${t.remove}</button></div>
     <div class="hov"><button class="ibtn press" data-act="openSheet" data-sheet="edit" aria-label="${t.edit}">${I.pen}</button><button class="ibtn del press" data-act="removeLine" aria-label="${t.remove}">${I.trash}</button></div></div>`;
 }
+/* one line, drawn by hand: a till with a curl of receipt. The only illustration in the app, reused for closed / offline / nothing found. */
+const DOODLE='<svg class="doodle" viewBox="0 0 120 84" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 62c-1 10 4 13 12 13h62c8 0 12-4 11-13l-4-26H22z"/><path d="M30 36l4-14h44l6 14"/><path d="M52 22c0-8 3-13 10-14 8-1 12 4 9 10-2 4-8 4-6-2"/><path d="M32 46h10M48 46h10M64 46h10M32 54h10M48 54h10M64 54h10"/><path d="M84 44c6 0 8 4 8 8"/><path d="M40 75c8 5 32 5 40 0"/></svg>';
 function renderCart(){
   const t=T(); const items=lines(); const s=sub(); const fees=items.filter(l=>l[4]==='fee').reduce((a,[,q,p])=>a+q*p,0); const goods=s-fees; const tax=+(goods-goods/1.2).toFixed(2);
   /* the order chip: the sale's identity, and the menu of what you do TO the sale (Linear ⋯, Shopify More actions) */
@@ -661,7 +684,7 @@ function renderCart(){
   const orderChip = S.voidStyle==='chip' ? `<button class="chip press ${S.vmenu?'on':''}" style="border-color:transparent;padding:0 calc(var(--u)*2)" data-act="vmenu"><b>#102476</b>${I.chevd}</button>` : `<span class="mut">${t.customer}</span>`;
   const head=`<div class="custrow" style="position:relative">${orderChip}<button class="chip press">${t.guest}${I.chevd}</button><span class="grow"></span>${S.voidStyle==='trash'&&items.length?`<button class="ibtn press" style="color:var(--destructive)" data-act="void" aria-label="${t.void} order" title="${t.void} order">${I.trash}</button>`:''}<button class="ibtn press" aria-label="Add">${I.plus}</button><button class="ibtn press ${S.pop==='cart'?'on':''}" data-act="togglePop" data-pop="cart" aria-label="Cart settings">${I.sliders}</button>${chipMenu}</div>`;
   const th=items.length?`<div class="cart-th"><span>${t.qty}</span><span>${t.item}</span><span class="r">${t.price}</span><span class="r">${t.lineTotal}</span></div>`:'';
-  const body=items.length?items.map(renderLine).join(''):`<div class="empty">${I.cart}<div class="t">${t.emptyT}</div><div class="xs">${t.emptyS}</div></div>`;
+  const body=items.length?items.map(renderLine).join(''):`<div class="empty">${S.tx.doodle?DOODLE:I.cart}<div class="t">${t.emptyT}</div><div class="xs">${t.emptyS}</div></div>`;
   const totals=items.length?`<div class="totals"><div class="r2 mut"><span>${t.subtotal}</span><span class="money">${fmt(goods-tax)}</span></div>${fees?`<div class="r2 mut"><span>${t.fees}</span><span class="money">${fmt(fees)}</span></div>`:''}<div class="r2 mut"><span>${t.tax}</span><span class="money">${fmt(tax)}</span></div><div class="r2 big"><span>${t.total}</span><span class="money">${fmt(s)}</span></div></div>`:'';
   /* Void style (strip): where the one destructive action lives — the void board, live */
   const dis=items.length?'':'disabled'; const vs=S.voidStyle;
@@ -766,7 +789,7 @@ function renderTender(){
   const t=T(); const total=sub(); const entry=S.entry??total; const ghost=S.entry===null; const m=METHODS.find(x=>x.id===S.method)||METHODS[0];
   if (S.view==='paid'){
     const change=S.entry&&S.entry>total?S.entry-total:0;
-    return `<div class="pay"><div class="paidwrap"><span class="disc">${I.check}</span><div class="h money">${change>0?`${t.change} ${fmt(change)}`:`${t.paid} ${fmt(total)}`}</div><div class="mut">${change>0?`${t.paid} ${fmt(total)} · tendered ${fmt(S.entry)} in Cash`:`${fmt(total)} · SumUp · contactless`}</div>
+    return `<div class="pay"><div class="paidwrap">${S.tx.stamp?`<div class="stampwrap"><span class="stamp">PAID</span></div>`:`<span class="disc">${I.check}</span>`}<div class="h money">${change>0?`${t.change} ${fmt(change)}`:`${t.paid} ${fmt(total)}`}</div><div class="mut">${change>0?`${t.paid} ${fmt(total)} · tendered ${fmt(S.entry)} in Cash`:S.method==='cash'?`${fmt(total)} · Cash`:`${fmt(total)} · SumUp · contactless`}</div>${S.tx.voice?`<div class="mut">${S.method==='cash'?"Drawer's open.":"Reader's done."}</div>`:''}
       <div class="acts"><button class="btn xl p press" data-act="newSale">${I.print}${t.printNew}</button><button class="btn press" data-act="newSale">${t.email}</button><button class="btn q press" data-act="newSale">${t.noRcpt}</button></div></div></div>`;
   }
   if (S.view==='legacy'){
@@ -829,6 +852,13 @@ function renderNotes(){
     ['Focus','',{open:'search field, on open; the scanner is captured anywhere',added:'the quantity of the line just added; Enter checks out','line-edit':'the name field; Tab moves to price, Enter saves, Esc cancels',tender:'the amount; digits type, Enter takes the selected method, Esc closes',closed:'the float amount; Enter opens the register',counting:'the counted amount; Enter closes and prints'}[S.scn]||'—']];
   document.getElementById('notes').innerHTML=`<b>Prototype for wcpos/roadmap#287 (cut 2).</b> The dark strip is not part of the design. `+rows.map(([k,v,d])=>`<span style="display:inline-block;margin-right:16px"><b>${k}:</b> ${v} <span style="color:#6b7280">${d}</span></span>`).join('');
 }
+/* numbers roll: the total counts from the old value to the new one over 420 ms, like a mechanical counter. The tab chip rolls with it. */
+function rollMoney(from,to){
+  if(from===to) return; const els=[...document.querySelectorAll('.cartcol .totals .big .money, .cartcol .tabs .otab.on .money, .cartcol .btn.p .money')]; if(!els.length) return;
+  const t0=performance.now(), dur=420; els.forEach(e=>e.classList.add('rolling'));
+  const step=(now)=>{ const k=Math.min(1,(now-t0)/dur); const e=1-Math.pow(1-k,3); const v=from+(to-from)*e; els.forEach(el=>{ el.innerHTML=fmt(v); }); if(k<1) requestAnimationFrame(step); else els.forEach(e=>e.classList.remove('rolling')); };
+  requestAnimationFrame(step);
+}
 function render(){
   renderStrip();
   const f=document.getElementById('frame'); f.className='frame'; f.dataset.w=S.w; f.dataset.theme=S.theme; f.dataset.scale=S.scale;
@@ -840,12 +870,13 @@ document.addEventListener('click',e=>{
   const b=e.target.closest('[data-set],[data-scn],[data-act]');
   if(!b){ if(!e.target.closest('[data-stop]') && (S.pop||S.ordlist||S.reveal!=null||S.edit!=null)){ S.pop=null; S.ordlist=false; S.reveal=null; S.edit=null; render(); } return; }
   if(b.dataset.set){ const v=b.dataset.v; S[b.dataset.set]=(v==='1'||v==='3')?+v:v; render(); return; }
+  if(b.dataset.tx){ S.tx[b.dataset.tx]=S.tx[b.dataset.tx]?0:1; render(); return; }
   if(b.dataset.scn && !b.dataset.act){ jump(b.dataset.scn); return; }
   const a=b.dataset.act;
   switch(a){
     case 'noop': break;
     case 'jumpTo': jump(b.dataset.scn); return;
-    case 'addLine': if(!sessionOpen()) break; S.scn='added'; S.settle='line'; S.phoneTab='cart'; render(); setTimeout(()=>{ if(S.settle==='line'){ S.settle=null; document.querySelectorAll('.line.settle').forEach(n=>n.classList.remove('settle')); } },900); return;
+    case 'addLine': { if(!sessionOpen()) break; const before=sub(); S.scn='added'; S.settle='line'; S.phoneTab='cart'; render(); if(S.tx.roll) rollMoney(before, sub()); setTimeout(()=>{ if(S.settle==='line'){ S.settle=null; document.querySelectorAll('.line.settle').forEach(n=>n.classList.remove('settle')); } },900); return; }
     case 'editLine': S.edit=+b.dataset.i; S.reveal=null; break;
     case 'removeLine': S.reveal=null; break;
     case 'vmenu': S.vmenu=!S.vmenu; break;
@@ -869,7 +900,11 @@ document.addEventListener('click',e=>{
     case 'entry': S.entry=b.dataset.v===''?null:+b.dataset.v; break;
     case 'key': { const k=b.dataset.k; const cur=S.entry===null?'':String(Math.round(S.entry*100)); const d=k==='C'?'':k==='⌫'?cur.slice(0,-1):(cur+k).slice(0,8); S.entry=d===''?null:+d/100; break; }
     case 'take': { const m=[...METHODS,...LEGACY].find(x=>x.id===S.method); if(m&&m.k==='terminal'){ S.view='terminal'; S.termStep=0; render(); termTimer=setTimeout(()=>{S.termStep=1;render();stepTerminal();},700); return; } S.view='paid'; break; }
-    case 'newSale': S.tender=false; S.view='keypad'; S.entry=null; S.scn='empty'; break;
+    case 'newSale': {
+      const done=()=>{ S.tender=false; S.view='keypad'; S.entry=null; S.scn='empty'; render(); const c=document.querySelector('.cartcol'); if(c&&S.tx.tear){ c.classList.add('rollin'); setTimeout(()=>c.classList.remove('rollin'),500); } };
+      const led=document.querySelector('.cartcol.ledger');
+      if(S.tx.tear&&led){ led.classList.add('tearing'); setTimeout(done,420); return; }
+      done(); return; }
   }
   render();
 });

@@ -49,7 +49,7 @@ const SCALES = QUICK ? ['regular'] : ['regular','compact'];
   await scn('tender');
   await page.keyboard.type('5000');
   const big = await page.locator('.pay .big').textContent();
-  if (!/50\.00/.test(big)) throw new Error('keypad did not type: ' + big);
+  if (!/50\.?00/.test(big)) throw new Error('keypad did not type: ' + big);
   await page.keyboard.press('Enter');
   if (!(await page.locator('.paidwrap').count())) throw new Error('Enter did not take cash');
   await browser.close();
