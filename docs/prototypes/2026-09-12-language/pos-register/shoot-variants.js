@@ -25,7 +25,17 @@ fs.mkdirSync(OUT, { recursive: true });
   // the open-order tab styles, 12 orders, list closed, tablet and phone
   for (const w of ['tablet', 'phone']) { await set('w', w);
     for (const s of ['lines2', 'line1', 'chips', 'cards', 'numbered', 'edge']) { await set('tabStyle', s); await scn('many-orders'); await page.click('.ordlist [data-act="ordlist"]'); await shot(`tabs-${s}-${w}`); } }
-  await set('w', 'tablet'); await set('tabStyle', 'lines2');
+  await set('w', 'tablet'); await set('tabStyle', 'line1');
+  // the void styles, live: tablet, session open; the menu opened, the hold mid-press
+  for (const v of ['menu', 'hold', 'text', 'outline', 'discard', 'trash', 'details']) {
+    await set('voidStyle', v); await scn('open');
+    if (v === 'menu') await page.click('[data-act="vmenu"]');
+    if (v === 'details') await page.click('[data-pop="details"]');
+    if (v === 'hold') { await page.hover('[data-hold]'); await page.mouse.down(); await page.waitForTimeout(350); }
+    await shot(`void-${v}`);
+    if (v === 'hold') await page.mouse.up();
+  }
+  await set('voidStyle', 'menu');
   await browser.close();
   if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
   console.log('ok · variants in ' + OUT);

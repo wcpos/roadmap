@@ -214,6 +214,14 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .otab.more{color:var(--primary);font-weight:600;flex:none;align-items:center;flex-direction:row;gap:calc(var(--u)*1)}
 .otab.plus{flex:none;align-items:center;justify-content:center;padding:0 calc(var(--u)*2);flex-direction:row;color:var(--muted-fg)}
 .tabs .sp{flex:1}
+/* void styles */
+.vmenu{position:absolute;left:calc(var(--u)*4);bottom:calc(100% - var(--u)*2);width:240px;background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);padding:calc(var(--u)*2);z-index:25;animation:drop var(--t) var(--ease)}
+.vmenu button{display:flex;align-items:center;gap:calc(var(--u)*2.5);width:100%;height:max(var(--row),var(--floor));padding:0 calc(var(--u)*2.5);border-radius:calc(var(--r) - 2px);text-align:left}
+.vmenu button:active{background:var(--muted)} .vmenu .d{color:var(--destructive)} .vmenu .sep{border-top:var(--hair) solid var(--border);margin:calc(var(--u)*1) 0}
+.btn.hold{position:relative;overflow:hidden;color:var(--destructive);border-color:var(--border)}
+.btn.hold .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:color-mix(in oklch,var(--destructive) 18%,transparent);transition:width 0s}
+.btn.hold.holding .fill{width:100%;transition:width 600ms linear}
+.toast .undo{margin-left:auto;font-weight:600;text-decoration:underline;text-underline-offset:3px;color:inherit}
 /* the open-orders list takes the whole cart column (Paul, 2026-09-14) */
 .ordlist{position:absolute;inset:0;overflow:auto;z-index:25;background:var(--card);animation:drop var(--t) var(--ease);display:flex;flex-direction:column}
 .ordlist .hh{height:max(var(--ctl),var(--floor));border-bottom:var(--hair) solid var(--border);padding:0 calc(var(--u)*2) 0 calc(var(--u)*4);flex:none;font-size:calc(var(--fs)*1.1)}
@@ -384,7 +392,8 @@ const OPEN=[
 const S={ w:'tablet', theme:'light', scale:'regular', scn:'open',
   phoneTab:'cart', panel:false, sheet:null, tender:false, view:'keypad', entry:null, method:'cash', settle:null, online:true, long:false,
   pop:null, tabsPos:'bottom', registers:1, counted:'', open:'200.00', reveal:null, edit:null, orders:2, ordlist:false, view2:'grid',
-  closePos:'tr', legacy:'header-text', termStep:1, sortCart:'newest-last', tabStyle:'line1' };   /* Paul 2026-09-14: amount + dot, with a format setting */
+  closePos:'tr', legacy:'header-text', termStep:1, sortCart:'newest-last', tabStyle:'line1',   /* Paul 2026-09-14: amount + dot, with a format setting */
+  voidStyle:'menu', vmenu:false, toast:null };
 const STR=()=>S.long?{
   search:'Produkte suchen',scan:'Scannen',priceCheck:'Nur Preisprüfung, bis die Kasse geöffnet ist.',counting:'Keine Verkäufe, während die Kasse gezählt wird.',
   customer:'Kunde',guest:'Gast',details:'Bestelldetails',save:'Bestellung speichern',void:'Stornieren',checkout:'Zur Kasse',subtotal:'Zwischensumme',fees:'Gebühren',tax:'MwSt. 19 %',total:'Gesamt',
@@ -448,6 +457,7 @@ function renderStrip(){
     <div class="g"><b>Registers</b>${seg('registers',[[1,'1'],[3,'3']])}</div>
     <div class="g"><b>Tender close</b>${seg('closePos',[['tl','top-left ×'],['tr','top-right ×'],['bottom','Back to cart under keypad']])}</div>
     <div class="g"><b>Tab style</b>${seg('tabStyle',[['lines2','amount over status'],['line1','amount + dot'],['chips','chips'],['cards','cards'],['numbered','numbered'],['edge','status edge']])}</div>
+    <div class="g"><b>Void style</b>${seg('voidStyle',[['menu','⋮ beside Checkout'],['hold','hold to void'],['text','quiet text under'],['outline','outlined red (today)'],['discard','Discard in the bar'],['trash','trash in customer row'],['details','row in Order details']])}</div>
     <div class="g"><b>Legacy switch</b>${seg('legacy',[['header-text','header · text toggle (decided)'],['header-icons','header · icons'],['tile','tile in the grid'],['bottom','link under the keypad']])}</div>
     <div class="g"><b>State</b><span class="seg">${SCENES.map(([v,l])=>`<button class="${S.scn===v?'on':''}" data-scn="${v}">${l}</button>`).join('')}</span></div>`;
 }
@@ -523,6 +533,18 @@ function renderSide(){
         <div class="opt"><span>Quick discounts</span><span class="grow"></span><span class="mut">5 · 10 · 15 · 20 %</span></div>
         <div class="opt" style="margin-top:calc(var(--u)*3)"><button class="btn q press xs" style="height:36px;padding:0 8px;color:var(--muted-fg)">Restore defaults</button></div>
       </div></div></div>`;
+  if (S.pop==='details') return `<div class="sidewrap" data-act="togglePop" data-pop="details"><div class="sidepanel" data-stop="1">
+      <div class="h"><span class="grow">${t.details}<span class="mut" style="font-weight:400;margin-left:8px">#102476 · ${lines().length} ${t.items} · ${t.guest}</span></span><button class="ibtn press" data-act="togglePop" data-pop="details" aria-label="Close">${I.x}</button></div>
+      <div class="bd form">
+        <div class="fld"><label>Status</label><button class="btn press" style="width:100%;justify-content:space-between">POS open${I.chevd}</button></div>
+        <div class="fld"><label>Cashier</label><button class="btn press" style="width:100%;justify-content:space-between">Demo Cashier${I.chevd}</button></div>
+        <div class="fld"><label>Customer note</label><input class="in" placeholder="Nothing yet"></div>
+        <div class="row" style="gap:calc(var(--u)*3)"><div class="fld grow"><label>Currency</label><input class="in" value="GBP"></div><div class="fld grow"><label>Transaction ID</label><input class="in" value=""></div></div>
+        <div class="fold"><button class="press">${I.chev}<span>Metadata</span><span class="mut">2 keys</span></button></div>
+        <div class="fold"><button class="press">${I.chev}<span>JSON</span></button></div>
+        ${S.voidStyle==='details'?`<div class="fold"><button class="press" style="color:var(--destructive)" data-act="void">${I.trash}<span>${t.void} this order</span></button></div>`:''}
+      </div>
+      <div class="ft"><span class="grow"></span><button class="btn press" data-act="togglePop" data-pop="details">Cancel</button><button class="btn p press" data-act="togglePop" data-pop="details">Save</button></div></div></div>`;
   if (S.sheet==='edit') return `<div class="sidewrap" data-act="closeSheet"><div class="sidepanel" data-stop="1">
       <div class="h"><span class="grow">Edit Flat white<span class="mut" style="font-weight:400;margin-left:8px">line 1 · 2 × £3.20</span></span><button class="ibtn press" data-act="closeSheet" aria-label="Close">${I.x}</button></div>
       <div class="bd form">
@@ -543,6 +565,8 @@ function renderBar(){
   if (S.scn==='pick') pill=`<span class="pill warn">Choose register</span>`; else if (S.scn==='closed') pill=`<span class="pill">${t.closed}</span>`; else if (S.scn==='counting') pill=`<span class="pill warn">${t.countingP}</span>`; else if (S.scn==='overdue') pill=`<span class="pill warn">${t.overdue} · 18:00</span>`;
   const off=!S.online?`<span class="pill warn">${I.cloudoff}${t.offline}</span>`:'';
   const drawer=sessionOpen()?`<button class="ibtn press" data-act="openPanel" aria-label="${t.register}" style="${S.scn==='overdue'?'color:var(--warn)':''}">${I.drawer}</button>`:'';
+  const discard=S.voidStyle==='discard'&&sessionOpen()&&lines().length&&!S.tender?`<button class="btn q press" style="height:36px;padding:0 calc(var(--u)*2.5);color:var(--muted-fg)" data-act="void">Discard</button>`:'';
+  pill+=discard;
   return `<div class="bar">${phone?`<button class="ibtn press" aria-label="Menu" style="margin-left:calc(var(--u)*-3)">${I.menu}</button>`:''}<span class="place ell"><span class="ell">${name}</span>${S.registers>1?`<span class="mut" style="font-weight:400">· UK Store</span>`:''}</span>${pill}${off}<span class="grow"></span>${drawer}<button class="avbtn press" data-act="openSheet" data-sheet="user" aria-label="Demo Cashier"><span class="av">DC</span></button></div>`;
 }
 /* the open-order tabs */
@@ -583,13 +607,23 @@ function renderLine([n,q,p,s,kind],i){
 }
 function renderCart(){
   const t=T(); const items=lines(); const s=sub(); const fees=items.filter(l=>l[4]==='fee').reduce((a,[,q,p])=>a+q*p,0); const goods=s-fees; const tax=+(goods-goods/1.2).toFixed(2);
-  const head=`<div class="custrow"><span class="mut">${t.customer}</span><button class="chip press">${t.guest}${I.chevd}</button><span class="grow"></span><button class="ibtn press" aria-label="Add">${I.plus}</button><button class="ibtn press ${S.pop==='cart'?'on':''}" data-act="togglePop" data-pop="cart" aria-label="Cart settings">${I.sliders}</button></div>`;
+  const head=`<div class="custrow"><span class="mut">${t.customer}</span><button class="chip press">${t.guest}${I.chevd}</button><span class="grow"></span>${S.voidStyle==='trash'&&items.length?`<button class="ibtn press" style="color:var(--destructive)" data-act="void" aria-label="${t.void} order" title="${t.void} order">${I.trash}</button>`:''}<button class="ibtn press" aria-label="Add">${I.plus}</button><button class="ibtn press ${S.pop==='cart'?'on':''}" data-act="togglePop" data-pop="cart" aria-label="Cart settings">${I.sliders}</button></div>`;
   const th=items.length?`<div class="cart-th"><span>${t.qty}</span><span>${t.item}</span><span class="r">${t.price}</span><span class="r">${t.lineTotal}</span></div>`:'';
   const body=items.length?items.map(renderLine).join(''):`<div class="empty">${I.cart}<div class="t">${t.emptyT}</div><div class="xs">${t.emptyS}</div></div>`;
   const totals=items.length?`<div class="totals"><div class="r2 mut"><span>${t.subtotal}</span><span class="money">${fmt(goods-tax)}</span></div>${fees?`<div class="r2 mut"><span>${t.fees}</span><span class="money">${fmt(fees)}</span></div>`:''}<div class="r2 mut"><span>${t.tax}</span><span class="money">${fmt(tax)}</span></div><div class="r2 big"><span>${t.total}</span><span class="money">${fmt(s)}</span></div></div>`:'';
-  const f2=items.length?`<div class="cart-f2"><button class="btn press">${t.details}</button><button class="btn press">${t.save}</button></div>`:'';
+  /* Void style (strip): where the one destructive action lives — the void board, live */
+  const dis=items.length?'':'disabled'; const vs=S.voidStyle;
+  const detailsBtn=`<button class="btn press" data-act="togglePop" data-pop="details">${t.details}</button>`;
+  const f2=items.length && vs!=='menu' ? `<div class="cart-f2">${detailsBtn}<button class="btn press">${t.save}</button></div>` : '';
+  const checkout=`<button class="btn xl p press" ${dis} data-act="checkout">${t.checkout} <span class="money">${fmt(s)}</span></button>`;
   const timed=S.scn==='overdue'&&!items.length;
-  const foot=timed?`<div class="cart-f"><button class="btn xl p press" data-act="startCount">${t.closeReg}</button></div>`:`<div class="cart-f"><button class="btn d press" ${items.length?'':'disabled'}>${t.void}</button><button class="btn xl p press" ${items.length?'':'disabled'} data-act="checkout">${t.checkout} <span class="money">${fmt(s)}</span></button></div>`;
+  let foot;
+  if (timed) foot=`<div class="cart-f"><button class="btn xl p press" data-act="startCount">${t.closeReg}</button></div>`;
+  else if (vs==='menu') foot=`<div class="cart-f" style="position:relative"><button class="btn xl press ${S.vmenu?'on':''}" style="width:max(calc(var(--tile)*.875),var(--floor));padding:0" data-act="vmenu" aria-label="More" ${dis}>${I.dots}</button>${checkout}${S.vmenu?`<div class="vmenu" data-stop="1"><button class="press" data-act="togglePop" data-pop="details">${t.details}</button><button class="press" data-act="vmenu">${t.save}</button><button class="press" data-act="vmenu">Print pro-forma</button><div class="sep"></div><button class="press d" data-act="void">${I.trash}${t.void} order</button></div>`:''}</div>`;
+  else if (vs==='hold') foot=`<div class="cart-f"><button class="btn press hold" data-hold="1" ${dis} aria-label="Hold to void"><span class="fill"></span><span style="position:relative">Hold to void</span></button>${checkout}</div>`;
+  else if (vs==='text') foot=`<div class="cart-f" style="flex-direction:column;gap:0">${checkout}<button class="btn q press" style="color:var(--destructive);height:40px" data-act="void" ${dis}>${t.void} order</button></div>`;
+  else if (vs==='outline') foot=`<div class="cart-f"><button class="btn d press" ${dis} data-act="void">${t.void}</button>${checkout}</div>`;
+  else foot=`<div class="cart-f">${checkout}</div>`;   /* discard · trash · details put Void elsewhere */
   const pop=false?`<div class="pop" style="right:calc(var(--u)*3);top:calc(max(var(--ctl),var(--floor)) * 2 + var(--u)*4)" data-stop="1">
       <div class="hh">Cart</div>
       <div class="opt h2">Sort items</div>
@@ -630,8 +664,14 @@ function renderCount(){
 }
 function renderCartColumn(){
   let body; if (S.scn==='pick') body=renderPick(); else if (S.scn==='closed') body=renderOpenCard(); else if (S.scn==='counting') body=renderCount(); else body=renderCart();
-  return `<div class="cartcol">${renderBar()}${body}</div>`;
+  const toast=S.toast==='voided'?`<div class="toast" role="status"><span>Order voided</span><button class="undo press" data-act="undoVoid">Undo</button></div>`:'';
+  return `<div class="cartcol">${renderBar()}${toast}${body}</div>`;
 }
+let toastTimer=null;
+/* hold to void: 600 ms of pressure is the confirmation */
+let holdTimer=null;
+document.addEventListener('pointerdown',e=>{ const b=e.target.closest('[data-hold]'); if(!b||b.disabled) return; b.classList.add('holding'); holdTimer=setTimeout(()=>{ b.classList.remove('holding'); document.querySelector('[data-act="void"]')?.click() || (S.scn='empty',S.toast='voided',render(),toastTimer=setTimeout(()=>{S.toast=null;render();},4000)); },600); });
+['pointerup','pointerleave','pointercancel'].forEach(ev=>document.addEventListener(ev,e=>{ const b=e.target.closest?.('[data-hold]'); if(holdTimer){clearTimeout(holdTimer);holdTimer=null;} if(b) b.classList.remove('holding'); }));
 function renderPanel(){
   if(!S.panel) return ''; const t=T();
   return `<div class="panel-wrap" data-act="closePanel"><div class="panel" data-stop="1">${S.w==='phone'?'<div class="handle"></div>':''}
@@ -750,6 +790,9 @@ document.addEventListener('click',e=>{
     case 'addLine': if(!sessionOpen()) break; S.scn='added'; S.settle='line'; S.phoneTab='cart'; render(); setTimeout(()=>{ if(S.settle==='line'){ S.settle=null; document.querySelectorAll('.line.settle').forEach(n=>n.classList.remove('settle')); } },900); return;
     case 'editLine': S.edit=+b.dataset.i; S.reveal=null; break;
     case 'removeLine': S.reveal=null; break;
+    case 'vmenu': S.vmenu=!S.vmenu; break;
+    case 'void': S.vmenu=false; S.pop=null; S.scn='empty'; S.toast='voided'; clearTimeout(toastTimer); toastTimer=setTimeout(()=>{S.toast=null;render();},4000); break;
+    case 'undoVoid': S.toast=null; clearTimeout(toastTimer); S.scn='open'; break;
     case 'selOrder': S.ordlist=false; break;
     case 'ordlist': S.ordlist=!S.ordlist; break;
     case 'sortCart': S.sortCart=b.dataset.v; break;
