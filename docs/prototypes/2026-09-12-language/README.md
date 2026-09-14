@@ -123,6 +123,24 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     (f) **status edge** — one line with a coloured top edge per status, amount and customer.
     **Decided (Paul, 2026-09-14): (a) amount over status.** It is the prototype's default; the
     other five stay in the strip for the record.
+18. **Where WordPress admin lives without a header.** Today it is a web-only item in the shared
+    header's user menu (`openExternalURL(site.home + '/wp-admin')`, with *Desktop App*); the POS
+    has no header. (a) **a *This site* group in the user sheet: WordPress admin, Desktop app**
+    (drawn, web only; desktop width in the strip) · (b) a WordPress glyph in the rail's bottom
+    cluster · (c) a link on the Settings screen. **Pick: (a)** — it sits with Switch store and
+    Sign out, which are the other things about *where you are signed in*; the rail is the app's
+    own map and an external link there reads as a screen.
+19. **What "switch user" means on the web.** Read from source (monorepo `next`, plugin `main`):
+    in embedded mode `/pos` is gated by the WordPress cookie (`auth_redirect()` when not logged
+    in, `access_woocommerce_pos` checked), then the template mints a JWT for the cookie user and
+    injects it as `initialProps`. On **every** page load the hydration step
+    `PROCESS_INITIAL_PROPS` upserts that user's credentials and **sets the current session to
+    them**, so a switch made in the app lasts until the next refresh, then the cookie user is
+    back. The pieces for a real switch already exist: credentials are stored per site
+    (`site.wp_credentials`), `login({wpCredentialsID})` swaps the session, *Another account…* runs
+    the JWT login (`/pos/login`, the plugin's own login template) with a same-window redirect and
+    a redirect-return claim. What is missing is one rule in that hydration step. Options in the
+    chat question; the pick is to keep the cookie as the gate and let the app own the active user.
 
 ## Rejected while drawing
 
