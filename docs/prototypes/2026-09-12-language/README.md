@@ -141,7 +141,11 @@ Orders, after Paul's first thoughts (2026-09-14):
     view*): the same header row, hairline rows, resize handles and footer, with Name + SKU,
     Price, Stock as a dot-plus-number when low or out, and a + per row (a chevron for a variable
     product). The tile/table control is **one icon button that shows the view you would switch
-    to** (list icon while on tiles, grid icon while on the table). **Pick: as drawn.**
+    to** (list icon while on tiles, grid icon while on the table). **Decided (Paul, 2026-09-14,
+    from the seven-idiom board in `pos-register/board.html`): frameless rows with a header, and a
+    variable product opens its variations as indented rows (board 01 + 07).** The table language
+    is decided on the POS and flows to orders, customers and coupons; the orders list is
+    therefore frameless too (decision 20's (a)), with grouping and counts as later additions.
 18. **Where WordPress admin lives without a header.** Today it is a web-only item in the shared
     header's user menu (`openExternalURL(site.home + '/wp-admin')`, with *Desktop App*); the POS
     has no header. (a) **a *This site* group in the user sheet: WordPress admin, Desktop app**
