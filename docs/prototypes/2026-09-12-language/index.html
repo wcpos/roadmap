@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>1.11.0 language — the one page</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;display:flex}
+nav{position:sticky;top:0;height:100vh;width:260px;flex:none;background:#111827;color:#e5e7eb;padding:20px 18px;overflow:auto;font-size:13px}
+nav h1{font-size:15px;margin:0 0 4px} nav .sub{color:#9ca3af;font-size:12px;margin-bottom:18px}
+nav a{display:block;color:#d1d5db;text-decoration:none;padding:6px 8px;border-radius:6px} nav a:hover{background:#1f2937;color:#fff} nav a.now{color:#fff;font-weight:600}
+nav .grp{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin:16px 8px 4px}
+main{flex:1;min-width:0;padding:24px 28px 80px}
+section{margin-bottom:44px}
+h2{font-size:18px;margin:0 0 6px} .meta{color:#6b7280;font-size:12px;margin-bottom:8px}
+.what{background:#fff;border:1px solid #d1d5db;border-radius:8px;padding:12px 16px;font-size:13px;line-height:1.5;margin-bottom:12px;max-width:110ch}
+.what b{color:#111}
+.log{background:#fff;border:1px solid #d1d5db;border-radius:8px;padding:6px 16px;font-size:13px;line-height:1.5;max-width:110ch}
+.log div{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:8px 0;border-top:1px solid #e5e7eb} .log div:first-child{border-top:0} .log time{color:#6b7280;font-variant-numeric:tabular-nums}
+.ask{background:#fffbeb;border:1px solid #f5d9a8;border-radius:8px;padding:12px 16px;font-size:13px;line-height:1.5;max-width:110ch} .ask li{margin:4px 0}
+iframe{width:100%;border:1px solid #c9ced6;border-radius:8px;background:#fff;display:block}
+.open{font-size:12px;margin-left:10px;color:#2563eb}
+kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;padding:0 5px}
+</style>
+</head>
+<body>
+<nav>
+  <h1>1.11.0 language</h1>
+  <div class="sub">One page. Refresh to see the latest.</div>
+  <a href="#changes">What changed</a>
+  <a href="#ask">Waiting on Paul</a>
+  <div class="grp">Live prototypes</div>
+  <a href="#register">POS register</a>
+  <a href="#orders">Orders</a>
+  <div class="grp">Boards (options side by side)</div>
+  <a href="#void">Void — 5 models + 7 placements</a>
+  <a href="#table1">POS table — 7 idioms in situ</a>
+  <a href="#table2">POS table — 9 more</a>
+  <a href="#orderboard">Orders — 12 list idioms</a>
+  <div class="grp">Words</div>
+  <a href="README.md">Decisions list (README)</a>
+  <a href="../../design/2026-09-12-direction.md">The direction</a>
+</nav>
+<main>
+<section id="changes">
+  <h2>What changed</h2>
+  <div class="meta">Newest first. Every push adds a line here; the date is the day it landed.</div>
+  <div class="log">
+    <div><time>2026-09-14 · late</time><span><b>This page.</b> One hub with the change log, the open questions, and every prototype and board embedded below. Boards merged: the void models and placements are now one board.</span></div>
+    <div><time>2026-09-14</time><span><b>Void, rethought.</b> Five models with no Void button (tab close · order chip menu · emptying is voiding · park/void from the list · reason inline). Live in the register under <kbd>Void style</kbd>; the order chip menu is the default. The ⋮ beside Checkout stays as a phone-only candidate.</span></div>
+    <div><time>2026-09-14</time><span><b>Tabs.</b> Amount + dot is the default; cart settings gain <kbd>Tab shows</kbd>. The open-orders list takes the whole cart column. Code check: seven chip labels on <code>next</code>, fixed priority.</span></div>
+    <div><time>2026-09-14</time><span><b>Product table.</b> Decided: frameless rows with a header, variations open inline. Nine more layouts on a second board for layering.</span></div>
+    <div><time>2026-09-14</time><span><b>Orders.</b> Four list styles (no frame · grouped by day · status counts · card), toggle filters distinct from select filters, twelve-idiom board.</span></div>
+    <div><time>2026-09-14</time><span><b>Register cut 2.</b> Order details / Save order; one-click name and price edit; column titles and sort; swipe/hover line actions; scrolling tab strip; resizable divider; terminal animation; grid/table as one icon; slide-outs for edit line, cart settings and products settings; Payments | Legacy toggle kept; close top-right; WordPress admin in the user sheet.</span></div>
+    <div><time>2026-09-14</time><span><b>Web identity ruled.</b> Cookie gates /pos, the app owns the active user across a refresh → wcpos/monorepo#2043, with Paul's token-expiry test flows.</span></div>
+    <div><time>2026-09-14</time><span><b>Cut 1</b> of the register and orders in the direction's language.</span></div>
+  </div>
+</section>
+
+<section id="ask">
+  <h2>Waiting on Paul</h2>
+  <div class="ask"><ol>
+    <li><b>Void:</b> which of the five models (or pair) becomes the one Void at every width? My pick: the order chip menu, with tab close as the second way out, and reasons as a setting.</li>
+    <li><b>Product list layers:</b> anything from the second table board to layer onto the decided rows (category tabs, sort chips, search-first, steppers)?</li>
+    <li><b>Orders:</b> the list is frameless by decision; grouping by day and the status-count strip are waiting as additions.</li>
+  </ol></div>
+</section>
+
+<section id="register">
+  <h2>POS register — live <a class="open" href="pos-register/index.html">open on its own ↗</a></h2>
+  <div class="what">The dark strip is not the design. <b>State</b> jumps to every state; <b>Void style</b>, <b>Tab style</b>, <b>Tender close</b> and <b>Legacy switch</b> compare the open options in place. Everything in the frame is live: tap a tile, swipe a line, open the ⋮ or the order chip, hold to void, check out, type on the keypad, take a terminal payment.</div>
+  <iframe src="pos-register/index.html" style="height:1060px" loading="lazy" title="POS register prototype"></iframe>
+</section>
+
+<section id="orders">
+  <h2>Orders — live <a class="open" href="orders/index.html">open on its own ↗</a></h2>
+  <div class="what"><b>List style</b> in the strip; rows on tablet and phone, a table on desktop; ↑↓ Enter Esc work on the desktop table; the display-options popover changes columns live.</div>
+  <iframe src="orders/index.html" style="height:1140px" loading="lazy" title="Orders prototype"></iframe>
+</section>
+
+<section id="void">
+  <h2>Void — five models and seven placements <a class="open" href="pos-register/board-void.html">open on its own ↗</a></h2>
+  <div class="what">Top: five different answers to "where does a sale end", from Stripe, Shopify, Linear, Apple and the browsers. Below, for the record: the seven placements of a red button that were rejected.</div>
+  <iframe src="pos-register/board-void.html" style="height:5000px" loading="lazy" title="Void board"></iframe>
+</section>
+
+<section id="table1">
+  <h2>POS table — seven idioms in situ <a class="open" href="pos-register/board.html">open on its own ↗</a></h2>
+  <div class="what">Decided: 01 frameless rows + 07 variations inline. Kept for the comparison.</div>
+  <iframe src="pos-register/board.html" style="height:4400px" loading="lazy" title="POS table board"></iframe>
+</section>
+
+<section id="table2">
+  <h2>POS table — nine more <a class="open" href="pos-register/board-table-2.html">open on its own ↗</a></h2>
+  <div class="what">01 is the decided base; 02–09 are layers or alternatives: density, category tabs, sort chips, steppers, search-first.</div>
+  <iframe src="pos-register/board-table-2.html" style="height:3200px" loading="lazy" title="POS table board 2"></iframe>
+</section>
+
+<section id="orderboard">
+  <h2>Orders — twelve list idioms <a class="open" href="orders/board.html">open on its own ↗</a></h2>
+  <div class="what">Frameless is decided by the table language; the rest are additions to judge later.</div>
+  <iframe src="orders/board.html" style="height:6400px" loading="lazy" title="Orders board"></iframe>
+</section>
+</main>
+<script>
+// highlight the section in view
+const links=[...document.querySelectorAll('nav a[href^="#"]')];
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('now',a.getAttribute('href')==='#'+e.target.id));}});},{rootMargin:'-20% 0px -70% 0px'});
+document.querySelectorAll('main section').forEach(s=>io.observe(s));
+</script>
+</body>
+</html>
