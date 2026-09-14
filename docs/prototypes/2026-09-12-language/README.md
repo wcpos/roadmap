@@ -121,8 +121,8 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     edge; the most information, the tallest;
     (e) **numbered** — like (a) with #1, #2… so a cashier can say "cart 3";
     (f) **status edge** — one line with a coloured top edge per status, amount and customer.
-    **Pick: (a)** for a counter, (e) if cashiers refer to carts aloud; (b) only if the strip must
-    be one line high. (c) and (d) fight the buttons above them.
+    **Decided (Paul, 2026-09-14): (a) amount over status.** It is the prototype's default; the
+    other five stay in the strip for the record.
 
 ## Rejected while drawing
 
