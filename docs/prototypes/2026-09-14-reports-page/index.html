@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Reports page — prototype for wcpos/roadmap#304</title>
 <!--
-  Throwaway prototype. Question: what does the Reports page look like, and how does a Free user meet its edges?
-  Picker B (the list) as chosen by Paul on 2026-09-14; tabs (A) and launcher (C) were shown and rejected the same day, see git history.|B|C.
+  Throwaway prototype, second cut (2026-09-14, after Paul's reaction to the first).
+  The page is the app's own Reports shape rehosted: filter pills, the chart, the orders with checkboxes, the report.
+  The report picker is one select in the report card; the scope is the pills; sessions live inside the date pill.
   Everything in the frame is live and in memory; nothing persists. Not production code.
 -->
 <style>
@@ -15,6 +16,7 @@
   --footer:#e6ecf2;--row-alt:#f8fafd;--border:#d2d8df;--muted:#f0f4f9;--muted-fg:#495766;--secondary:#5b748e;
   --success:#007936;--success-bg:#e3f4ea;--warning:#e46212;--warning-bg:#fff1e6;--destructive:#d40924;--destructive-bg:#fde8eb;--info:#0079ce;--info-bg:#e6f2fb;
   --sidebar:#142a41;--sidebar-fg:#e0e5eb;--sidebar-border:#0b1c2c;--radius:8px;--hover:#f4f7fa;--sel:#e6f2fb;--paper:#fff;
+  --bar1:#0069bd;--bar2:#b9cfe3;--bar3:#e46212;
   --sys:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
@@ -23,6 +25,7 @@
   --footer:#1a2532;--row-alt:#182330;--border:#2b3947;--muted:#1d2a37;--muted-fg:#9fb0c0;--secondary:#8aa0b5;
   --success:#3fcf7a;--success-bg:#12331f;--warning:#ff9a4d;--warning-bg:#3a2412;--destructive:#ff5c6f;--destructive-bg:#3b1a20;--info:#5cb3ff;--info-bg:#12293d;
   --sidebar:#0b1521;--sidebar-fg:#d5dee8;--sidebar-border:#050b12;--hover:#1c2936;--sel:#173248;--paper:#1a2633;
+  --bar1:#3b9df5;--bar2:#2b4460;--bar3:#ff9a4d;
 }
 *{box-sizing:border-box}
 html{font-size:14px}
@@ -61,12 +64,10 @@ a{color:#0069bd}
 .pagebar{display:flex;align-items:center;gap:8px;padding:0 12px;height:48px;border-bottom:1px solid var(--border);background:var(--card);flex:none;font-size:13px}
 .pagebar .ttl2{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pagebar .back{display:inline-flex;align-items:center;gap:2px;height:44px;padding:0 6px 0 2px;margin-left:-6px;border-radius:6px;cursor:pointer;color:var(--primary);font-weight:500}
-.pagebar .back:active{background:var(--hover)}
 .chrome-r{display:flex;align-items:center;gap:10px;margin-left:auto;flex:none}
 .av{width:28px;height:28px;border-radius:50%;background:var(--sidebar);color:#e0e5eb;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
 .burger{width:40px;height:40px;display:flex;align-items:center;justify-content:center;margin-left:-10px}
-.pad{padding:12px;overflow:auto;flex:1;display:flex;flex-direction:column;gap:10px;min-height:0}
-.phone .pad{padding:10px}
+.pad{padding:10px;overflow:auto;flex:1;display:flex;flex-direction:column;gap:10px;min-height:0}
 
 /* ---------- shared bits ---------- */
 .row{display:flex;align-items:center;gap:8px}
@@ -75,123 +76,109 @@ a{color:#0069bd}
 .sm{font-size:12px}
 .xs{font-size:11px}
 .b{font-weight:600}
-.num{font-variant-numeric:tabular-nums}
 .pos{color:var(--success)}.neg{color:var(--destructive)}
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;min-height:0}
-.card-h{background:var(--card-header);padding:8px 12px;border-bottom:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;display:flex;align-items:center;gap:8px;font-weight:600;min-height:44px;flex:none}
+.card-h{background:var(--card-header);padding:6px 10px;border-bottom:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;display:flex;align-items:center;gap:8px;font-weight:600;min-height:44px;flex:none}
 .card-h .sub{font-weight:400;color:var(--muted-fg);font-size:12px}
 .card-b{padding:12px;overflow:auto;flex:1;min-height:0}
 .card-b.tight{padding:0}
-.card-f{background:var(--footer);border-top:1px solid var(--border);padding:8px 12px;display:flex;justify-content:flex-end;gap:8px;border-radius:0 0 var(--radius) var(--radius);flex:none;align-items:center}
+.card-f{background:var(--footer);border-top:1px solid var(--border);padding:8px 10px;display:flex;justify-content:flex-end;gap:8px;border-radius:0 0 var(--radius) var(--radius);flex:none;align-items:center}
+.card-f .status{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.phone .card-f .status{display:none}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 14px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);font:inherit;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:background .12s ease-out,transform .1s ease-out}
 .btn:hover{background:var(--hover)}
 .btn:active{transform:scale(.985);background:var(--sel)}
 .btn.p{background:var(--primary);border-color:var(--primary);color:var(--primary-fg)}
-.btn.p:hover{filter:brightness(.95)}
-.btn.g{border-color:transparent;background:transparent}
 .btn.sm{height:30px;padding:0 10px;font-size:12px}
-.btn.lg{height:44px;padding:0 18px;font-size:14px}
 .btn:disabled,.btn.dis{opacity:.5;cursor:not-allowed}
 .pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:600;height:20px;white-space:nowrap}
 .pill.open{background:var(--success-bg);color:var(--success)}
-.pill.closed{background:var(--muted);color:var(--muted-fg)}
 .pill.warn{background:var(--warning-bg);color:var(--warning)}
-.pill.bad{background:var(--destructive-bg);color:var(--destructive)}
 .pill.info{background:var(--info-bg);color:var(--info)}
 .pill.pro{background:#f3e8ff;color:#7c3aed}
 .frame[data-theme=dark] .pill.pro{background:#2c1f45;color:#c4a6ff}
 table.t{width:100%;border-collapse:collapse;font-size:13px}
-table.t th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-fg);font-weight:600;padding:7px 10px;background:var(--footer);border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0}
-table.t td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle;min-height:44px}
+table.t th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-fg);font-weight:600;padding:7px 10px;background:var(--footer);border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;z-index:1}
+table.t td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
 table.t tr:last-child td{border-bottom:0}
 table.t td.r,table.t th.r{text-align:right;font-variant-numeric:tabular-nums}
 table.t tr.sel td{background:var(--sel)}
 table.t tr.click{cursor:pointer}
 table.t tr.click:hover td{background:var(--hover)}
-table.t tr.click:active td{background:var(--sel)}
 table.t tr.void td{color:var(--muted-fg);text-decoration:line-through}
-table.t tr.void td:last-child{text-decoration:none}
-table.t tr.sub td{background:var(--row-alt);font-weight:600}
 table.t tr.tot td{background:var(--footer);font-weight:700;border-top:2px solid var(--border)}
-table.t tr.grp td{background:var(--card-header);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-fg)}
+table.t tr.off td{color:var(--muted-fg)}
 .phone table.t td,.phone table.t th{padding:8px 7px;font-size:12px}
 .avi{width:20px;height:20px;border-radius:50%;background:var(--muted);color:var(--muted-fg);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;margin-right:5px;vertical-align:middle}
+input.cb{width:20px;height:20px;accent-color:var(--primary);margin:0;cursor:pointer}
 
-/* ---------- scope bar ---------- */
-.scopebar{display:flex;align-items:center;gap:8px;flex:none;flex-wrap:wrap;position:relative}
-.phone .scopebar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;margin:0 -10px;padding-left:10px;padding-right:10px}
-.mode{display:inline-flex;background:var(--muted);border:1px solid var(--border);border-radius:8px;padding:2px;gap:2px;height:44px;flex:none}
-.mode button{border:0;background:transparent;padding:0 12px;border-radius:6px;font:inherit;font-size:13px;color:var(--muted-fg);cursor:pointer;min-width:44px}
-.mode button.on{background:var(--card);color:var(--fg);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
-.chip{display:inline-flex;align-items:center;gap:6px;height:44px;padding:0 12px 0 14px;border:1px solid var(--border);border-radius:999px;background:var(--card);font-size:13px;color:var(--fg);cursor:pointer;white-space:nowrap;flex:none;transition:background .12s ease-out;max-width:100%}
+/* ---------- filter pills (the app's own bar) ---------- */
+.filters{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:6px 8px;background:var(--card-header);border:1px solid var(--border);border-radius:var(--radius);flex:none}
+.phone .filters{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+.chip{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 10px 0 12px;border:1px solid var(--border);border-radius:999px;background:var(--card);font-size:13px;color:var(--fg);cursor:pointer;white-space:nowrap;flex:none;transition:background .12s ease-out}
 .chip:hover{background:var(--hover)}
 .chip:active{background:var(--sel)}
-.chip.on{border-color:var(--primary);color:var(--primary);background:var(--card)}
+.chip.on{border-color:var(--primary);color:var(--primary)}
 .chip .k{color:var(--muted-fg);font-weight:400}
-.chip .v{font-weight:600;overflow:hidden;text-overflow:ellipsis}
-.chip .car{color:var(--muted-fg);margin-left:2px}
-.chip .lk{color:var(--muted-fg);display:inline-flex}
-.chip.locked{color:var(--fg)}
-.chip.locked .v{font-weight:500}
+.chip .v{font-weight:600}
+.chip .car,.chip .lk{color:var(--muted-fg);display:inline-flex}
 
-/* popover */
+/* popover / sheet */
 .popwrap{position:absolute;inset:0;z-index:20}
-.pop{position:absolute;background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.18);min-width:280px;max-width:360px;overflow:hidden;animation:popin .16s ease-out}
+.pop{position:absolute;background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.18);min-width:280px;max-width:360px;overflow:hidden;animation:popin .16s ease-out;max-height:calc(100% - 80px);overflow-y:auto}
 @keyframes popin{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){.pop{animation:none}}
-.pop .ph{padding:10px 14px 6px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-fg);font-weight:600}
-.pop .ph.div{border-top:1px solid var(--border);margin-top:4px;padding-top:10px;display:flex;align-items:center;gap:6px}
-.pop .pr{display:flex;align-items:center;gap:10px;padding:0 14px;min-height:44px;cursor:pointer;font-size:14px}
-.pop .pr:hover{background:var(--hover)}
-.pop .pr:active{background:var(--sel)}
-.pop .pr .s{color:var(--muted-fg);font-size:12px}
-.pop .pr .ck{width:18px;color:var(--primary);flex:none;display:inline-flex}
-.pop .pr.on{font-weight:600}
-.pop .pr.lock{color:var(--muted-fg)}
-.pop .pr.lock .lk{margin-left:auto;display:inline-flex;color:var(--muted-fg)}
-.pop .pr.lock:hover{background:var(--muted)}
-.pop .pf{border-top:1px solid var(--border);background:var(--footer);padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:13px;animation:popin .16s ease-out}
-.pop .pf .btn{margin-left:auto}
-.pop .pf .t{color:var(--fg)}
-.pop .search{padding:8px 10px;border-bottom:1px solid var(--border)}
-input.in{height:40px;border:1px solid var(--border);border-radius:8px;padding:0 12px;font:inherit;font-size:14px;background:var(--card);color:var(--fg);width:100%;outline:none}
-input.in:focus{border-color:var(--primary);box-shadow:0 0 0 2px var(--sel)}
+@media (prefers-reduced-motion:reduce){.pop,.sheet{animation:none}}
+.mm .ph{padding:10px 14px 6px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-fg);font-weight:600;display:flex;align-items:center;gap:6px}
+.mm .ph.div{border-top:1px solid var(--border);margin-top:4px;padding-top:10px}
+.mm .pr{display:flex;align-items:center;gap:10px;padding:0 14px;min-height:44px;cursor:pointer;font-size:14px}
+.mm .pr:hover{background:var(--hover)}
+.mm .pr:active{background:var(--sel)}
+.mm .pr .s{color:var(--muted-fg);font-size:12px}
+.mm .pr .ck{width:18px;color:var(--primary);flex:none;display:inline-flex}
+.mm .pr.on{font-weight:600}
+.mm .pr.lock,.mm .pr.dim{color:var(--muted-fg)}
+.mm .pr.lock .lk{margin-left:auto;display:inline-flex;color:var(--muted-fg)}
+.mm .pr.dim{cursor:default}
+.mm .pr.sub{padding-left:42px;min-height:40px;font-size:13px}
+.mm .pf{border-top:1px solid var(--border);background:var(--footer);padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:13px;animation:popin .16s ease-out;position:sticky;bottom:0}
+.mm .pf .btn{margin-left:auto}
 .sheet{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--border);box-shadow:0 -8px 30px rgba(0,0,0,.22);max-height:78%;overflow:auto;animation:rise .18s ease-out}
 @keyframes rise{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
 .scrim{position:absolute;inset:0;background:rgba(0,0,0,.5)}
 .sheet .grab{width:36px;height:4px;border-radius:2px;background:var(--border);margin:8px auto 4px}
 
+/* ---------- chart ---------- */
+.chart{flex:none}
+.chart .card-b{padding:8px 12px 6px;display:flex;flex-direction:column;gap:4px;overflow:hidden}
+.chart .head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.chart .fig{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.chart .delta{font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+.chart .cmp{margin-left:auto;display:inline-flex;background:var(--muted);border:1px solid var(--border);border-radius:8px;padding:2px;gap:2px;height:36px}
+.chart .cmp button{border:0;background:transparent;padding:0 12px;border-radius:6px;font:inherit;font-size:12px;color:var(--muted-fg);cursor:pointer;white-space:nowrap}
+.chart .cmp button.on{background:var(--card);color:var(--fg);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.chart svg.bars{width:100%;height:150px;display:block}
+.phone .chart svg.bars{height:120px}
+.chart .legend{display:flex;gap:14px;font-size:11px;color:var(--muted-fg);flex-wrap:wrap}
+.chart .legend span{white-space:nowrap}
+.chart .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.phone .chart .cmp{margin-left:0;width:100%}
+.phone .chart .cmp button{flex:1;padding:0 6px}
+.phone .chart .fig{font-size:24px}
 
-/* ---------- picker B: list ---------- */
-.split{display:flex;gap:12px;flex:1;min-height:0}
-.rlist{width:250px;flex:none;display:flex;flex-direction:column;gap:0;min-height:0}
-.rlist .li{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:14px}
-.rlist .li:last-child{border-bottom:0}
-.rlist .li:hover{background:var(--hover)}
-.rlist .li:active{background:var(--sel)}
-.rlist .li.on{background:var(--sel);font-weight:600;box-shadow:inset 3px 0 0 var(--primary)}
-.rlist .li .s{color:var(--muted-fg);font-size:12px;font-weight:400}
-.rlist .li .ico{width:24px;height:24px;border-radius:6px;background:var(--muted);display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg);flex:none}
-.rlist .li.sub{padding-left:46px;min-height:40px;font-size:13px}
-.rlist .li.sub.on{font-weight:600}
-.rlist .sec{padding:12px 12px 4px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-fg);font-weight:600;border-bottom:1px solid var(--border)}
-.rlist .sec:first-child{padding-top:10px}
-.rpane{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;min-height:0}
-.phone .rlist{width:100%}
-.phone .rlist .li{min-height:52px}
-
-/* ---------- report shapes ---------- */
-.report{display:flex;flex-direction:column;flex:1;min-height:0}
-.gb{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.gb .c{height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--border);background:var(--card);font:inherit;font-size:12px;font-weight:500;color:var(--fg);cursor:pointer;white-space:nowrap;min-width:44px}
-.gb .c.on{background:var(--primary);border-color:var(--primary);color:var(--primary-fg);font-weight:600}
-.gb .c:active{transform:scale(.97)}
-.phone .gb{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
-.doc-paper{background:var(--paper);padding:16px 18px;display:flex;flex-direction:column;gap:12px;font-size:13px}
-.doc-paper .dh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-.doc-paper .dh .big{font-size:20px;font-weight:700}
+/* ---------- lower split ---------- */
+.split{display:flex;gap:10px;flex:1;min-height:0}
+.split>.card{flex:1;min-width:0}
+.phone .split{flex-direction:column}
+.phone .split>.card{flex:none;max-height:none}
+.phone .split>.card.orders{max-height:230px}
+.orders .card-h .sub{margin-left:2px}
+.report .card-h{gap:6px;flex-wrap:wrap}
+.sel2{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 8px 0 10px;border:1px solid var(--border);border-radius:6px;background:var(--card);font-size:13px;cursor:pointer;white-space:nowrap;max-width:100%;font-weight:600}
+.sel2 .k{color:var(--muted-fg);font-weight:400}
+.sel2 .car{color:var(--muted-fg);display:inline-flex}
+.sel2:hover{background:var(--hover)}
+.doc-paper{background:var(--paper);padding:14px 16px;display:flex;flex-direction:column;gap:12px;font-size:13px}
 .kv{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px}
-.phone .kv{grid-template-columns:1fr 1fr}
 .kv .k{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-fg);font-weight:600;margin-bottom:2px}
 .kv .v{font-size:14px}
 .kv .v.hero{font-size:22px;font-weight:700}
@@ -200,19 +187,14 @@ input.in:focus{border-color:var(--primary);box-shadow:0 0 0 2px var(--sel)}
 .arrow{color:var(--muted-fg);margin:0 4px}
 .empty{padding:36px 16px;text-align:center;color:var(--muted-fg);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:10px}
 .empty .big{font-size:15px;color:var(--fg);font-weight:600}
-.offline{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:var(--radius);background:var(--warning-bg);color:var(--warning);font-size:13px;font-weight:500}
-.heading{font-size:13px;color:var(--muted-fg)}
+.heading{font-size:12px;color:var(--muted-fg);padding:8px 12px;border-bottom:1px solid var(--border)}
 .heading b{color:var(--fg)}
-.side2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
-.card-f .status{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-.phone .card-f .status{display:none}
-.card-h>span:first-child{white-space:nowrap}
-.phone .side2{grid-template-columns:1fr}
+.thermal{font-family:var(--mono);font-size:12px;line-height:1.5;white-space:pre;padding:14px 16px;background:var(--paper);color:var(--fg)}
+.fmt .brand{font-size:16px;font-weight:700;margin-bottom:2px}
+.fmt table.t th{position:static}
 
 /* ---------- below the frame ---------- */
-.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
-.two .card{font-variant-numeric:tabular-nums}
-.panelmock{width:380px;background:#fff;border:1px solid #d2d8df;border-radius:8px;overflow:hidden;flex:none}
+.panelmock{width:380px;background:#fff;border:1px solid #d2d8df;border-radius:8px;overflow:hidden;flex:none;color:#162330}
 .panelmock .hero{padding:16px 14px 10px}
 .panelmock .hero .amt{font-size:32px;font-weight:700;font-variant-numeric:tabular-nums}
 .panelmock .tiles3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 14px 12px}
@@ -233,26 +215,21 @@ pre#statejson{font-family:var(--mono);font-size:11px;background:#1f2937;color:#e
 <body>
 
 <div class="doc">
-  <h1>Reports — the picker, the scope bar, and the Free edge</h1>
-  <p class="lead">Prototype for <a href="https://github.com/wcpos/roadmap/issues/304">wcpos/roadmap#304</a>. The catalogue is the four entries from #303 (Session · Closures · Sales · Cash movements) plus one <i>registered</i> report from a plugin (#305). A searchable list of reports, one scope bar shared by all of them, and a Free edition that never blurs the page: the scope is the gate. The dark strip is not part of the design; everything inside the frame is live.</p>
+  <h1>Reports — second cut: the chart, the orders, the report</h1>
+  <p class="lead">Prototype for <a href="https://github.com/wcpos/roadmap/issues/304">wcpos/roadmap#304</a>. After the first cut read as complex, this one is the app's own Reports page rehosted: the filter pills it already has, the chart it already has (now a comparison), the orders list with its checkboxes, and the report pane. The report picker is one select in the report card's header, the merchant's templates sit beside it, and sessions live inside the date pill. Catalogue from #303, contract from #305. The dark strip is not part of the design.</p>
 </div>
 <div class="strip" id="strip"></div>
 <div class="stage"><div id="frame" class="frame tablet"></div></div>
 
 <div class="doc">
-  <h2>The two shapes, side by side</h2>
-  <p class="leg">Left: the <b>Session report</b> — a document, closure-shaped, rendered through the <code>closure</code> template; here Closure 11 as recorded, with its settled figures beside the recorded ones. Right: the <b>Sales report</b> by payment method — a table, rendered through the <code>report</code> template: columns, rows, totals; a grouping changes the columns, never the shape.</p>
-  <div class="two" id="shapes"></div>
-
   <h2>Where the register panel's X-report and last-closure reprint sit</h2>
-  <p class="leg">The panel as decided on #214 (left) and what each of its two report rows does (right). The panel prints; Reports reads. Neither row leaves the till to print.</p>
+  <p class="leg">The panel as decided on #214 (left) and what each of its two report rows does (right). The panel prints; Reports reads.</p>
   <div class="row" style="gap:24px;align-items:flex-start;flex-wrap:wrap">
     <div class="panelmock" id="panelmock"></div>
     <div class="map" style="max-width:560px">
-      <div class="m"><span class="n">1</span><div><b>Print X-report</b> prints the Session report for the open session on the till's printer, right there. It is a shortcut into the same document Reports › Session shows; it does not navigate. Free.</div></div>
-      <div class="m"><span class="n">2</span><div><b>Last closure row</b> — <i>Reprint copy</i> prints Closure 12 again (Free floor: reprint the last closure). Tapping the row itself opens Reports › Session on that closure. On Free that opens only when the closure is today's on this register; an older last closure still reprints from here but does not open on Reports — the one place the Free floor is wider than the Free page.</div></div>
-      <div class="m"><span class="n">3</span><div><b>Reports › Session</b> carries the same two actions in its footer: <i>Print X-report</i> for the open session, <i>Reprint copy</i> for a closed one. Same document, same template, so a merchant who edits the closure template changes both.</div></div>
-      <div class="m"><span class="n">4</span><div>Nothing else from Reports appears in the panel. Sales, Cash movements and Closures are reading, not printing, and the panel stays the drawer.</div></div>
+      <div class="m"><span class="n">1</span><div><b>Print X-report</b> prints the Session report for the open session on the till's printer, right there. It is a shortcut into the same document Reports shows when the date pill says <i>Open now</i> and the report is <i>Session</i>; it does not navigate. Free.</div></div>
+      <div class="m"><span class="n">2</span><div><b>Last closure row</b> — <i>Reprint copy</i> prints Closure 12 again (Free floor: reprint the last closure). Tapping the row opens Reports with the date pill on that closure and the report on Session. On Free that works while the closure is today's on this register; an older last closure still reprints from here but does not open on Reports.</div></div>
+      <div class="m"><span class="n">3</span><div><b>Reports › Session</b> carries the same two actions in its footer: <i>Print X-report</i> for the open session, <i>Reprint copy</i> for a closed one. Same document, same template, so a merchant who edits the closure template in WP Admin changes both.</div></div>
     </div>
   </div>
 
@@ -262,12 +239,12 @@ pre#statejson{font-family:var(--mono);font-size:11px;background:#1f2937;color:#e
   <h2>What to react to</h2>
   <div class="q">
     <ol>
-      <li><b>Picker shape — decided:</b> B, the list (Paul, 2026-09-14). Tabs and the launcher were shown beside it and dropped.</li>
-      <li><b>The Free gate — decided:</b> in the picker (Paul, 2026-09-14). Pro rows sit dimmed with a lock in each scope popover; the upgrade line appears in the popover foot only when a Free user taps one. The page carries no banner.</li>
-      <li><b>Upgrade copy.</b> One sentence naming the three things behind the line: <i>Past sessions, earlier days and other registers are in WCPOS Pro.</i> Button <i>See Pro</i>. No "unlock", no demo link.</li>
-      <li><b>Closures is a list of Session reports.</b> A row opens the Session report for that closure in place (tablet: beside the list; phone: as the page). The old idea of a separate closure detail pane is gone.</li>
-      <li><b>Default scope</b> is the open session when there is one; Closures, which takes no session, defaults to today. Switch <i>Register</i> → closed to see the fallback (Session → last session; Sales → today).</li>
-      <li><b>Registered report</b> (Deposits outstanding) sits in the picker under <i>From plugins</i>, needs a connection, and goes to a one-line "Report unavailable offline" with Retry when the network drops. Switch <i>Network</i> → Offline.</li>
+      <li><b>The chart is the top of the page.</b> One headline figure with a delta, three comparisons: <i>today vs yesterday</i> by hour, <i>this week vs last</i> by day, <i>online vs POS</i> by day. It follows the pills (register, cashier, store) and the ticked orders. On phone it keeps the figure and the bars, the comparison switch goes full-width.</li>
+      <li><b>One select for the report</b>, in the report card's header, grouped: Sales summary and the Sales groupings, Cash movements, Session, Closures, then <i>From plugins</i>. An entry the current scope cannot answer is dimmed with the reason (<i>pick a session</i> / <i>pick dates</i>) rather than hidden.</li>
+      <li><b>Templates from WP Admin</b> sit in a second select beside it, listing the merchant's own templates for the type the chosen report uses (<code>closure</code> for Session, <code>report</code> for the tables). The pane renders the chosen template, the way the Z-report pane renders today. <i>Default</i> is the built-in; <i>Thermal 80 mm</i> and <i>A4 sales sheet</i> are the merchant's. A template formats a report; it cannot add data — that is what a registered report is for.</li>
+      <li><b>Sessions live in the date pill.</b> Its popover starts with <i>Open now</i> and today's closures, then the date presets. No separate mode switch: choosing a session scopes the page to that session; choosing dates scopes it to the range. Session and Closures dim in the report select according to which was chosen.</li>
+      <li><b>The orders list keeps its checkboxes.</b> Unticking an order takes it out of the figure, the chart and the Sales report. It does not touch Session or Closures, which are records, not queries.</li>
+      <li><b>Free</b> is unchanged from the first cut's decision: Pro rows in the date, register and store popovers are dimmed with a lock; tapping one names the tapped thing in the popover foot with <i>See Pro</i>. Nothing on the page is blurred.</li>
     </ol>
   </div>
 </div>
@@ -277,9 +254,8 @@ pre#statejson{font-family:var(--mono);font-size:11px;background:#1f2937;color:#e
 const REG = { front:{name:'Front counter',store:'uk'}, back:{name:'Back office',store:'uk'}, till3:{name:'Till 3',store:'uk'}, dub:{name:'Counter',store:'dub'} };
 const STORES = { uk:'UK Store', dub:'Dublin' };
 const WHO = { dc:{ini:'DC',name:'Demo Cashier'}, sr:{ini:'SR',name:'Sam Reilly'}, ao:{ini:'AO',name:'Amy Okafor'} };
-// Sessions. Today is Sun 14 Sep 2026. Free sees: register front, today.
 const SESSIONS = [
-  { id:'s13', number:13, reg:'front', day:'today', open:true, opened:'Sun 14 Sep 13:00', openedBy:'dc', float:200, expected:480.80, cashSales:300.80, cashRefunds:15.00, card:412.00, sales:18, refunds:1, paidIn:0, paidOut:5.00, tax:118.85, gross:727.80, unsynced:0,
+  { id:'s13', number:13, reg:'front', day:'today', open:true, opened:'Sun 14 Sep 13:00', openedBy:'dc', float:200, expected:480.80, cashSales:300.80, cashRefunds:15.00, card:412.00, sales:18, refunds:1, tax:118.85, gross:727.80, unsynced:0,
     movements:[['13:42','Paid out',-5.00,'dc','Milk for the café',false],['14:10','No sale',0,'dc','',false]] },
   { id:'c12', number:12, reg:'front', day:'today', opened:'Sun 14 Sep 09:02', openedBy:'dc', closed:'Sun 14 Sep 12:30', closedBy:'dc', float:200, expected:372.10, counted:370.10, cashSales:172.10, cashRefunds:0, card:288.40, sales:14, refunds:0, tax:76.75, gross:460.50, printed:true, copies:0, unsynced:0, movements:[] },
   { id:'c10', number:10, reg:'front', day:'Sat 13 Sep', opened:'Sat 13 Sep 08:58', openedBy:'dc', closed:'Sat 13 Sep 18:02', closedBy:'dc', float:200, expected:572.10, counted:570.10, cashSales:392.10, cashRefunds:20.00, card:640.00, sales:41, refunds:2, tax:172.00, gross:1032.10, printed:true, copies:1, unsynced:0, movements:[['11:20','Paid in',50.00,'dc','Change from bank',false],['16:05','Paid out',-30.00,'dc','Window cleaner',false]] },
@@ -289,15 +265,30 @@ const SESSIONS = [
   { id:'c2', number:2, reg:'till3', day:'Thu 11 Sep', opened:'Thu 11 Sep 09:15', openedBy:'dc', closed:'Thu 11 Sep 17:50', closedBy:'dc', float:150, expected:419.60, counted:480.80, cashSales:269.60, cashRefunds:0, card:120.00, sales:22, refunds:0, tax:64.90, gross:389.60, printed:true, copies:0, unsynced:3, movements:[] },
   { id:'c1', number:1, reg:'till3', day:'Thu 11 Sep', opened:'Thu 11 Sep 08:50', openedBy:'dc', closed:'Thu 11 Sep 09:11', closedBy:'dc', float:150, expected:195.00, counted:177.50, cashSales:45.00, cashRefunds:0, card:0, sales:3, refunds:0, tax:7.50, gross:45.00, printed:true, copies:0, unsynced:0, movements:[] },
 ];
-const REPORTS = [
-  { key:'session', title:'Session', modes:['session'], desc:'One session as a document: float, expected, counted, variance, tenders' },
-  { key:'closures', title:'Closures', modes:['range'], desc:'Past sessions; a row opens the Session report' },
-  { key:'sales', title:'Sales', modes:['session','range'], desc:'Count, gross, refunds, net, tax — grouped by', groups:[['payment','Payment method'],['cashier','Cashier'],['register','Register'],['tax','Tax rate'],['item','Item'],['category','Category']] },
-  { key:'cash', title:'Cash movements', modes:['session','range'], desc:'Paid in, paid out, no sale' },
-  { key:'deposits', title:'Deposits outstanding', modes:['range'], plugin:'WCPOS Deposits', desc:'From a plugin · needs internet' },
+// Today's orders. [number, time, total, tax, method, cashier, channel, hour]
+const ORDERS = [
+  [1241,'15:05',12.40,2.07,'Cash','dc','pos',15],[1240,'14:52',48.00,8.00,'Card','dc','pos',14],[1239,'14:31',9.60,1.60,'Cash','dc','pos',14],
+  [1238,'14:12',120.00,20.00,'Card','ao','online',14],[1237,'13:48',22.10,3.68,'Cash','dc','pos',13],[1236,'13:20',64.00,10.67,'Card','dc','pos',13],
+  [1235,'12:14',15.00,2.50,'Card','ao','online',12],[1234,'11:58',36.50,6.08,'Cash','dc','pos',11],[1233,'11:31',88.00,14.67,'Card','dc','pos',11],
+  [1232,'10:47',19.80,3.30,'Cash','dc','pos',10],[1231,'10:20',142.00,23.67,'Card','ao','online',10],[1230,'09:55',27.30,4.55,'Cash','dc','pos',9],
+  [1229,'09:31',41.60,6.93,'Card','dc','pos',9],[1228,'09:08',81.50,13.58,'Cash','dc','pos',9],
 ];
+const REPORTS = [
+  { key:'summary', title:'Sales summary', type:'report', needs:'any' },
+  { key:'payment', title:'Sales by payment method', short:'by payment method', type:'report', needs:'any', group:true },
+  { key:'cashier', title:'Sales by cashier', short:'by cashier', type:'report', needs:'any', group:true },
+  { key:'register', title:'Sales by register', short:'by register', type:'report', needs:'any', group:true },
+  { key:'tax', title:'Sales by tax rate', short:'by tax rate', type:'report', needs:'any', group:true },
+  { key:'item', title:'Sales by item', short:'by item', type:'report', needs:'any', group:true },
+  { key:'category', title:'Sales by category', short:'by category', type:'report', needs:'any', group:true },
+  { key:'cash', title:'Cash movements', type:'report', needs:'any' },
+  { key:'session', title:'Session', type:'closure', needs:'session', hint:'pick a session in the date pill' },
+  { key:'closures', title:'Closures', type:'report', needs:'range', hint:'pick dates in the date pill' },
+  { key:'deposits', title:'Deposits outstanding', type:'report', needs:'range', plugin:'WCPOS Deposits', hint:'pick dates in the date pill' },
+];
+const TEMPLATES = { report:[['default','Default'],['thermal','Thermal 80 mm'],['a4','A4 sales sheet']], closure:[['default','Default'],['thermal','Thermal 80 mm'],['a4','A4 closure']] };
 const RANGES = [['today','Today'],['yesterday','Yesterday'],['week','This week'],['last7','Last 7 days'],['month','This month'],['custom','Custom…']];
-const RANGE_MULT = { today:1, yesterday:2.24, week:4.9, last7:6.4, month:19.3, custom:3.1 };
+const RANGE_MULT = { today:1, yesterday:0.96, week:4.9, last7:6.4, month:19.3, custom:3.1 };
 
 const fmt = (n, sign=false) => { const a=Math.abs(n).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}); return (n<0?'−':(sign&&n>0?'+':''))+'£'+a; };
 const fmtv = (n) => n===0 ? '<span class="b">Exact</span>' : `<span class="${n>0?'pos':'neg'} b">${fmt(n,true)}</span>`;
@@ -306,11 +297,11 @@ const who = (k) => `<span class="avi">${WHO[k].ini}</span>${WHO[k].name.split(' 
 /* ============================ state ============================ */
 const S = {
   viewport:'tablet', pro:true, theme:'light', online:true, regOpen:true, stores:1,
-  report:'session', mode:'session', sessionId:'s13', range:'today', register:'front', store:'uk', cashier:'any',
-  groupBy:'payment', pop:null, gateHint:null, search:'', opened:false, phoneList:true, selClosure:null,
+  scope:{kind:'session', sessionId:'s13', range:'today'}, register:'front', store:'uk', cashier:'any',
+  report:'summary', template:'default', cmp:'yesterday', unticked:new Set(), pop:null, gateHint:null, selClosure:null, phoneTab:'report',
 };
 const qs = new URLSearchParams(location.search);
-['viewport','theme','report'].forEach(k=>{ if(qs.get(k)) S[k]=qs.get(k); });
+['viewport','theme','report','cmp'].forEach(k=>{ if(qs.get(k)) S[k]=qs.get(k); });
 if (qs.get('pro')) S.pro = qs.get('pro')!=='0';
 
 const I = {
@@ -320,74 +311,57 @@ const I = {
   orders:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21zM9 8h6M9 12h6M9 16h4"/></svg>',
   coupons:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4z"/><path d="M9 9l6 6" stroke-linecap="round"/></svg>',
   customers:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19c0-3 2.7-5 6-5s6 2 6 5M15 15.5c2.6 0 5 1.5 5 3.5"/></svg>',
-  health:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/><path d="M6 12h3l1.5-2.5 2 5 1.5-2.5H18"/></svg>',
+  health:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/></svg>',
   settings:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>',
   support:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H9l-5 4z"/></svg>',
   bell:'<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22a2.5 2.5 0 0 0 2.4-2h-4.8A2.5 2.5 0 0 0 12 22zm7-6V11a7 7 0 0 0-5-6.7V3a2 2 0 1 0-4 0v1.3A7 7 0 0 0 5 11v5l-2 2v1h18v-1z"/></svg>',
   bars:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
   print:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 8V4h10v4M5 8h14a2 2 0 0 1 2 2v6h-4v4H7v-4H3v-6a2 2 0 0 1 2-2zM7 14h10"/></svg>',
   lock:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
-  chev:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>',
-  back:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 5l-7 7 7 7"/></svg>',
   down:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>',
   check:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5 9-10"/></svg>',
-  search:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',
+  back:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 5l-7 7 7 7"/></svg>',
   cloudOff:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6.2 9.5 4 4 0 0 0 7 18zM4 4l16 16"/></svg>',
-  doc:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l4 4v14H6z"/><path d="M9 11h6M9 15h6M15 3v4h4"/></svg>',
-  list:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h16"/></svg>',
-  table:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M3 10h18M9 10v9M15 10v9"/></svg>',
-  cash:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="10" rx="1.5"/><circle cx="12" cy="12" r="2.5"/></svg>',
-  plug:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 3v5M15 3v5M6 8h12v4a6 6 0 0 1-12 0zM12 18v3"/></svg>',
+  up:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 19V5M5 12l7-7 7 7"/></svg>',
+  dn:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12l7 7 7-7"/></svg>',
+  chev:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>',
 };
-const ICO = { session:I.doc, closures:I.list, sales:I.table, cash:I.cash, deposits:I.plug };
 
 /* ============================ helpers ============================ */
 const rep = () => REPORTS.find(r=>r.key===S.report);
 const ses = (id) => SESSIONS.find(s=>s.id===id);
 const openSession = () => S.regOpen ? SESSIONS.find(s=>s.open) : null;
-const lastSession = () => SESSIONS.filter(s=>!s.open && s.reg==='front')[0];
-// Free may see: this register (front), today. Sessions: the open one and today's closed ones.
 const freeOk = (s) => s.reg==='front' && s.day==='today';
-const visibleSessions = () => S.pro ? SESSIONS : SESSIONS.filter(freeOk);
+const lastFree = () => SESSIONS.find(s=>!s.open && freeOk(s));
+const lastAny = () => SESSIONS.filter(s=>!s.open && s.reg==='front')[0];
 function ensureScope(){
+  if (!S.pro) { S.register='front'; S.store='uk'; if (S.scope.kind==='range') S.scope.range='today'; }
+  if (S.scope.kind==='session') { const cur=ses(S.scope.sessionId); if (!cur || (cur.open && !S.regOpen) || (!S.pro && !freeOk(cur))) { const o=openSession(); S.scope.sessionId = o?o.id:(S.pro?lastAny().id:lastFree().id); } }
   const r = rep();
-  if (!r.modes.includes(S.mode)) S.mode = r.modes[0];
-  if (S.mode==='session') {
-    const cur = ses(S.sessionId);
-    if (!cur || (cur.open && !S.regOpen) || (!S.pro && !freeOk(cur))) { const o = openSession(); S.sessionId = o ? o.id : (S.pro ? lastSession().id : SESSIONS.find(s=>!s.open&&freeOk(s)).id); }
-  }
-  if (!S.pro) { S.range='today'; S.register='front'; S.store='uk'; }
+  if (r.needs==='session' && S.scope.kind!=='session') S.report='summary';
+  if (r.needs==='range' && S.scope.kind!=='range') S.report='summary';
+  const tt = TEMPLATES[rep().type]; if (!tt.find(t=>t[0]===S.template)) S.template='default';
 }
-function defaultScopeFor(reportKey){
-  const r = REPORTS.find(x=>x.key===reportKey);
-  const o = openSession();
-  if (o && r.modes.includes('session')) { S.mode='session'; S.sessionId=o.id; }
-  else if (r.modes.includes('range')) { S.mode='range'; S.range='today'; }
-  else { S.mode='session'; S.sessionId = S.pro ? lastSession().id : SESSIONS.find(s=>!s.open&&freeOk(s)).id; }
+const scopeLabel = () => { if (S.scope.kind==='session') { const s=ses(S.scope.sessionId); return s.open?`Open now · since ${s.opened.split(' ').pop()}`:`Closure ${s.number} · ${s.day==='today'?'today':s.day}`; } return RANGES.find(r=>r[0]===S.scope.range)[1]; };
+const scopeHeading = () => { if (S.scope.kind==='session') { const s=ses(S.scope.sessionId); return s.open?`Session ${s.number}, open since ${s.opened.split(' ').pop()}`:`Closure ${s.number}, ${s.opened.split(' ').pop()}–${s.closed.split(' ').pop()} ${s.day==='today'?'today':s.day}`; } return RANGES.find(r=>r[0]===S.scope.range)[1]; };
+// Orders in scope, before the ticks. Session 13 = from 13:00; closure 12 = 09:02–12:30; today = all.
+function ordersInScope(){
+  let o = ORDERS.slice();
+  if (S.scope.kind==='session') { const s=ses(S.scope.sessionId); if (s.id==='s13') o=o.filter(x=>x[7]>=13); else if (s.id==='c12') o=o.filter(x=>x[7]<13); else o=[]; }
+  if (S.cashier!=='any') o=o.filter(x=>x[5]===S.cashier);
+  return o;
 }
-const scopeLabel = () => {
-  if (S.mode==='session') { const s=ses(S.sessionId); return s.open ? `Open now · since ${s.opened.split(' ').pop()}` : `Closure ${s.number} · ${s.day==='today'?'today':s.day} ${s.closed.split(' ').pop()}`; }
-  return RANGES.find(r=>r[0]===S.range)[1];
-};
-const scopeHeading = () => {
-  if (S.mode==='session') { const s=ses(S.sessionId); return s.open ? `Session ${s.number}, open since ${s.opened.split(' ').pop()}` : `Closure ${s.number}, ${s.opened.split(' ').pop()}–${s.closed.split(' ').pop()} ${s.day==='today'?'today':s.day}`; }
-  return RANGES.find(r=>r[0]===S.range)[1];
-};
-const sessionsInScope = () => {
-  let list = visibleSessions().filter(s=>!s.open);
-  if (S.register!=='all') list = list.filter(s=>s.reg===S.register);
-  if (S.store!=='all') list = list.filter(s=>REG[s.reg].store===S.store);
-  if (S.range==='today') list = list.filter(s=>s.day==='today');
-  else if (S.range==='yesterday') list = list.filter(s=>s.day==='Sat 13 Sep');
-  return list;
-};
+const ticked = () => ordersInScope().filter(o=>!S.unticked.has(o[0]));
+const sumTicked = () => ticked().reduce((a,o)=>a+o[2],0);
+const mult = () => S.scope.kind==='range' ? RANGE_MULT[S.scope.range] : 1;
+const sessionsInRange = () => { let list=SESSIONS.filter(s=>!s.open); if(!S.pro) list=list.filter(freeOk); if (S.register!=='all') list=list.filter(s=>s.reg===S.register); if (S.store!=='all') list=list.filter(s=>REG[s.reg].store===S.store); if (S.scope.range==='today') list=list.filter(s=>s.day==='today'); else if (S.scope.range==='yesterday') list=list.filter(s=>s.day==='Sat 13 Sep'); return list; };
 
 /* ============================ strip ============================ */
 function renderStrip(){
   const seg = (k, opts) => `<span class="seg">${opts.map(([v,l])=>`<button class="${String(S[k])===String(v)?'on':''}" data-set="${k}" data-v="${v}">${l}</button>`).join('')}</span>`;
   document.getElementById('strip').innerHTML = `
     <div class="g"><b>Width</b>${seg('viewport',[['tablet','Tablet'],['phone','Phone']])}</div>
-        <div class="g"><b>Edition</b>${seg('pro',[[true,'Pro'],[false,'Free']])}</div>
+    <div class="g"><b>Edition</b>${seg('pro',[[true,'Pro'],[false,'Free']])}</div>
     <div class="g"><b>Register</b>${seg('regOpen',[[true,'session open'],[false,'closed']])}</div>
     <div class="g"><b>Stores</b>${seg('stores',[[1,'1'],[2,'2 (Pro)']])}</div>
     <div class="g"><b>Network</b>${seg('online',[[true,'Online'],[false,'Offline']])}</div>
@@ -396,238 +370,253 @@ function renderStrip(){
 
 /* ============================ frame ============================ */
 function renderRail(){
-  const items = [['pos','POS'],['products','Products'],['orders','Orders'],['coupons','Coupons'],['customers','Customers'],['reports','Reports']];
-  const bottom = [['bell','Notifications'],['health','Store health'],['settings','Settings'],['support','Support']];
+  const items = [['pos'],['products'],['orders'],['coupons'],['customers'],['reports']];
+  const bottom = [['bell'],['health'],['settings'],['support']];
   const it = ([k]) => `<div class="it ${k==='reports'?'on':''}">${I[k]}</div>`;
   return `<div class="rail"><div class="logo"><i></i></div>${items.map(it).join('')}<div class="sp"></div>${bottom.map(it).join('')}<div class="it"><span class="av">DC</span></div><div class="ver">v 2.0</div></div>`;
 }
-function pagebar(title, back){
+function pagebar(title, back, backAct){
   const phone = S.viewport==='phone';
-  return `<div class="pagebar">${back?`<span class="back" data-act="back">${I.back}<span>${back}</span></span>`:(phone?`<span class="burger">${I.bars}</span>`:'')}<span class="ttl2">${title}</span><span class="chrome-r">${!S.online?`<span class="pill warn">${I.cloudOff} Offline</span>`:''}${phone?'':`<span class="mut sm">${STORES[S.store==='all'?'uk':S.store]}</span><span class="av">DC</span>`}</span></div>`;
+  return `<div class="pagebar">${back?`<span class="back" data-act="${backAct}">${I.back}<span>${back}</span></span>`:(phone?`<span class="burger">${I.bars}</span>`:'')}<span class="ttl2">${title}</span><span class="chrome-r">${!S.online?`<span class="pill warn">${I.cloudOff} Offline</span>`:''}${phone?'':`<span class="mut sm">${STORES[S.store==='all'?'uk':S.store]}</span><span class="av">DC</span>`}</span></div>`;
 }
 function renderFrame(){
   ensureScope();
   const f = document.getElementById('frame');
   f.className = `frame ${S.viewport}`; f.dataset.theme = S.theme;
   const phone = S.viewport==='phone';
-  // Phone: a selected closure is its own page — "‹ Closures  Closure 12" — with no scope bar.
-  const drill = phone && S.report==='closures' && S.selClosure && sessionsInScope().find(s=>s.id===S.selClosure);
-  const drillPage = () => pagebar(`Closure ${ses(S.selClosure).number}`, 'Closures').replace('data-act="back"','data-act="unselect"') + `<div class="pad">${reportBody()}</div>`;
   let inner;
-  {
-    if (phone) inner = drill ? drillPage() : S.phoneList ? pagebar('Reports') + `<div class="pad" style="padding:0">${pickerB()}</div>` : pagebar(rep().title, 'Reports') + `<div class="pad">${scopeBlock()}${reportBody()}</div>`;
-    else inner = pagebar('Reports') + `<div class="pad"><div class="split">${pickerB()}<div class="rpane">${scopeBlock()}${reportBody()}</div></div></div>`;
-  }
+  const drill = phone && S.report==='closures' && S.selClosure;
+  if (drill) inner = pagebar(`Closure ${ses(S.selClosure).number}`, 'Closures', 'unselect') + `<div class="pad">${sessionDoc(ses(S.selClosure))}</div>`;
+  else if (phone) inner = pagebar('Reports') + `<div class="pad">${filters()}${chart()}<div class="split">${S.phoneTab==='orders'?ordersCard():reportCard()}</div></div>`;
+  else inner = pagebar('Reports') + `<div class="pad">${filters()}${chart()}<div class="split">${ordersCard()}${reportCard()}</div></div>`;
   f.innerHTML = `<div class="body">${phone?'':renderRail()}<div class="main">${inner}${renderPop()}</div></div>`;
-  const si = f.querySelector('input[data-search]'); if (si && S.searchFocus) { si.focus(); si.setSelectionRange(si.value.length, si.value.length); }
-  document.getElementById('statejson').textContent = JSON.stringify({edition:S.pro?'Pro':'Free', report:S.report, scope:{mode:S.mode, session:S.mode==='session'?S.sessionId:undefined, range:S.mode==='range'?S.range:undefined, register:S.register, store:S.store, cashier:S.cashier}, groupBy:S.report==='sales'?S.groupBy:undefined, online:S.online, registerOpen:S.regOpen, popover:S.pop, gateHint:S.gateHint}, null, 1);
+  document.getElementById('statejson').textContent = JSON.stringify({edition:S.pro?'Pro':'Free', scope:S.scope, register:S.register, store:S.store, cashier:S.cashier, report:S.report, template:S.template, chart:S.cmp, unticked:[...S.unticked], online:S.online, registerOpen:S.regOpen, popover:S.pop, gateHint:S.gateHint}, null, 1);
 }
 
-/* ============================ pickers ============================ */
-function pickerB(){
-  const q = S.search.trim().toLowerCase();
-  const li = (r, on, sub) => `<div class="li ${sub?'sub':''} ${on?'on':''}" data-act="report" data-k="${r.key}" ${sub?`data-g="${sub}"`:''}>${sub?'':`<span class="ico">${ICO[r.key]}</span>`}<span>${sub?`by ${REPORTS[2].groups.find(g=>g[0]===sub)[1]}`:r.title}</span>${!sub&&r.plugin?`<span class="s" style="margin-left:auto">${S.online?'':I.cloudOff}</span>`:''}</div>`;
-  let rows;
-  if (q) {
-    const hits = [];
-    REPORTS.forEach(r=>{ if (r.title.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q)) hits.push(li(r, S.report===r.key)); if (r.groups) r.groups.forEach(([k,l])=>{ if (l.toLowerCase().includes(q) || (k==='payment'&&('tender'.includes(q)||'payment'.includes(q))) || (k==='tax'&&'tax report'.includes(q))) hits.push(`<div class="li" data-act="report" data-k="sales" data-g="${k}"><span class="ico">${I.table}</span><span>Sales <span class="mut">› by ${l}</span></span></div>`); }); });
-    rows = hits.length ? hits.join('') : `<div class="empty"><span>No report called “${S.search}”</span></div>`;
-  } else {
-    rows = `<div class="sec">Reports</div>` + REPORTS.filter(r=>!r.plugin).map(r=>{
-      const on = S.report===r.key;
-      let out = li(r, on);
-      if (r.groups && on) out += r.groups.map(([k])=>li(r, S.groupBy===k, k)).join('');
-      return out;
-    }).join('') + `<div class="sec">From plugins</div>` + REPORTS.filter(r=>r.plugin).map(r=>li(r, S.report===r.key)).join('');
-  }
-  return `<div class="card rlist"><div class="search" style="padding:8px 10px;border-bottom:1px solid var(--border)"><input class="in" data-search placeholder="Search reports" value="${S.search.replace(/"/g,'&quot;')}"></div><div style="overflow:auto;flex:1">${rows}</div></div>`;
-}
-
-/* ============================ scope bar ============================ */
-function scopeBlock(){
-  const r = rep();
-  const both = r.modes.length===2;
-  const lockChip = (k, label, v, popKey) => `<span class="chip ${!S.pro?'locked':''}" data-act="pop" data-p="${popKey}"><span class="k">${k}</span><span class="v">${v}</span>${!S.pro?`<span class="lk">${I.lock}</span>`:`<span class="car">${I.down}</span>`}</span>`;
-  const valueChip = `<span class="chip on" data-act="pop" data-p="${S.mode}"><span class="v">${scopeLabel()}</span><span class="car">${I.down}</span></span>`;
-  const modeCtl = both ? `<span class="mode"><button class="${S.mode==='session'?'on':''}" data-act="mode" data-m="session">Session</button><button class="${S.mode==='range'?'on':''}" data-act="mode" data-m="range">Dates</button></span>` : '';
-  // In session mode the session names its register, so the register chip only exists for date ranges.
-  const regChip = S.mode==='session' ? '' : lockChip('Register','', S.register==='all'?'All registers':REG[S.register].name, 'register');
-  const storeChip = (S.stores===2 || S.store!=='uk') ? lockChip('Store','', S.store==='all'?'All stores':STORES[S.store], 'store') : '';
-  const cashChip = (S.report==='sales'||S.report==='cash') ? `<span class="chip" data-act="pop" data-p="cashier"><span class="k">Cashier</span><span class="v">${S.cashier==='any'?'Any':WHO[S.cashier].name.split(' ')[0]}</span><span class="car">${I.down}</span></span>` : '';
-  const bar = `<div class="scopebar">${modeCtl}${valueChip}${regChip}${storeChip}${cashChip}</div>`;
-  return bar;
-}
-function renderPop(){
-  if (!S.pop) return '';
+/* ============================ filter pills ============================ */
+function filters(){
+  const chip = (k, v, p, locked, on) => `<span class="chip ${on?'on':''}" data-act="pop" data-p="${p}">${k?`<span class="k">${k}</span>`:''}<span class="v">${v}</span>${locked?`<span class="lk">${I.lock}</span>`:`<span class="car">${I.down}</span>`}</span>`;
   const phone = S.viewport==='phone';
-  const row = (label, sub, on, act, data, locked) => `<div class="pr ${on?'on':''} ${locked?'lock':''}" data-act="${locked?'gatehint':act}" ${data} data-label="${label}"><span class="ck">${on?I.check:''}</span><span>${label}${sub?` <span class="s">${sub}</span>`:''}</span>${locked?`<span class="lk">${I.lock}</span>`:''}</div>`;
-  let head='', body='';
-  if (S.pop==='session') {
-    head='Session';
-    const o = openSession();
-    const closed = SESSIONS.filter(s=>!s.open && (S.report!=='session' || true));
-    const free = closed.filter(freeOk), older = closed.filter(s=>!freeOk(s));
-    body = (o ? row('Open now', `since ${o.opened.split(' ').pop()} · ${REG[o.reg].name}`, S.sessionId===o.id, 'pick', `data-s="${o.id}"`) : `<div class="pr" style="cursor:default;color:var(--muted-fg)">Register closed — no open session</div>`)
-      + `<div class="ph div">Today</div>` + free.map(s=>row(`Closure ${s.number}`, `${s.closed.split(' ').pop()} · ${REG[s.reg].name}`, S.sessionId===s.id, 'pick', `data-s="${s.id}"`)).join('')
-      + `<div class="ph div">Earlier sessions ${S.pro?'':`<span class="pill pro">Pro</span>`}</div>` + older.map(s=>row(`Closure ${s.number}`, `${s.day} · ${REG[s.reg].name}`, S.sessionId===s.id, 'pick', `data-s="${s.id}"`, !S.pro)).join('');
-  } else if (S.pop==='range') {
-    head='Dates';
-    body = RANGES.map(([k,l])=>row(l, k==='today'?'Sun 14 Sep':'', S.range===k, 'range', `data-r="${k}"`, !S.pro && k!=='today')).join('');
-  } else if (S.pop==='register') {
-    head='Register';
-    const regs = Object.entries(REG).filter(([k,r])=>S.store==='all' || r.store===(S.store==='uk'?'uk':S.store));
-    body = (S.report==='session' ? '' : row('All registers','', S.register==='all', 'reg', `data-r="all"`, !S.pro)) + regs.map(([k,r])=>row(r.name, k==='front'?'this device':'', S.register===k, 'reg', `data-r="${k}"`, !S.pro && k!=='front')).join('');
-  } else if (S.pop==='store') {
-    head='Store';
-    body = row('All stores','', S.store==='all','store',`data-r="all"`, !S.pro) + Object.entries(STORES).map(([k,n])=>row(n, k==='uk'?'this device':'', S.store===k,'store',`data-r="${k}"`, !S.pro && k!=='uk')).join('');
-  } else if (S.pop==='cashier') {
-    head='Cashier';
-    body = row('Any cashier','', S.cashier==='any','cashier',`data-r="any"`) + Object.entries(WHO).map(([k,w])=>row(w.name, '', S.cashier===k,'cashier',`data-r="${k}"`)).join('');
-  }
-  const foot = (S.gateHint && !S.pro) ? `<div class="pf">${I.lock}<span class="t">Past sessions, earlier days and other registers are in WCPOS Pro.</span><button class="btn sm p">See Pro</button></div>` : '';
-  const inner = `<div class="ph">${head}</div>${body}${foot}`;
-  if (phone) return `<div class="popwrap" data-act="closepop"><div class="scrim"></div><div class="sheet" data-stop><div class="grab"></div>${inner}</div></div>`;
-  return `<div class="popwrap" data-act="closepop"><div class="pop" data-stop style="left:${S.popX||80}px;top:${S.popY||110}px">${inner}</div></div>`;
+  return `<div class="filters">
+    ${chip('', scopeLabel(), 'date', !S.pro, true)}
+    ${chip('Status', 'Completed', 'status', false)}
+    ${chip('Register', S.register==='all'?'All':REG[S.register].name, 'register', !S.pro)}
+    ${(S.stores===2||S.store!=='uk')?chip('Store', S.store==='all'?'All':STORES[S.store], 'store', !S.pro):''}
+    ${chip('Cashier', S.cashier==='any'?'Any':WHO[S.cashier].name.split(' ')[0], 'cashier', false)}
+    ${phone?'':chip('Customer', 'Any', 'customer', false)}
+  </div>`;
 }
 
-/* ============================ reports ============================ */
-function reportBody(){
+/* ============================ chart ============================ */
+function chart(){
+  const t = ticked();
+  const byHour = (list, from, to) => { const a=[]; for(let h=from;h<=to;h++) a.push(list.filter(o=>o[7]===h).reduce((s,o)=>s+o[2],0)); return a; };
+  const hours = [9,10,11,12,13,14,15,16,17];
+  const todayH = byHour(t, 9, 17);
+  const yestH = [96.20,148.40,119.90,72.10,84.30,131.60,143.20,151.10,85.30];
+  const weekT = [612.40,704.10,0,0,0,0,0]; weekT[6] = sumTicked();
+  const weekL = [583.10,671.20,690.40,720.30,890.70,1032.10,644.20];
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const posD = [512.40,604.10,0,0,0,0,t.filter(o=>o[6]==='pos').reduce((a,o)=>a+o[2],0)], onlD = [100.00,100.00,0,0,0,0,t.filter(o=>o[6]==='online').reduce((a,o)=>a+o[2],0)];
+  let a, b, labels, la, lb, head, deltaTxt, up, stacked=false;
+  // The first comparison follows the date pill: today (or a session) by hour vs yesterday; a longer range by day vs the range before it.
+  const longRange = S.scope.kind==='range' && !['today','yesterday'].includes(S.scope.range);
+  const firstLabel = longRange ? `${RANGES.find(r=>r[0]===S.scope.range)[1]} vs before` : S.scope.kind==='range'&&S.scope.range==='yesterday' ? 'Yesterday vs the day before' : 'Today vs yesterday';
+  if (S.cmp==='yesterday' && longRange) { const m=mult()/6.4; a=weekL.map(v=>v*m*1.04); b=weekL.map(v=>v*m*0.93); labels=days; la=RANGES.find(r=>r[0]===S.scope.range)[1]; lb='The period before'; const now=a.reduce((x,y)=>x+y,0), then=b.reduce((x,y)=>x+y,0); head=fmt(now); up=now>=then; deltaTxt=`${Math.abs(Math.round((now-then)/then*100))}% vs the period before`; }
+  else if (S.cmp==='yesterday') { a=todayH; b=yestH; labels=hours.map(h=>`${h}:00`); la='Today'; lb='Yesterday'; const now=sumTicked(), then=yestH.slice(0,7).reduce((x,y)=>x+y,0); head=fmt(now); up=now>=then; deltaTxt=`${Math.abs(Math.round((now-then)/then*100))}% vs yesterday by this time`; }
+  else if (S.cmp==='week') { a=weekT; b=weekL; labels=days; la='This week'; lb='Last week'; const now=weekT.reduce((x,y)=>x+y,0), then=weekL.slice(0,2).reduce((x,y)=>x+y,0)+weekL[6]*0.6; head=fmt(now); up=now>=then; deltaTxt=`${Math.abs(Math.round((now-then)/then*100))}% vs last week by this point`; }
+  else { a=posD; b=onlD; labels=days; la='POS'; lb='Online'; stacked=true; const p=posD.reduce((x,y)=>x+y,0), o=onlD.reduce((x,y)=>x+y,0); head=fmt(p+o); up=true; deltaTxt=`${Math.round(p/(p+o)*100)}% at the till, ${Math.round(o/(p+o)*100)}% online this week`; }
+  const W=S.viewport==='phone'?340:1090, H=S.viewport==='phone'?120:150, padL=6, padB=18, n=a.length, gw=(W-padL*2)/n, bw=stacked?gw*0.62:gw*0.30, max=Math.max(...a.map((v,i)=>stacked?v+b[i]:Math.max(v,b[i])))||1, sc=(H-padB-10)/max;
+  const bars = a.map((v,i)=>{ const x0=padL+i*gw+gw/2; if (stacked) { const hb=b[i]*sc, ha=v*sc; return `<rect x="${x0-bw/2}" y="${H-padB-ha}" width="${bw}" height="${ha}" fill="var(--bar1)" rx="2"/><rect x="${x0-bw/2}" y="${H-padB-ha-hb}" width="${bw}" height="${hb}" fill="var(--bar3)" rx="2"/>`; } const hb=b[i]*sc, ha=v*sc; return `<rect x="${x0-bw-1}" y="${H-padB-ha}" width="${bw}" height="${ha}" fill="var(--bar1)" rx="2"/><rect x="${x0+1}" y="${H-padB-hb}" width="${bw}" height="${hb}" fill="var(--bar2)" rx="2"/>`; }).join('');
+  const lab = labels.map((l,i)=>`<text x="${padL+i*gw+gw/2}" y="${H-4}" font-size="11" text-anchor="middle" fill="var(--muted-fg)" font-family="var(--sys)">${l}</text>`).join('');
+  const cmp = `<span class="cmp"><button class="${S.cmp==='yesterday'?'on':''}" data-act="cmp" data-c="yesterday">${firstLabel}</button><button class="${S.cmp==='week'?'on':''}" data-act="cmp" data-c="week">This week vs last</button><button class="${S.cmp==='online'?'on':''}" data-act="cmp" data-c="online">Online vs POS</button></span>`;
+  return `<div class="card chart"><div class="card-b">
+    <div class="head"><span class="fig">${head}</span><span class="delta ${up?'pos':'neg'}">${up?I.up:I.dn}${deltaTxt}</span>${S.viewport==='phone'?'':cmp}</div>
+    ${S.viewport==='phone'?cmp:''}
+    <svg class="bars" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><line x1="0" y1="${H-padB}" x2="${W}" y2="${H-padB}" stroke="var(--border)"/>${bars}${lab}</svg>
+    <div class="legend"><span><i style="background:var(--bar1)"></i>${la}</span><span><i style="background:${stacked?'var(--bar3)':'var(--bar2)'}"></i>${lb}</span>${S.scope.kind==='session'&&S.cmp==='yesterday'?`<span class="mut">· ${scopeHeading()}</span>`:''}${S.unticked.size?`<span class="mut">· ${S.unticked.size} order${S.unticked.size>1?'s':''} unticked</span>`:''}</div>
+  </div></div>`;
+}
+
+/* ============================ orders ============================ */
+function ordersCard(){
+  const o = ordersInScope(); const t=ticked();
+  const phone = S.viewport==='phone';
+  return `<div class="card orders"><div class="card-h"><span>Orders</span><span class="sub">${o.length} · ${t.length===o.length?'all selected':`${t.length} selected`}</span>${phone?`<span class="grow"></span><button class="btn sm" data-act="phoneTab" data-t="report">Report ${I.chev}</button>`:''}</div>
+    <div class="card-b tight">${o.length?`<table class="t"><thead><tr><th><input class="cb" type="checkbox" ${t.length===o.length?'checked':''} data-act="tickAll"></th><th>#</th><th>Time</th>${phone?'':'<th>Cashier</th>'}<th class="r">Total</th><th>Paid</th></tr></thead><tbody>${o.map(x=>`<tr class="${S.unticked.has(x[0])?'off':''}"><td><input class="cb" type="checkbox" ${S.unticked.has(x[0])?'':'checked'} data-act="tick" data-n="${x[0]}"></td><td class="b">${x[0]}</td><td class="mut">${x[1]}</td>${phone?'':`<td>${who(x[5])}</td>`}<td class="r">${fmt(x[2])}</td><td>${x[4]}${x[6]==='online'?' <span class="pill info">Online</span>':''}</td></tr>`).join('')}</tbody></table>`:`<div class="empty"><span class="big">No orders in this session</span></div>`}</div></div>`;
+}
+
+/* ============================ report card ============================ */
+function reportCard(){
   const r = rep();
-  if (r.key==='session') return sessionDoc(ses(S.sessionId));
-  if (r.key==='closures') return closuresList();
-  if (r.key==='sales') return salesTable();
-  if (r.key==='cash') return cashTable();
-  if (r.key==='deposits') return depositsTable();
+  const phone = S.viewport==='phone';
+  const tpl = TEMPLATES[r.type].find(t=>t[0]===S.template)[1];
+  const body = S.report==='session' ? sessionDoc(ses(S.scope.sessionId)) : S.report==='closures' ? closuresList() : S.report==='cash' ? cashTable() : S.report==='deposits' ? depositsTable() : S.report==='summary' ? summaryDoc() : salesTable();
+  let foot;
+  if (S.report==='session') { const s=ses(S.scope.sessionId); foot = `<div class="card-f"><span class="mut sm grow status">${s.open?'Prints as an X-report':`Z-report printed ${s.closed.split(' ').pop()}`}</span><button class="btn">Export PDF</button>${s.open?'':`<button class="btn">Recount…</button>`}<button class="btn p">${I.print} ${s.open?'Print X-report':'Reprint copy'}</button></div>`; }
+  else foot = `<div class="card-f"><button class="btn">Export CSV</button><button class="btn p">${I.print} Print</button></div>`;
+  return `<div class="card report"><div class="card-h">${phone?`<button class="btn sm" data-act="phoneTab" data-t="orders">${I.back} Orders</button>`:''}<span class="sel2" data-act="pop" data-p="report"><span>${r.title}</span><span class="car">${I.down}</span></span><span class="sel2" data-act="pop" data-p="template"><span class="k">Template</span><span>${tpl}</span><span class="car">${I.down}</span></span></div>
+    <div class="card-b tight">${body}</div>${foot}</div>`;
 }
-function footerFor(kind, s){
-  if (kind==='session') return `<div class="card-f"><span class="mut sm grow status">${s.open?'Prints as an X-report':`Z-report printed ${s.closed.split(' ').pop()}${s.copies?` · ${s.copies} ${s.copies===1?'copy':'copies'}`:''}`}</span><button class="btn">Export PDF</button>${s.open?'':`<button class="btn">Recount…</button>`}<button class="btn p">${I.print} ${s.open?'Print X-report':'Reprint copy'}</button></div>`;
-  return `<div class="card-f"><button class="btn">Export CSV</button><button class="btn p">${I.print} Print</button></div>`;
+function tplWrap(inner, opts={}){
+  // The pane renders the chosen template. Default and A4 are HTML; Thermal is the 80 mm receipt look.
+  if (S.template==='thermal') return `<div class="thermal">${opts.thermal||''}</div>`;
+  if (S.template==='a4') return `<div class="doc-paper fmt"><div class="brand">UK Store</div><div class="mut sm">${opts.title||''} · ${scopeHeading()} · printed Sun 14 Sep 15:12</div>${inner}</div>`;
+  return inner;
 }
-function sessionDoc(s, opts={}){
+function summaryDoc(){
+  const t = ticked(); const m=mult();
+  const n = Math.round(t.length*m), total = sumTicked()*m, tax = t.reduce((a,o)=>a+o[3],0)*m, refunds = (S.scope.kind==='session'&&S.scope.sessionId==='c12')?0:15.00*m, disc=12.50*m;
+  const pm = [['Cash', t.filter(o=>o[4]==='Cash').reduce((a,o)=>a+o[2],0)*m],['Card', t.filter(o=>o[4]==='Card').reduce((a,o)=>a+o[2],0)*m]];
+  const rows = [['Total orders', n],['Net sales', fmt(total-tax)],['Tax collected', fmt(tax)],['Total sales', fmt(total), true],['Refunds', refunds?fmt(-refunds):'—'],['Discounts', fmt(disc)]];
+  const html = `<div class="heading">${scopeHeading()} · counts <b>sales</b>${S.unticked.size?` · ${S.unticked.size} unticked`:''}</div><table class="t"><tbody>${rows.map(r=>`<tr><td ${r[2]?'class="b"':''}>${r[0]}</td><td class="r ${r[2]?'b':''}">${r[1]}</td></tr>`).join('')}</tbody></table><div class="dsec" style="padding:10px 12px 4px">Payment methods</div><table class="t"><tbody>${pm.map(p=>`<tr><td>${p[0]}</td><td class="r">${fmt(p[1])}</td></tr>`).join('')}</tbody></table><div class="dsec" style="padding:10px 12px 4px">Taxes</div><table class="t"><tbody><tr><td>Standard 20%</td><td class="r">${fmt(tax*0.92)}</td></tr><tr><td>Reduced 5%</td><td class="r">${fmt(tax*0.08)}</td></tr></tbody></table>`;
+  const th = `UK STORE (ID: 1)\nReport generated: 2026-09-14 15:12\n${scopeHeading()}\nCashier: Demo Cashier\n\n----------------------------------------\n            SALES SUMMARY\n----------------------------------------\nTotal Orders                       ${String(n).padStart(8)}\nTotal Net Sales                ${fmt(total-tax).padStart(12)}\nTotal Tax Collected            ${fmt(tax).padStart(12)}\nTOTAL SALES                    ${fmt(total).padStart(12)}\nTotal Discounts                ${fmt(disc).padStart(12)}\n\n----------------------------------------\n           PAYMENT METHODS\n----------------------------------------\n${pm.map(p=>p[0].padEnd(31)+fmt(p[1]).padStart(12)).join('\n')}\n\n----------------------------------------\n                TAXES\n----------------------------------------\nStandard 20%                   ${fmt(tax*0.92).padStart(12)}\nReduced 5%                     ${fmt(tax*0.08).padStart(12)}`;
+  return tplWrap(html, {title:'Sales summary', thermal:th});
+}
+function salesTable(){
+  const g = S.report; const k = (sumTicked()/727.80)*mult();
+  const M = (n) => Math.round(n*k*100)/100;
+  const cols = { payment:['Method','Payments','Taken','Refunded','Net'], cashier:['Cashier','Sales','Gross','Refunds','Net','Tax'], register:['Register','Sales','Gross','Refunds','Net','Tax'], tax:['Rate','Sales','Taxable base','Tax'], item:['Item','Qty','Gross','Refunds','Net'], category:['Category','Qty','Gross','Refunds','Net'] }[g];
+  const base = { payment:[['Cash',11,300.80,-15.00],['Card · terminal',8,412.00,0],['Card · online',1,15.00,0]], cashier:[['Demo Cashier',12,486.20,-15.00,79.40],['Amy Okafor',6,241.60,0,39.45]], register:[['Front counter',14,560.80,-15.00,89.10],['Back office',4,167.00,0,29.75]], tax:[['Standard 20%',15,506.80,101.36],['Reduced 5%',3,125.00,6.25],['Zero 0%',2,96.00,0]], item:[['Flat white',22,66.00,-3.00],['Sourdough loaf',9,40.50,0],['Croissant',18,45.00,0],['Coffee beans 250g',6,57.00,-9.50],['Oat latte',11,41.80,0]], category:[['Drinks',48,214.60,-3.00],['Bakery',31,131.40,0],['Retail',9,114.00,-9.50]] }[g];
+  const rows = base.map(r=>{ if (g==='payment') return [r[0], Math.round(r[1]*k), fmt(M(r[2])), r[3]?fmt(M(r[3])):'—', fmt(M(r[2]+r[3]))]; if (g==='tax') return [r[0], Math.round(r[1]*k), fmt(M(r[2])), fmt(M(r[3]))]; if (g==='item'||g==='category') return [r[0], Math.round(r[1]*k), fmt(M(r[2])), r[3]?fmt(M(r[3])):'—', fmt(M(r[2]+r[3]))]; return [r[0], Math.round(r[1]*k), fmt(M(r[2])), r[3]?fmt(M(r[3])):'—', fmt(M(r[2]+r[3])), fmt(M(r[4]))]; });
+  const totals = rows[0].map((_,i)=> i===0 ? 'Total' : (i===1 ? rows.reduce((a,r)=>a+r[1],0) : fmt(rows.reduce((a,r)=>a+(parseFloat(String(r[i]).replace(/[^\d.−-]/g,'').replace('−','-'))||0),0))));
+  const basis = S.scope.kind==='session' ? (g==='payment' ? 'payment and refund rows by tender-time session, the drawer\'s basis' : 'sales completed in the session, the closure\'s basis') : 'sales completed in the range by the store\'s clock';
+  const html = `<div class="heading">${scopeHeading()} · counts <b>${g==='payment'?'payments':'sales'}</b> · ${basis}</div><table class="t"><thead><tr>${cols.map((c,i)=>`<th class="${i?'r':''}">${c}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td class="${i?'r':''}">${c}</td>`).join('')}</tr>`).join('')}<tr class="tot">${totals.map((c,i)=>`<td class="${i?'r':''}">${c}</td>`).join('')}</tr></tbody></table>`;
+  const th = `UK STORE\n${rep().title.toUpperCase()}\n${scopeHeading()}\n----------------------------------------\n${rows.map(r=>r[0].slice(0,18).padEnd(19)+String(r[r.length-1]).padStart(21)).join('\n')}\n----------------------------------------\n${'TOTAL'.padEnd(19)+String(totals[totals.length-1]).padStart(21)}`;
+  return tplWrap(html, {title:rep().title, thermal:th});
+}
+function sessionDoc(s){
   const rec = s.counted!==undefined ? s.counted-s.expected : null;
-  const corr = (s.corrections||[]).reduce((a,c)=>a+c[3],0);
-  const settledExp = s.expected + corr;
-  const settledVar = s.counted!==undefined ? s.counted - settledExp : null;
-  const tenders = `<table class="t"><thead><tr><th>Tender</th><th class="r">Sales</th><th class="r">Refunds</th><th class="r">${s.open?'Expected':'Counted'}</th></tr></thead><tbody>
-    <tr><td>Cash</td><td class="r">${fmt(s.cashSales)}</td><td class="r">${s.cashRefunds?fmt(-s.cashRefunds):'—'}</td><td class="r b">${fmt(s.open?s.expected:s.counted)}</td></tr>
-    <tr><td>Card · terminal</td><td class="r">${fmt(s.card)}</td><td class="r">—</td><td class="r mut">—</td></tr></tbody></table>`;
+  const corr = (s.corrections||[]).reduce((a,c)=>a+c[3],0); const settledExp = s.expected + corr; const settledVar = s.counted!==undefined ? s.counted - settledExp : null;
+  const tenders = `<table class="t"><thead><tr><th>Tender</th><th class="r">Sales</th><th class="r">Refunds</th><th class="r">${s.open?'Expected':'Counted'}</th></tr></thead><tbody><tr><td>Cash</td><td class="r">${fmt(s.cashSales)}</td><td class="r">${s.cashRefunds?fmt(-s.cashRefunds):'—'}</td><td class="r b">${fmt(s.open?s.expected:s.counted)}</td></tr><tr><td>Card · terminal</td><td class="r">${fmt(s.card)}</td><td class="r">—</td><td class="r mut">—</td></tr></tbody></table>`;
   const movs = s.movements.length ? `<table class="t"><tbody>${s.movements.map(m=>`<tr><td class="mut">${m[0]}</td><td>${m[1]}</td><td class="r ${m[2]<0?'neg':m[2]>0?'pos':''}">${m[2]?fmt(m[2],true):'—'}</td><td class="mut">${m[4]}</td></tr>`).join('')}</tbody></table>` : `<div class="mut sm">None</div>`;
   const corrections = (s.corrections||[]).length ? `<div class="dsec">Corrections</div><table class="t"><tbody>${s.corrections.map(c=>`<tr><td class="mut">${c[0]}</td><td><span class="pill info">${c[1]}</span></td><td>${c[2]}</td><td class="r pos b">${fmt(c[3],true)}</td></tr>`).join('')}</tbody></table><div class="mut sm">The figures above read as at close; the settled figures include these rows.</div>` : '';
   const title = s.open ? `Session ${s.number}` : `Closure ${s.number}`;
-  const head = opts.noHeader ? '' : `<div class="card-h"><span>${title}</span><span class="sub">${REG[s.reg].name} · ${s.open?`open since ${s.opened.split(' ').pop()}`:`as recorded ${s.closed}`}</span>${s.unsynced?`<span class="pill warn">Unsynced</span>`:''}${(s.corrections||[]).length?`<span class="pill info">Settled</span>`:''}${s.open?`<span class="pill open dotp">Open</span>`:''}</div>`;
-  return `<div class="card report">${head}<div class="card-b tight"><div class="doc-paper">
+  const html = `<div class="doc-paper">
+    <div class="row" style="flex-wrap:wrap"><span class="b" style="font-size:15px">${title}</span><span class="mut sm">${REG[s.reg].name} · ${s.open?`open since ${s.opened.split(' ').pop()}`:`as recorded ${s.closed}`}</span>${s.unsynced?`<span class="pill warn">Unsynced</span>`:''}${(s.corrections||[]).length?`<span class="pill info">Settled</span>`:''}${s.open?`<span class="pill open">Open</span>`:''}</div>
     <div class="kv">
       <div><div class="k">Opened</div><div class="v">${s.opened} · ${WHO[s.openedBy].name}</div></div>
       <div><div class="k">${s.open?'Now':'Closed'}</div><div class="v">${s.open?'Sun 14 Sep 15:12 · trading':`${s.closed} · ${WHO[s.closedBy].name}`}</div></div>
       <div><div class="k">Opening float</div><div class="v">${fmt(s.float)} <span class="mut">(expected £200.00)</span></div></div>
       <div><div class="k">Receipts</div><div class="v">${s.sales} sales${s.refunds?`, ${s.refunds} refund${s.refunds>1?'s':''}`:''}</div></div>
       <div><div class="k">Expected in drawer</div><div class="v hero">${fmt(s.expected)}</div>${corr?`<div class="sm"><span class="settled">settled ${fmt(settledExp)}</span></div>`:''}</div>
-      <div><div class="k">${s.open?'Counted':'Counted'}</div><div class="v hero">${s.open?'<span class="mut">—</span>':fmt(s.counted)}</div>${s.open?'<div class="mut sm">at close</div>':''}</div>
+      <div><div class="k">Counted</div><div class="v hero">${s.open?'<span class="mut">—</span>':fmt(s.counted)}</div>${s.open?'<div class="mut sm">at close</div>':''}</div>
       <div><div class="k">Variance</div><div class="v">${rec===null?'<span class="mut">—</span>':fmtv(rec)}${corr?`<span class="arrow">→</span><span class="settled">settled ${fmt(settledVar,true)}</span>`:''}</div></div>
       <div><div class="k">Tax</div><div class="v">${fmt(s.tax)} <span class="mut">of ${fmt(s.gross)} gross</span></div></div>
     </div>
-    <div class="dsec">Tenders</div>${tenders}
-    <div class="dsec">Cash movements</div>${movs}
-    ${corrections}
-  </div></div>${opts.noFooter?'':footerFor('session', s)}</div>`;
+    <div class="dsec">Tenders</div>${tenders}<div class="dsec">Cash movements</div>${movs}${corrections}</div>`;
+  const th = `UK STORE · ${REG[s.reg].name}\n${s.open?'X-REPORT':'Z-REPORT'} · ${title}\nOpened  ${s.opened} ${WHO[s.openedBy].name}\n${s.open?'Now     Sun 14 Sep 15:12':'Closed  '+s.closed+' '+WHO[s.closedBy].name}\n----------------------------------------\nOpening float                  ${fmt(s.float).padStart(12)}\nCash sales                     ${fmt(s.cashSales).padStart(12)}\nCash refunds                   ${fmt(-s.cashRefunds).padStart(12)}\nExpected in drawer             ${fmt(s.expected).padStart(12)}\n${s.open?'':'Counted                        '+fmt(s.counted).padStart(12)+'\nVariance                       '+fmt(rec,true).padStart(12)}\n----------------------------------------\nCard · terminal                ${fmt(s.card).padStart(12)}\nTax                            ${fmt(s.tax).padStart(12)}`;
+  return tplWrap(html, {title, thermal:th});
 }
 function closuresList(){
-  const list = sessionsInScope();
-  const phone = S.viewport==='phone';
+  const list = sessionsInRange(); const phone = S.viewport==='phone';
   const sel = S.selClosure && list.find(s=>s.id===S.selClosure) ? ses(S.selClosure) : null;
-  if (phone && sel) return sessionDoc(sel);
-  const rows = list.map(s=>{ const v=s.counted-s.expected; return `<tr class="click ${sel&&sel.id===s.id?'sel':''}" data-act="select" data-s="${s.id}"><td class="b">${s.number}</td>${phone?'':`<td>${REG[s.reg].name}</td>`}<td class="mut">${s.day==='today'?'Today':s.day} ${s.closed.split(' ').pop()}</td>${phone?'':`<td>${who(s.closedBy)}</td>`}<td class="r b">${fmt(s.counted)}</td><td class="r">${fmtv(v)}</td><td>${s.unsynced?`<span class="pill warn">Unsynced</span>`:''}${(s.corrections||[]).length?`<span class="pill info">Settled</span>`:''}</td></tr>`; }).join('');
-  const table = `<div class="card report"><div class="card-h"><span>Closures</span><span class="sub">${list.length} · ${scopeHeading().toLowerCase()}${S.register==='all'?', all registers':''}</span></div><div class="card-b tight">${list.length?`<table class="t"><thead><tr><th>#</th>${phone?'':'<th>Register</th>'}<th>Closed</th>${phone?'':'<th>By</th>'}<th class="r">Counted</th><th class="r">Variance</th><th></th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="empty"><span class="big">No closures ${S.range==='today'?'today':'in this range'}</span><span>${openSession()?'Session 13 is still open. It appears here once it is closed.':'Close the register to write the first one.'}</span></div>`}</div>${footerFor('table')}</div>`;
-  if (phone) return table;
-  return `<div class="side2" style="flex:1;min-height:0">${table}${sel ? sessionDoc(sel) : `<div class="card report"><div class="empty" style="margin:auto"><span>Select a closure to read it as recorded.</span></div></div>`}</div>`;
-}
-function salesTable(){
-  const g = S.groupBy;
-  const m = S.mode==='range' ? RANGE_MULT[S.range] : 1;
-  const s = S.mode==='session' ? ses(S.sessionId) : null;
-  const k = s ? (s.gross/727.80) : m;
-  const M = (n) => Math.round(n*k*100)/100;
-  const cols = { payment:['Method','Payments','Taken','Refunded','Net'], cashier:['Cashier','Sales','Gross','Refunds','Net','Tax'], register:['Register','Sales','Gross','Refunds','Net','Tax'], tax:['Rate','Sales','Taxable base','Tax'], item:['Item','Qty','Gross','Refunds','Net'], category:['Category','Qty','Gross','Refunds','Net'] }[g];
-  const base = {
-    payment:[['Cash',11,300.80,-15.00],['Card · terminal',8,412.00,0],['Card · online',1,15.00,0]],
-    cashier:[['Demo Cashier',12,486.20,-15.00,79.40],['Amy Okafor',6,241.60,0,39.45]],
-    register:[['Front counter',14,560.80,-15.00,89.10],['Back office',4,167.00,0,29.75]],
-    tax:[['Standard 20%',15,506.80,101.36],['Reduced 5%',3,125.00,6.25],['Zero 0%',2,96.00,0]],
-    item:[['Flat white',22,66.00,-3.00],['Sourdough loaf',9,40.50,0],['Croissant',18,45.00,0],['Coffee beans 250g',6,57.00,-9.50],['Oat latte',11,41.80,0]],
-    category:[['Drinks',48,214.60,-3.00],['Bakery',31,131.40,0],['Retail',9,114.00,-9.50]],
-  }[g];
-  const rows = base.map(r=>{
-    if (g==='payment') { const net=r[2]+r[3]; return [r[0], Math.round(r[1]*k), fmt(M(r[2])), r[3]?fmt(M(r[3])):'—', fmt(M(net))]; }
-    if (g==='tax') return [r[0], Math.round(r[1]*k), fmt(M(r[2])), fmt(M(r[3]))];
-    if (g==='item'||g==='category') return [r[0], Math.round(r[1]*k), fmt(M(r[2])), r[3]?fmt(M(r[3])):'—', fmt(M(r[2]+r[3]))];
-    return [r[0], Math.round(r[1]*k), fmt(M(r[2])), r[3]?fmt(M(r[3])):'—', fmt(M(r[2]+r[3])), fmt(M(r[4]))];
-  });
-  const totals = rows[0].map((_,i)=> i===0 ? 'Total' : (i===1 ? rows.reduce((a,r)=>a+r[1],0) : fmt(rows.reduce((a,r)=>a+(parseFloat(String(r[i]).replace(/[^\d.−-]/g,'').replace('−','-'))||0),0))));
-  const countWord = g==='payment' ? 'payments' : 'sales';
-  const basis = S.mode==='session' ? (g==='payment' ? 'payment and refund rows by tender-time session — the drawer\'s basis' : 'sales completed in the session — the closure\'s basis') : 'sales completed in the range by the store\'s clock';
-  const chips = REPORTS[2].groups.map(([kk,l])=>`<button class="c ${g===kk?'on':''}" data-act="group" data-g="${kk}">${l}</button>`).join('');
-  return `<div class="card report"><div class="card-h" style="flex-wrap:wrap"><span>Sales <span class="mut" style="font-weight:400">by ${REPORTS[2].groups.find(x=>x[0]===g)[1].toLowerCase()}</span></span><span class="sub">${scopeHeading()}${S.register!=='all'&&S.report==='sales'?` · ${REG[S.register].name}`:''}</span><span class="grow"></span><div class="gb">${chips}</div></div>
-    <div class="card-b tight"><div class="heading" style="padding:8px 12px;border-bottom:1px solid var(--border)">Counts <b>${countWord}</b> · ${basis}</div><table class="t"><thead><tr>${cols.map((c,i)=>`<th class="${i?'r':''}">${c}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td class="${i?'r':''}">${c}</td>`).join('')}</tr>`).join('')}<tr class="tot">${totals.map((c,i)=>`<td class="${i?'r':''}">${c}</td>`).join('')}</tr></tbody></table></div>${footerFor('table')}</div>`;
+  if (sel && !phone) return `<div class="row" style="padding:8px 10px;border-bottom:1px solid var(--border)"><span class="back" style="display:inline-flex;align-items:center;gap:2px;color:var(--primary);cursor:pointer;height:36px" data-act="unselect">${I.back} Closures</span></div>${sessionDoc(sel)}`;
+  const rows = list.map(s=>{ const v=s.counted-s.expected; return `<tr class="click" data-act="select" data-s="${s.id}"><td class="b">${s.number}</td>${phone?'':`<td>${REG[s.reg].name}</td>`}<td class="mut">${s.day==='today'?'Today':s.day} ${s.closed.split(' ').pop()}</td>${phone?'':`<td>${who(s.closedBy)}</td>`}<td class="r b">${fmt(s.counted)}</td><td class="r">${fmtv(v)}</td><td>${s.unsynced?`<span class="pill warn">Unsynced</span>`:''}${(s.corrections||[]).length?`<span class="pill info">Settled</span>`:''}</td></tr>`; }).join('');
+  return `<div class="heading">${scopeHeading()}${S.register==='all'?' · all registers':''} · ${list.length} closure${list.length===1?'':'s'} · tap one to read it as recorded</div>${list.length?`<table class="t"><thead><tr><th>#</th>${phone?'':'<th>Register</th>'}<th>Closed</th>${phone?'':'<th>By</th>'}<th class="r">Counted</th><th class="r">Variance</th><th></th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="empty"><span class="big">No closures ${S.scope.range==='today'?'today':'in this range'}</span><span>${openSession()?'Session 13 is still open. It appears here once it is closed.':'Close the register to write the first one.'}</span></div>`}`;
 }
 function cashTable(){
   let rows=[];
-  if (S.mode==='session') { const s=ses(S.sessionId); rows = s.movements.map(m=>[m[0], m[1], m[2], m[3], m[4], m[5]]); }
-  else { const list = S.range==='today' ? SESSIONS.filter(x=>x.day==='today') : SESSIONS.filter(x=>!x.open); rows = list.flatMap(s=>s.movements.map(m=>[`${s.day==='today'?'Today':s.day} ${m[0]}`, m[1], m[2], m[3], m[4], m[5]])); if (S.range!=='today') rows.push(['Fri 12 Sep 15:02','Paid out',-12.00,'ao','Parking (voided 15:04)',true]); }
+  if (S.scope.kind==='session') { const s=ses(S.scope.sessionId); rows = s.movements.map(m=>[m[0], m[1], m[2], m[3], m[4], m[5]]); }
+  else { const list = S.scope.range==='today' ? SESSIONS.filter(x=>x.day==='today') : SESSIONS.filter(x=>!x.open); rows = list.flatMap(s=>s.movements.map(m=>[`${s.day==='today'?'Today':s.day} ${m[0]}`, m[1], m[2], m[3], m[4], m[5]])); if (S.scope.range!=='today') rows.push(['Fri 12 Sep 15:02','Paid out',-12.00,'ao','Parking (voided 15:04)',true]); }
   const net = rows.filter(r=>!r[5]).reduce((a,r)=>a+r[2],0);
-  return `<div class="card report"><div class="card-h"><span>Cash movements</span><span class="sub">${scopeHeading()} · ${REG[S.register==='all'?'front':S.register].name}</span></div><div class="card-b tight">${rows.length?`<table class="t"><thead><tr><th>When</th><th>Movement</th><th class="r">Amount</th><th>By</th><th>Reason</th></tr></thead><tbody>${rows.map(r=>`<tr class="${r[5]?'void':''}"><td class="mut">${r[0]}</td><td>${r[1]}</td><td class="r ${r[2]<0?'neg':r[2]>0?'pos':''}">${r[2]?fmt(r[2],true):'—'}</td><td>${who(r[3])}</td><td class="mut">${r[4]}</td></tr>`).join('')}<tr class="tot"><td colspan="2">Net movement</td><td class="r ${net<0?'neg':net>0?'pos':''}">${net?fmt(net,true):'—'}</td><td colspan="2"></td></tr></tbody></table>`:`<div class="empty"><span class="big">No cash movements</span><span>Paid in, paid out and no-sale events appear here.</span></div>`}</div>${footerFor('table')}</div>`;
+  const html = `<div class="heading">${scopeHeading()} · ${REG[S.register==='all'?'front':S.register].name}</div>${rows.length?`<table class="t"><thead><tr><th>When</th><th>Movement</th><th class="r">Amount</th><th>By</th><th>Reason</th></tr></thead><tbody>${rows.map(r=>`<tr class="${r[5]?'void':''}"><td class="mut">${r[0]}</td><td>${r[1]}</td><td class="r ${r[2]<0?'neg':r[2]>0?'pos':''}">${r[2]?fmt(r[2],true):'—'}</td><td>${who(r[3])}</td><td class="mut">${r[4]}</td></tr>`).join('')}<tr class="tot"><td colspan="2">Net movement</td><td class="r ${net<0?'neg':net>0?'pos':''}">${net?fmt(net,true):'—'}</td><td colspan="2"></td></tr></tbody></table>`:`<div class="empty"><span class="big">No cash movements</span><span>Paid in, paid out and no-sale events appear here.</span></div>`}`;
+  const th = `UK STORE\nCASH MOVEMENTS · ${scopeHeading()}\n----------------------------------------\n${rows.map(r=>(r[0].split(' ').pop()+' '+r[1]).padEnd(24)+(r[2]?fmt(r[2],true):'—').padStart(16)).join('\n')}\n----------------------------------------\n${'NET'.padEnd(24)+(net?fmt(net,true):'—').padStart(16)}`;
+  return tplWrap(html, {title:'Cash movements', thermal:th});
 }
 function depositsTable(){
   const r = rep();
-  const head = `<div class="card-h"><span>Deposits outstanding</span><span class="sub">${scopeHeading()} · from ${r.plugin}</span></div>`;
-  if (!S.online) return `<div class="card report">${head}<div class="card-b"><div class="empty"><span class="big">Report unavailable offline</span><span>Deposits outstanding is computed on your store. It needs a connection.</span><button class="btn">Retry</button></div></div></div>`;
+  if (!S.online) return `<div class="empty"><span class="big">Report unavailable offline</span><span>Deposits outstanding is computed on your store. It needs a connection.</span><button class="btn">Retry</button></div>`;
   const rows = [['#1183','Nadia Hussain','Sun 14 Sep',120.00,480.00,'Fri 19 Sep'],['#1179','Tom Whelan','Sat 13 Sep',50.00,150.00,'Sat 20 Sep'],['#1162','Priya Nair','Thu 11 Sep',300.00,610.00,'Mon 15 Sep']];
-  return `<div class="card report">${head}<div class="card-b tight"><table class="t"><thead><tr><th>Order</th><th>Customer</th><th>Taken</th><th class="r">Deposit</th><th class="r">Balance due</th><th>Due</th></tr></thead><tbody>${rows.map(x=>`<tr><td class="b">${x[0]}</td><td>${x[1]}</td><td class="mut">${x[2]}</td><td class="r">${fmt(x[3])}</td><td class="r b">${fmt(x[4])}</td><td>${x[5]}</td></tr>`).join('')}<tr class="tot"><td colspan="3">Total</td><td class="r">${fmt(470)}</td><td class="r">${fmt(1240)}</td><td></td></tr></tbody></table></div>${footerFor('table')}</div>`;
+  const html = `<div class="heading">${scopeHeading()} · from ${r.plugin}</div><table class="t"><thead><tr><th>Order</th><th>Customer</th><th>Taken</th><th class="r">Deposit</th><th class="r">Balance due</th><th>Due</th></tr></thead><tbody>${rows.map(x=>`<tr><td class="b">${x[0]}</td><td>${x[1]}</td><td class="mut">${x[2]}</td><td class="r">${fmt(x[3])}</td><td class="r b">${fmt(x[4])}</td><td>${x[5]}</td></tr>`).join('')}<tr class="tot"><td colspan="3">Total</td><td class="r">${fmt(470)}</td><td class="r">${fmt(1240)}</td><td></td></tr></tbody></table>`;
+  const th = `UK STORE\nDEPOSITS OUTSTANDING\n----------------------------------------\n${rows.map(x=>(x[0]+' '+x[1]).slice(0,22).padEnd(24)+fmt(x[4]).padStart(16)).join('\n')}\n----------------------------------------\n${'TOTAL'.padEnd(24)+fmt(1240).padStart(16)}`;
+  return tplWrap(html, {title:r.title, thermal:th});
 }
 
-/* ============================ below the frame ============================ */
-function renderShapes(){
-  const c12 = ses('c11');
-  const saved = {...S};
-  S.report='sales'; S.mode='session'; S.sessionId='c12'; S.groupBy='payment'; S.register='front';
-  const sales = salesTable();
-  Object.assign(S, saved);
-  document.getElementById('shapes').innerHTML = `<div class="frame" style="box-shadow:none;border-radius:10px;height:auto" data-theme="light"><div class="pad">${sessionDoc(c12)}</div></div><div class="frame" style="box-shadow:none;border-radius:10px;height:auto" data-theme="light"><div class="pad">${sales}</div></div>`;
+/* ============================ popovers ============================ */
+function renderPop(){
+  if (!S.pop) return '';
+  const phone = S.viewport==='phone';
+  const row = (label, sub, on, act, data, locked, dim) => `<div class="pr ${on?'on':''} ${locked?'lock':''} ${dim?'dim':''}" data-act="${locked?'gatehint':dim?'':act}" ${data} data-label="${label}"><span class="ck">${on?I.check:''}</span><span>${label}${sub?` <span class="s">${sub}</span>`:''}</span>${locked?`<span class="lk">${I.lock}</span>`:''}</div>`;
+  let head='', body='', foot='';
+  const hintFor = (label) => { const l=(label||'').toLowerCase(); if (l.startsWith('closure')) return 'Earlier sessions are in WCPOS Pro.'; if (l.includes('store')||l==='dublin'||l==='counter') return 'Other stores are in WCPOS Pro.'; if (['all registers','back office','till 3'].includes(l)) return 'Other registers are in WCPOS Pro.'; return 'Earlier days are in WCPOS Pro.'; };
+  if (S.pop==='date') {
+    head='Session or dates';
+    const o = openSession(); const closed = SESSIONS.filter(s=>!s.open); const free = closed.filter(freeOk), older = closed.filter(s=>!freeOk(s));
+    const onS = (id) => S.scope.kind==='session' && S.scope.sessionId===id;
+    body = (o ? row('Open now', `since ${o.opened.split(' ').pop()} · ${REG[o.reg].name}`, onS(o.id), 'pick', `data-s="${o.id}"`) : `<div class="pr dim">Register closed — no open session</div>`)
+      + free.map(s=>row(`Closure ${s.number}`, `today ${s.closed.split(' ').pop()} · ${REG[s.reg].name}`, onS(s.id), 'pick', `data-s="${s.id}"`)).join('')
+      + `<div class="ph div">Dates</div>` + RANGES.map(([k,l])=>row(l, k==='today'?'Sun 14 Sep':'', S.scope.kind==='range'&&S.scope.range===k, 'range', `data-r="${k}"`, !S.pro && k!=='today')).join('')
+      + `<div class="ph div">Earlier sessions ${S.pro?'':`<span class="pill pro">Pro</span>`}</div>` + older.map(s=>row(`Closure ${s.number}`, `${s.day} · ${REG[s.reg].name}`, onS(s.id), 'pick', `data-s="${s.id}"`, !S.pro)).join('');
+  } else if (S.pop==='register') {
+    head='Register';
+    const regs = Object.entries(REG).filter(([k,r])=>S.store==='all' || r.store===S.store);
+    body = row('All registers','', S.register==='all', 'reg', `data-r="all"`, !S.pro) + regs.map(([k,r])=>row(r.name, k==='front'?'this device':'', S.register===k, 'reg', `data-r="${k}"`, !S.pro && k!=='front')).join('');
+  } else if (S.pop==='store') {
+    head='Store';
+    body = row('All stores','', S.store==='all','store',`data-r="all"`, !S.pro) + Object.entries(STORES).map(([k,n])=>row(n, k==='uk'?'this device':'', S.store===k,'store',`data-r="${k}"`, !S.pro && k!=='uk')).join('');
+  } else if (S.pop==='cashier') {
+    head='Cashier';
+    body = row('Any cashier','', S.cashier==='any','cashier',`data-r="any"`) + Object.entries(WHO).map(([k,w])=>row(w.name, '', S.cashier===k,'cashier',`data-r="${k}"`)).join('');
+  } else if (S.pop==='status') { head='Status'; body = ['Completed','Processing','On hold','Refunded','Any'].map((s,i)=>row(s,'',i===0,'noop','')).join(''); }
+  else if (S.pop==='customer') { head='Customer'; body = row('Any customer','',true,'noop','') + row('Guest','',false,'noop',''); }
+  else if (S.pop==='report') {
+    head='Report';
+    const can = (r) => r.needs==='any' || (r.needs==='session' && S.scope.kind==='session') || (r.needs==='range' && S.scope.kind==='range');
+    const rr = (r, sub) => row(sub?r.short:r.title, can(r)?'':r.hint, S.report===r.key, 'report', `data-k="${r.key}"`, false, !can(r)).replace('class="pr', `class="pr ${sub?'sub':''}`);
+    body = rr(REPORTS[0]) + REPORTS.filter(r=>r.group).map(r=>rr(r,true)).join('') + REPORTS.filter(r=>['cash','session','closures'].includes(r.key)).map(r=>rr(r)).join('') + `<div class="ph div">From plugins</div>` + REPORTS.filter(r=>r.plugin).map(r=>rr(r)).join('');
+  } else if (S.pop==='template') {
+    head=`Template · ${rep().type}`;
+    body = TEMPLATES[rep().type].map(([k,l])=>row(l, k==='default'?'built in':'yours, from WP Admin', S.template===k, 'template', `data-t="${k}"`)).join('') + `<div class="pr dim sm" style="min-height:36px">Edit templates in WP Admin › POS › Templates</div>`;
+  }
+  if (S.gateHint && !S.pro) foot = `<div class="pf">${I.lock}<span>${hintFor(S.gateHint)}</span><button class="btn sm p">See Pro</button></div>`;
+  const inner = `<div class="ph">${head}</div>${body}${foot}`;
+  if (phone) return `<div class="popwrap" data-act="closepop"><div class="scrim"></div><div class="sheet mm" data-stop><div class="grab"></div>${inner}</div></div>`;
+  return `<div class="popwrap" data-act="closepop"><div class="pop mm" data-stop style="left:${S.popX||80}px;top:${S.popY||110}px;max-height:${(S.frameH||760)-(S.popY||110)-14}px">${inner}</div></div>`;
+}
+
+/* ============================ panel mock ============================ */
+function renderPanel(){
+  const n = (i) => `<span style="width:22px;height:22px;border-radius:50%;background:#0069bd;color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">${i}</span>`;
   document.getElementById('panelmock').innerHTML = `<div class="hero"><div class="amt">£480.80</div><div class="mut sm">in the drawer · Front counter · opened 13:00 by Demo Cashier</div></div>
     <div class="tiles3"><button class="btn">Paid in</button><button class="btn">Paid out</button><button class="btn">No sale</button></div>
     <div class="lr"><span>Cash</span><span class="r">£480.80</span></div><div class="lr"><span>Card</span><span class="r">£412.00</span></div><div class="lr"><span>Paid in / out</span><span class="r">−£5.00</span><span class="mut">${I.chev}</span></div>
-    <div class="lr hl"><span class="n" style="width:22px;height:22px;border-radius:50%;background:#0069bd;color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">1</span><span>${I.print} Print X-report</span></div>
-    <div class="lr hl"><span class="n" style="width:22px;height:22px;border-radius:50%;background:#0069bd;color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">2</span><span>Closure 12 · 12:30 · Exact</span><button class="btn sm" style="margin-left:auto">${I.print} Reprint copy</button><span class="mut">${I.chev}</span></div>
+    <div class="lr hl">${n(1)}<span>${I.print} Print X-report</span></div>
+    <div class="lr hl">${n(2)}<span>Closure 12 · 12:30 · −£2.00</span><button class="btn sm" style="margin-left:auto">${I.print} Reprint copy</button><span class="mut">${I.chev}</span></div>
     <div class="pf"><button class="btn" style="width:100%">Close register</button></div>`;
 }
 
 /* ============================ events ============================ */
 document.addEventListener('click', (e)=>{
   const st = e.target.closest('[data-set]');
-  if (st) { const k=st.dataset.set; let v=st.dataset.v; if (v==='true') v=true; else if (v==='false') v=false; else if (/^\d+$/.test(v)) v=+v; S[k]=v; if (k==='pro' && !v) { S.gateHint=null; } if (k==='stores' && v===1) S.store='uk'; if (k==='regOpen') { S.pop=null; defaultScopeFor(S.report); } if (k==='viewport') { S.pop=null; S.phoneList = true; } renderStrip(); renderFrame(); return; }
+  if (st) { const k=st.dataset.set; let v=st.dataset.v; if (v==='true') v=true; else if (v==='false') v=false; else if (/^\d+$/.test(v)) v=+v; S[k]=v; S.pop=null; S.gateHint=null; if (k==='stores' && v===1) S.store='uk'; if (k==='regOpen') { const o=openSession(); if (o) S.scope={kind:'session',sessionId:o.id,range:'today'}; else S.scope={kind:'range',sessionId:null,range:'today'}; } renderStrip(); renderFrame(); return; }
   const a = e.target.closest('[data-act]');
   if (!a) return;
   if (e.target.closest('[data-stop]') && a.dataset.act==='closepop') return;
   const act = a.dataset.act;
-  if (act==='report') { S.report=a.dataset.k; if (a.dataset.g) S.groupBy=a.dataset.g; defaultScopeFor(S.report); S.opened=true; S.phoneList=false; S.selClosure=null; S.pop=null; S.search=''; S.searchFocus=false; }
-  else if (act==='back') { S.opened=false; S.phoneList=true; S.pop=null; }
-  else if (act==='mode') { S.mode=a.dataset.m; S.pop=null; if (S.mode==='session') { const o=openSession(); S.sessionId = o?o.id:(S.pro?lastSession().id:SESSIONS.find(s=>!s.open&&freeOk(s)).id); } }
-  else if (act==='pop') { const r=a.getBoundingClientRect(), f=document.getElementById('frame').getBoundingClientRect(); S.popX=Math.min(r.left-f.left, f.width-380); S.popY=r.bottom-f.top+6; S.pop=a.dataset.p; S.gateHint=null; }
+  if (act==='pop') { const r=a.getBoundingClientRect(), f=document.getElementById('frame').getBoundingClientRect(); S.popX=Math.min(r.left-f.left, f.width-380); S.popY=r.bottom-f.top+6; S.frameH=f.height; S.pop=a.dataset.p; S.gateHint=null; }
   else if (act==='closepop') { S.pop=null; S.gateHint=null; }
   else if (act==='gatehint') { S.gateHint=a.dataset.label; }
-  else if (act==='pick') { S.sessionId=a.dataset.s; S.mode='session'; S.pop=null; }
-  else if (act==='range') { S.range=a.dataset.r; S.mode='range'; S.pop=null; S.selClosure=null; }
-  else if (act==='reg') { S.register=a.dataset.r; S.pop=null; S.selClosure=null; if (S.mode==='session' && S.register!=='all') { const s=ses(S.sessionId); if (s.reg!==S.register) { const alt=SESSIONS.find(x=>x.reg===S.register && !x.open); if (alt) S.sessionId=alt.id; } } }
+  else if (act==='pick') { S.scope={kind:'session', sessionId:a.dataset.s, range:S.scope.range}; S.pop=null; S.selClosure=null; }
+  else if (act==='range') { S.scope={kind:'range', sessionId:S.scope.sessionId, range:a.dataset.r}; S.pop=null; S.selClosure=null; }
+  else if (act==='reg') { S.register=a.dataset.r; S.pop=null; S.selClosure=null; }
   else if (act==='store') { S.store=a.dataset.r; S.pop=null; S.selClosure=null; if (S.store!=='all' && S.register!=='all' && REG[S.register].store!==S.store) S.register = Object.keys(REG).find(k=>REG[k].store===S.store); }
   else if (act==='cashier') { S.cashier=a.dataset.r; S.pop=null; }
-  else if (act==='group') { S.groupBy=a.dataset.g; }
-  else if (act==='select') { S.selClosure = S.selClosure===a.dataset.s && S.viewport!=='phone' ? null : a.dataset.s; }
+  else if (act==='report') { S.report=a.dataset.k; S.pop=null; S.selClosure=null; }
+  else if (act==='template') { S.template=a.dataset.t; S.pop=null; }
+  else if (act==='cmp') { S.cmp=a.dataset.c; }
+  else if (act==='tick') { const n=+a.dataset.n; if (S.unticked.has(n)) S.unticked.delete(n); else S.unticked.add(n); }
+  else if (act==='tickAll') { const o=ordersInScope(); if (o.every(x=>!S.unticked.has(x[0]))) o.forEach(x=>S.unticked.add(x[0])); else o.forEach(x=>S.unticked.delete(x[0])); }
+  else if (act==='select') { S.selClosure=a.dataset.s; }
   else if (act==='unselect') { S.selClosure=null; }
+  else if (act==='phoneTab') { S.phoneTab=a.dataset.t; }
+  else if (act==='noop') { S.pop=null; }
+  else return;
   renderFrame();
 });
-document.addEventListener('input', (e)=>{ const i=e.target.closest('input[data-search]'); if(!i) return; S.search=i.value; S.searchFocus=true; renderFrame(); });
 document.addEventListener('keydown', (e)=>{ if (e.key==='Escape' && S.pop) { S.pop=null; S.gateHint=null; renderFrame(); } });
 
-renderStrip(); S.phoneList = true; defaultScopeFor(S.report); renderFrame(); renderShapes();
+renderStrip(); renderFrame(); renderPanel();
 </script>
 </body>
 </html>

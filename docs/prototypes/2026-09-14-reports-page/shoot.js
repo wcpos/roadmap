@@ -1,4 +1,4 @@
-// Screenshot + smoke-test the Reports page prototype. Throwaway.
+// Screenshot + smoke-test the Reports page prototype (second cut). Throwaway.
 const { chromium } = require('/Users/kilbot/Projects/monorepo-v2/node_modules/playwright');
 const path = require('path');
 const fs = require('fs');
@@ -9,7 +9,7 @@ fs.mkdirSync(OUT, { recursive: true });
 
 (async () => {
   const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 1400, height: 1000 } });
+  const page = await browser.newPage({ viewport: { width: 1400, height: 1500 } });
   const errors = [];
   page.on('pageerror', e => errors.push('pageerror: ' + e.message));
   page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
@@ -19,51 +19,54 @@ fs.mkdirSync(OUT, { recursive: true });
   const set = (k, v) => page.click(`.strip button[data-set="${k}"][data-v="${v}"]`);
   const act = (sel) => page.click(sel);
   const has = async (text) => { const t = await page.locator('#frame').textContent(); if (!t.includes(text)) throw new Error(`expected "${text}" in frame`); };
+  const esc = () => page.keyboard.press('Escape');
 
-  // Picker B (default), tablet, Pro
-  await shot('B-tablet-session-open');
-  await act('.rlist .li[data-k="closures"]'); await shot('B-tablet-closures-today'); await has('Closures'); await act('.chip.on'); await act('.pop .pr[data-r="last7"]'); await act('.chip[data-p="register"]'); await act('.pop .pr[data-r="all"]'); await shot('B-tablet-closures-week');
-  await act('table.t tr.click[data-s="c11"]'); await shot('B-tablet-closure-11-settled'); await has('settled');
-  await act('.rlist .li[data-k="sales"]'); await shot('B-tablet-sales-payment');
-  await act('.gb .c[data-g="tax"]'); await shot('B-tablet-sales-tax');
-  await act('.scopebar .mode button[data-m="range"]'); await act('.chip.on'); await shot('B-tablet-sales-range-popover');
-  await act('.pop .pr[data-r="last7"]'); await shot('B-tablet-sales-last7');
-  await act('.rlist .li[data-k="cash"]'); await shot('B-tablet-cash');
-  await act('.rlist .li[data-k="deposits"]'); await shot('B-tablet-deposits');
-  await set('online', 'false'); await shot('B-tablet-deposits-offline'); await has('unavailable offline'); await set('online', 'true');
-  await page.fill('input[data-search]', 'tax'); await shot('B-tablet-search-tax'); await has('by Tax rate'); await page.fill('input[data-search]', '');
-  await act('.rlist .li[data-k="session"]'); await act('.chip.on'); await shot('B-tablet-session-popover');
-  await act('.pop .pr[data-s="c10"]'); await shot('B-tablet-session-closure-10');
-  await set('stores', '2'); await act('.chip[data-p="store"]'); await shot('B-tablet-store-popover'); await page.keyboard.press('Escape'); await set('stores', '1');
-  await set('regOpen', 'false'); await shot('B-tablet-register-closed'); await set('regOpen', 'true');
+  // Tablet, Pro
+  await shot('tablet-summary-session');
+  await act('.chart .cmp button[data-c="week"]'); await shot('tablet-chart-week');
+  await act('.chart .cmp button[data-c="online"]'); await shot('tablet-chart-online');
+  await act('.chart .cmp button[data-c="yesterday"]');
+  await act('input.cb[data-n="1240"]'); await act('input.cb[data-n="1238"]'); await shot('tablet-unticked'); await has('2 orders unticked');
+  await act('input.cb[data-act="tickAll"]'); await has('all selected');
+  await act('.sel2[data-p="report"]'); await shot('tablet-report-select'); await has('pick dates in the date pill');
+  await act('.pop .pr[data-k="tax"]'); await shot('tablet-sales-tax');
+  await act('.sel2[data-p="template"]'); await shot('tablet-template-select'); await act('.pop .pr[data-t="thermal"]'); await shot('tablet-template-thermal');
+  await act('.sel2[data-p="template"]'); await act('.pop .pr[data-t="a4"]'); await shot('tablet-template-a4');
+  await act('.sel2[data-p="template"]'); await act('.pop .pr[data-t="default"]');
+  await act('.sel2[data-p="report"]'); await act('.pop .pr[data-k="session"]'); await shot('tablet-session-open');
+  await act('.chip[data-p="date"]'); await shot('tablet-date-popover');
+  await act('.pop .pr[data-s="c12"]'); await shot('tablet-session-closure-12');
+  await act('.chip[data-p="date"]'); await act('.pop .pr[data-r="last7"]'); await shot('tablet-summary-last7'); await has('Sales summary');
+  await act('.sel2[data-p="report"]'); await act('.pop .pr[data-k="closures"]'); await act('.chip[data-p="register"]'); await act('.pop .pr[data-r="all"]'); await shot('tablet-closures-week');
+  await act('table.t tr.click[data-s="c11"]'); await shot('tablet-closure-11-settled'); await has('settled');
+  await act('[data-act="unselect"]');
+  await act('.sel2[data-p="report"]'); await act('.pop .pr[data-k="cash"]'); await shot('tablet-cash');
+  await act('.sel2[data-p="report"]'); await act('.pop .pr[data-k="deposits"]'); await shot('tablet-deposits');
+  await set('online', 'false'); await shot('tablet-deposits-offline'); await has('unavailable offline'); await set('online', 'true');
+  await set('stores', '2'); await act('.chip[data-p="store"]'); await shot('tablet-store-popover'); await esc(); await set('stores', '1');
+  await set('regOpen', 'false'); await shot('tablet-register-closed'); await set('regOpen', 'true');
 
-  // Free, gate in the picker
-  await set('pro', 'false'); await shot('B-free-session');
-  await act('.chip.on'); await shot('B-free-session-popover');
-  await act('.pop .pr.lock'); await shot('B-free-session-popover-hint'); await has('are in WCPOS Pro');
-  await page.keyboard.press('Escape');
-  await act('.rlist .li[data-k="closures"]'); await shot('B-free-closures');
-  await act('.chip.on'); await act('.pop .pr.lock'); await shot('B-free-dates-popover-hint');
-  await page.keyboard.press('Escape');
-  await act('.chip[data-p="register"]'); await act('.pop .pr.lock'); await shot('B-free-register-popover-hint'); await page.keyboard.press('Escape');
-  await act('.rlist .li[data-k="sales"]'); await shot('B-free-sales');
+  // Free
+  await set('pro', 'false'); await shot('free-summary');
+  await act('.chip[data-p="date"]'); await shot('free-date-popover'); await act('.pop .pr.lock'); await shot('free-date-hint'); await has('are in WCPOS Pro'); await esc();
+  await act('.chip[data-p="register"]'); await act('.pop .pr.lock'); await shot('free-register-hint'); await esc();
+  await act('.chip[data-p="date"]'); await act('.pop .pr[data-s="c12"]'); await act('.sel2[data-p="report"]'); await act('.pop .pr[data-k="session"]'); await shot('free-session-closure-12');
   await set('pro', 'true');
 
   // Dark
-  await set('theme', 'dark'); await shot('B-tablet-dark'); await act('.rlist .li[data-k="sales"]'); await shot('B-tablet-dark-sales'); await set('theme', 'light');
+  await set('theme', 'dark'); await shot('tablet-dark'); await set('theme', 'light');
 
   // Phone
   await set('viewport', 'phone');
-  await shot('phone-B-list');
-  await act('.rlist .li[data-k="session"]'); await shot('phone-B-session');
-  await act('.chip.on'); await shot('phone-B-session-sheet'); await act('.scrim');
-  await act('[data-act="back"]'); await act('.rlist .li[data-k="closures"]'); await shot('phone-B-closures');
-  await act('table.t tr.click[data-s="c12"]'); await shot('phone-B-closure-12');
-  await act('[data-act="unselect"]'); await act('[data-act="back"]'); await act('.rlist .li[data-k="sales"]'); await shot('phone-B-sales');
-  await set('pro', 'false'); await act('.chip.on'); await act('.pop .pr.lock, .sheet .pr.lock'); await shot('phone-B-free-hint'); await act('.scrim'); await set('pro', 'true');
+  await shot('phone-summary');
+  await act('.chart .cmp button[data-c="week"]'); await shot('phone-chart-week'); await act('.chart .cmp button[data-c="yesterday"]');
+  await act('[data-act="phoneTab"][data-t="orders"]'); await shot('phone-orders'); await act('[data-act="phoneTab"][data-t="report"]');
+  await act('.chip[data-p="date"]'); await shot('phone-date-sheet'); await esc();
+  await act('.sel2[data-p="report"]'); await shot('phone-report-sheet'); await act('.sheet .pr[data-k="session"]'); await shot('phone-session');
+  await act('.chip[data-p="date"]'); await act('.sheet .pr[data-r="today"]'); await act('.sel2[data-p="report"]'); await act('.sheet .pr[data-k="closures"]'); await shot('phone-closures');
+  await act('table.t tr.click[data-s="c12"]'); await shot('phone-closure-12'); await act('[data-act="unselect"]');
+  await set('pro', 'false'); await act('.chip[data-p="date"]'); await act('.sheet .pr.lock'); await shot('phone-free-hint'); await esc(); await set('pro', 'true');
 
-  // Below the frame
-  await page.locator('#shapes').screenshot({ path: path.join(OUT, 'shapes-side-by-side.png') });
   await page.locator('#panelmock').screenshot({ path: path.join(OUT, 'panel-mapping.png') });
 
   await browser.close();
