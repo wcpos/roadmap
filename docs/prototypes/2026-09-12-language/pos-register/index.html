@@ -521,7 +521,7 @@ function renderStrip(){
     <div class="g"><b>Theme</b>${seg('theme',[['light','Default light'],['dark','Default dark'],['paper','Paper till'],['bold','Bold money'],['warm','Warm shop'],['market','Market stall'],['stage','Dark stage'],['woo','Woo, owned'],['ocean','Ocean'],['sunset','Sunset'],['monochrome','Monochrome']])}</div>
     <div class="g"><b>Scale</b>${seg('scale',[['compact','Compact'],['regular','Regular'],['spacious','Spacious']])}</div>
     <div class="g"><b>Tabs</b>${seg('tabsPos',[['bottom','bottom'],['top','top']])}</div>
-    <div class="g"><b>Touches</b><span class="seg">${[['roll','numbers roll'],['stamp','PAID stamp'],['voice','a voice'],['pence','price-tag pence'],['today','sold today'],['tear','receipt tears off'],['doodle','doodle']].map(([k,l])=>`<button class="${S.tx[k]?'on':''}" data-tx="${k}">${l}</button>`).join('')}</span></div>
+    <div class="g"><b>Touches</b><span class="seg">${(()=>{const all=Object.values(S.tx).every(Boolean), none=!Object.values(S.tx).some(Boolean); return `<button class="${none?'on':''}" data-txall="0">before</button><button class="${all?'on':''}" data-txall="1">after</button>`;})()}</span><span class="seg">${[['roll','numbers roll'],['stamp','PAID stamp'],['voice','a voice'],['pence','price-tag pence'],['today','sold today'],['tear','receipt tears off'],['doodle','doodle']].map(([k,l])=>`<button class="${S.tx[k]?'on':''}" data-tx="${k}">${l}</button>`).join('')}</span></div>
     <div class="g"><b>Registers</b>${seg('registers',[[1,'1'],[3,'3']])}</div>
     <div class="g"><b>Tender close</b>${seg('closePos',[['tl','top-left ×'],['tr','top-right ×'],['bottom','Back to cart under keypad']])}</div>
     <div class="g"><b>Tab style</b>${seg('tabStyle',[['lines2','amount over status'],['line1','amount + dot'],['chips','chips'],['cards','cards'],['numbered','numbered'],['edge','status edge']])}</div>
@@ -871,6 +871,7 @@ document.addEventListener('click',e=>{
   if(!b){ if(!e.target.closest('[data-stop]') && (S.pop||S.ordlist||S.reveal!=null||S.edit!=null)){ S.pop=null; S.ordlist=false; S.reveal=null; S.edit=null; render(); } return; }
   if(b.dataset.set){ const v=b.dataset.v; S[b.dataset.set]=(v==='1'||v==='3')?+v:v; render(); return; }
   if(b.dataset.tx){ S.tx[b.dataset.tx]=S.tx[b.dataset.tx]?0:1; render(); return; }
+  if(b.dataset.txall!==undefined){ const v=+b.dataset.txall; Object.keys(S.tx).forEach(k=>S.tx[k]=v); render(); return; }
   if(b.dataset.scn && !b.dataset.act){ jump(b.dataset.scn); return; }
   const a=b.dataset.act;
   switch(a){
