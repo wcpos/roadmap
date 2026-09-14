@@ -27,19 +27,27 @@ fs.mkdirSync(OUT, { recursive: true });
   await act('.cmpbtn'); await act('.pop .pr[data-v="lastweek"]');
   await act('rect.hit[data-i="4"]'); await shot('sales-bar-tip'); await act('rect.hit[data-i="4"]');
   await act('[data-act="step"][data-v="1"]'); await shot('sales-yesterday'); await act('[data-act="step"][data-v="-1"]');
-  await act('[data-act="gran"][data-v="week"]'); await shot('sales-week'); await has('This week');
+  await act('.datebtn'); await shot('date-menu'); await act('.pop .pr[data-v="week:0"]'); await shot('sales-week'); await has('This week');
   await act('[data-act="step"][data-v="1"]'); await shot('sales-last-week');
-  await act('[data-act="gran"][data-v="month"]'); await shot('sales-month'); await has('September so far');
-  await act('[data-act="gran"][data-v="day"]');
-  await act('.tile[data-v="payments"]'); await shot('detail-payments'); await has('Sales by payment method');
-  await act('.pnl-f [data-p="print"]'); await shot('detail-print-menu'); await has('Print with'); await esc(); await act('[data-act="closePanel"].x');
+  await act('.datebtn'); await act('.pop .pr[data-v="month:0"]'); await shot('sales-month'); await has('September so far');
+  await act('.datebtn'); await page.fill('#cFrom', '2026-08-01'); await page.fill('#cTo', '2026-09-14'); await act('[data-act="applyRange"]'); await shot('sales-custom-range'); await has('45 days');
+  await act('.datebtn'); await page.fill('#cFrom', '2026-05-01'); await act('[data-act="applyRange"]'); await shot('date-range-too-long'); await has('Up to 3 months'); await esc();
+  await act('.datebtn'); await act('.pop .pr[data-v="day:0"]');
+  await act('.hero .printb'); await shot('detail-summary'); await has('Sales summary');
+  await act('.sel2[data-p="tpl"]'); await shot('detail-template-menu'); await has('Template · report'); await act('.pop .pr[data-v="handover"]'); await shot('detail-summary-handover');
+  await act('.sel2[data-p="tpl"]'); await act('.pop .pr[data-v="thermal"]'); await shot('detail-summary-thermal');
+  await act('.sel2[data-p="tpl"]'); await act('.pop .pr[data-v="default"]'); await act('[data-act="closePanel"].x');
+  await act('.tile[data-v="payments"]'); await shot('detail-payments'); await has('Sales by payment method'); await act('[data-act="closePanel"].x');
+  await act('.tile[data-v="cash"]'); await shot('detail-cash'); await has('To bank'); await act('[data-act="closePanel"].x');
+  await act('.tile[data-v="categories"]'); await shot('detail-categories'); await act('[data-act="closePanel"].x');
   await act('.tile[data-v="orders"]'); await shot('detail-orders');
   await act('input.cb[data-k="day:0:1237"]'); await act('input.cb[data-k="day:0:1234"]'); await shot('detail-orders-unticked'); await has('2 orders left out');
+  await act('.sel2[data-p="tpl"]'); await act('.pop .pr[data-v="a4"]'); await shot('detail-orders-a4'); await act('.sel2[data-p="tpl"]'); await act('.pop .pr[data-v="default"]');
   await act('[data-act="closePanel"].x'); await shot('sales-with-excluded'); await act('[data-act="resetTicks"]');
   await act('.tile[data-v="products"]'); await shot('detail-products'); await act('[data-act="closePanel"].x');
   await act('.tile[data-v="channels"]'); await shot('detail-channels'); await act('[data-act="closePanel"].x');
   await act('.btn.fbtn'); await shot('filter-menu'); await act('.pop .pr[data-v="Dylan"]'); await shot('sales-cashier-dylan'); await act('.btn.fbtn'); await act('.pop .pr[data-v="all"]');
-  await set('stores', '2'); await act('.scope'); await shot('scope-menu'); await esc(); await set('stores', '1');
+  await set('stores', '2'); await act('.scope'); await shot('scope-menu'); await act('.pop .pr[data-v="all"]'); await shot('sales-all-registers'); await has('Registers'); await act('.scope'); await act('.pop .pr[data-v="front"]'); await set('stores', '1');
   await set('online', 'false'); await shot('sales-offline'); await has('Unavailable offline'); await set('online', 'true');
 
   // Closures room
@@ -55,7 +63,7 @@ fs.mkdirSync(OUT, { recursive: true });
   // Free
   await set('pro', 'false'); await act('[data-act="view"][data-v="sales"]'); await shot('free-sales');
   await act('[data-act="step"][data-v="1"]'); await shot('free-earlier-hint'); await has('Earlier days are in WCPOS Pro'); await esc();
-  await act('[data-act="gran"][data-v="week"]'); await shot('free-week-hint'); await esc();
+  await act('.datebtn'); await shot('free-date-menu'); await act('.pop .pr.lock'); await shot('free-week-hint'); await esc();
   await act('.scope'); await act('.pop .pr.lock'); await shot('free-register-hint'); await esc();
   await act('[data-act="view"][data-v="closures"]'); await shot('free-closures'); await act('tr.lock'); await shot('free-closures-hint'); await esc();
   await set('pro', 'true'); await act('[data-act="view"][data-v="sales"]');
@@ -65,7 +73,7 @@ fs.mkdirSync(OUT, { recursive: true });
 
   // Phone
   await set('viewport', 'phone');
-  await shot('phone-sales'); await act('[data-act="gran"][data-v="week"]'); await shot('phone-week'); await act('[data-act="gran"][data-v="day"]');
+  await shot('phone-sales'); await act('.datebtn'); await shot('phone-date-sheet'); await act('.sheet .pr[data-v="week:0"]'); await shot('phone-week'); await act('.datebtn'); await act('.sheet .pr[data-v="day:0"]');
   await act('.cmpbtn'); await shot('phone-cmp-sheet'); await esc();
   await act('.tile[data-v="orders"]'); await shot('phone-orders'); await act('[data-act="closePanel"]');
   await act('.tile[data-v="payments"]'); await shot('phone-payments'); await act('[data-act="closePanel"]');
