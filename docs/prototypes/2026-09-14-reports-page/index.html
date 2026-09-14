@@ -161,9 +161,6 @@ input.in:focus{border-color:var(--primary);box-shadow:0 0 0 2px var(--sel)}
 .scrim{position:absolute;inset:0;background:rgba(0,0,0,.5)}
 .sheet .grab{width:36px;height:4px;border-radius:2px;background:var(--border);margin:8px auto 4px}
 
-/* gate banner */
-.gateline{display:flex;align-items:center;gap:8px;padding:0 12px;min-height:40px;border:1px solid var(--border);border-radius:var(--radius);background:var(--card);font-size:13px;color:var(--muted-fg);flex:none}
-.gateline .btn{margin-left:auto}
 
 /* ---------- picker B: list ---------- */
 .split{display:flex;gap:12px;flex:1;min-height:0}
@@ -266,7 +263,7 @@ pre#statejson{font-family:var(--mono);font-size:11px;background:#1f2937;color:#e
   <div class="q">
     <ol>
       <li><b>Picker shape — decided:</b> B, the list (Paul, 2026-09-14). Tabs and the launcher were shown beside it and dropped.</li>
-      <li><b>The Free gate.</b> Both shapes keep the page a real, working report. <i>Popover</i> puts the Pro rows in the scope picker, dimmed with a lock, and the upgrade line appears in the popover's foot only when a Free user taps one. <i>Banner</i> adds a permanent one-liner under the scope bar. My pick: <b>popover</b>. The banner is the second badge rule 5 forbids, and the Loyverse pattern says the merchant discovers the line by reaching for it.</li>
+      <li><b>The Free gate — decided:</b> in the picker (Paul, 2026-09-14). Pro rows sit dimmed with a lock in each scope popover; the upgrade line appears in the popover foot only when a Free user taps one. The page carries no banner.</li>
       <li><b>Upgrade copy.</b> One sentence naming the three things behind the line: <i>Past sessions, earlier days and other registers are in WCPOS Pro.</i> Button <i>See Pro</i>. No "unlock", no demo link.</li>
       <li><b>Closures is a list of Session reports.</b> A row opens the Session report for that closure in place (tablet: beside the list; phone: as the page). The old idea of a separate closure detail pane is gone.</li>
       <li><b>Default scope</b> is the open session when there is one; Closures, which takes no session, defaults to today. Switch <i>Register</i> → closed to see the fallback (Session → last session; Sales → today).</li>
@@ -308,12 +305,12 @@ const who = (k) => `<span class="avi">${WHO[k].ini}</span>${WHO[k].name.split(' 
 
 /* ============================ state ============================ */
 const S = {
-  viewport:'tablet', pro:true, gate:'popover', theme:'light', online:true, regOpen:true, stores:1,
+  viewport:'tablet', pro:true, theme:'light', online:true, regOpen:true, stores:1,
   report:'session', mode:'session', sessionId:'s13', range:'today', register:'front', store:'uk', cashier:'any',
   groupBy:'payment', pop:null, gateHint:null, search:'', opened:false, phoneList:true, selClosure:null,
 };
 const qs = new URLSearchParams(location.search);
-['gate','viewport','theme','report'].forEach(k=>{ if(qs.get(k)) S[k]=qs.get(k); });
+['viewport','theme','report'].forEach(k=>{ if(qs.get(k)) S[k]=qs.get(k); });
 if (qs.get('pro')) S.pro = qs.get('pro')!=='0';
 
 const I = {
@@ -391,7 +388,6 @@ function renderStrip(){
   document.getElementById('strip').innerHTML = `
     <div class="g"><b>Width</b>${seg('viewport',[['tablet','Tablet'],['phone','Phone']])}</div>
         <div class="g"><b>Edition</b>${seg('pro',[[true,'Pro'],[false,'Free']])}</div>
-    <div class="g"><b>Free gate</b>${seg('gate',[['popover','in the picker'],['banner','banner under the bar']])}</div>
     <div class="g"><b>Register</b>${seg('regOpen',[[true,'session open'],[false,'closed']])}</div>
     <div class="g"><b>Stores</b>${seg('stores',[[1,'1'],[2,'2 (Pro)']])}</div>
     <div class="g"><b>Network</b>${seg('online',[[true,'Online'],[false,'Offline']])}</div>
@@ -424,7 +420,7 @@ function renderFrame(){
   }
   f.innerHTML = `<div class="body">${phone?'':renderRail()}<div class="main">${inner}${renderPop()}</div></div>`;
   const si = f.querySelector('input[data-search]'); if (si && S.searchFocus) { si.focus(); si.setSelectionRange(si.value.length, si.value.length); }
-  document.getElementById('statejson').textContent = JSON.stringify({edition:S.pro?'Pro':'Free', gate:S.gate, report:S.report, scope:{mode:S.mode, session:S.mode==='session'?S.sessionId:undefined, range:S.mode==='range'?S.range:undefined, register:S.register, store:S.store, cashier:S.cashier}, groupBy:S.report==='sales'?S.groupBy:undefined, online:S.online, registerOpen:S.regOpen, popover:S.pop, gateHint:S.gateHint}, null, 1);
+  document.getElementById('statejson').textContent = JSON.stringify({edition:S.pro?'Pro':'Free', report:S.report, scope:{mode:S.mode, session:S.mode==='session'?S.sessionId:undefined, range:S.mode==='range'?S.range:undefined, register:S.register, store:S.store, cashier:S.cashier}, groupBy:S.report==='sales'?S.groupBy:undefined, online:S.online, registerOpen:S.regOpen, popover:S.pop, gateHint:S.gateHint}, null, 1);
 }
 
 /* ============================ pickers ============================ */
@@ -459,8 +455,7 @@ function scopeBlock(){
   const storeChip = (S.stores===2 || S.store!=='uk') ? lockChip('Store','', S.store==='all'?'All stores':STORES[S.store], 'store') : '';
   const cashChip = (S.report==='sales'||S.report==='cash') ? `<span class="chip" data-act="pop" data-p="cashier"><span class="k">Cashier</span><span class="v">${S.cashier==='any'?'Any':WHO[S.cashier].name.split(' ')[0]}</span><span class="car">${I.down}</span></span>` : '';
   const bar = `<div class="scopebar">${modeCtl}${valueChip}${regChip}${storeChip}${cashChip}</div>`;
-  const banner = (!S.pro && S.gate==='banner') ? `<div class="gateline">${I.lock}<span>Today on ${REG.front.name}. Past sessions, earlier days and other registers are in WCPOS Pro.</span><button class="btn sm">See Pro</button></div>` : '';
-  return bar + banner;
+  return bar;
 }
 function renderPop(){
   if (!S.pop) return '';
@@ -489,7 +484,7 @@ function renderPop(){
     head='Cashier';
     body = row('Any cashier','', S.cashier==='any','cashier',`data-r="any"`) + Object.entries(WHO).map(([k,w])=>row(w.name, '', S.cashier===k,'cashier',`data-r="${k}"`)).join('');
   }
-  const foot = (S.gateHint && !S.pro && S.gate==='popover') ? `<div class="pf">${I.lock}<span class="t">Past sessions, earlier days and other registers are in WCPOS Pro.</span><button class="btn sm p">See Pro</button></div>` : '';
+  const foot = (S.gateHint && !S.pro) ? `<div class="pf">${I.lock}<span class="t">Past sessions, earlier days and other registers are in WCPOS Pro.</span><button class="btn sm p">See Pro</button></div>` : '';
   const inner = `<div class="ph">${head}</div>${body}${foot}`;
   if (phone) return `<div class="popwrap" data-act="closepop"><div class="scrim"></div><div class="sheet" data-stop><div class="grab"></div>${inner}</div></div>`;
   return `<div class="popwrap" data-act="closepop"><div class="pop" data-stop style="left:${S.popX||80}px;top:${S.popY||110}px">${inner}</div></div>`;

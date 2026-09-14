@@ -12,7 +12,6 @@ The dark strip at the top is not part of the design.
 |---|---|
 | **Width** | Tablet (1180, icon rail) or Phone (390) |
 | **Edition** | Pro / Free. Free is scoped to today on this register; the page is never blurred |
-| **Free gate** | Where the upgrade line lives on Free: in the scope picker (only when a Pro row is tapped) or as a banner under the scope bar |
 | **Register** | Session open (default scope = the open session) or closed (Session → last session; Sales → today) |
 | **Stores** | 1, or 2 (Pro) — adds the Store chip |
 | **Network** | Offline: the registered report goes to "Report unavailable offline" |
@@ -42,3 +41,4 @@ Below the frame: the register panel from #214 with its two report rows numbered,
 ## Reaction
 
 - **2026-09-14, picker: B, the list.** Tabs (A) and the launcher (C) were shown beside it and dropped the same day (git history has them). A search for "tax" finds *Sales › by tax rate*, plugin reports fit under their own heading, and phone gets a plain list page.
+- **2026-09-14, Free gate: in the picker.** No banner. The Pro rows sit dimmed with a lock inside each scope popover and the upgrade line shows in the popover foot only when a Free user taps one; the page keeps one status strip, the scope bar.

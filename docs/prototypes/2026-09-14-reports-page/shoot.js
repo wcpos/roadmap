@@ -46,7 +46,6 @@ fs.mkdirSync(OUT, { recursive: true });
   await act('.chip.on'); await act('.pop .pr.lock'); await shot('B-free-dates-popover-hint');
   await page.keyboard.press('Escape');
   await act('.chip[data-p="register"]'); await act('.pop .pr.lock'); await shot('B-free-register-popover-hint'); await page.keyboard.press('Escape');
-  await set('gate', 'banner'); await shot('B-free-banner'); await set('gate', 'popover');
   await act('.rlist .li[data-k="sales"]'); await shot('B-free-sales');
   await set('pro', 'true');
 
