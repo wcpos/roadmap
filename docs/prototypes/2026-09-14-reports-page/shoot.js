@@ -50,29 +50,18 @@ fs.mkdirSync(OUT, { recursive: true });
   await act('.rlist .li[data-k="sales"]'); await shot('B-free-sales');
   await set('pro', 'true');
 
-  // Picker A and C, tablet
-  await set('picker', 'A'); await shot('A-tablet-session');
-  await act('.tabs button[data-k="sales"]'); await shot('A-tablet-sales');
-  await act('.tabs button[data-k="closures"]'); await shot('A-tablet-closures');
-  await set('picker', 'C'); await shot('C-tablet-launcher');
-  await page.fill('input[data-search]', 'tax'); await shot('C-tablet-search'); await page.fill('input[data-search]', '');
-  await act('.ltile[data-k="sales"]'); await shot('C-tablet-sales');
-  await act('[data-act="back"]'); await set('pro', 'false'); await shot('C-free-launcher'); await set('pro', 'true');
-
   // Dark
-  await set('picker', 'B'); await set('theme', 'dark'); await shot('B-tablet-dark'); await act('.rlist .li[data-k="sales"]'); await shot('B-tablet-dark-sales'); await set('theme', 'light');
+  await set('theme', 'dark'); await shot('B-tablet-dark'); await act('.rlist .li[data-k="sales"]'); await shot('B-tablet-dark-sales'); await set('theme', 'light');
 
   // Phone
   await set('viewport', 'phone');
-  await set('picker', 'B'); await shot('phone-B-list');
+  await shot('phone-B-list');
   await act('.rlist .li[data-k="session"]'); await shot('phone-B-session');
   await act('.chip.on'); await shot('phone-B-session-sheet'); await act('.scrim');
   await act('[data-act="back"]'); await act('.rlist .li[data-k="closures"]'); await shot('phone-B-closures');
   await act('table.t tr.click[data-s="c12"]'); await shot('phone-B-closure-12');
   await act('[data-act="unselect"]'); await act('[data-act="back"]'); await act('.rlist .li[data-k="sales"]'); await shot('phone-B-sales');
   await set('pro', 'false'); await act('.chip.on'); await act('.pop .pr.lock, .sheet .pr.lock'); await shot('phone-B-free-hint'); await act('.scrim'); await set('pro', 'true');
-  await set('picker', 'A'); await shot('phone-A-session'); await act('.tabs button[data-k="sales"]'); await shot('phone-A-sales');
-  await set('picker', 'C'); await shot('phone-C-launcher'); await act('.ltile[data-k="closures"]'); await shot('phone-C-closures');
 
   // Below the frame
   await page.locator('#shapes').screenshot({ path: path.join(OUT, 'shapes-side-by-side.png') });

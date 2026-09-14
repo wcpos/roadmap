@@ -6,7 +6,7 @@
 <title>Reports page — prototype for wcpos/roadmap#304</title>
 <!--
   Throwaway prototype. Question: what does the Reports page look like, and how does a Free user meet its edges?
-  Three picker shapes (A tabs · B list · C launcher) on one page, switchable from the strip or ?picker=A|B|C.
+  Picker B (the list) as chosen by Paul on 2026-09-14; tabs (A) and launcher (C) were shown and rejected the same day, see git history.|B|C.
   Everything in the frame is live and in memory; nothing persists. Not production code.
 -->
 <style>
@@ -165,12 +165,6 @@ input.in:focus{border-color:var(--primary);box-shadow:0 0 0 2px var(--sel)}
 .gateline{display:flex;align-items:center;gap:8px;padding:0 12px;min-height:40px;border:1px solid var(--border);border-radius:var(--radius);background:var(--card);font-size:13px;color:var(--muted-fg);flex:none}
 .gateline .btn{margin-left:auto}
 
-/* ---------- picker A: tabs ---------- */
-.tabs{display:inline-flex;background:var(--muted);border:1px solid var(--border);border-radius:8px;padding:3px;gap:2px;height:44px;max-width:100%;overflow-x:auto;scrollbar-width:none}
-.tabs button{border:0;background:transparent;padding:0 14px;border-radius:6px;font:inherit;font-size:13px;color:var(--muted-fg);cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;min-width:44px}
-.tabs button.on{background:var(--card);color:var(--fg);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
-.tabs button:active{background:var(--sel)}
-
 /* ---------- picker B: list ---------- */
 .split{display:flex;gap:12px;flex:1;min-height:0}
 .rlist{width:250px;flex:none;display:flex;flex-direction:column;gap:0;min-height:0}
@@ -188,22 +182,6 @@ input.in:focus{border-color:var(--primary);box-shadow:0 0 0 2px var(--sel)}
 .rpane{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;min-height:0}
 .phone .rlist{width:100%}
 .phone .rlist .li{min-height:52px}
-
-/* ---------- picker C: launcher ---------- */
-.launch{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;align-content:start}
-.phone .launch{grid-template-columns:1fr}
-.ltile{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;min-height:112px;display:flex;flex-direction:column;gap:6px;cursor:pointer;transition:border-color .12s ease-out,background .12s ease-out}
-.ltile:hover{border-color:var(--primary)}
-.ltile:active{background:var(--sel)}
-.ltile .n{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
-.ltile .n .ico{width:28px;height:28px;border-radius:7px;background:var(--muted);display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg)}
-.ltile .fig{font-size:22px;font-weight:700;margin-top:auto;font-variant-numeric:tabular-nums}
-.ltile .s{color:var(--muted-fg);font-size:12px}
-.ltile.plug{border-style:dashed}
-.results{display:flex;flex-direction:column}
-.results .rr{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 12px;border-bottom:1px solid var(--border);cursor:pointer;font-size:14px}
-.results .rr:hover{background:var(--hover)}
-.results .rr .s{color:var(--muted-fg);font-size:12px;margin-left:auto}
 
 /* ---------- report shapes ---------- */
 .report{display:flex;flex-direction:column;flex:1;min-height:0}
@@ -259,7 +237,7 @@ pre#statejson{font-family:var(--mono);font-size:11px;background:#1f2937;color:#e
 
 <div class="doc">
   <h1>Reports — the picker, the scope bar, and the Free edge</h1>
-  <p class="lead">Prototype for <a href="https://github.com/wcpos/roadmap/issues/304">wcpos/roadmap#304</a>. The catalogue is the four entries from #303 (Session · Closures · Sales · Cash movements) plus one <i>registered</i> report from a plugin (#305). Three shapes for choosing a report, one scope bar shared by all of them, and a Free edition that never blurs the page: the scope is the gate. The dark strip is not part of the design; everything inside the frame is live.</p>
+  <p class="lead">Prototype for <a href="https://github.com/wcpos/roadmap/issues/304">wcpos/roadmap#304</a>. The catalogue is the four entries from #303 (Session · Closures · Sales · Cash movements) plus one <i>registered</i> report from a plugin (#305). A searchable list of reports, one scope bar shared by all of them, and a Free edition that never blurs the page: the scope is the gate. The dark strip is not part of the design; everything inside the frame is live.</p>
 </div>
 <div class="strip" id="strip"></div>
 <div class="stage"><div id="frame" class="frame tablet"></div></div>
@@ -287,7 +265,7 @@ pre#statejson{font-family:var(--mono);font-size:11px;background:#1f2937;color:#e
   <h2>What to react to</h2>
   <div class="q">
     <ol>
-      <li><b>Picker shape.</b> A (tabs) is the register prototype's Reports grown by two entries; plugins add tabs, and group-by words are not searchable. B (list) gives every report and every Sales grouping a row, searchable, with plugins under their own heading; on phone it is two pages. C (launcher) opens on tiles with a live figure each — the "how is today going" glance — and one tap opens the report full-width. My pick is <b>B on tablet, C on phone</b> is a bad answer (two shapes); <b>B</b> everywhere is the honest one: it is the only shape where "tax report" finds Sales › by tax rate, the picker survives ten registered reports, and phone gets a plain list page.</li>
+      <li><b>Picker shape — decided:</b> B, the list (Paul, 2026-09-14). Tabs and the launcher were shown beside it and dropped.</li>
       <li><b>The Free gate.</b> Both shapes keep the page a real, working report. <i>Popover</i> puts the Pro rows in the scope picker, dimmed with a lock, and the upgrade line appears in the popover's foot only when a Free user taps one. <i>Banner</i> adds a permanent one-liner under the scope bar. My pick: <b>popover</b>. The banner is the second badge rule 5 forbids, and the Loyverse pattern says the merchant discovers the line by reaching for it.</li>
       <li><b>Upgrade copy.</b> One sentence naming the three things behind the line: <i>Past sessions, earlier days and other registers are in WCPOS Pro.</i> Button <i>See Pro</i>. No "unlock", no demo link.</li>
       <li><b>Closures is a list of Session reports.</b> A row opens the Session report for that closure in place (tablet: beside the list; phone: as the page). The old idea of a separate closure detail pane is gone.</li>
@@ -330,12 +308,12 @@ const who = (k) => `<span class="avi">${WHO[k].ini}</span>${WHO[k].name.split(' 
 
 /* ============================ state ============================ */
 const S = {
-  viewport:'tablet', pro:true, picker:'B', gate:'popover', theme:'light', online:true, regOpen:true, stores:1,
+  viewport:'tablet', pro:true, gate:'popover', theme:'light', online:true, regOpen:true, stores:1,
   report:'session', mode:'session', sessionId:'s13', range:'today', register:'front', store:'uk', cashier:'any',
   groupBy:'payment', pop:null, gateHint:null, search:'', opened:false, phoneList:true, selClosure:null,
 };
 const qs = new URLSearchParams(location.search);
-['picker','gate','viewport','theme','report'].forEach(k=>{ if(qs.get(k)) S[k]=qs.get(k); });
+['gate','viewport','theme','report'].forEach(k=>{ if(qs.get(k)) S[k]=qs.get(k); });
 if (qs.get('pro')) S.pro = qs.get('pro')!=='0';
 
 const I = {
@@ -412,8 +390,7 @@ function renderStrip(){
   const seg = (k, opts) => `<span class="seg">${opts.map(([v,l])=>`<button class="${String(S[k])===String(v)?'on':''}" data-set="${k}" data-v="${v}">${l}</button>`).join('')}</span>`;
   document.getElementById('strip').innerHTML = `
     <div class="g"><b>Width</b>${seg('viewport',[['tablet','Tablet'],['phone','Phone']])}</div>
-    <div class="g"><b>Picker</b>${seg('picker',[['A','A · tabs'],['B','B · list'],['C','C · launcher']])}</div>
-    <div class="g"><b>Edition</b>${seg('pro',[[true,'Pro'],[false,'Free']])}</div>
+        <div class="g"><b>Edition</b>${seg('pro',[[true,'Pro'],[false,'Free']])}</div>
     <div class="g"><b>Free gate</b>${seg('gate',[['popover','in the picker'],['banner','banner under the bar']])}</div>
     <div class="g"><b>Register</b>${seg('regOpen',[[true,'session open'],[false,'closed']])}</div>
     <div class="g"><b>Stores</b>${seg('stores',[[1,'1'],[2,'2 (Pro)']])}</div>
@@ -441,23 +418,16 @@ function renderFrame(){
   const drill = phone && S.report==='closures' && S.selClosure && sessionsInScope().find(s=>s.id===S.selClosure);
   const drillPage = () => pagebar(`Closure ${ses(S.selClosure).number}`, 'Closures').replace('data-act="back"','data-act="unselect"') + `<div class="pad">${reportBody()}</div>`;
   let inner;
-  if (S.picker==='A') inner = drill ? drillPage() : pagebar('Reports') + `<div class="pad">${pickerA()}${scopeBlock()}${reportBody()}</div>`;
-  else if (S.picker==='B') {
+  {
     if (phone) inner = drill ? drillPage() : S.phoneList ? pagebar('Reports') + `<div class="pad" style="padding:0">${pickerB()}</div>` : pagebar(rep().title, 'Reports') + `<div class="pad">${scopeBlock()}${reportBody()}</div>`;
     else inner = pagebar('Reports') + `<div class="pad"><div class="split">${pickerB()}<div class="rpane">${scopeBlock()}${reportBody()}</div></div></div>`;
-  } else {
-    inner = drill ? drillPage() : S.opened ? pagebar(rep().title, 'Reports') + `<div class="pad">${scopeBlock()}${reportBody()}</div>` : pagebar('Reports') + `<div class="pad">${pickerC()}</div>`;
   }
   f.innerHTML = `<div class="body">${phone?'':renderRail()}<div class="main">${inner}${renderPop()}</div></div>`;
   const si = f.querySelector('input[data-search]'); if (si && S.searchFocus) { si.focus(); si.setSelectionRange(si.value.length, si.value.length); }
-  document.getElementById('statejson').textContent = JSON.stringify({picker:S.picker, edition:S.pro?'Pro':'Free', gate:S.gate, report:S.report, scope:{mode:S.mode, session:S.mode==='session'?S.sessionId:undefined, range:S.mode==='range'?S.range:undefined, register:S.register, store:S.store, cashier:S.cashier}, groupBy:S.report==='sales'?S.groupBy:undefined, online:S.online, registerOpen:S.regOpen, popover:S.pop, gateHint:S.gateHint}, null, 1);
+  document.getElementById('statejson').textContent = JSON.stringify({edition:S.pro?'Pro':'Free', gate:S.gate, report:S.report, scope:{mode:S.mode, session:S.mode==='session'?S.sessionId:undefined, range:S.mode==='range'?S.range:undefined, register:S.register, store:S.store, cashier:S.cashier}, groupBy:S.report==='sales'?S.groupBy:undefined, online:S.online, registerOpen:S.regOpen, popover:S.pop, gateHint:S.gateHint}, null, 1);
 }
 
 /* ============================ pickers ============================ */
-function pickerA(){
-  const t = (r) => `<button class="${S.report===r.key?'on':''}" data-act="report" data-k="${r.key}">${r.title}${r.plugin?`<span class="mut xs">plugin</span>`:''}</button>`;
-  return `<div class="row"><div class="tabs">${REPORTS.map(t).join('')}</div></div>`;
-}
 function pickerB(){
   const q = S.search.trim().toLowerCase();
   const li = (r, on, sub) => `<div class="li ${sub?'sub':''} ${on?'on':''}" data-act="report" data-k="${r.key}" ${sub?`data-g="${sub}"`:''}>${sub?'':`<span class="ico">${ICO[r.key]}</span>`}<span>${sub?`by ${REPORTS[2].groups.find(g=>g[0]===sub)[1]}`:r.title}</span>${!sub&&r.plugin?`<span class="s" style="margin-left:auto">${S.online?'':I.cloudOff}</span>`:''}</div>`;
@@ -475,25 +445,6 @@ function pickerB(){
     }).join('') + `<div class="sec">From plugins</div>` + REPORTS.filter(r=>r.plugin).map(r=>li(r, S.report===r.key)).join('');
   }
   return `<div class="card rlist"><div class="search" style="padding:8px 10px;border-bottom:1px solid var(--border)"><input class="in" data-search placeholder="Search reports" value="${S.search.replace(/"/g,'&quot;')}"></div><div style="overflow:auto;flex:1">${rows}</div></div>`;
-}
-function pickerC(){
-  const o = openSession();
-  const q = S.search.trim().toLowerCase();
-  const fig = {
-    session: o ? [fmt(o.expected), `Open since ${o.opened.split(' ').pop()} · expected in drawer`] : [`Closure ${lastSession().number}`, `${lastSession().day} · ${fmtv(lastSession().counted-lastSession().expected).replace(/<[^>]+>/g,'')}`],
-    closures: [S.pro?'5':'1', S.pro?'this week · 1 today':'today on this register'],
-    sales: [fmt(o?o.gross:460.50), o?`Session ${o.number} · ${o.sales} sales`:'Today · 14 sales'],
-    cash: [fmt(o?-5:0), o?'Session 13 · 2 movements':'Today · no movements'],
-    deposits: [S.online?'£1,240.00':'—', S.online?'3 orders · from WCPOS Deposits':'Needs internet'],
-  };
-  const tile = (r) => `<div class="ltile ${r.plugin?'plug':''}" data-act="report" data-k="${r.key}"><div class="n"><span class="ico">${ICO[r.key]}</span>${r.title}</div><div class="fig">${fig[r.key][0]}</div><div class="s">${fig[r.key][1]}</div></div>`;
-  let hits='';
-  if (q) {
-    const rows=[];
-    REPORTS.forEach(r=>{ if (r.title.toLowerCase().includes(q)||r.desc.toLowerCase().includes(q)) rows.push(`<div class="rr" data-act="report" data-k="${r.key}"><span class="ico">${ICO[r.key]}</span>${r.title}<span class="s">${r.desc}</span></div>`); if (r.groups) r.groups.forEach(([k,l])=>{ if (l.toLowerCase().includes(q)||(k==='payment'&&'tender'.includes(q))||(k==='tax'&&'tax report'.includes(q))) rows.push(`<div class="rr" data-act="report" data-k="sales" data-g="${k}">${I.table}Sales <span class="mut">› by ${l}</span><span class="s">Sales grouped by ${l.toLowerCase()}</span></div>`); }); });
-    hits = `<div class="card results">${rows.length?rows.join(''):`<div class="empty">No report called “${S.search}”</div>`}</div>`;
-  }
-  return `<div class="row"><input class="in" data-search placeholder="Search reports — try “tax”" value="${S.search.replace(/"/g,'&quot;')}" style="max-width:420px"></div>${hits}${q?'':`<div class="launch">${REPORTS.map(tile).join('')}</div>`}`;
 }
 
 /* ============================ scope bar ============================ */
@@ -657,7 +608,7 @@ function renderShapes(){
 /* ============================ events ============================ */
 document.addEventListener('click', (e)=>{
   const st = e.target.closest('[data-set]');
-  if (st) { const k=st.dataset.set; let v=st.dataset.v; if (v==='true') v=true; else if (v==='false') v=false; else if (/^\d+$/.test(v)) v=+v; S[k]=v; if (k==='pro' && !v) { S.gateHint=null; } if (k==='stores' && v===1) S.store='uk'; if (k==='regOpen') { S.pop=null; defaultScopeFor(S.report); } if (k==='viewport') { S.pop=null; S.phoneList = S.picker==='B'; } if (k==='picker') { S.pop=null; S.opened=false; S.phoneList=true; S.search=''; } renderStrip(); renderFrame(); return; }
+  if (st) { const k=st.dataset.set; let v=st.dataset.v; if (v==='true') v=true; else if (v==='false') v=false; else if (/^\d+$/.test(v)) v=+v; S[k]=v; if (k==='pro' && !v) { S.gateHint=null; } if (k==='stores' && v===1) S.store='uk'; if (k==='regOpen') { S.pop=null; defaultScopeFor(S.report); } if (k==='viewport') { S.pop=null; S.phoneList = true; } renderStrip(); renderFrame(); return; }
   const a = e.target.closest('[data-act]');
   if (!a) return;
   if (e.target.closest('[data-stop]') && a.dataset.act==='closepop') return;
