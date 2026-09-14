@@ -80,3 +80,18 @@ the pane beside the list (7), loading as skeleton (11, owned by #308), sentence 
 `screens/<width>-<theme>-<scale>-<state>.jpg`: phone, tablet, desktop × light, dark × regular,
 compact × eighteen states. `node shoot.js` regenerates them, runs the keyboard and live-column
 assertions, and fails on any page or console error; `--quick` is desktop light regular only.
+
+## Cut 2 (2026-09-14) — Paul's first thoughts
+
+1. **Away from the framed, rounded table.** Four list styles in the strip (*List style*) and in
+   `screens/variants/list-<style>-<width>[-filtered|-open].jpg`: no frame (Linear, Stripe) ·
+   no frame grouped by day · status counts above a frameless list (Stripe) · the hairline card
+   from cut 1. The Mobbin round behind them is in `mobbin-notes.md` (round two). Default now:
+   no frame.
+2. **A filter toggle is not a filter select.** *Unpaid · Today · My sales* are two-state chips
+   (no chevron, filled with a check when on); the selects keep their chevron and show the value
+   with an × when set; a hairline separates the groups. The status-counts style turns the
+   Status select into the count strip.
+3. **The POS product table reuses these table components.** Drawn in
+   `../pos-register/` (state *Products · table view*); the tile/table control is one icon that
+   shows the view you would switch to.

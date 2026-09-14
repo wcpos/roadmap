@@ -117,6 +117,16 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .frame[data-w="phone"] .toolbar{padding:calc(var(--u)*2.5) calc(var(--u)*3)}
 .search{position:relative;flex:1} .search svg{position:absolute;left:calc(var(--u)*3);top:50%;transform:translateY(-50%);color:var(--muted-fg);pointer-events:none} .search .in{padding-left:calc(var(--u)*3 + var(--fs)*1.35 + var(--u)*2)}
 .tiles{display:grid;gap:calc(var(--u)*3);padding:0 0 calc(var(--u)*4) calc(var(--u)*4);overflow:auto;grid-template-columns:repeat(auto-fill,minmax(calc(var(--tile) * 2.5),1fr))}
+/* product table view — the same table components as the orders screen (thead / tr / td), no frame */
+.ptable{flex:1;min-height:0;display:flex;flex-direction:column;margin-left:calc(var(--u)*4)}
+.thead{display:grid;align-items:center;height:max(calc(var(--row) - 8px),32px);border-bottom:var(--hair) solid var(--border);color:var(--muted-fg);font-size:calc(var(--fs)*.8);font-weight:600;letter-spacing:.05em;text-transform:uppercase;flex:none}
+.th{padding:0 calc(var(--u)*3);display:flex;align-items:center;gap:calc(var(--u)*1);white-space:nowrap;overflow:hidden;position:relative;height:100%} .th.r{justify-content:flex-end} .th.c{justify-content:center}
+.th .rz{position:absolute;right:0;top:25%;height:50%;width:1px;background:var(--border)}
+.tbody{flex:1;overflow:auto;min-height:0}
+.tr{display:grid;align-items:center;min-height:max(var(--row),var(--floor));border-bottom:var(--hair) solid var(--border)} .tr:hover{background:var(--card)}
+.td{padding:calc(var(--u)*1.5) calc(var(--u)*3);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .td.r{text-align:right} .td.c{display:flex;justify-content:center}
+.td .sub{display:block;color:var(--muted-fg);font-size:calc(var(--fs)*.86)} .td .img{width:40px;height:40px;border-radius:calc(var(--r) - 2px);background:var(--muted)}
+.tr.vh{background:transparent} .tr.vh .td:first-child{padding-left:calc(var(--u)*10)}
 .frame[data-w="phone"] .tiles{padding:0 calc(var(--u)*3) calc(var(--u)*3);grid-template-columns:repeat(2,1fr)}
 .tile{background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);padding:calc(var(--u)*2.5);display:flex;flex-direction:column;gap:calc(var(--u)*1.5);text-align:left;min-height:calc(var(--tile) * 2)} .tile:active{background:var(--muted)}
 .tile .img{height:var(--tile);border-radius:calc(var(--r) - 2px);background:var(--muted)} .tile .n{font-weight:500;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden} .tile .p{color:var(--muted-fg)}
@@ -393,12 +403,12 @@ const STR=()=>S.long?{
 };
 const SCENES=[['open','Session open · focus on search'],['added','Line just added (beat)'],['line-actions','Line actions (swipe / hover)'],['line-edit','Line · inline edit'],['many-orders','12 open orders'],['cart-settings','Cart settings (anchored)'],['empty','New empty cart'],
   ['closed','Register closed'],['pick','Choose register'],['counting','Counting'],['overdue','Overdue'],['panel','Register panel'],['closure','Closure written (beat)'],['offline','Offline'],
-  ['loading','Products loading'],['noresults','No results'],['settings','Products settings (slide-out)'],['tender','Tender · keypad'],['tender-card','Tender · on the terminal'],['tender-legacy','Tender · legacy (iframe)'],['paid','Paid (beat)'],['long','German strings']];
+  ['loading','Products loading'],['noresults','No results'],['table','Products · table view'],['settings','Products settings (slide-out)'],['tender','Tender · keypad'],['tender-card','Tender · on the terminal'],['tender-legacy','Tender · legacy (iframe)'],['paid','Paid (beat)'],['long','German strings']];
 
 let termTimer=null;
 function jump(scn){
   clearTimeout(termTimer);
-  Object.assign(S,{scn,panel:false,sheet:null,tender:false,view:'keypad',entry:null,method:'cash',settle:null,online:true,long:false,pop:null,phoneTab:'cart',counted:'',open:'200.00',reveal:null,edit:null,orders:2,ordlist:false,termStep:1});
+  Object.assign(S,{scn,panel:false,sheet:null,tender:false,view:'keypad',entry:null,method:'cash',settle:null,online:true,long:false,pop:null,phoneTab:'cart',counted:'',open:'200.00',reveal:null,edit:null,orders:2,ordlist:false,termStep:1,view2:'grid'});
   switch(scn){
     case 'added': S.settle='line'; break;
     case 'line-actions': S.reveal=0; break;
@@ -409,6 +419,7 @@ function jump(scn){
     case 'closure': S.sheet='closure'; break;
     case 'offline': S.online=false; break;
     case 'loading': case 'noresults': S.phoneTab='products'; break;
+    case 'table': S.view2='list'; S.phoneTab='products'; break;
     case 'settings': S.phoneTab='products'; S.pop='products'; break;
     case 'tender': S.tender=true; S.phoneTab='products'; break;
     case 'tender-card': S.tender=true; S.view='terminal'; S.method='sumup'; S.phoneTab='products'; S.termStep=1; break;
@@ -451,6 +462,14 @@ function renderProducts(){
   if (!S.online) notice=`<div class="notice warn">${I.cloudoff}<span class="grow">${t.offline} · 3 sales waiting to sync</span></div>`;
   if (S.scn==='loading') body=`<div class="tiles">${prods.map(()=>`<div class="tile sk"><div class="img"></div><div class="n">&nbsp;</div><div class="p">&nbsp;</div></div>`).join('')}</div>`;
   else if (S.scn==='noresults') body=`<div class="empty">${I.search}<div class="t">${t.noResults} “latte oat”</div><button class="btn q" data-act="noop">${t.clear}</button></div>`;
+  else if (S.view2==='list' && !phone){
+    const grid='56px 1.6fr 110px 96px 96px 56px';
+    const stock=[12,4,0,30,8,15,6,null,20,3,9,11]; const sku=['FW-12','SD-800','TB-NAT','OL-16','CR-01','BN-250','CB-02','GC','CB-330','GR-500','EC-01','TT-01'];
+    const row=([n,p],i)=>`<div class="tr press" style="grid-template-columns:${grid}"><div class="td c"><span class="img"></span></div><div class="td">${n}<span class="sub">${sku[i]}${i===2?' · 3 variations':''}</span></div><div class="td mut">${sku[i]}</div><div class="td r money">${fmt(p)}</div><div class="td r">${stock[i]==null?'<span class="mut">—</span>':stock[i]===0?'<span class="st bad"><i></i>0</span>':stock[i]<5?`<span class="st warn"><i></i>${stock[i]}</span>`:stock[i]}</div><div class="td c">${i===2?`<button class="ibtn press" style="width:36px;height:36px" aria-label="Choose variation">${I.chevd}</button>`:`<button class="ibtn press" style="width:36px;height:36px" data-act="addLine" aria-label="Add">${I.plus}</button>`}</div></div>`;
+    body=`<div class="ptable"><div class="thead" style="grid-template-columns:${grid}"><div class="th c"></div><div class="th">Name<span class="rz"></span></div><div class="th">SKU<span class="rz"></span></div><div class="th r">Price<span class="rz"></span></div><div class="th r">Stock<span class="rz"></span></div><div class="th c"></div></div>
+      <div class="tbody">${prods.map(row).join('')}</div>
+      <div class="tfoot" style="display:flex;align-items:center;height:max(var(--ctl),var(--floor));border-top:var(--hair) solid var(--border);color:var(--muted-fg);padding:0 calc(var(--u)*3)">Showing 12 of 1,204</div></div>`;
+  }
   else body=`<div class="tiles">${prods.map(([n,p])=>`<button class="tile press" data-act="addLine"><div class="img"></div><div class="n">${n}</div><div class="p money">${fmt(p)}</div></button>`).join('')}</div>`;
   const focus=['open','empty','offline','long'].includes(S.scn)?'ring':'';
   const side = '';
@@ -458,7 +477,7 @@ function renderProducts(){
     <div class="toolbar">${phone?`<button class="ibtn press" aria-label="Menu">${I.menu}</button>`:''}
       <div class="search">${I.search}<input class="in ${focus}" placeholder="${t.search}" value="${S.scn==='noresults'?'latte oat':''}" aria-label="${t.search}"></div>
       <button class="ibtn press" aria-label="${t.scan}">${I.scan}</button>
-      ${phone?'':`<span class="segt" role="group" aria-label="View"><button class="press ${S.view2==='grid'?'on':''}" data-set="view2" data-v="grid" aria-label="Tiles">${I.grid}</button><button class="press ${S.view2==='list'?'on':''}" data-set="view2" data-v="list" aria-label="Table">${I.list}</button></span>`}
+      ${phone?'':`<button class="ibtn press" data-act="toggleView" aria-label="${S.view2==='grid'?'Show as a table':'Show as tiles'}" title="${S.view2==='grid'?'Show as a table':'Show as tiles'}">${S.view2==='grid'?I.list:I.grid}</button>`}
       <button class="ibtn press ${S.pop==='products'?'on':''}" data-act="togglePop" data-pop="products" aria-label="Product settings">${I.sliders}</button>
     </div>${notice}${body}${gate}</div>`;
 }
@@ -730,6 +749,7 @@ document.addEventListener('click',e=>{
     case 'startCount': S.panel=false; S.scn='counting'; S.counted=''; break;
     case 'doOpen': S.scn='open'; break;
     case 'togglePop': if(b.classList.contains('sidewrap') && e.target.closest('[data-stop]')) return; S.pop=S.pop===b.dataset.pop?null:b.dataset.pop; break;
+    case 'toggleView': S.view2=S.view2==='grid'?'list':'grid'; break;
     case 'checkout': S.tender=true; S.view='keypad'; S.entry=null; S.method='cash'; break;
     case 'closeTender': clearTimeout(termTimer); S.tender=false; S.view='keypad'; break;
     case 'method': S.method=b.dataset.m; S.entry=null; break;

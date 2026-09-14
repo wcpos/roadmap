@@ -51,3 +51,48 @@ row + pane, the anchored column picker with checkboxes.
 
 Plus the direction's reference set: Linear display options and Stripe's *Edit columns* for the
 anchored display panel, Shopify's orders list for the dot-plus-label status.
+
+## Round two (2026-09-14) — away from the framed table; the two kinds of filter
+
+Paul: *"I kind of wanted to get away from the old chrome rounded-corners tables … Make sure you use
+Mobbin to the fullest to explore all the design options."* Five queries, one app each, web, images
+looked at.
+
+**Linear — issues list** (https://mobbin.com/screens/0ac97560-1aef-4907-a356-8c18c749437b ·
+https://mobbin.com/screens/c61980d9-a5a7-4ccf-aac8-b3ba125e299a ·
+https://mobbin.com/screens/9ec39891-cdbb-4d57-b0c6-de43f82c5f4e): no card, no frame, no column
+header. Rows sit on the page, separated by hairlines, grouped under soft headers (*In Progress 5*,
+*Todo 7*) with a count and a collapse chevron; a view-tab row (*All issues · Active · Backlog*)
+above; identity on the left, meta on the right. Taken: the frameless list on the page surface
+(*no frame* style) and the grouping with counts (*by day* style).
+
+**Stripe — Transactions** (https://mobbin.com/screens/80054ec0-bb9d-4438-9a66-4f7bcd8f103f ·
+https://mobbin.com/screens/5aba8f78-028a-4ad6-81f1-6ca698a41451): a row of status counts as
+two-state chips (*All 6 · Succeeded 1 · Refunded 0 · Disputed 0 · Failed 3 · Uncaptured 0*) doubling
+as the status filter; under it *+ Date and time · + Amount · + Currency · + Status* add-filter
+chips; a table with a hairline header and rows and **no frame**; *Edit columns* top-right. Taken:
+the status-count strip (*status counts* style) and the toggle-versus-select distinction.
+
+**Notion — database table** (https://mobbin.com/screens/2cb05fc6-258f-485e-bd43-bff095a90cbc):
+borderless grid, property icons in the headers, toolbar icons for filter/sort/search, a *2 selected*
+row of active filters. Taken: nothing new beyond the frameless grid; the status pills are filled,
+which the direction rules out.
+
+**Attio — Companies** (https://mobbin.com/screens/2f854791-b0f6-475a-97c3-65e65d5f7581 ·
+https://mobbin.com/screens/9e21a118-c189-4e8b-934f-a9bdfba8162e): *Sort* and *Filter* as two
+quiet buttons top-left, then a borderless grid with vertical hairlines and a count footer;
+filter conditions as chips (*Employee range · less than · 1K–5K*). Taken: the quiet toolbar; the
+vertical hairlines were not taken (rule 7, fewer borders).
+
+**Shopify admin — Orders** (https://mobbin.com/screens/9a5dbafc-fc4a-4bfb-9ae4-98b1a61ed95d ·
+https://mobbin.com/screens/909c6cdb-f0a1-4183-ab1c-b64f3f2c9aa2): saved-view tabs (*Unfulfilled ▾ ·
+Payment status is Paid*), a stat strip with sparklines, and the table inside a rounded card — the
+frame Paul wants away from. Taken: the *Sort by · Group by* popover shape; not the card.
+
+### Toggle versus select
+
+Two controls that today look the same (`h-6` pills): a **toggle** has two states, no chevron,
+and fills when on (Stripe's status tabs; Linear's *Active / Backlog*); a **select** carries a value
+and a chevron, and shows the value with an × when set. Drawn: *Unpaid · Today · My sales* as
+toggles, then a hairline, then the selects (Customer, Cashier, Created via, Register, Date range),
+with Status either a select or the count strip depending on list style.

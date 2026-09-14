@@ -126,6 +126,23 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .frame[data-w="phone"] .listwrap{padding:calc(var(--u)*3) 0 0;gap:0}
 .card{flex:1;min-width:0;background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);display:flex;flex-direction:column;overflow:hidden}
 .frame[data-w="phone"] .card{border-left:0;border-right:0;border-bottom:0;border-radius:0}
+/* list styles (strip → List style). bleed: no frame, the page is the surface, hairlines only (Linear, Stripe). */
+.frame[data-list="bleed"] .card,.frame[data-list="grouped"] .card,.frame[data-list="stats"] .card{border:0;border-radius:0;background:transparent}
+.frame[data-list="bleed"] .listwrap,.frame[data-list="grouped"] .listwrap,.frame[data-list="stats"] .listwrap{padding-top:calc(var(--u)*2)}
+.frame[data-list="bleed"] .thead,.frame[data-list="grouped"] .thead,.frame[data-list="stats"] .thead{background:transparent;border-bottom:var(--hair) solid var(--border)}
+.frame[data-list="bleed"] .tfoot,.frame[data-list="grouped"] .tfoot,.frame[data-list="stats"] .tfoot{border-top:var(--hair) solid var(--border)}
+.frame[data-list="bleed"] .tr:hover,.frame[data-list="grouped"] .tr:hover,.frame[data-list="stats"] .tr:hover{background:var(--card)}
+.frame[data-list="bleed"] .pane,.frame[data-list="grouped"] .pane,.frame[data-list="stats"] .pane{background:var(--card)}
+.grp{display:flex;align-items:center;gap:calc(var(--u)*2);height:max(calc(var(--row) - 8px),32px);padding:0 calc(var(--u)*3);color:var(--muted-fg);font-size:calc(var(--fs)*.86);font-weight:600;background:var(--muted);border-bottom:var(--hair) solid var(--border)}
+.grp b{color:var(--fg)} .grp .n{font-weight:500}
+/* the two kinds of filter control: a toggle has two states and no chevron; a select carries a value and a chevron */
+.chip.tog{gap:calc(var(--u)*1.5)} .chip.tog.on{background:var(--fg);color:var(--bg);border-color:var(--fg);font-weight:600}
+.chip.tog.on svg{width:12px;height:12px;stroke-width:2.5}
+.stats{display:flex;gap:calc(var(--u)*2);padding:calc(var(--u)*2.5) calc(var(--u)*4) 0;overflow-x:auto;scrollbar-width:none;flex:none}
+.stats::-webkit-scrollbar{display:none}
+.stat{flex:none;display:inline-flex;flex-direction:column;justify-content:center;gap:1px;min-width:calc(var(--fs)*7);height:max(calc(var(--ctl) + 8px),52px);padding:0 calc(var(--u)*3);border:var(--hair) solid var(--border);border-radius:var(--r);background:var(--card);text-align:left}
+.stat .l{color:var(--muted-fg);font-size:calc(var(--fs)*.86);display:inline-flex;align-items:center;gap:calc(var(--u)*1.5)} .stat .v{font-weight:600;font-size:calc(var(--fs)*1.1)}
+.stat.on{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary)} .stat.on .l{color:var(--fg)}
 .thead{display:grid;align-items:center;height:max(calc(var(--row) - 8px),32px);border-bottom:var(--hair) solid var(--border);color:var(--muted-fg);font-size:calc(var(--fs)*.8);font-weight:600;letter-spacing:.05em;text-transform:uppercase;flex:none;background:var(--muted)}
 .th{padding:0 calc(var(--u)*3);display:flex;align-items:center;gap:calc(var(--u)*1);position:relative;height:100%;white-space:nowrap;overflow:hidden}
 .th.r{justify-content:flex-end} .th.c{justify-content:center}
@@ -258,13 +275,14 @@ const COLS=[ // key, header, width, align, sortable, default on
   ['payment_method','Payment','1fr','l',true,true],['total','Total','110px','r',true,true],['actions','','44px','c',false,true],
   ['shipping','Shipping address','1.6fr','l',false,false],['date_modified_gmt','Date modified','1fr','l',false,false],['date_paid_gmt','Date paid','1fr','l',false,false],['register','Register','1fr','l',false,false],['receipt','Receipt','44px','c',false,false],
 ];
-const S={ w:'desktop', theme:'light', scale:'regular', scn:'default', cols:Object.fromEntries(COLS.map(c=>[c[0],c[5]])), sub:{billing:false,shipping:false,paymethod:false}, open:null, pop:null, menu:null, sheet:null, focus:null, filters:{}, online:true, long:false, toast:null, sort:'date_created_gmt' };
+const S={ w:'desktop', theme:'light', scale:'regular', scn:'default', cols:Object.fromEntries(COLS.map(c=>[c[0],c[5]])), sub:{billing:false,shipping:false,paymethod:false}, open:null, pop:null, menu:null, sheet:null, focus:null, filters:{}, online:true, long:false, toast:null, sort:'date_created_gmt', listStyle:'bleed', tog:{} };
 const SCENES=[['default','Default'],['keyboard','Hover + keyboard focus'],['open','Order open'],['open-refund','Refunded order open'],['rowmenu','Row actions'],['columns','Columns (anchored)'],['filter-status','Status filter'],['filter-date','Date range'],['filtered','Filtered'],['loading','Loading'],['searching','Searching'],['empty','No orders yet'],['noresults','No results'],['error','Error'],['syncing','Syncing'],['offline','Offline'],['delete','Delete confirm'],['long','German strings']];
 const T=()=>S.long?{title:'Bestellungen',search:'Bestellungen suchen',status:'Status',customer:'Kunde',cashier:'Kassierer',via:'Erstellt über',register:'Kasse',date:'Zeitraum',showing:'Zeige',of:'von',sync:'Synchronisieren',noOrders:'Noch keine Bestellungen',noOrdersS:'Verkäufe, die Sie annehmen, erscheinen hier.',noMatch:'Keine Bestellung passt zu diesen Filtern',clear:'Filter zurücksetzen',err:'Bestellungen konnten nicht geladen werden',retry:'Erneut versuchen',docs:'Hilfe',print:'Beleg drucken',refund:'Erstatten',items:'Artikel',totals:'Summen',subtotal:'Zwischensumme',tax:'MwSt.',total:'Gesamt',net:'Nettozahlung',refunds:'Erstattungen',cust:'Kunde',payment:'Zahlung',meta:'Metadaten',offline:'Offline',syncing:'Synchronisiert…',searching:'Suche…',view:'Ansehen',edit:'Bearbeiten',reopen:'Wieder öffnen',receipt:'Beleg',del:'Löschen',cols:['Status','Bestellung','Kunde','Rechnungsadresse','Notiz','Datum','Über','Kassierer','Zahlung','Gesamt','']}
  :{title:'Orders',search:'Search orders',status:'Status',customer:'Customer',cashier:'Cashier',via:'Created via',register:'Register',date:'Date range',showing:'Showing',of:'of',sync:'Sync',noOrders:'No orders yet',noOrdersS:'Sales you take will appear here.',noMatch:'No orders match these filters',clear:'Clear filters',err:'Orders could not be loaded',retry:'Retry',docs:'Help',print:'Print receipt',refund:'Refund',items:'Items',totals:'Totals',subtotal:'Subtotal',tax:'VAT 20%',total:'Total',net:'Net payment',refunds:'Refunds',cust:'Customer',payment:'Payment',meta:'Metadata',offline:'Offline',syncing:'Syncing…',searching:'Searching…',view:'View',edit:'Edit',reopen:'Re-open',receipt:'Receipt',del:'Delete',cols:COLS.slice(0,11).map(c=>c[1])};
 
 function jump(scn){
-  Object.assign(S,{scn,open:null,pop:null,menu:null,sheet:null,focus:null,filters:{},online:true,long:false,toast:null});
+  Object.assign(S,{scn,open:null,pop:null,menu:null,sheet:null,focus:null,filters:{},online:true,long:false,toast:null,tog:{}});
+  if (scn==='filtered'||scn==='noresults') S.tog={unpaid:false,today:true,mine:false};
   switch(scn){
     case 'keyboard': S.focus=1; break;
     case 'open': S.open=102475; break;
@@ -283,7 +301,7 @@ function jump(scn){
 /* with an order open beside it the list keeps its core columns; the rest return when the pane closes */
 const CORE=['status','number','customer_id','date_created_gmt','total','actions'];
 const visible = () => COLS.filter(c=>S.cols[c[0]] && (!(S.open&&S.w==='desktop') || CORE.includes(c[0])));
-const rows = () => S.scn==='filtered' ? ORDERS.filter(o=>o.s==='completed') : S.scn==='noresults'||S.scn==='empty' ? [] : ORDERS;
+const rows = () => S.scn==='noresults'||S.scn==='empty' ? [] : ORDERS.filter(o => (!S.filters.status || S.filters.status==='all' || o.s===S.filters.status) && (!S.tog.unpaid || ['pending','on-hold','pos-open','pos-partial','failed'].includes(o.s)) && (!S.tog.today || /ago/.test(o.d)) && (!S.tog.mine || o.cash==='Demo Cashier'));
 const st = k => { const [l,c]=STATUS[k]||[k,'']; return `<span class="st ${c}"><i></i>${l}</span>`; };
 const via = v => v==='pos'?I.pos:v==='web'?I.globe:I.wp;
 
@@ -293,6 +311,7 @@ function renderStrip(){
     <div class="g"><b>Width</b>${seg('w',[['phone','Phone 390'],['tablet','Tablet 1024'],['desktop','Desktop 1440']])}</div>
     <div class="g"><b>Theme</b>${seg('theme',[['light','Default light'],['dark','Default dark'],['ocean','Ocean'],['sunset','Sunset'],['monochrome','Monochrome']])}</div>
     <div class="g"><b>Scale</b>${seg('scale',[['compact','Compact'],['regular','Regular'],['spacious','Spacious']])}</div>
+    <div class="g"><b>List style</b>${seg('listStyle',[['bleed','no frame (Linear)'],['grouped','no frame · by day'],['stats','status counts + no frame (Stripe)'],['card','hairline card (cut 1)']])}</div>
     <div class="g"><b>State</b><span class="seg">${SCENES.map(([v,l])=>`<button class="${S.scn===v?'on':''}" data-scn="${v}">${l}</button>`).join('')}</span></div>`;
 }
 function renderRail(){
@@ -312,7 +331,12 @@ function renderBar(){
 function renderFilters(){
   const t=T(); const f=S.filters;
   const chip=(k,label,val)=>`<button class="chip press ${val?'on':''}" data-act="pop" data-pop="${k}">${val?`<span class="st ${k==='status'?(STATUS[val]||[])[1]:''}">${k==='status'?'<i></i>':''}${k==='status'?STATUS[val][0]:val}</span>`:label}${val?`<span class="x" data-act="clearFilter" data-k="${k}" aria-label="Remove">${I.x}</span>`:I.chevd}</button>`;
-  return `<div class="filters">${chip('status',t.status,f.status)}${chip('customer',t.customer,f.customer)}${chip('cashier',t.cashier,f.cashier)}${chip('via',t.via,f.via)}${chip('register',t.register,f.register)}${chip('date',t.date,f.date)}</div>`;
+  /* toggles: two states, no chevron, filled when on (Stripe's status tabs, Linear's Active/Backlog) */
+  const tog=(k,label)=>`<button class="chip tog press ${S.tog[k]?'on':''}" data-act="tog" data-k="${k}" role="switch" aria-checked="${!!S.tog[k]}">${S.tog[k]?I.check:''}${label}</button>`;
+  const toggles = `${tog('unpaid','Unpaid')}${tog('today','Today')}${tog('mine','My sales')}`;
+  const statusSel = S.listStyle==='stats' ? '' : chip('status',t.status,f.status);
+  const stats = S.listStyle==='stats' ? `<div class="stats">${[['all','All','1,248',''],['completed','Completed','812','ok'],['processing','Processing','6','info'],['on-hold','On hold','2','warn'],['refunded','Refunded','12',''],['failed','Failed','3','bad']].map(([k,l,n,c])=>`<button class="stat press ${(f.status||'all')===k?'on':''}" data-act="setFilter" data-k="status" data-v="${k}"><span class="l">${c||k==='all'?`<span class="st ${c}">${k==='all'?'':'<i></i>'}${l}</span>`:l}</span><span class="v">${n}</span></button>`).join('')}</div>` : '';
+  return `${stats}<div class="filters">${toggles}<span style="width:var(--hair);background:var(--border);flex:none;margin:calc(var(--u)*2) calc(var(--u)*1)"></span>${statusSel}${chip('customer',t.customer,f.customer)}${chip('cashier',t.cashier,f.cashier)}${chip('via',t.via,f.via)}${chip('register',t.register,f.register)}${chip('date',t.date,f.date)}</div>`;
 }
 
 /* ---- desktop: a real table ---- */
@@ -325,6 +349,10 @@ function renderTable(){
   else if (S.scn==='error') body=`<div class="empty">${I.warn}<div class="t">${t.err}</div><div class="row"><button class="btn press">${t.retry}</button><a href="#">${t.docs}</a></div></div>`;
   else if (!rs.length) body= S.scn==='empty' ? `<div class="empty">${I.inbox}<div class="t">${t.noOrders}</div><div>${t.noOrdersS}</div></div>`
     : `<div class="empty">${I.search}<div class="t">${t.noMatch}</div><button class="btn q press" data-act="clearAll">${t.clear}</button></div>`;
+  else if (S.listStyle==='grouped'){
+    const groups=[['Today',rs.filter(o=>/ago/.test(o.d))],['Yesterday',rs.filter(o=>o.d==='Yesterday')],['September 12, 2026',rs.filter(o=>o.d==='September 12, 2026')],['September 11, 2026',rs.filter(o=>o.d==='September 11, 2026')]];
+    body=groups.filter(([,g])=>g.length).map(([l,g])=>`<div class="grp">${I.chevd}<b>${l}</b><span class="n">${g.length}</span><span class="grow"></span><span class="n money">${fmt(g.reduce((a,o)=>a+o.t,0))}</span></div>`+g.map(o=>{const i=rs.indexOf(o);return `<div class="tr ${S.open===o.n?'sel':''} ${S.focus===i?'focus':''}" style="grid-template-columns:${grid}" data-act="openOrder" data-n="${o.n}">${cols.map(c=>cell(c,o)).join('')}</div>`;}).join('')).join('');
+  }
   else body=rs.map((o,i)=>`<div class="tr ${S.open===o.n?'sel':''} ${S.focus===i?'focus':''}" style="grid-template-columns:${grid}" data-act="openOrder" data-n="${o.n}">${cols.map(c=>cell(c,o)).join('')}</div>`).join('');
   const foot = S.scn==='loading' ? '' : `<div class="tfoot"><span class="grow">${S.scn==='searching'?t.searching:S.scn==='empty'?'':`${t.showing} ${rs.length} ${t.of} ${S.scn==='filtered'?'312':'1,248'}`}</span>${S.scn==='syncing'?`<span class="xs">${t.syncing}</span>`:''}<button class="ibtn press ${S.scn==='syncing'?'on':''}" aria-label="${t.sync}"><span class="${S.scn==='syncing'?'spin':''}" style="display:inline-flex">${I.sync}</span></button></div>`;
   return `<div class="card ${S.scn==='searching'?'dim':''}">${S.scn==='searching'?'<div class="progress" style="margin:0;border-radius:0"></div>':''}${head}<div class="tbody">${body}</div>${foot}</div>`;
@@ -420,7 +448,7 @@ function renderNotes(){
 }
 function render(){
   renderStrip();
-  const f=document.getElementById('frame'); f.className='frame'; f.dataset.w=S.w; f.dataset.theme=S.theme; f.dataset.scale=S.scale;
+  const f=document.getElementById('frame'); f.className='frame'; f.dataset.w=S.w; f.dataset.theme=S.theme; f.dataset.scale=S.scale; f.dataset.list=S.listStyle;
   const t=T(); const phone=S.w==='phone';
   const list = S.w==='desktop' ? renderTable() : renderRows();
   const page=`<div class="page">${renderBar()}${renderFilters()}<div class="listwrap">${phone&&S.open?'':list}${renderPane()}</div></div>`;
@@ -444,7 +472,8 @@ document.addEventListener('click',e=>{
     case 'col': S.cols[b.dataset.k]=!S.cols[b.dataset.k]; break;
     case 'sub': S.sub[b.dataset.k]=!S.sub[b.dataset.k]; break;
     case 'restore': S.cols=Object.fromEntries(COLS.map(c=>[c[0],c[5]])); S.sub={billing:false,shipping:false,paymethod:false}; break;
-    case 'setFilter': S.filters[b.dataset.k]=b.dataset.v; S.pop=null; if(S.scn==='default') S.scn='filtered'; break;
+    case 'setFilter': if(b.dataset.v==='all'){ delete S.filters.status; if(!Object.keys(S.filters).length && !Object.values(S.tog).some(Boolean)) S.scn='default'; break; } S.filters[b.dataset.k]=b.dataset.v; S.pop=null; if(S.scn==='default') S.scn='filtered'; break;
+    case 'tog': S.tog[b.dataset.k]=!S.tog[b.dataset.k]; if(Object.values(S.tog).some(Boolean)){ if(S.scn==='default') S.scn='filtered'; } else if(!Object.keys(S.filters).length) S.scn='default'; break;
     case 'filterStatus': S.filters.status=b.dataset.s; S.scn='filtered'; break;
     case 'clearFilter': delete S.filters[b.dataset.k]; if(!Object.keys(S.filters).length) S.scn='default'; e.stopPropagation(); break;
     case 'clearAll': S.filters={}; S.scn='default'; break;

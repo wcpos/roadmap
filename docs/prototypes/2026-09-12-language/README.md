@@ -123,6 +123,25 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     (f) **status edge** — one line with a coloured top edge per status, amount and customer.
     **Decided (Paul, 2026-09-14): (a) amount over status.** It is the prototype's default; the
     other five stay in the strip for the record.
+Orders, after Paul's first thoughts (2026-09-14):
+
+20. **The list's frame.** Paul: away from the rounded-corner chrome table. Four styles in the
+    strip (*List style*), captured in `orders/screens/variants/list-*.jpg`:
+    (a) **no frame** — the page is the surface, a hairline header row and hairline rows edge to
+    edge (Linear, Stripe); (b) **no frame, grouped by day** — (a) with a soft *Today · 2 · £70.60*
+    header per day, collapsible (Linear's groups); (c) **status counts + no frame** — a strip of
+    status counts as two-state chips above (a), replacing the Status select (Stripe's
+    transactions tabs); (d) the hairline card from cut 1. **Pick: (a)** as the base, with (b) as
+    the default grouping for the *Date* sort (most orders are read by day) and (c) as the day the
+    counts endpoint exists; the card is the one to drop.
+21. **Toggle versus select.** A two-state filter (*Unpaid · Today · My sales*) is a chip with no
+    chevron that fills when on and shows a check; a select (*Customer ▾ · Date range ▾*) carries a
+    value, a chevron, and an × when set; a hairline separates the two groups. **Pick: as drawn.**
+22. **The product table reuses the orders table.** Drawn in the register (*Products · table
+    view*): the same header row, hairline rows, resize handles and footer, with Name + SKU,
+    Price, Stock as a dot-plus-number when low or out, and a + per row (a chevron for a variable
+    product). The tile/table control is **one icon button that shows the view you would switch
+    to** (list icon while on tiles, grid icon while on the table). **Pick: as drawn.**
 18. **Where WordPress admin lives without a header.** Today it is a web-only item in the shared
     header's user menu (`openExternalURL(site.home + '/wp-admin')`, with *Desktop App*); the POS
     has no header. (a) **a *This site* group in the user sheet: WordPress admin, Desktop app**
