@@ -139,8 +139,11 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     back. The pieces for a real switch already exist: credentials are stored per site
     (`site.wp_credentials`), `login({wpCredentialsID})` swaps the session, *Another account…* runs
     the JWT login (`/pos/login`, the plugin's own login template) with a same-window redirect and
-    a redirect-return claim. What is missing is one rule in that hydration step. Options in the
-    chat question; the pick is to keep the cookie as the gate and let the app own the active user.
+    a redirect-return claim. What is missing is one rule in that hydration step. **Decided (Paul,
+    2026-09-14): the cookie gates `/pos` and adds its user to the device; the app owns the active
+    user across a refresh.** Switch user survives a reload; Sign out still ends the cookie session.
+    Tracked as a monorepo issue (linked from wcpos/roadmap#287), not a map ticket: it is one
+    conditional in `PROCESS_INITIAL_PROPS`, no plugin change.
 
 ## Rejected while drawing
 
