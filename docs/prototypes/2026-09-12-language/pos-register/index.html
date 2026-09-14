@@ -125,11 +125,18 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*2);color:var(--muted-fg);padding:calc(var(--u)*6);text-align:center} .empty svg{width:calc(var(--fs)*2.2);height:calc(var(--fs)*2.2);stroke-width:1.5} .empty .t{color:var(--fg);font-weight:500}
 .gate{position:absolute;inset:0;background:color-mix(in oklch,var(--bg) 72%,transparent);display:flex;align-items:center;justify-content:center} .gate>div{background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);padding:calc(var(--u)*3) calc(var(--u)*4)}
 /* products settings: the slide-out that is live on next, drawn over the products column so the grid stays visible */
-.sidepanel{position:absolute;left:0;top:0;bottom:0;width:min(100%,360px);background:var(--card);border-right:var(--hair) solid var(--border);z-index:20;display:flex;flex-direction:column;animation:slidel 220ms var(--ease)}
-.frame[data-w="phone"] .sidepanel{width:100%;border:0}
+/* full-height slide-outs: cart dialogs come in on the products side (left) so the cart stays visible; products
+   settings on the opposite side (right). Both are what next does with its side Dialogs; on phone they are sheets. */
+.sidewrap{position:absolute;inset:0;z-index:20;background:var(--scrim);display:flex}
+.sidewrap.right{justify-content:flex-end}
+.sidepanel{position:relative;height:100%;width:min(100%,400px);background:var(--card);border-right:var(--hair) solid var(--border);display:flex;flex-direction:column;animation:slidel 220ms var(--ease)}
+.sidewrap.right .sidepanel{border-right:0;border-left:var(--hair) solid var(--border);animation:slide 220ms var(--ease)}
+.frame[data-w="phone"] .sidewrap{align-items:flex-end} .frame[data-w="phone"] .sidepanel{width:100%;height:auto;max-height:92%;border:0;border-top:var(--hair) solid var(--border);border-radius:calc(var(--r)*2) calc(var(--r)*2) 0 0;animation:rise 200ms var(--ease)}
+.sidepanel .ft{display:flex;gap:calc(var(--u)*2);padding:calc(var(--u)*3) calc(var(--u)*4) calc(var(--u)*4);border-top:var(--hair) solid var(--border)}
 @keyframes slidel{from{transform:translateX(-24px);opacity:0}to{transform:none;opacity:1}}
 .sidepanel .h{display:flex;align-items:center;gap:calc(var(--u)*2);padding:calc(var(--u)*3) calc(var(--u)*2) calc(var(--u)*2) calc(var(--u)*4);font-weight:600;border-bottom:var(--hair) solid var(--border)}
 .sidepanel .bd{flex:1;overflow:auto;padding:calc(var(--u)*2)}
+.sidepanel .bd.form{padding:calc(var(--u)*4);display:flex;flex-direction:column;gap:calc(var(--u)*3)}
 .opt{display:flex;align-items:center;gap:calc(var(--u)*3);min-height:max(var(--row),var(--floor));padding:0 calc(var(--u)*2);border-radius:calc(var(--r) - 2px);width:100%;text-align:left} .opt:active{background:var(--muted)}
 .opt .grip{color:var(--border)} .opt.h2{color:var(--muted-fg);font-size:calc(var(--fs)*.8);font-weight:600;text-transform:uppercase;letter-spacing:.05em;min-height:max(calc(var(--row) - 8px),32px);margin-top:calc(var(--u)*2)}
 .cb{width:18px;height:18px;border-radius:4px;border:var(--hair) solid var(--border);display:inline-flex;align-items:center;justify-content:center;flex:none} .cb.on{background:var(--primary);border-color:var(--primary)} .cb.on svg{width:12px;height:12px;stroke:var(--primary-fg);stroke-width:2.5}
@@ -176,6 +183,17 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .cart-f{display:flex;gap:calc(var(--u)*2);padding:0 calc(var(--u)*4) calc(var(--u)*4);flex:none} .cart-f .btn.xl{flex:1}
 /* open-order tabs: a tab strip, not buttons. Text + a status chip; overflow into a list. */
 .tabs{display:flex;align-items:stretch;border-top:var(--hair) solid var(--border);flex:none;padding:0 calc(var(--u)*2);gap:calc(var(--u)*1);background:var(--card);overflow:hidden}
+.tabs .scrollx{display:flex;gap:calc(var(--u)*1);overflow-x:auto;scrollbar-width:none;flex:1;min-width:0;mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent);-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent);align-items:stretch}
+.tabs .scrollx::-webkit-scrollbar{display:none}
+.tabs .scrollx .otab{flex:none}   /* tabs keep their width and scroll; they never shrink to fit */
+.tabs .ov{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:calc(var(--u)*1);min-width:max(var(--ctl),var(--floor));padding:0 calc(var(--u)*2);color:var(--muted-fg);border-right:var(--hair) solid var(--border);margin-right:calc(var(--u)*1)}
+.tabs .ov b{min-width:22px;height:22px;border-radius:11px;background:var(--muted);color:var(--fg);display:inline-flex;align-items:center;justify-content:center;font-size:calc(var(--fs)*.8);padding:0 6px}
+/* tab styles */
+.otab.l1{flex-direction:row;align-items:center;gap:calc(var(--u)*2)} .otab.l1 .c{font-size:inherit} .otab.l1 .c i{width:7px;height:7px}
+.otab.chip2{flex-direction:row;align-items:center;gap:calc(var(--u)*1.5);height:max(calc(var(--ctl) - 8px),36px);margin:calc(var(--u)*2) 0;padding:0 calc(var(--u)*3);border:var(--hair) solid var(--border);border-radius:999px;border-bottom-width:var(--hair)} .otab.chip2.on{background:var(--fg);color:var(--bg);border-color:var(--fg)} .otab.chip2.on .c{color:inherit}
+.otab.cardt{flex:none;width:calc(var(--fs)*9.5);align-items:flex-start;justify-content:center;margin:calc(var(--u)*1.5) 0;padding:0 calc(var(--u)*2.5);border:var(--hair) solid var(--border);border-radius:var(--r);border-bottom-width:var(--hair);height:auto} .otab.cardt.on{border-color:var(--primary);box-shadow:inset 0 2px 0 var(--primary)} .otab.cardt .a{font-size:calc(var(--fs)*1.05)}
+.otab.edge{flex-direction:row;align-items:center;gap:calc(var(--u)*2);border-top:3px solid var(--neutral);border-bottom:2px solid transparent;margin-top:0} .otab.edge.ok{border-top-color:var(--ok)} .otab.edge.warn{border-top-color:var(--warn)} .otab.edge.info{border-top-color:var(--info)} .otab.edge.bad{border-top-color:var(--bad)} .otab.edge.none{border-top-color:transparent} .otab.edge.on{border-bottom-color:var(--primary)}
+.otab .num{color:var(--muted-fg);font-weight:500;margin-right:calc(var(--u)*1)}
 .tabs.top{border-top:0;border-bottom:var(--hair) solid var(--border)}
 .otab{display:inline-flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:1px;height:max(calc(var(--ctl) + 8px),52px);padding:0 calc(var(--u)*3);border-bottom:2px solid transparent;color:var(--muted-fg);white-space:nowrap;min-width:0;flex:0 1 auto;overflow:hidden}
 .otab .a,.otab .c{max-width:100%;overflow:hidden;text-overflow:ellipsis}
@@ -353,7 +371,7 @@ const OPEN=[
 const S={ w:'tablet', theme:'light', scale:'regular', scn:'open',
   phoneTab:'cart', panel:false, sheet:null, tender:false, view:'keypad', entry:null, method:'cash', settle:null, online:true, long:false,
   pop:null, tabsPos:'bottom', registers:1, counted:'', open:'200.00', reveal:null, edit:null, orders:2, ordlist:false, view2:'grid',
-  closePos:'tr', legacy:'tile', termStep:1, sortCart:'newest-last' };
+  closePos:'tr', legacy:'header-text', termStep:1, sortCart:'newest-last', tabStyle:'lines2' };
 const STR=()=>S.long?{
   search:'Produkte suchen',scan:'Scannen',priceCheck:'Nur Preisprüfung, bis die Kasse geöffnet ist.',counting:'Keine Verkäufe, während die Kasse gezählt wird.',
   customer:'Kunde',guest:'Gast',details:'Bestelldetails',save:'Bestellung speichern',void:'Stornieren',checkout:'Zur Kasse',subtotal:'Zwischensumme',fees:'Gebühren',tax:'MwSt. 19 %',total:'Gesamt',
@@ -415,7 +433,8 @@ function renderStrip(){
     <div class="g"><b>Tabs</b>${seg('tabsPos',[['bottom','bottom'],['top','top']])}</div>
     <div class="g"><b>Registers</b>${seg('registers',[[1,'1'],[3,'3']])}</div>
     <div class="g"><b>Tender close</b>${seg('closePos',[['tl','top-left ×'],['tr','top-right ×'],['bottom','Back to cart under keypad']])}</div>
-    <div class="g"><b>Legacy switch</b>${seg('legacy',[['tile','a tile in the method grid'],['header-icons','header · icon toggle'],['header-text','header · text toggle'],['bottom','link under the keypad']])}</div>
+    <div class="g"><b>Tab style</b>${seg('tabStyle',[['lines2','amount over status'],['line1','amount + dot'],['chips','chips'],['cards','cards'],['numbered','numbered'],['edge','status edge']])}</div>
+    <div class="g"><b>Legacy switch</b>${seg('legacy',[['header-text','header · text toggle (decided)'],['header-icons','header · icons'],['tile','tile in the grid'],['bottom','link under the keypad']])}</div>
     <div class="g"><b>State</b><span class="seg">${SCENES.map(([v,l])=>`<button class="${S.scn===v?'on':''}" data-scn="${v}">${l}</button>`).join('')}</span></div>`;
 }
 function renderRail(){
@@ -434,7 +453,19 @@ function renderProducts(){
   else if (S.scn==='noresults') body=`<div class="empty">${I.search}<div class="t">${t.noResults} “latte oat”</div><button class="btn q" data-act="noop">${t.clear}</button></div>`;
   else body=`<div class="tiles">${prods.map(([n,p])=>`<button class="tile press" data-act="addLine"><div class="img"></div><div class="n">${n}</div><div class="p money">${fmt(p)}</div></button>`).join('')}</div>`;
   const focus=['open','empty','offline','long'].includes(S.scn)?'ring':'';
-  const side = S.pop==='products' ? `${phone?'':''}<div class="sidepanel" data-stop="1">
+  const side = '';
+  return `<div class="prodcol">
+    <div class="toolbar">${phone?`<button class="ibtn press" aria-label="Menu">${I.menu}</button>`:''}
+      <div class="search">${I.search}<input class="in ${focus}" placeholder="${t.search}" value="${S.scn==='noresults'?'latte oat':''}" aria-label="${t.search}"></div>
+      <button class="ibtn press" aria-label="${t.scan}">${I.scan}</button>
+      ${phone?'':`<span class="segt" role="group" aria-label="View"><button class="press ${S.view2==='grid'?'on':''}" data-set="view2" data-v="grid" aria-label="Tiles">${I.grid}</button><button class="press ${S.view2==='list'?'on':''}" data-set="view2" data-v="list" aria-label="Table">${I.list}</button></span>`}
+      <button class="ibtn press ${S.pop==='products'?'on':''}" data-act="togglePop" data-pop="products" aria-label="Product settings">${I.sliders}</button>
+    </div>${notice}${body}${gate}</div>`;
+}
+/* the slide-outs, rendered over the whole main area */
+function renderSide(){
+  const t=T();
+  if (S.pop==='products') return `<div class="sidewrap right" data-act="togglePop" data-pop="products"><div class="sidepanel" data-stop="1">
       <div class="h"><span class="grow">Products</span><button class="ibtn press" data-act="togglePop" data-pop="products" aria-label="Close">${I.x}</button></div>
       <div class="bd">
         <div class="opt h2">Layout</div>
@@ -448,14 +479,35 @@ function renderProducts(){
         <div class="opt h2">Table columns</div>
         ${[['Image',1],['Name',1],['SKU',0],['Price',1],['Stock',0],['Actions',1]].map(([l,on])=>`<div class="opt"><span class="grip">${I.grip}</span><span class="cb ${on?'on':''}">${I.check}</span>${l}</div>`).join('')}
         <div class="opt" style="margin-top:calc(var(--u)*3)"><button class="btn q press xs" style="height:36px;padding:0 8px;color:var(--muted-fg)">Restore defaults</button></div>
-      </div></div>` : '';
-  return `<div class="prodcol">
-    <div class="toolbar">${phone?`<button class="ibtn press" aria-label="Menu">${I.menu}</button>`:''}
-      <div class="search">${I.search}<input class="in ${focus}" placeholder="${t.search}" value="${S.scn==='noresults'?'latte oat':''}" aria-label="${t.search}"></div>
-      <button class="ibtn press" aria-label="${t.scan}">${I.scan}</button>
-      ${phone?'':`<span class="segt" role="group" aria-label="View"><button class="press ${S.view2==='grid'?'on':''}" data-set="view2" data-v="grid" aria-label="Tiles">${I.grid}</button><button class="press ${S.view2==='list'?'on':''}" data-set="view2" data-v="list" aria-label="Table">${I.list}</button></span>`}
-      <button class="ibtn press ${S.pop==='products'?'on':''}" data-act="togglePop" data-pop="products" aria-label="Product settings">${I.sliders}</button>
-    </div>${notice}${body}${gate}${side}</div>`;
+      </div></div></div>`;
+  if (S.pop==='cart') return `<div class="sidewrap" data-act="togglePop" data-pop="cart"><div class="sidepanel" data-stop="1">
+      <div class="h"><span class="grow">Cart</span><button class="ibtn press" data-act="togglePop" data-pop="cart" aria-label="Close">${I.x}</button></div>
+      <div class="bd">
+        <div class="opt h2">Sort items</div>
+        ${[['newest-last','Newest at the bottom'],['newest-first','Newest on top'],['name','By name'],['price','By price']].map(([v,l])=>`<button class="opt press" data-act="sortCart" data-v="${v}"><span class="radio ${S.sortCart===v?'on':''}"></span>${l}</button>`).join('')}
+        <div class="opt xs mut" style="min-height:auto;padding-bottom:calc(var(--u)*2)">Fees and shipping always stay last.</div>
+        <div class="opt h2">Columns</div>
+        ${[['Qty',1],['Image',0],['Item',1],['SKU',0],['Price',1],['Regular price',0],['Total',1],['Tax',0]].map(([l,on])=>`<div class="opt"><span class="grip">${I.grip}</span><span class="cb ${on?'on':''}">${I.check}</span>${l}</div>`).join('')}
+        <div class="opt h2">Open orders</div>
+        <div class="opt"><span>Tabs</span><span class="grow"></span><span class="segt" style="height:36px"><button class="${S.tabsPos==='top'?'on':''}" data-set="tabsPos" data-v="top">Top</button><button class="${S.tabsPos==='bottom'?'on':''}" data-set="tabsPos" data-v="bottom">Bottom</button></span></div>
+        <div class="opt h2">After checkout</div>
+        <div class="opt"><span>Show receipt</span><span class="sw on"></span></div><div class="opt"><span>Print receipt</span><span class="sw"></span></div>
+        <div class="opt"><span>Quick discounts</span><span class="grow"></span><span class="mut">5 · 10 · 15 · 20 %</span></div>
+        <div class="opt" style="margin-top:calc(var(--u)*3)"><button class="btn q press xs" style="height:36px;padding:0 8px;color:var(--muted-fg)">Restore defaults</button></div>
+      </div></div></div>`;
+  if (S.sheet==='edit') return `<div class="sidewrap" data-act="closeSheet"><div class="sidepanel" data-stop="1">
+      <div class="h"><span class="grow">Edit Flat white<span class="mut" style="font-weight:400;margin-left:8px">line 1 · 2 × £3.20</span></span><button class="ibtn press" data-act="closeSheet" aria-label="Close">${I.x}</button></div>
+      <div class="bd form">
+        <div class="fld"><label>Name</label><input class="in" value="Flat white"></div>
+        <div class="row" style="gap:calc(var(--u)*3)"><div class="fld grow"><label>Quantity</label><input class="in" value="2"></div><div class="fld grow"><label>Price</label><input class="in" value="3.20"></div></div>
+        <div class="fld"><label>Tax class</label><button class="btn press" style="width:100%;justify-content:space-between">Standard${I.chevd}</button></div>
+        <div class="fld"><label>SKU</label><input class="in" value="FW-12"></div>
+        <div class="fold"><button class="press">${I.chev}<span>Metadata</span><span class="mut">Oat milk</span></button></div>
+        <div class="fold"><button class="press">${I.chev}<span>Split</span><span class="mut">into 2 lines</span></button></div>
+        <div class="fold"><button class="press">${I.chev}<span>JSON</span></button></div>
+      </div>
+      <div class="ft"><button class="btn d press" data-act="closeSheet">${t.remove}</button><span class="grow"></span><button class="btn press" data-act="closeSheet">Cancel</button><button class="btn p press" data-act="closeSheet">Save</button></div></div></div>`;
+  return '';
 }
 function renderBar(){
   const t=T(); const phone=S.w==='phone'; const name=S.registers>1?'Front counter':'UK Store';
@@ -466,15 +518,30 @@ function renderBar(){
   return `<div class="bar">${phone?`<button class="ibtn press" aria-label="Menu" style="margin-left:calc(var(--u)*-3)">${I.menu}</button>`:''}<span class="place ell"><span class="ell">${name}</span>${S.registers>1?`<span class="mut" style="font-weight:400">· UK Store</span>`:''}</span>${pill}${off}<span class="grow"></span>${drawer}<button class="avbtn press" data-act="openSheet" data-sheet="user" aria-label="Demo Cashier"><span class="av">DC</span></button></div>`;
 }
 /* the open-order tabs */
+/* one strip, six styles (strip → Tab style). Always: scrolls horizontally with a fade at the end, the overview
+   button (count → the open-orders list) pinned left when there are more than three, + pinned right. */
+function tabHtml(o,i,style,t){
+  const on=i===0?'on':''; const chip=o.chip?`<span class="c ${o.chip[1]}"><i></i>${o.chip[0]}</span>`:'';
+  const dot=o.chip?`<span class="c ${o.chip[1]}"><i></i></span>`:'';
+  const cust=o.c!=='Guest'?`<span class="ell" style="max-width:9ch;font-weight:400">${o.c}</span>`:'';
+  const sub=o.chip?chip:`<span class="c mut">${o.age==='now'?t.cart:o.age}</span>`;
+  switch(style){
+    case 'line1': return `<button class="otab l1 press ${on}" data-act="selOrder" data-id="${o.id}"><span class="a"><b class="money">${fmt(o.t)}</b></span>${dot}</button>`;
+    case 'chips': return `<button class="otab chip2 press ${on}" data-act="selOrder" data-id="${o.id}"><span class="a"><b class="money">${fmt(o.t)}</b></span>${dot}</button>`;
+    case 'cards': return `<button class="otab cardt press ${on}" data-act="selOrder" data-id="${o.id}"><span class="a"><b class="money">${fmt(o.t)}</b></span><span class="c mut ell" style="max-width:100%">${o.c}</span>${o.chip?chip:`<span class="c mut">${o.age==='now'?t.cart:o.age}</span>`}</button>`;
+    case 'numbered': return `<button class="otab press ${on}" data-act="selOrder" data-id="${o.id}"><span class="a"><span class="num">#${i+1}</span><b class="money">${fmt(o.t)}</b>${cust}</span>${sub}</button>`;
+    case 'edge': return `<button class="otab edge press ${on} ${o.chip?o.chip[1]||'none':'none'}" data-act="selOrder" data-id="${o.id}"><span class="a"><b class="money">${fmt(o.t)}</b>${cust}</span></button>`;
+    default: return `<button class="otab press ${on}" data-act="selOrder" data-id="${o.id}"><span class="a"><b class="money">${fmt(o.t)}</b>${cust}</span>${sub}</button>`;
+  }
+}
 function renderTabs(pos){
-  const t=T(); const open=OPEN.slice(0,S.orders); const cur=open[0];
-  const maxShown = S.w==='phone' ? 1 : S.w==='desktop' ? 3 : 2;
-  const shown=open.slice(0,maxShown); const rest=open.length-shown.length;
-  const tab=(o,i)=>`<button class="otab press ${i===0?'on':''}" data-act="selOrder" data-id="${o.id}"><span class="a"><b class="money">${fmt(o.t)}</b>${o.c!=='Guest'?`<span class="ell" style="max-width:9ch;font-weight:400">${o.c}</span>`:''}</span>${o.chip?`<span class="c ${o.chip[1]}"><i></i>${o.chip[0]}</span>`:`<span class="c mut">${o.age==='now'?t.cart:o.age}</span>`}</button>`;
-  const more=rest>0?`<button class="otab more press" data-act="ordlist">+${rest} ${t.more}${I.chevu}</button>`:'';
+  const t=T(); const open=OPEN.slice(0,S.orders);
+  const shown=open; const rest=0;
+  const tab=(o,i)=>tabHtml(o,i,S.tabStyle,t);
+  const more=open.length>3?`<button class="ov press" data-act="ordlist" aria-label="${t.openOrders}" title="${t.openOrders}"><b>${open.length}</b>${I.chevu}</button>`:'';
   const list=S.ordlist?`<div class="ordlist" data-stop="1"><div class="hh">${t.openOrders}<span class="mut" style="font-weight:400">· ${open.length}</span><span class="grow"></span><button class="ibtn press" data-act="ordlist" aria-label="Close" style="width:36px;height:36px">${I.x}</button></div>
       ${open.map((o,i)=>`<button class="orow press ${i===0?'on':''}" data-act="selOrder" data-id="${o.id}"><span><span class="l1"><b class="money">${fmt(o.t)}</b><span>${o.c}</span></span><span class="l2">${o.chip?`<span class="c ${o.chip[1]} st"><i></i>${o.chip[0]}</span>`:`<span>${o.age==='now'?'This cart':`Started ${o.age} ago`}</span>`}</span></span>${I.chev}</button>`).join('')}</div>`:'';
-  return `<div class="tabs ${pos}">${shown.map(tab).join('')}${more}<span class="sp"></span><button class="otab plus press" aria-label="${t.newOrder}" title="${t.newOrder}">${I.plus}</button></div>${list}`;
+  return `<div class="tabs ${pos}">${more}<div class="scrollx">${shown.map(tab).join('')}</div><button class="otab plus press" aria-label="${t.newOrder}" title="${t.newOrder}">${I.plus}</button></div>${list}`;
 }
 function renderLine([n,q,p,s,kind],i){
   const t=T(); const lb = S.edit===i
@@ -493,7 +560,7 @@ function renderCart(){
   const f2=items.length?`<div class="cart-f2"><button class="btn press">${t.details}</button><button class="btn press">${t.save}</button></div>`:'';
   const timed=S.scn==='overdue'&&!items.length;
   const foot=timed?`<div class="cart-f"><button class="btn xl p press" data-act="startCount">${t.closeReg}</button></div>`:`<div class="cart-f"><button class="btn d press" ${items.length?'':'disabled'}>${t.void}</button><button class="btn xl p press" ${items.length?'':'disabled'} data-act="checkout">${t.checkout} <span class="money">${fmt(s)}</span></button></div>`;
-  const pop=S.pop==='cart'?`<div class="pop" style="right:calc(var(--u)*3);top:calc(max(var(--ctl),var(--floor)) * 2 + var(--u)*4)" data-stop="1">
+  const pop=false?`<div class="pop" style="right:calc(var(--u)*3);top:calc(max(var(--ctl),var(--floor)) * 2 + var(--u)*4)" data-stop="1">
       <div class="hh">Cart</div>
       <div class="opt h2">Sort items</div>
       ${[['newest-last','Newest at the bottom'],['newest-first','Newest on top'],['name','By name'],['price','By price']].map(([v,l])=>`<button class="opt press" data-act="sortCart" data-v="${v}"><span class="radio ${S.sortCart===v?'on':''}"></span>${l}</button>`).join('')}
@@ -552,7 +619,7 @@ function renderSheet(){
   const wrap=(title,sub,body,foot)=>`<div class="sheet-wrap" data-act="closeSheet"><div class="sheet" data-stop="1"><div class="sheet-h"><div class="grow"><div class="t">${title}</div>${sub?`<div class="mut">${sub}</div>`:''}</div><button class="ibtn press" data-act="closeSheet" aria-label="Close">${I.x}</button></div><div class="sheet-b">${body}</div>${foot?`<div class="sheet-f">${foot}</div>`:''}</div></div>`;
   if (S.sheet==='user') return wrap('Demo Cashier','Cashier · UK Store',`<div class="list"><div class="lr"><span>Your sales today</span><span class="mut xs">9 sales</span><span class="v money">${fmt(412.30)}</span></div></div><div class="mut xs b" style="text-transform:uppercase;letter-spacing:.04em">Switch user</div><div class="list"><button class="lr click press"><span class="av" style="width:28px;height:28px">AO</span><span>Amy Okafor</span><span class="mut xs" style="margin-left:auto">on this device</span>${I.chev}</button><button class="lr click press"><span class="av" style="width:28px;height:28px">SR</span><span>Sam Reilly</span><span class="mut xs" style="margin-left:auto">on this device</span>${I.chev}</button><button class="lr click press"><span>Another account…</span><span class="mut xs" style="margin-left:auto">WordPress login</span></button></div>`,`<button class="btn d press">Sign out</button><span class="grow"></span><button class="btn press" data-act="closeSheet">Close</button>`);
   if (S.sheet==='closure') return wrap(`<span class="row"><span class="disc">${I.check}</span>Closure 13 written</span>`,'UK Store · Sun 14 Sep 18:04',`<div class="kpis"><div class="kpi"><div class="l">Counted</div><div class="v money">${fmt(463.30)}</div></div><div class="kpi"><div class="l">Expected</div><div class="v money">${fmt(480.80)}</div></div><div class="kpi"><div class="l">Variance</div><div class="v money neg">${fmt(-17.50,true)}</div></div></div><div class="fold"><button class="press">${I.chev}<span>Z-report</span><span class="mut">preview</span></button></div>`,`<button class="btn q press" data-act="closeSheet">Print later</button><span class="grow"></span><button class="btn p press" data-act="closeSheet">${I.print}Print Z-report</button>`);
-  if (S.sheet==='edit') return wrap('Edit Flat white','Line 1 · 2 × £3.20',`<div class="fld"><label>Name</label><input class="in" value="Flat white"></div><div class="row"><div class="fld grow"><label>Quantity</label><input class="in" value="2"></div><div class="fld grow"><label>Price</label><input class="in" value="3.20"></div></div><div class="fld"><label>Tax class</label><button class="btn press" style="width:100%;justify-content:space-between">Standard${I.chevd}</button></div><div class="fold"><button class="press">${I.chev}<span>Metadata</span><span class="mut">Oat milk</span></button></div><div class="fold"><button class="press">${I.chev}<span>Split</span><span class="mut">into 2 lines</span></button></div>`,`<button class="btn d press" data-act="closeSheet">${t.remove}</button><span class="grow"></span><button class="btn press" data-act="closeSheet">Cancel</button><button class="btn p press" data-act="closeSheet">Save</button>`);
+  if (S.sheet==='edit-centred') return wrap('Edit Flat white','Line 1 · 2 × £3.20',`<div class="fld"><label>Name</label><input class="in" value="Flat white"></div><div class="row"><div class="fld grow"><label>Quantity</label><input class="in" value="2"></div><div class="fld grow"><label>Price</label><input class="in" value="3.20"></div></div><div class="fld"><label>Tax class</label><button class="btn press" style="width:100%;justify-content:space-between">Standard${I.chevd}</button></div><div class="fold"><button class="press">${I.chev}<span>Metadata</span><span class="mut">Oat milk</span></button></div><div class="fold"><button class="press">${I.chev}<span>Split</span><span class="mut">into 2 lines</span></button></div>`,`<button class="btn d press" data-act="closeSheet">${t.remove}</button><span class="grow"></span><button class="btn press" data-act="closeSheet">Cancel</button><button class="btn p press" data-act="closeSheet">Save</button>`);
   return '';
 }
 /* ---- tender ---- */
@@ -637,7 +704,7 @@ function renderNotes(){
 function render(){
   renderStrip();
   const f=document.getElementById('frame'); f.className='frame'; f.dataset.w=S.w; f.dataset.theme=S.theme; f.dataset.scale=S.scale;
-  f.innerHTML=`<div class="body">${S.w==='phone'?'':renderRail()}<div class="main">${renderPOS()}${renderPanel()}${renderSheet()}</div></div>`;
+  f.innerHTML=`<div class="body">${S.w==='phone'?'':renderRail()}<div class="main">${renderPOS()}${renderSide()}${renderPanel()}${renderSheet()}</div></div>`;
   renderNotes();
 }
 function stepTerminal(){ clearTimeout(termTimer); if(S.view!=='terminal') return; if(S.termStep<3){ termTimer=setTimeout(()=>{ S.termStep++; render(); stepTerminal(); }, S.termStep===1?2600:900); } else termTimer=setTimeout(()=>{ S.view='paid'; render(); },500); }
@@ -662,7 +729,7 @@ document.addEventListener('click',e=>{
     case 'closeSheet': if(e.target.closest('[data-stop]') && !b.classList.contains('ibtn') && !b.classList.contains('btn')) return; S.sheet=null; if(S.scn==='closure') S.scn='closed'; break;
     case 'startCount': S.panel=false; S.scn='counting'; S.counted=''; break;
     case 'doOpen': S.scn='open'; break;
-    case 'togglePop': S.pop=S.pop===b.dataset.pop?null:b.dataset.pop; break;
+    case 'togglePop': if(b.classList.contains('sidewrap') && e.target.closest('[data-stop]')) return; S.pop=S.pop===b.dataset.pop?null:b.dataset.pop; break;
     case 'checkout': S.tender=true; S.view='keypad'; S.entry=null; S.method='cash'; break;
     case 'closeTender': clearTimeout(termTimer); S.tender=false; S.view='keypad'; break;
     case 'method': S.method=b.dataset.m; S.entry=null; break;

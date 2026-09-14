@@ -19,8 +19,13 @@ fs.mkdirSync(OUT, { recursive: true });
     await set('legacy', leg); await scn('tender'); await shot(`legacy-${leg}`);
     await scn('tender-legacy'); await shot(`legacy-${leg}-view`);
   }
-  await set('legacy', 'tile');
+  await set('legacy', 'header-text');
   for (const c of ['tl', 'tr', 'bottom']) { await set('closePos', c); await scn('tender'); await shot(`close-${c}`); }
+  await set('closePos', 'tr');
+  // the open-order tab styles, 12 orders, list closed, tablet and phone
+  for (const w of ['tablet', 'phone']) { await set('w', w);
+    for (const s of ['lines2', 'line1', 'chips', 'cards', 'numbered', 'edge']) { await set('tabStyle', s); await scn('many-orders'); await page.click('.ordlist [data-act="ordlist"]'); await shot(`tabs-${s}-${w}`); } }
+  await set('w', 'tablet'); await set('tabStyle', 'lines2');
   await browser.close();
   if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
   console.log('ok · variants in ' + OUT);

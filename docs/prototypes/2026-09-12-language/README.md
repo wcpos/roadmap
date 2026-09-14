@@ -101,18 +101,28 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     cart* under the keypad. The pane sits left of the cart, so (b) puts the way out nearest what
     the cashier returns to and where every sheet's × already lives; (c) is the most literal but
     costs a row under the commit and reads like a second action. **Pick: (b).**
-15. **Legacy gateways.** **(a) dashed tiles in the same grid under a *Legacy* divider** (drawn
-    default) · (b) an *Other ways to pay ▾* link under the grid · (c) the Payments / Legacy toggle
-    (cut 1). A legacy gateway is a way to pay, so it belongs with the others; the toggle made it a
-    mode. (a) shows everything at once at the cost of a row; (b) hides it one tap away, which is
-    right for a store that rarely uses them. **Pick: (a)**, with (b) as the fallback when the grid
-    exceeds three rows.
+15. **Legacy gateways — decided (Paul, 2026-09-14).** The legacy checkout is an iframe that takes
+    the pane, so it is its own view; the **Payments | Legacy text toggle stays in the header**.
+    Icons (keypad | globe) were drawn and judged too confusing for now; a tile in the grid and a
+    link under the keypad were drawn and set aside. The strip keeps all four for the record.
 16. **Line actions.** Swipe to reveal *Edit* and *Remove* on touch; the same two on hover on the
     web; name and price edit in place with one tap. **Pick: as drawn** — rule 2 (no hover-only
-    affordances on touch) is why both exist.
-17. **Open-order tabs.** A tab strip with amount over status, folding into *+N more* with a full
-    list. Alternatives: a dropdown *Cart 1 of 12 ▾* (one tap to see anything), or the strip
-    scrolling horizontally (nothing is countable). **Pick: as drawn.**
+    affordances on touch) is why both exist. The edit-line form and the cart settings are
+    **full-height slide-outs** from the products side (Paul, 2026-09-14), the products settings a
+    slide-out from the opposite side, as on `next`.
+17. **Open-order tabs — the strip scrolls (Paul prefers scrolling).** Six styles in the strip
+    (*Tab style*) and in `pos-register/screens/variants/tabs-*.jpg`, tablet and phone, twelve
+    orders, each with the count button pinned left (opens the open-orders list) and + pinned
+    right, with a fade at the scroll edge:
+    (a) **amount over status** — two lines, the chip text readable without opening anything;
+    (b) **amount + dot** — one line, densest, status by colour only (needs the list for the word);
+    (c) **chips** — pills, the current one filled; reads as a filter row rather than tabs;
+    (d) **cards** — small cards with amount, customer and status, current with a primary top
+    edge; the most information, the tallest;
+    (e) **numbered** — like (a) with #1, #2… so a cashier can say "cart 3";
+    (f) **status edge** — one line with a coloured top edge per status, amount and customer.
+    **Pick: (a)** for a counter, (e) if cashiers refer to carts aloud; (b) only if the strip must
+    be one line high. (c) and (d) fight the buttons above them.
 
 ## Rejected while drawing
 
