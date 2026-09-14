@@ -2,7 +2,8 @@
 // Playwright is not a dependency of this repo. Resolve it from the environment first, then from a sibling monorepo checkout.
 const { chromium } = (() => {
   const path = require('path');
-  const candidates = ['playwright', path.join(__dirname, '..', '..', '..', '..', 'monorepo-v2', 'node_modules', 'playwright'), path.join(__dirname, '..', '..', '..', '..', 'monorepo', 'node_modules', 'playwright')];
+  const candidates = ['playwright'];
+  for (let d = __dirname; path.dirname(d) !== d; d = path.dirname(d)) for (const m of ['monorepo-v2', 'monorepo']) candidates.push(path.join(d, m, 'node_modules', 'playwright'));
   for (const c of candidates) { try { return require(c); } catch (e) { if (e.code !== 'MODULE_NOT_FOUND') throw e; } }
   console.error('playwright not found: npm i -D playwright, or keep a monorepo checkout beside this repo'); process.exit(1);
 })();
