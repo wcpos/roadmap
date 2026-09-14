@@ -215,7 +215,7 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .otab.plus{flex:none;align-items:center;justify-content:center;padding:0 calc(var(--u)*2);flex-direction:row;color:var(--muted-fg)}
 .tabs .sp{flex:1}
 /* the void button, round three: same height as Checkout, red only where it means something */
-.btn.vd{font-weight:600;min-width:calc(var(--fs)*7);padding:0 calc(var(--u)*4)}
+.btn.vd{font-weight:600;min-width:calc(var(--fs)*7);padding:0 calc(var(--u)*4);flex:0 0 auto}   /* Checkout keeps the width; Void is a word wide */
 .btn.vd.pill{background:var(--muted);border-color:transparent;color:var(--destructive)} .btn.vd.pill:active{background:color-mix(in oklch,var(--destructive) 14%,var(--muted))}
 .btn.vd.link{background:transparent;border-color:transparent;color:var(--destructive);font-weight:500} .btn.vd.link:active{background:color-mix(in oklch,var(--destructive) 10%,transparent)}
 .btn.vd.ghost{background:transparent;border-color:var(--border);color:var(--muted-fg);font-weight:500} .btn.vd.ghost:active,.btn.vd.ghost:hover{color:var(--destructive);border-color:color-mix(in oklch,var(--destructive) 40%,var(--border))}
