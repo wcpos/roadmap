@@ -152,8 +152,29 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     first swipe; (d) **park or void from the open-orders list** — swipe a row, or the two actions
     under the current sale; (e) **void with a reason, inline** — a one-beat reason row instead of
     a dialog, switchable off. (a), (b) and (c) are live in the prototype's *Void style* switch;
-    (b) is the default. **Pick: (b) with (a) as the second way out**, and (e) as a setting for
-    stores that answer to an owner.
+    (b) is the default. Paul: *"the only one of these worth keeping is the dots for a small
+    screen. The outline red is still best, but you need to do better."* Round three, the button
+    itself at Checkout's height with a press state: red text on a grey pill (Apple) · red text
+    link (Linear) · neutral, red on press (Stripe) · trash + word · outline refined · 56 pt
+    square. Paul: *"you've clearly lost the plot … the problem is not whether the button has a
+    border or not, it's far more fundamental than that."* **Round four** re-diagnoses: today's
+    footer is a dialog's button row (Cancel | OK) under a cart, so Void and Checkout read as
+    peers. Mobbin: Fresha (the one real POS with this footer) has a *To pay* row, one full-width
+    *Pay now* and a quiet ⋮; Shopify treats the draft order as a document with *Discard* and
+    *Save* in its title bar; Glovo, UNIQLO and 7-Eleven make the footer a bar with the total as
+    the largest thing and one action beside it; Lightspeed parks and discards from quiet text
+    above Pay. Six structures, each the whole cart column, at the top of
+    `pos-register/board-void.html` (captures `screens/board-void/sN-*.jpg`): (1) **lifecycle
+    row** — Details · Save · Print · Void as one row of text actions above a single Checkout;
+    (2) **the sale is a document** — *#102476 · Guest* as the title, *Discard* and *Save* beside
+    it, Checkout alone at the foot; (3) **a bar** — the amount at display size on the left, item
+    count and *Void sale* at metadata weight under it, Checkout on the right; (4) **receipt tail**
+    — one muted card holding the sale's name with *Void* at its head, the tax rows, *To pay*, and
+    *Pay now*; (5) **action rail** — the cart's verbs down its edge, Void at the bottom;
+    (6) Fresha exactly, for the record. (1)–(4) are live under the register's *Void button*
+    switch; (1) is the default. **Pick: (1) the lifecycle row** — it removes two buttons from the
+    footer, keeps Void visible and one tap, and makes it a sibling of Save instead of Checkout.
+    ⋮ stays the phone treatment.
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·

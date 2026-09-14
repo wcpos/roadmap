@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>POS — Void: five models and seven placements (board)</title>
+<title>POS — the end of the sale (board)</title>
 <style>
 :root{--u:4px;--fs:14px;--ctl:44px;--row:44px;--r:8px;--hair:1px;
   --bg:oklch(0.975 0.004 250);--fg:oklch(0.22 0.02 250);--card:oklch(1 0 0);--muted:oklch(0.955 0.006 250);--muted-fg:oklch(0.50 0.02 250);--border:oklch(0.90 0.008 250);
@@ -75,10 +75,26 @@ svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:
 .vd.square{width:56px;min-width:0;padding:0;background:transparent;color:var(--muted-fg)}
 .vd.today{height:44px;color:var(--destructive);font-size:14px;font-weight:500;align-self:center}
 .pressed{outline:2px dashed color-mix(in oklch,var(--destructive) 50%,transparent);outline-offset:3px}
+
+/* round four: the end of the sale, re-imagined (whole cart columns) */
+.r4 .board{grid-template-columns:repeat(2,440px)} .r4 .frame{height:600px}
+.r4 .doc{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 16px;border-bottom:var(--hair) solid var(--border);flex:none} .r4 .doc .ttl{font-weight:700;white-space:nowrap} .r4 .doc .ttl .mut{font-weight:500}
+.r4 .sbtn{height:36px;padding:0 12px;border-radius:var(--r);display:inline-flex;align-items:center;gap:6px;font-weight:500;border:var(--hair) solid var(--border);background:var(--card);white-space:nowrap} .r4 .sbtn.d{color:var(--destructive);border-color:transparent;background:transparent}
+.r4 .life{display:flex;gap:4px;justify-content:center;padding:2px 12px 8px;font-size:13px;color:var(--muted-fg);flex:none} .r4 .life span{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 10px;border-radius:6px} .r4 .life span svg{width:16px;height:16px} .r4 .life .d{color:var(--destructive)} .r4 .life .sep{width:1px;background:var(--border);padding:0;height:18px;align-self:center}
+.r4 .barf{display:flex;align-items:center;gap:12px;padding:10px 16px 12px;border-top:var(--hair) solid var(--border);flex:none} .r4 .barf .amt{font-size:24px;font-weight:700;line-height:1.1;letter-spacing:-.01em} .r4 .barf .meta{font-size:12px;color:var(--muted-fg);display:flex;gap:8px;margin-top:3px} .r4 .barf .meta .d{color:var(--destructive)} .r4 .barf .btn.p{flex:0 0 auto;padding:0 22px;margin-left:auto}
+.r4 .tail{margin:8px 12px 12px;background:var(--muted);border-radius:12px;padding:10px 12px 12px;display:flex;flex-direction:column;flex:none} .r4 .tail .th{display:flex;align-items:center;justify-content:space-between;font-weight:600;padding-bottom:6px} .r4 .tail .th .d{color:var(--destructive);font-weight:500;font-size:13px} .r4 .tail .row{display:flex;justify-content:space-between;padding:3px 0;color:var(--muted-fg)} .r4 .tail .pay{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0 10px;font-weight:700;font-size:18px;color:var(--fg);border-top:var(--hair) solid var(--border);margin-top:4px} .r4 .tail .btn.p{width:100%}
+.r4 .rail{width:60px;border-right:var(--hair) solid var(--border);display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:2px;background:var(--card);flex:none} .r4 .rail span{width:52px;height:52px;border-radius:var(--r);display:inline-flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted-fg);font-size:10px;gap:3px} .r4 .rail span svg{width:20px;height:20px} .r4 .rail .d{color:var(--destructive);margin-top:auto}
+.r4 .col{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
+.r4 .line{display:block} .r4 .tail .btn.p{flex:none;height:56px}
+.r4 .topay{display:flex;justify-content:space-between;align-items:baseline;padding:10px 16px 6px;font-weight:700;font-size:16px;flex:none}
+.r4 .sq{width:56px;height:56px;border:var(--hair) solid var(--border);border-radius:var(--r);display:inline-flex;align-items:center;justify-content:center;color:var(--fg);flex:none}
 </style>
 </head>
 <body>
-<h1>Round three — the Void button, done properly</h1>
+<h1>Round four — the end of the sale, re-imagined</h1>
+<p class="lead">Paul: <em>"the problem is not whether the button has a border or not, it's far more fundamental than that."</em> Agreed. Today's footer is a dialog's button row (Cancel | OK) put under a cart, so Void and Checkout read as peers, and every round so far restyled the wrong half of that pair. What the references do instead: the money and the sale's fate are two jobs and live in two places. <em>Fresha</em> (the one real POS on Mobbin with this footer): a <em>To pay</em> row, one full-width <em>Pay now</em>, a quiet ⋮ for everything else. <em>Shopify</em> treats the draft order as a document: <em>Discard</em> and <em>Save</em> sit in its title bar, nothing destructive at the foot. <em>Glovo, UNIQLO, 7-Eleven</em>: the footer is a bar, the total is the biggest thing on it, one action beside it. <em>Lightspeed</em>: park and discard are quiet text above Pay. Six structures below, each the whole cart column so the hierarchy is visible, not the button. The first four are live in the register under <em>Void button</em>.</p>
+<div class="r4"><div class="board" id="board4"></div></div>
+<h1 style="margin-top:40px">Round three — the Void button, done properly</h1>
 <p class="lead">Paul: the models are not it; the outlined red is still the best of the lot, "but you need to do better", and the ⋮ stays for phones only. What the references actually do with a destructive secondary beside a primary: <em>Apple</em> puts red text on a neutral grey pill; <em>Linear</em> uses a plain red text link in the danger zone; <em>Stripe</em> keeps Cancel neutral and saves red for the confirm. Nobody draws a red-outlined rectangle. Six treatments below, each the same height as Checkout with a press state; the today button for comparison. All live in the prototype under <em>Void button</em>.</p>
 <div class="r3"><div class="board" id="board3"></div></div>
 <h1 style="margin-top:40px">Round two — five ways to have no Void button</h1>
@@ -153,6 +169,30 @@ const P=[
  ['today','Outlined red, 44 pt','WCPOS today','for comparison: a red box on a hairline screen, shorter than the button beside it'],
 ];
 document.getElementById('board3').innerHTML=P.map(([k,t,a,w],i)=>`<section class="panel" data-n="r${i+1}-${k}"><div class="cap"><b><span class="n">${String(i+1).padStart(2,'0')}</span>${t} <span class="mut" style="font-weight:400">· after ${a}</span></b>${w}</div><div class="frame">${T}<div class="cf"><span class="vd ${k}">${k==='iconword'?I.trash+'Void':k==='square'?I.trash:'Void'}</span>${CK}</div><div class="tabs"><span class="otab on">£22.60</span><span class="otab">£8.40 <i></i></span></div></div></section>`).join('');
+})();</script>
+<script>(function(){
+/* round four: whole cart columns. What changes is the structure of the column's tail, not the chrome of one button. */
+const I4={user:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',note:'<svg viewBox="0 0 24 24"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5M9 13h6M9 17h6"/></svg>',pct:'<svg viewBox="0 0 24 24"><path d="M19 5L5 19"/><circle cx="7" cy="7" r="2.2"/><circle cx="17" cy="17" r="2.2"/></svg>',arrow:'<svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>'};
+const rows=`<div class="cth"><span>Qty</span><span>Item</span><span class="r">Price</span><span class="r">Total</span></div><div class="lines">${L.map(([q,n,s,p,t])=>`<div class="line"><div class="lb"><span class="q">${q}</span><span>${n}${s?`<span class="sub">${s}</span>`:''}</span><span class="r mut">£${p}</span><span class="r b">£${t}</span></div></div>`).join('')}</div>`;
+const totalsFull=`<div class="totals"><div class="mut"><span>Subtotal</span><span>£18.83</span></div><div class="mut"><span>VAT 20%</span><span>£3.77</span></div><div class="big"><span>Total</span><span>£22.60</span></div></div>`;
+const totalsSmall=`<div class="totals"><div class="mut"><span>Subtotal</span><span>£18.83</span></div><div class="mut"><span>VAT 20%</span><span>£3.77</span></div></div>`;
+const tabs=`<div class="tabs"><span class="otab on">£22.60</span><span class="otab">£8.40 <i></i></span><span class="grow"></span><span class="ibtn">${I.plus}</span></div>`;
+const ck=(l='Checkout £22.60')=>`<div class="cf"><span class="btn p">${l}</span></div>`;
+const P=[
+ ['doc','The sale is a document','Shopify draft order, Uxcel editor','What you do <em>to</em> the sale (save it, discard it) sits at its head, like a document\'s title bar. What you do <em>with</em> the money sits at its foot, alone. The header row today (Customer · Guest · + · ⚙) becomes the sale\'s title: number, customer, then Discard and Save. The footer is one button.',
+  `${bar()}<div class="doc"><span class="ttl">#102476 <span class="mut">· Guest</span></span><span class="chip q">${I.chevd}</span><span class="grow"></span><span class="sbtn d">Discard</span><span class="sbtn">Save</span><span class="ibtn">${I.sliders}</span></div>${rows}${totalsFull}${ck()}${tabs}`],
+ ['life','A lifecycle row above the money','Lightspeed park / discard, Shopify checkout links','The three buttons under the totals (Order details, Save order, Void) become one row of quiet text actions in the same register as each other: details, save, print, void. Only Checkout is a button. Void is still one tap and always visible, but it is a sibling of Save, not of Checkout.',
+  `${bar()}${cust()}${rows}${totalsFull}<div class="life"><span>${I.pen}Details</span><span>${I.drawer}Save</span><span>${I.print}Print</span><span class="sep"></span><span class="d">${I.trash}Void</span></div>${ck()}${tabs}`],
+ ['bar','The footer is a bar: total left, one action right','Glovo, UNIQLO, Yami, 7-Eleven','The amount is the largest thing in the column and it is not inside a button. Under it, the sale\'s metadata: item count, and Void as a small red word in that line, at metadata weight. Checkout is a wide button on the right, not a full-width one. The big Total row leaves the totals block because the bar is the total.',
+  `${bar()}${cust()}${rows}${totalsSmall}<div class="barf"><div><div class="amt">£22.60</div><div class="meta"><span>3 items · incl. VAT</span><span class="d">Void sale</span></div></div><span class="btn p">Checkout ${I4.arrow}</span></div>${tabs}`],
+ ['tail','The receipt tail: one card for the money and the fate','Fresha To pay, Square order summary','Everything under the lines becomes one card on the muted ground: the sale\'s name with Void at its head, the tax lines, a To pay row, and Pay now inside the card. The card is the object the cashier acts on; the lines above are just what is in it.',
+  `${bar()}${cust()}${rows}<div class="tail"><div class="th"><span>Sale #102476</span><span class="d">Void</span></div><div class="row"><span>Subtotal</span><span>£18.83</span></div><div class="row"><span>VAT 20%</span><span>£3.77</span></div><div class="pay"><span>To pay</span><span>£22.60</span></div><span class="btn p">Pay now</span></div>${tabs}`],
+ ['rail','An action rail: the cart\'s verbs down its edge','Toast, Lightspeed K, Square register','Everything a cashier does to the sale other than adding items and paying is a vertical rail on the cart\'s edge: customer, note, discount, save, print, and Void at the bottom in red, as far from Checkout as the column allows. The header row and the button row both disappear; the tail is totals and Checkout.',
+  `<div class="rail"><span>${I4.user}Customer</span><span>${I4.note}Note</span><span>${I4.pct}Discount</span><span>${I.drawer}Save</span><span>${I.print}Print</span><span class="d">${I.trash}Void</span></div><div class="col">${bar()}${rows}${totalsFull}${ck()}${tabs}</div>`],
+ ['fresha','Fresha, exactly','Fresha checkout (web)','For the record, what the best-designed POS on Mobbin does at this spot: a To pay row, a neutral 56 pt ⋮ square, and a full-width Pay now. The ⋮ is the phone treatment by Paul\'s ruling; here is the desktop original it came from.',
+  `${bar()}${cust()}${rows}${totalsSmall}<div class="topay"><span>To pay</span><span>£22.60</span></div><div class="cf"><span class="sq">${I.dots}</span><span class="btn p">Pay now</span></div>${tabs}`],
+];
+document.getElementById('board4').innerHTML=P.map(([k,t,a,w,h],i)=>`<section class="panel" data-n="s${i+1}-${k}"><div class="cap"><b><span class="n">${String(i+1).padStart(2,'0')}</span>${t} <span class="mut" style="font-weight:400">· after ${a}</span></b>${w}</div><div class="frame" ${k==='rail'?'style="flex-direction:row"':''}>${h}</div></section>`).join('');
 })();</script>
 </body>
 </html>
