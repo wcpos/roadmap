@@ -322,6 +322,7 @@ const I = {
   trash:'<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>',
   grip:'<svg viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.2"/><circle cx="15" cy="6" r="1.2"/><circle cx="9" cy="12" r="1.2"/><circle cx="15" cy="12" r="1.2"/><circle cx="9" cy="18" r="1.2"/><circle cx="15" cy="18" r="1.2"/></svg>',
   back:'<svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>',
+  keypad:'<svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="1.6"/><circle cx="12" cy="6" r="1.6"/><circle cx="18" cy="6" r="1.6"/><circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/><circle cx="6" cy="18" r="1.6"/><circle cx="12" cy="18" r="1.6"/><circle cx="18" cy="18" r="1.6"/></svg>',
 };
 const CUR='£';
 const fmt=(n,sign=false)=>{const a=Math.abs(n).toFixed(2);const s=n<0?'−':(sign&&n>0?'+':'');return `${s}${CUR}${a}`;};
@@ -352,7 +353,7 @@ const OPEN=[
 const S={ w:'tablet', theme:'light', scale:'regular', scn:'open',
   phoneTab:'cart', panel:false, sheet:null, tender:false, view:'keypad', entry:null, method:'cash', settle:null, online:true, long:false,
   pop:null, tabsPos:'bottom', registers:1, counted:'', open:'200.00', reveal:null, edit:null, orders:2, ordlist:false, view2:'grid',
-  closePos:'tr', legacy:'tiles', termStep:1, sortCart:'newest-last' };
+  closePos:'tr', legacy:'tile', termStep:1, sortCart:'newest-last' };
 const STR=()=>S.long?{
   search:'Produkte suchen',scan:'Scannen',priceCheck:'Nur Preisprüfung, bis die Kasse geöffnet ist.',counting:'Keine Verkäufe, während die Kasse gezählt wird.',
   customer:'Kunde',guest:'Gast',details:'Bestelldetails',save:'Bestellung speichern',void:'Stornieren',checkout:'Zur Kasse',subtotal:'Zwischensumme',fees:'Gebühren',tax:'MwSt. 19 %',total:'Gesamt',
@@ -360,7 +361,7 @@ const STR=()=>S.long?{
   openReg:'Kasse öffnen',cashIn:'Bargeld in der Schublade',defaultFloat:'Standard-Wechselgeld',lastCount:'letzte Zählung',closeReg:'Kasse schließen',backSell:'Zurück zum Verkauf',
   counted:'Bargeld gezählt, inkl. Wechselgeld',expected:'Erwartet',exact:'Exakt',closePrint:'Schließen & drucken',paidIn:'Einzahlung',paidOut:'Auszahlung',noSale:'Kein Verkauf',
   inDrawer:'in der Schublade',opened:'geöffnet',by:'von',xrep:'X-Bericht drucken',lastClosure:'Letzter Abschluss',copy:'Kopie',closed:'Geschlossen',countingP:'Zählung',overdue:'Überfällig',offline:'Offline',
-  noResults:'Nichts passt zu',clear:'Suche leeren',pickT:'Welche Kasse ist dieses Gerät?',toPay:'Zu zahlen',take:'Nehmen',in:'in',change:'Wechselgeld',exactAmt:'Genau',paid:'Bezahlt',printNew:'Beleg drucken · Neuer Verkauf',email:'Beleg per E-Mail',noRcpt:'Kein Beleg · Neuer Verkauf',notAvail:'nicht verfügbar',split:'Teilen',payments:'Zahlungen',legacy:'Klassisch',items:'Artikel',
+  noResults:'Nichts passt zu',clear:'Suche leeren',pickT:'Welche Kasse ist dieses Gerät?',toPay:'Zu zahlen',take:'Nehmen',in:'in',change:'Wechselgeld',exactAmt:'Genau',paid:'Bezahlt',printNew:'Beleg drucken · Neuer Verkauf',email:'Beleg per E-Mail',noRcpt:'Kein Beleg · Neuer Verkauf',notAvail:'nicht verfügbar',split:'Teilen',payments:'Zahlungen',legacy:'Klassisch',legacyLink:'Stattdessen den Shop-Checkout verwenden',items:'Artikel',
   qty:'Menge',item:'Artikel',price:'Preis',lineTotal:'Summe',edit:'Bearbeiten',remove:'Entfernen',more:'weitere',openOrders:'Offene Bestellungen',newOrder:'Neue Bestellung',backCart:'Zurück zum Warenkorb',otherWays:'Weitere Zahlungsarten',
 }:{
   search:'Search products',scan:'Scan',priceCheck:'Price check only until the register is open.',counting:'No sales while the register is counting.',
@@ -369,12 +370,12 @@ const STR=()=>S.long?{
   openReg:'Open register',cashIn:'Cash in the drawer',defaultFloat:'default float',lastCount:'last count',closeReg:'Close register',backSell:'Back to selling',
   counted:'Cash counted, float included',expected:'Expected',exact:'Exact',closePrint:'Close & print',paidIn:'Paid in',paidOut:'Paid out',noSale:'No sale',
   inDrawer:'in the drawer',opened:'opened',by:'by',xrep:'Print X-report',lastClosure:'Last closure',copy:'copy',closed:'Closed',countingP:'Counting',overdue:'Overdue',offline:'Offline',
-  noResults:'Nothing matches',clear:'Clear search',pickT:'Which register is this device?',toPay:'To pay',take:'Take',in:'in',change:'Change',exactAmt:'Exact',paid:'Paid',printNew:'Print receipt · New sale',email:'Email receipt',noRcpt:'No receipt · New sale',notAvail:'not available right now',split:'Split',payments:'Payments',legacy:'Legacy',items:'items',
+  noResults:'Nothing matches',clear:'Clear search',pickT:'Which register is this device?',toPay:'To pay',take:'Take',in:'in',change:'Change',exactAmt:'Exact',paid:'Paid',printNew:'Print receipt · New sale',email:'Email receipt',noRcpt:'No receipt · New sale',notAvail:'not available right now',split:'Split',payments:'Payments',legacy:'Legacy',legacyLink:'Use the store checkout instead',items:'items',
   qty:'Qty',item:'Item',price:'Price',lineTotal:'Total',edit:'Edit',remove:'Remove',more:'more',openOrders:'Open orders',newOrder:'New order',backCart:'Back to cart',otherWays:'Other ways to pay',
 };
 const SCENES=[['open','Session open · focus on search'],['added','Line just added (beat)'],['line-actions','Line actions (swipe / hover)'],['line-edit','Line · inline edit'],['many-orders','12 open orders'],['cart-settings','Cart settings (anchored)'],['empty','New empty cart'],
   ['closed','Register closed'],['pick','Choose register'],['counting','Counting'],['overdue','Overdue'],['panel','Register panel'],['closure','Closure written (beat)'],['offline','Offline'],
-  ['loading','Products loading'],['noresults','No results'],['settings','Products settings (slide-out)'],['tender','Tender · keypad'],['tender-card','Tender · on the terminal'],['paid','Paid (beat)'],['long','German strings']];
+  ['loading','Products loading'],['noresults','No results'],['settings','Products settings (slide-out)'],['tender','Tender · keypad'],['tender-card','Tender · on the terminal'],['tender-legacy','Tender · legacy (iframe)'],['paid','Paid (beat)'],['long','German strings']];
 
 let termTimer=null;
 function jump(scn){
@@ -393,6 +394,7 @@ function jump(scn){
     case 'settings': S.phoneTab='products'; S.pop='products'; break;
     case 'tender': S.tender=true; S.phoneTab='products'; break;
     case 'tender-card': S.tender=true; S.view='terminal'; S.method='sumup'; S.phoneTab='products'; S.termStep=1; break;
+    case 'tender-legacy': S.tender=true; S.view='legacy'; S.phoneTab='products'; break;
     case 'paid': S.tender=true; S.view='paid'; S.phoneTab='products'; break;
     case 'long': S.long=true; break;
     case 'counting': S.counted='463.30'; break;
@@ -413,7 +415,7 @@ function renderStrip(){
     <div class="g"><b>Tabs</b>${seg('tabsPos',[['bottom','bottom'],['top','top']])}</div>
     <div class="g"><b>Registers</b>${seg('registers',[[1,'1'],[3,'3']])}</div>
     <div class="g"><b>Tender close</b>${seg('closePos',[['tl','top-left ×'],['tr','top-right ×'],['bottom','Back to cart under keypad']])}</div>
-    <div class="g"><b>Legacy</b>${seg('legacy',[['tiles','tiles in the grid'],['link','Other ways to pay ▾'],['toggle','Payments / Legacy toggle']])}</div>
+    <div class="g"><b>Legacy switch</b>${seg('legacy',[['tile','a tile in the method grid'],['header-icons','header · icon toggle'],['header-text','header · text toggle'],['bottom','link under the keypad']])}</div>
     <div class="g"><b>State</b><span class="seg">${SCENES.map(([v,l])=>`<button class="${S.scn===v?'on':''}" data-scn="${v}">${l}</button>`).join('')}</span></div>`;
 }
 function renderRail(){
@@ -558,7 +560,9 @@ function closeBtn(){ const t=T(); return `<button class="ibtn press" data-act="c
 function tenderHead(){
   const t=T();
   const title=`<span class="mut ell">Order <b>#102476</b> · ${lines().length} ${t.items} · ${t.guest}</span>`;
-  const toggle = S.legacy==='toggle' ? `<span class="segt" style="height:36px"><button class="on">${t.payments}</button><button>${t.legacy}</button></span>` : '';
+  const leg = S.view==='legacy';
+  const toggle = S.legacy==='header-text' ? `<span class="segt" style="height:36px" role="tablist"><button class="${leg?'':'on'}" data-act="mode" data-mode="keypad">${t.payments}</button><button class="${leg?'on':''}" data-act="mode" data-mode="legacy">${t.legacy}</button></span>`
+    : S.legacy==='header-icons' ? `<span class="segt" style="height:36px" role="tablist"><button class="${leg?'':'on'}" data-act="mode" data-mode="keypad" aria-label="${t.payments}" title="${t.payments}">${I.keypad}</button><button class="${leg?'on':''}" data-act="mode" data-mode="legacy" aria-label="${t.legacy}" title="${t.legacy}">${I.globe}</button></span>` : '';
   if (S.closePos==='tl') return `<div class="hd">${closeBtn()}${title}<span class="grow"></span>${toggle}</div>`;
   if (S.closePos==='tr') return `<div class="hd" style="padding-left:calc(var(--u)*4)">${title}<span class="grow"></span>${toggle}${closeBtn()}</div>`;
   return `<div class="hd" style="padding-left:calc(var(--u)*4)">${title}<span class="grow"></span>${toggle}</div>`;
@@ -569,6 +573,19 @@ function renderTender(){
     const change=S.entry&&S.entry>total?S.entry-total:0;
     return `<div class="pay"><div class="paidwrap"><span class="disc">${I.check}</span><div class="h money">${change>0?`${t.change} ${fmt(change)}`:`${t.paid} ${fmt(total)}`}</div><div class="mut">${change>0?`${t.paid} ${fmt(total)} · tendered ${fmt(S.entry)} in Cash`:`${fmt(total)} · SumUp · contactless`}</div>
       <div class="acts"><button class="btn xl p press" data-act="newSale">${I.print}${t.printNew}</button><button class="btn press" data-act="newSale">${t.email}</button><button class="btn q press" data-act="newSale">${t.noRcpt}</button></div></div></div>`;
+  }
+  if (S.view==='legacy'){
+    const f=(l,w='100%')=>`<div style="flex:1 1 ${w};min-width:120px"><div class="xs mut" style="margin-bottom:4px">${l}</div><div style="height:38px;border:var(--hair) solid var(--border);border-radius:6px;background:var(--card)"></div></div>`;
+    return `<div class="pay">${tenderHead()}<div class="scroll" style="padding:calc(var(--u)*3) calc(var(--u)*4)">
+      <div style="border:var(--hair) dashed var(--border);border-radius:var(--r);padding:calc(var(--u)*4);display:flex;flex-direction:column;gap:calc(var(--u)*3);background:var(--bg)">
+        <div class="row xs mut"><span class="st info"><i></i>Store checkout · loaded from your site</span><span class="grow"></span><span>iframe</span></div>
+        <div class="b">Billing details</div>
+        <div class="row" style="gap:calc(var(--u)*3);flex-wrap:wrap">${f('First name','40%')}${f('Last name','40%')}</div>
+        ${f('Email address')}
+        <div class="b" style="margin-top:calc(var(--u)*2)">Payment</div>
+        <div class="list"><div class="lr"><span class="radio on"></span>Credit card (Stripe)</div><div class="lr" style="flex-direction:column;align-items:stretch;gap:calc(var(--u)*2);padding:calc(var(--u)*3)"><div class="row" style="gap:calc(var(--u)*3)">${f('Card number','60%')}${f('Expiry','15%')}${f('CVC','15%')}</div></div><div class="lr"><span class="radio"></span>PayPal</div><div class="lr"><span class="radio"></span>Bank transfer</div></div>
+      </div></div>
+      <div class="commit" style="flex-direction:row"><button class="btn xl press" data-act="closeTender" style="width:auto">Return to cart</button><button class="btn xl p press" data-act="take" style="width:auto;flex:1">Process payment · ${fmt(total)}</button></div></div>`;
   }
   if (S.view==='terminal'){
     const steps=['Sent','On terminal','Approved','Captured']; const st=S.termStep;
@@ -585,11 +602,11 @@ function renderTender(){
   const helpers=m.change?[50,100].map(n=>`<button class="chip press ${entry===n?'on':''}" data-act="entry" data-v="${n}">${fmt(n)}</button>`).join('')+`<button class="chip press ${ghost?'on':''}" data-act="entry" data-v="">${t.exactAmt} ${fmt(total)}</button>`:`<button class="chip press ${ghost?'on':''}" data-act="entry" data-v="">Full balance ${fmt(total)}</button>`;
   const commit=m.k==='terminal'?`Send ${fmt(Math.min(entry,total))} to ${m.t}`:m.k==='globe'?`Pay ${fmt(total)} with ${m.t}`:`${t.take} ${fmt(Math.min(entry,total))} ${t.in} ${m.t}`;
   const tile=x=>`<button class="mt press ${x.id===S.method?'on':''} ${x.k==='globe'?'legacy':''}" data-act="method" data-m="${x.id}">${I[x.k]}<span class="ell">${x.t}</span>${x.dot?`<span class="dot"></span>`:''}</button>`;
-  let methods=`<div class="methods">${METHODS.map(tile).join('')}</div>`;
-  if (S.legacy==='tiles') methods+=`<div class="mgroup">${t.legacy}</div><div class="methods" style="padding-top:calc(var(--u)*2)">${LEGACY.map(tile).join('')}</div>`;
-  else if (S.legacy==='link') methods+=`<div class="unav"><button class="btn q press" style="height:36px">${t.otherWays} · ${LEGACY.map(l=>l.t).join(', ')}${I.chevd}</button></div>`;
+  /* the legacy switch: a tile in the grid goes to the iframe view like a terminal tile goes to the terminal view */
+  const legacyTile = S.legacy==='tile' ? `<button class="mt press legacy" data-act="mode" data-mode="legacy" title="The store's own checkout page">${I.globe}<span class="ell">${t.legacy}</span></button>` : '';
+  let methods=`<div class="methods">${METHODS.map(tile).join('')}${legacyTile}</div>`;
   const unav=`<div class="unav xs">${UNAVAIL.length} ${t.notAvail} · ${UNAVAIL.map(([n,w])=>`${n} (${w})`).join(', ')}</div>`;
-  const bottomClose = S.closePos==='bottom' ? `<button class="btn q press" data-act="closeTender">${I.back}${t.backCart}</button>` : '';
+  const bottomClose = (S.closePos==='bottom' ? `<button class="btn q press" data-act="closeTender">${I.back}${t.backCart}</button>` : '') + (S.legacy==='bottom' ? `<button class="btn q press" data-act="mode" data-mode="legacy" style="color:var(--muted-fg)">${I.globe}${t.legacyLink}</button>` : '');
   return `<div class="pay">${tenderHead()}<div class="scroll">
     <div class="amtblock"><div class="lbl">${t.toPay} <span class="money">${fmt(total)}</span><button class="chip press" style="text-transform:none;letter-spacing:0;height:calc(var(--fs)*1.9)">${t.split}</button>${!S.online?`<span class="pill warn">${I.cloudoff}${t.offline}</span>`:''}</div><div class="big money ${ghost?'ghost':''}">${fmt(entry)}</div><div class="line">${line}</div></div>
     ${methods}${unav}</div><div class="helpers">${helpers}</div>
@@ -649,6 +666,7 @@ document.addEventListener('click',e=>{
     case 'checkout': S.tender=true; S.view='keypad'; S.entry=null; S.method='cash'; break;
     case 'closeTender': clearTimeout(termTimer); S.tender=false; S.view='keypad'; break;
     case 'method': S.method=b.dataset.m; S.entry=null; break;
+    case 'mode': S.view = b.dataset.mode==='legacy' ? 'legacy' : 'keypad'; break;
     case 'entry': S.entry=b.dataset.v===''?null:+b.dataset.v; break;
     case 'key': { const k=b.dataset.k; const cur=S.entry===null?'':String(Math.round(S.entry*100)); const d=k==='C'?'':k==='⌫'?cur.slice(0,-1):(cur+k).slice(0,8); S.entry=d===''?null:+d/100; break; }
     case 'take': { const m=[...METHODS,...LEGACY].find(x=>x.id===S.method); if(m&&m.k==='terminal'){ S.view='terminal'; S.termStep=0; render(); termTimer=setTimeout(()=>{S.termStep=1;render();stepTerminal();},700); return; } S.view='paid'; break; }

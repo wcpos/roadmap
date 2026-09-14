@@ -11,7 +11,7 @@ const QUICK = process.argv.includes('--quick');
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
 
-const STATES = ['open','added','line-actions','line-edit','many-orders','cart-settings','empty','closed','pick','counting','overdue','panel','closure','offline','loading','noresults','settings','tender','tender-card','paid','long'];
+const STATES = ['open','added','line-actions','line-edit','many-orders','cart-settings','empty','closed','pick','counting','overdue','panel','closure','offline','loading','noresults','settings','tender','tender-card','tender-legacy','paid','long'];
 const WIDTHS = QUICK ? ['tablet'] : ['phone','tablet','desktop'];
 const THEMES = QUICK ? ['light'] : ['light','dark'];
 const SCALES = QUICK ? ['regular'] : ['regular','compact'];
