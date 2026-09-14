@@ -13,7 +13,8 @@ fs.mkdirSync(OUT, { recursive: true });
   await page.goto('file://' + path.join(DIR, 'index.html'));
   const set = (k, v) => page.click(`.strip button[data-set="${k}"][data-v="${v}"]`);
   const scn = (v) => page.click(`.strip button[data-scn="${v}"]`);
-  const shot = (name) => page.locator('#frame').screenshot({ path: path.join(OUT, name + '.jpg'), type: 'jpeg', quality: 82, animations: 'disabled' });
+  // clicks scroll the page and the sticky strip would overlap the frame; reset before every capture
+  const shot = async (name) => { await page.evaluate(() => window.scrollTo(0, 0)); await page.locator('#frame').screenshot({ path: path.join(OUT, name + '.jpg'), type: 'jpeg', quality: 82, animations: 'disabled' }); };
   await set('w', 'tablet'); await set('theme', 'light'); await set('scale', 'regular');
   for (const leg of ['tile', 'header-icons', 'header-text', 'bottom']) {
     await set('legacy', leg); await scn('tender'); await shot(`legacy-${leg}`);
