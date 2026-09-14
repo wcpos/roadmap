@@ -8,8 +8,9 @@ const fs = require('fs');
 const DIR = __dirname;
 const OUT = path.join(DIR, 'screens');
 const QUICK = process.argv.includes('--quick');
-fs.rmSync(OUT, { recursive: true, force: true });
+// clear only this script's own captures; the board and variant folders under screens/ are kept
 fs.mkdirSync(OUT, { recursive: true });
+for (const f of fs.readdirSync(OUT)) if (f.endsWith('.jpg') || f.endsWith('.png')) fs.rmSync(path.join(OUT, f));
 
 const STATES = ['open','added','line-actions','line-edit','many-orders','cart-settings','empty','closed','pick','counting','overdue','panel','closure','offline','loading','noresults','table','settings','tender','tender-card','tender-legacy','paid','long'];
 const WIDTHS = QUICK ? ['tablet'] : ['phone','tablet','desktop'];

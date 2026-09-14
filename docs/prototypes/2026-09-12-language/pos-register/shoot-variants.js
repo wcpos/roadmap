@@ -28,9 +28,9 @@ fs.mkdirSync(OUT, { recursive: true });
     for (const s of ['lines2', 'line1', 'chips', 'cards', 'numbered', 'edge']) { await set('tabStyle', s); await scn('many-orders'); await page.click('.ordlist [data-act="ordlist"]'); await shot(`tabs-${s}-${w}`); } }
   await set('w', 'tablet'); await set('tabStyle', 'line1');
   // the void styles, live: tablet, session open; the menu opened, the hold mid-press
-  for (const v of ['menu', 'hold', 'text', 'outline', 'discard', 'trash', 'details']) {
+  for (const v of ['chip', 'tab', 'none', 'menu', 'hold', 'outline', 'details']) {
     await set('voidStyle', v); await scn('open');
-    if (v === 'menu') await page.click('[data-act="vmenu"]');
+    if (v === 'menu' || v === 'chip') await page.click('[data-act="vmenu"]');
     if (v === 'details') await page.click('[data-pop="details"]');
     if (v === 'hold') { await page.hover('[data-hold]'); await page.mouse.down(); await page.waitForTimeout(350); }
     await shot(`void-${v}`);

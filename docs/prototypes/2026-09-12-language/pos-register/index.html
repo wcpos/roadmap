@@ -218,6 +218,7 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .vmenu{position:absolute;left:calc(var(--u)*4);bottom:calc(100% - var(--u)*2);width:240px;background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);padding:calc(var(--u)*2);z-index:25;animation:drop var(--t) var(--ease)}
 .vmenu button{display:flex;align-items:center;gap:calc(var(--u)*2.5);width:100%;height:max(var(--row),var(--floor));padding:0 calc(var(--u)*2.5);border-radius:calc(var(--r) - 2px);text-align:left}
 .vmenu button:active{background:var(--muted)} .vmenu .d{color:var(--destructive)} .vmenu .sep{border-top:var(--hair) solid var(--border);margin:calc(var(--u)*1) 0}
+.otab .tabx{width:22px;height:22px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg);background:var(--muted);margin-left:calc(var(--u)*1)} .otab .tabx svg{width:12px;height:12px}
 .btn.hold{position:relative;overflow:hidden;color:var(--destructive);border-color:var(--border)}
 .btn.hold .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:color-mix(in oklch,var(--destructive) 18%,transparent);transition:width 0s}
 .btn.hold.holding .fill{width:100%;transition:width 600ms linear}
@@ -394,7 +395,7 @@ const S={ w:'tablet', theme:'light', scale:'regular', scn:'open',
   phoneTab:'cart', panel:false, sheet:null, tender:false, view:'keypad', entry:null, method:'cash', settle:null, online:true, long:false,
   pop:null, tabsPos:'bottom', registers:1, counted:'', open:'200.00', reveal:null, edit:null, orders:2, ordlist:false, view2:'grid',
   closePos:'tr', legacy:'header-text', termStep:1, sortCart:'newest-last', tabStyle:'line1',   /* Paul 2026-09-14: amount + dot, with a format setting */
-  voidStyle:'menu', vmenu:false, toast:null };
+  voidStyle:'chip', vmenu:false, toast:null };
 const STR=()=>S.long?{
   search:'Produkte suchen',scan:'Scannen',priceCheck:'Nur Preisprüfung, bis die Kasse geöffnet ist.',counting:'Keine Verkäufe, während die Kasse gezählt wird.',
   customer:'Kunde',guest:'Gast',details:'Bestelldetails',save:'Bestellung speichern',void:'Stornieren',checkout:'Zur Kasse',subtotal:'Zwischensumme',fees:'Gebühren',tax:'MwSt. 19 %',total:'Gesamt',
@@ -458,7 +459,7 @@ function renderStrip(){
     <div class="g"><b>Registers</b>${seg('registers',[[1,'1'],[3,'3']])}</div>
     <div class="g"><b>Tender close</b>${seg('closePos',[['tl','top-left ×'],['tr','top-right ×'],['bottom','Back to cart under keypad']])}</div>
     <div class="g"><b>Tab style</b>${seg('tabStyle',[['lines2','amount over status'],['line1','amount + dot'],['chips','chips'],['cards','cards'],['numbered','numbered'],['edge','status edge']])}</div>
-    <div class="g"><b>Void style</b>${seg('voidStyle',[['menu','⋮ beside Checkout'],['hold','hold to void'],['text','quiet text under'],['outline','outlined red (today)'],['discard','Discard in the bar'],['trash','trash in customer row'],['details','row in Order details']])}</div>
+    <div class="g"><b>Void style</b>${seg('voidStyle',[['chip','order chip menu'],['tab','close the tab'],['none','emptying is voiding'],['menu','⋮ beside Checkout'],['hold','hold to void'],['outline','outlined red (today)'],['details','row in Order details']])}</div>
     <div class="g"><b>Legacy switch</b>${seg('legacy',[['header-text','header · text toggle (decided)'],['header-icons','header · icons'],['tile','tile in the grid'],['bottom','link under the keypad']])}</div>
     <div class="g"><b>State</b><span class="seg">${SCENES.map(([v,l])=>`<button class="${S.scn===v?'on':''}" data-scn="${v}">${l}</button>`).join('')}</span></div>`;
 }
@@ -579,7 +580,7 @@ function tabHtml(o,i,style,t){
   const cust=o.c!=='Guest'?`<span class="ell" style="max-width:9ch;font-weight:400">${o.c}</span>`:'';
   const sub=o.chip?chip:`<span class="c mut">${o.age==='now'?t.cart:o.age}</span>`;
   switch(style){
-    case 'line1': return `<button class="otab l1 press ${on}" data-act="selOrder" data-id="${o.id}"><span class="a"><b class="money">${fmt(o.t)}</b></span>${dot}</button>`;
+    case 'line1': return `<button class="otab l1 press ${on}" data-act="selOrder" data-id="${o.id}"><span class="a"><b class="money">${fmt(o.t)}</b></span>${dot}${S.voidStyle==='tab'&&i===0&&lines().length?`<span class="tabx press" data-act="void" role="button" aria-label="Close this sale (void)" title="Close this sale">${I.x}</span>`:''}</button>`;
     case 'amountcust': return `<button class="otab l1 press ${on}" data-act="selOrder" data-id="${o.id}"><span class="a"><b class="money">${fmt(o.t)}</b><span class="ell" style="max-width:10ch;font-weight:400">${o.c}</span></span>${dot}</button>`;
     case 'cust': return `<button class="otab l1 press ${on}" data-act="selOrder" data-id="${o.id}"><span class="a"><b class="ell" style="max-width:12ch">${o.c==='Guest'?fmt(o.t):o.c}</b></span>${dot}</button>`;
     case 'chips': return `<button class="otab chip2 press ${on}" data-act="selOrder" data-id="${o.id}"><span class="a"><b class="money">${fmt(o.t)}</b></span>${dot}</button>`;
@@ -608,14 +609,17 @@ function renderLine([n,q,p,s,kind],i){
 }
 function renderCart(){
   const t=T(); const items=lines(); const s=sub(); const fees=items.filter(l=>l[4]==='fee').reduce((a,[,q,p])=>a+q*p,0); const goods=s-fees; const tax=+(goods-goods/1.2).toFixed(2);
-  const head=`<div class="custrow"><span class="mut">${t.customer}</span><button class="chip press">${t.guest}${I.chevd}</button><span class="grow"></span>${S.voidStyle==='trash'&&items.length?`<button class="ibtn press" style="color:var(--destructive)" data-act="void" aria-label="${t.void} order" title="${t.void} order">${I.trash}</button>`:''}<button class="ibtn press" aria-label="Add">${I.plus}</button><button class="ibtn press ${S.pop==='cart'?'on':''}" data-act="togglePop" data-pop="cart" aria-label="Cart settings">${I.sliders}</button></div>`;
+  /* the order chip: the sale's identity, and the menu of what you do TO the sale (Linear ⋯, Shopify More actions) */
+  const chipMenu = S.vmenu && S.voidStyle==='chip' ? `<div class="vmenu" style="left:calc(var(--u)*4);top:calc(100% - var(--u)*1);bottom:auto" data-stop="1"><button class="press" data-act="vmenu">${I.drawer}Park this sale</button><button class="press" data-act="vmenu">${I.check}${t.save}</button><button class="press" data-act="togglePop" data-pop="details">${t.details}</button><button class="press" data-act="vmenu">${I.print}Print pro-forma</button><div class="sep"></div><button class="press d" data-act="void">${I.trash}${t.void} sale</button></div>` : '';
+  const orderChip = S.voidStyle==='chip' ? `<button class="chip press ${S.vmenu?'on':''}" style="border-color:transparent;padding:0 calc(var(--u)*2)" data-act="vmenu"><b>#102476</b>${I.chevd}</button>` : `<span class="mut">${t.customer}</span>`;
+  const head=`<div class="custrow" style="position:relative">${orderChip}<button class="chip press">${t.guest}${I.chevd}</button><span class="grow"></span>${S.voidStyle==='trash'&&items.length?`<button class="ibtn press" style="color:var(--destructive)" data-act="void" aria-label="${t.void} order" title="${t.void} order">${I.trash}</button>`:''}<button class="ibtn press" aria-label="Add">${I.plus}</button><button class="ibtn press ${S.pop==='cart'?'on':''}" data-act="togglePop" data-pop="cart" aria-label="Cart settings">${I.sliders}</button>${chipMenu}</div>`;
   const th=items.length?`<div class="cart-th"><span>${t.qty}</span><span>${t.item}</span><span class="r">${t.price}</span><span class="r">${t.lineTotal}</span></div>`:'';
   const body=items.length?items.map(renderLine).join(''):`<div class="empty">${I.cart}<div class="t">${t.emptyT}</div><div class="xs">${t.emptyS}</div></div>`;
   const totals=items.length?`<div class="totals"><div class="r2 mut"><span>${t.subtotal}</span><span class="money">${fmt(goods-tax)}</span></div>${fees?`<div class="r2 mut"><span>${t.fees}</span><span class="money">${fmt(fees)}</span></div>`:''}<div class="r2 mut"><span>${t.tax}</span><span class="money">${fmt(tax)}</span></div><div class="r2 big"><span>${t.total}</span><span class="money">${fmt(s)}</span></div></div>`:'';
   /* Void style (strip): where the one destructive action lives — the void board, live */
   const dis=items.length?'':'disabled'; const vs=S.voidStyle;
   const detailsBtn=`<button class="btn press" data-act="togglePop" data-pop="details">${t.details}</button>`;
-  const f2=items.length && vs!=='menu' ? `<div class="cart-f2">${detailsBtn}<button class="btn press">${t.save}</button></div>` : '';
+  const f2=items.length && !['menu','chip'].includes(vs) ? `<div class="cart-f2">${detailsBtn}<button class="btn press">${t.save}</button></div>` : '';
   const checkout=`<button class="btn xl p press" ${dis} data-act="checkout">${t.checkout} <span class="money">${fmt(s)}</span></button>`;
   const timed=S.scn==='overdue'&&!items.length;
   let foot;

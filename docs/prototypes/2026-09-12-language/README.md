@@ -138,9 +138,22 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     quiet *Discard* text button in the bar (Shopify draft order) · a trash icon in the customer row
     (Gmail, Linear) · *Hold to void*, a quiet button that fills while held, the hold being the
     confirmation (Slack, Revolut) · a destructive row at the bottom of the Order details slide-out
-    (iOS settings, Stripe) · quiet red text under Checkout (Square, Stripe). **Pick: ⋮ beside
-    Checkout** — it also gives Save and Order details a home so the footer is Checkout alone, and
-    Void keeps its Undo. Second: hold to void, if the footer must keep a visible way out.
+    (iOS settings, Stripe) · quiet red text under Checkout (Square, Stripe). Paul (same day):
+    *"really … I'm sure you can do better"* — placements of a red button are not design; and the ⋮
+    beside Checkout is a **phone** candidate only, not for larger screens. Second board,
+    `pos-register/board-void-2.html` (captures in `screens/board-void-2/`): what the strongest
+    products do is have **no Void button** — Stripe's invoice editor has no delete on the page,
+    Shopify shows *Discard* only for unsaved changes and cancels from the order's own actions,
+    Linear deletes from the item's ⋯ with Undo, Apple swipes the row and keeps a Recently Deleted,
+    browsers close the tab. Five models: (a) **the tab is the sale** — × on the current tab, Undo
+    toast, *Recently voided* in the open-orders list; (b) **the order chip owns its actions** —
+    *#102476 ▾* in the customer row opens Park, Save, Print pro-forma, Void, and the footer is
+    Checkout alone; (c) **emptying is voiding** — swipe lines away, *Remove all* appears after the
+    first swipe; (d) **park or void from the open-orders list** — swipe a row, or the two actions
+    under the current sale; (e) **void with a reason, inline** — a one-beat reason row instead of
+    a dialog, switchable off. (a), (b) and (c) are live in the prototype's *Void style* switch;
+    (b) is the default. **Pick: (b) with (a) as the second way out**, and (e) as a setting for
+    stores that answer to an owner.
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·
