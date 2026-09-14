@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Reports page — prototype for wcpos/roadmap#304</title>
 <!--
-  Throwaway prototype, second cut (2026-09-14, after Paul's reaction to the first).
-  The page is the app's own Reports shape rehosted: filter pills, the chart, the orders with checkboxes, the report.
-  The report picker is one select in the report card; the scope is the pills; sessions live inside the date pill.
+  Throwaway prototype, third cut (2026-09-14). Built from a survey of Square, Shopify POS, SumUp, Zettle, Toast,
+  Lightspeed and Loyverse plus Stripe/Monzo/Toast-style "engaging numbers" patterns (see README).
+  Two rooms: Sales (a glance: one number, its comparison, hourly bars with ghost bars, breakdown tiles) and
+  Closures (the documents: open session, past closures, reprint, recount, templates).
   Everything in the frame is live and in memory; nothing persists. Not production code.
 -->
 <style>
@@ -16,7 +17,7 @@
   --footer:#e6ecf2;--row-alt:#f8fafd;--border:#d2d8df;--muted:#f0f4f9;--muted-fg:#495766;--secondary:#5b748e;
   --success:#007936;--success-bg:#e3f4ea;--warning:#e46212;--warning-bg:#fff1e6;--destructive:#d40924;--destructive-bg:#fde8eb;--info:#0079ce;--info-bg:#e6f2fb;
   --sidebar:#142a41;--sidebar-fg:#e0e5eb;--sidebar-border:#0b1c2c;--radius:8px;--hover:#f4f7fa;--sel:#e6f2fb;--paper:#fff;
-  --bar1:#0069bd;--bar2:#b9cfe3;--bar3:#e46212;
+  --bar1:#0069bd;--ghost:#d6dee7;--bar2:#7fb2e0;--bar3:#c9d5e1;--bar4:#e46212;
   --sys:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
@@ -25,7 +26,7 @@
   --footer:#1a2532;--row-alt:#182330;--border:#2b3947;--muted:#1d2a37;--muted-fg:#9fb0c0;--secondary:#8aa0b5;
   --success:#3fcf7a;--success-bg:#12331f;--warning:#ff9a4d;--warning-bg:#3a2412;--destructive:#ff5c6f;--destructive-bg:#3b1a20;--info:#5cb3ff;--info-bg:#12293d;
   --sidebar:#0b1521;--sidebar-fg:#d5dee8;--sidebar-border:#050b12;--hover:#1c2936;--sel:#173248;--paper:#1a2633;
-  --bar1:#3b9df5;--bar2:#2b4460;--bar3:#ff9a4d;
+  --bar1:#3b9df5;--ghost:#2b3947;--bar2:#2f6ea8;--bar3:#3a4d61;--bar4:#ff9a4d;
 }
 *{box-sizing:border-box}
 html{font-size:14px}
@@ -37,25 +38,26 @@ h2{font-size:17px;margin:26px 0 8px}
 .doc p,.doc li{max-width:100ch}
 .doc code{font-family:var(--mono);font-size:12px;background:#dfe5ec;padding:1px 4px;border-radius:3px}
 a{color:#0069bd}
+button{font-family:inherit}
 
 /* ---------- control strip (not part of the design) ---------- */
 .strip{position:sticky;top:0;z-index:50;background:#111827;color:#e5e7eb;padding:10px 32px;display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 .strip .g{display:flex;align-items:center;gap:6px}
 .strip .g>b{color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:10px;margin-right:2px}
 .seg{display:inline-flex;border:1px solid #374151;border-radius:6px;overflow:hidden}
-.seg button{border:0;background:transparent;color:#d1d5db;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit}
+.seg button{border:0;background:transparent;color:#d1d5db;padding:5px 10px;font-size:12px;cursor:pointer}
 .seg button.on{background:#f3f4f6;color:#111827;font-weight:600}
 
 /* ---------- app frame ---------- */
 .stage{padding:22px 32px 10px;display:flex;flex-direction:column;align-items:center;gap:10px}
 .frame{background:var(--bg);color:var(--fg);border:1px solid #c7ced6;box-shadow:0 12px 34px rgba(0,0,0,.18);overflow:hidden;position:relative;display:flex;flex-direction:column;font-variant-numeric:tabular-nums}
-.frame.tablet{width:1180px;height:760px;border-radius:10px}
-.frame.phone{width:390px;height:780px;border-radius:30px;border:8px solid #111}
+.frame.tablet{width:1180px;height:780px;border-radius:10px}
+.frame.phone{width:390px;height:800px;border-radius:30px;border:8px solid #111}
 .body{flex:1;display:flex;min-height:0}
 .rail{width:52px;background:var(--sidebar);border-right:1px solid var(--sidebar-border);display:flex;flex-direction:column;flex:none}
 .rail .logo{height:44px;display:flex;align-items:center;justify-content:center}
 .rail .logo i{width:24px;height:24px;border-radius:6px;background:var(--primary);display:block}
-.rail .it{height:48px;display:flex;align-items:center;justify-content:center;color:var(--sidebar-fg);border-left:4px solid transparent;border-right:4px solid transparent;position:relative;cursor:pointer}
+.rail .it{height:48px;display:flex;align-items:center;justify-content:center;color:var(--sidebar-fg);border-left:4px solid transparent;border-right:4px solid transparent;cursor:pointer}
 .rail .it.on{border-left-color:var(--primary);color:#4da3ff}
 .rail .sp{margin-top:auto}
 .rail .av{width:28px;height:28px;border-radius:50%;background:#e5e7eb;color:#334155;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
@@ -64,10 +66,11 @@ a{color:#0069bd}
 .pagebar{display:flex;align-items:center;gap:8px;padding:0 12px;height:48px;border-bottom:1px solid var(--border);background:var(--card);flex:none;font-size:13px}
 .pagebar .ttl2{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pagebar .back{display:inline-flex;align-items:center;gap:2px;height:44px;padding:0 6px 0 2px;margin-left:-6px;border-radius:6px;cursor:pointer;color:var(--primary);font-weight:500}
-.chrome-r{display:flex;align-items:center;gap:10px;margin-left:auto;flex:none}
+.chrome-r{display:flex;align-items:center;gap:8px;margin-left:auto;flex:none}
 .av{width:28px;height:28px;border-radius:50%;background:var(--sidebar);color:#e0e5eb;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
 .burger{width:40px;height:40px;display:flex;align-items:center;justify-content:center;margin-left:-10px}
-.pad{padding:10px;overflow:auto;flex:1;display:flex;flex-direction:column;gap:10px;min-height:0}
+.pad{padding:12px;overflow:auto;flex:1;display:flex;flex-direction:column;gap:12px;min-height:0}
+.phone .pad{padding:10px;gap:10px}
 
 /* ---------- shared bits ---------- */
 .row{display:flex;align-items:center;gap:8px}
@@ -77,546 +80,691 @@ a{color:#0069bd}
 .xs{font-size:11px}
 .b{font-weight:600}
 .pos{color:var(--success)}.neg{color:var(--destructive)}
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;min-height:0}
-.card-h{background:var(--card-header);padding:6px 10px;border-bottom:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;display:flex;align-items:center;gap:8px;font-weight:600;min-height:44px;flex:none}
-.card-h .sub{font-weight:400;color:var(--muted-fg);font-size:12px}
-.card-b{padding:12px;overflow:auto;flex:1;min-height:0}
-.card-b.tight{padding:0}
-.card-f{background:var(--footer);border-top:1px solid var(--border);padding:8px 10px;display:flex;justify-content:flex-end;gap:8px;border-radius:0 0 var(--radius) var(--radius);flex:none;align-items:center}
-.card-f .status{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-.phone .card-f .status{display:none}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 14px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);font:inherit;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:background .12s ease-out,transform .1s ease-out}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;min-height:0;flex:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 14px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);font:inherit;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}
 .btn:hover{background:var(--hover)}
 .btn:active{transform:scale(.985);background:var(--sel)}
 .btn.p{background:var(--primary);border-color:var(--primary);color:var(--primary-fg)}
 .btn.sm{height:30px;padding:0 10px;font-size:12px}
-.btn:disabled,.btn.dis{opacity:.5;cursor:not-allowed}
+.btn.ic{width:44px;height:44px;padding:0;border:0;background:transparent}
+.btn.ic:hover{background:var(--hover)}
+.btn:disabled,.btn.dis{opacity:.45;cursor:not-allowed}
+.btn:disabled:active{transform:none}
 .pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:600;height:20px;white-space:nowrap}
 .pill.open{background:var(--success-bg);color:var(--success)}
 .pill.warn{background:var(--warning-bg);color:var(--warning)}
 .pill.info{background:var(--info-bg);color:var(--info)}
+.pill.bad{background:var(--destructive-bg);color:var(--destructive)}
+.pill.mutp{background:var(--muted);color:var(--muted-fg)}
 .pill.pro{background:#f3e8ff;color:#7c3aed}
 .frame[data-theme=dark] .pill.pro{background:#2c1f45;color:#c4a6ff}
 table.t{width:100%;border-collapse:collapse;font-size:13px}
-table.t th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-fg);font-weight:600;padding:7px 10px;background:var(--footer);border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;z-index:1}
-table.t td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+table.t th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-fg);font-weight:600;padding:7px 12px;background:var(--footer);border-bottom:1px solid var(--border);white-space:nowrap}
+table.t td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
 table.t tr:last-child td{border-bottom:0}
-table.t td.r,table.t th.r{text-align:right;font-variant-numeric:tabular-nums}
+table.t td.r,table.t th.r{text-align:right}
 table.t tr.sel td{background:var(--sel)}
 table.t tr.click{cursor:pointer}
 table.t tr.click:hover td{background:var(--hover)}
-table.t tr.void td{color:var(--muted-fg);text-decoration:line-through}
 table.t tr.tot td{background:var(--footer);font-weight:700;border-top:2px solid var(--border)}
 table.t tr.off td{color:var(--muted-fg)}
-.phone table.t td,.phone table.t th{padding:8px 7px;font-size:12px}
-.avi{width:20px;height:20px;border-radius:50%;background:var(--muted);color:var(--muted-fg);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;margin-right:5px;vertical-align:middle}
-input.cb{width:20px;height:20px;accent-color:var(--primary);margin:0;cursor:pointer}
+table.t tr.lock td{color:var(--muted-fg)}
+table.t tr.lock td .lk{color:var(--muted-fg);display:inline-flex;vertical-align:middle;margin-left:6px}
+.phone table.t td,.phone table.t th{padding:8px 8px;font-size:12px}
+.avi{width:22px;height:22px;border-radius:50%;background:var(--muted);color:var(--muted-fg);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;margin-right:6px;vertical-align:middle;flex:none}
+input.cb{width:20px;height:20px;accent-color:var(--primary);margin:0;cursor:pointer;display:block}
+.lk{display:inline-flex;color:var(--muted-fg)}
 
-/* ---------- filter pills (the app's own bar) ---------- */
-.filters{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:6px 8px;background:var(--card-header);border:1px solid var(--border);border-radius:var(--radius);flex:none}
-.phone .filters{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
-.chip{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 10px 0 12px;border:1px solid var(--border);border-radius:999px;background:var(--card);font-size:13px;color:var(--fg);cursor:pointer;white-space:nowrap;flex:none;transition:background .12s ease-out}
-.chip:hover{background:var(--hover)}
-.chip:active{background:var(--sel)}
-.chip.on{border-color:var(--primary);color:var(--primary)}
-.chip .k{color:var(--muted-fg);font-weight:400}
-.chip .v{font-weight:600}
-.chip .car,.chip .lk{color:var(--muted-fg);display:inline-flex}
+/* ---------- page bar pieces ---------- */
+.segc{display:inline-flex;background:var(--muted);border-radius:8px;padding:3px;gap:2px}
+.segc button{border:0;background:transparent;color:var(--muted-fg);height:34px;min-width:64px;padding:0 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer}
+.segc button.on{background:var(--card);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.segc button .lk{margin-left:4px}
+.phone .segc button{min-width:0;padding:0 10px}
+.scope{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 8px 0 12px;border:1px solid var(--border);border-radius:999px;background:var(--card);font-size:13px;cursor:pointer;white-space:nowrap}
+.scope:hover{background:var(--hover)}
+.scope .car{color:var(--muted-fg);display:inline-flex}
+.fbtn{position:relative}
+.fbtn .dot{position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--primary)}
+
+/* ---------- period bar ---------- */
+.pbar{display:flex;align-items:center;gap:6px;flex:none}
+.pbar .ttl{font-size:17px;font-weight:700;padding:0 4px;white-space:nowrap}
+.phone .pbar .ttl{font-size:15px}
+.pbar .segc{margin-left:auto}
+
+/* ---------- hero ---------- */
+.hero{padding:14px 18px 12px}
+.phone .hero{padding:14px 14px 10px}
+.hero-top{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
+.hero .lbl{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fg)}
+.hero .big{font-size:44px;font-weight:700;letter-spacing:-.02em;line-height:1.05;margin:2px 0 6px}
+.phone .hero .big{font-size:36px}
+.hero .prev{display:flex;align-items:center;gap:8px;color:var(--muted-fg);font-size:13px;flex-wrap:wrap}
+.delta{display:inline-flex;align-items:center;gap:3px;border-radius:999px;padding:0 8px;height:22px;font-size:12px;font-weight:700}
+.delta.up{background:var(--success-bg);color:var(--success)}
+.delta.down{background:var(--destructive-bg);color:var(--destructive)}
+.delta.flat{background:var(--muted);color:var(--muted-fg)}
+.kpis{display:flex;gap:26px;margin-left:auto;padding-top:6px}
+.phone .kpis{margin-left:0;gap:20px;width:100%;padding-top:10px;border-top:1px solid var(--border);margin-top:8px}
+.kpi .n{font-size:22px;font-weight:600;line-height:1.1}
+.phone .kpi .n{font-size:18px}
+.kpi .p{font-size:12px;color:var(--muted-fg)}
+.kpi .l{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fg);margin-bottom:3px}
+.cmpbtn{display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 8px;margin-left:-8px;border:0;background:transparent;color:var(--muted-fg);font-size:13px;border-radius:6px;cursor:pointer}
+.cmpbtn:hover{background:var(--hover);color:var(--fg)}
+.cmpbtn .car{display:inline-flex}
+.excl{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 4px 0 10px;border-radius:999px;background:var(--warning-bg);color:var(--warning);font-size:12px;font-weight:600}
+.excl button{border:0;background:transparent;color:inherit;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center}
+.excl button:hover{background:rgba(0,0,0,.08)}
+.chart{margin-top:14px}
+.chart svg.bars{display:block;width:100%;height:auto}
+.chart .cap{display:flex;align-items:center;gap:14px;margin-top:8px;font-size:13px;flex-wrap:wrap}
+.chart .cap .lg{display:inline-flex;align-items:center;gap:6px;color:var(--muted-fg);font-size:12px;white-space:nowrap}
+.chart .cap .lg i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.tip{position:absolute;background:var(--fg);color:var(--bg);font-size:12px;padding:6px 9px;border-radius:6px;pointer-events:none;white-space:nowrap;z-index:5;transform:translate(-50%,-110%)}
+.tip b{font-weight:700}
+.frame[data-theme=dark] .tip{background:#e6edf3;color:#0f1720}
+
+/* ---------- tiles ---------- */
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;flex:none}
+.phone .tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tile{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 14px 12px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:126px;color:var(--fg);font:inherit}
+.tile:hover{background:var(--hover)}
+.tile:active{transform:scale(.99)}
+.tile .l{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fg)}
+.tile .l .chev{margin-left:auto;color:var(--muted-fg);display:inline-flex}
+.tile .n{font-size:24px;font-weight:700;line-height:1.1;letter-spacing:-.01em}
+.phone .tile .n{font-size:20px}
+.tile .line{font-size:12px;color:var(--muted-fg);line-height:1.35}
+.tile .line b{color:var(--fg);font-weight:600}
+.sbar{display:flex;height:8px;border-radius:4px;overflow:hidden;gap:2px;margin:4px 0 2px}
+.sbar i{display:block;height:100%}
+.tile ul.top{list-style:none;padding:0;margin:2px 0 0;font-size:13px}
+.tile ul.top li{display:flex;justify-content:space-between;gap:8px;padding:3px 0}
+.tile ul.top li span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.tile ul.top li span:last-child{color:var(--muted-fg);flex:none}
+.tile.dim{color:var(--muted-fg)}
+.tile.dim .n{color:var(--muted-fg);font-size:16px;font-weight:600}
+.tile .plug{font-size:10px;font-weight:600;color:var(--muted-fg);background:var(--muted);border-radius:4px;padding:1px 5px;text-transform:none;letter-spacing:0}
+
+/* ---------- closures room ---------- */
+.sess{padding:14px 18px;display:flex;flex-direction:row;align-items:center;gap:18px;flex-wrap:wrap}
+.phone .sess{padding:12px 14px;gap:10px}
+.sess .big{font-size:28px;font-weight:700;letter-spacing:-.01em;line-height:1.1}
+.sess .who{font-size:13px;color:var(--muted-fg)}
+.sess .acts{margin-left:auto;display:flex;gap:8px}
+.phone .sess .acts{margin-left:0;width:100%}
+.phone .sess .acts .btn{flex:1}
+.grp td.g{background:var(--footer);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-fg);font-weight:600;padding:6px 12px}
+
+/* ---------- side panel (tablet) / page (phone) ---------- */
+.scrim{position:absolute;inset:0;background:rgba(10,20,30,.22);z-index:29}
+.panel{position:absolute;top:0;right:0;bottom:0;width:480px;background:var(--card);border-left:1px solid var(--border);box-shadow:-10px 0 28px rgba(0,0,0,.14);display:flex;flex-direction:column;z-index:30;animation:slidein .2s ease-out}
+.phone .panel{top:48px;width:100%;border-left:0;box-shadow:none;animation:slidein .18s ease-out}
+@keyframes slidein{from{transform:translateX(24px);opacity:.6}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.panel,.pop,.sheet{animation:none}}
+.pnl-h{height:48px;display:flex;align-items:center;gap:8px;padding:0 6px 0 16px;border-bottom:1px solid var(--border);flex:none}
+.phone .pnl-h{padding-left:6px}
+.pnl-h .ttl{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pnl-h .sub{font-size:12px;color:var(--muted-fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pnl-h .x{margin-left:auto}
+.pnl-b{flex:1;overflow:auto;min-height:0}
+.pnl-f{background:var(--footer);border-top:1px solid var(--border);padding:8px 12px;display:flex;align-items:center;gap:8px;flex:none}
+.pnl-f .status{font-size:12px;color:var(--muted-fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1}
+.pnl-f .btn{flex:none}
+.sel2{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 8px 0 10px;border:1px solid var(--border);border-radius:6px;background:var(--card);font-size:12px;cursor:pointer;white-space:nowrap;color:var(--fg)}
+.sel2:hover{background:var(--hover)}
+.sel2 .car{display:inline-flex;color:var(--muted-fg)}
+
+/* closure document */
+.docv{padding:16px 18px;font-size:13px}
+.docv .dh{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
+.docv .dh .t{font-size:17px;font-weight:700}
+.docv .sec{margin-top:14px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fg);font-weight:600;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.docv .dr{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px dashed var(--border)}
+.docv .dr:last-child{border-bottom:0}
+.docv .dr.tot{font-weight:700;border-bottom:0;border-top:1px solid var(--border)}
+.docv .dr .was{color:var(--muted-fg);text-decoration:line-through;margin-right:6px}
+.docv .note{background:var(--info-bg);color:var(--info);border-radius:6px;padding:8px 10px;font-size:12px;margin-top:8px}
+.docv .warnb{background:var(--warning-bg);color:var(--warning);border-radius:6px;padding:8px 10px;font-size:12px;margin-top:8px}
+.docv.thermal{font-family:var(--mono);font-size:12px;background:var(--paper);margin:14px auto;width:300px;padding:14px 12px;box-shadow:0 2px 10px rgba(0,0,0,.14);white-space:pre;overflow:auto}
+.docv.a4{background:var(--paper);margin:14px;padding:22px 24px;box-shadow:0 2px 10px rgba(0,0,0,.14);border-top:6px solid var(--primary)}
+.docv.a4 .brand{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.docv.a4 .brand i{width:26px;height:26px;border-radius:6px;background:var(--primary);display:block}
+.docv.a4 .brand b{font-size:15px}
 
 /* popover / sheet */
-.popwrap{position:absolute;inset:0;z-index:20}
-.pop{position:absolute;background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.18);min-width:280px;max-width:360px;overflow:hidden;animation:popin .16s ease-out;max-height:calc(100% - 80px);overflow-y:auto}
+.popwrap{position:absolute;inset:0;z-index:40}
+.pop{position:absolute;background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.18);min-width:270px;max-width:360px;overflow:auto;animation:popin .16s ease-out}
 @keyframes popin{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){.pop,.sheet{animation:none}}
 .mm .ph{padding:10px 14px 6px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-fg);font-weight:600;display:flex;align-items:center;gap:6px}
 .mm .ph.div{border-top:1px solid var(--border);margin-top:4px;padding-top:10px}
 .mm .pr{display:flex;align-items:center;gap:10px;padding:0 14px;min-height:44px;cursor:pointer;font-size:14px}
 .mm .pr:hover{background:var(--hover)}
 .mm .pr:active{background:var(--sel)}
-.mm .pr .s{color:var(--muted-fg);font-size:12px}
+.mm .pr .s{color:var(--muted-fg);font-size:12px;margin-left:auto}
 .mm .pr .ck{width:18px;color:var(--primary);flex:none;display:inline-flex}
 .mm .pr.on{font-weight:600}
-.mm .pr.lock,.mm .pr.dim{color:var(--muted-fg)}
-.mm .pr.lock .lk{margin-left:auto;display:inline-flex;color:var(--muted-fg)}
-.mm .pr.dim{cursor:default}
-.mm .pr.sub{padding-left:42px;min-height:40px;font-size:13px}
-.mm .pf{border-top:1px solid var(--border);background:var(--footer);padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:13px;animation:popin .16s ease-out;position:sticky;bottom:0}
+.mm .pr.lock{color:var(--muted-fg)}
+.mm .pr.lock .lk{margin-left:auto}
+.mm .pf{border-top:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:13px;background:var(--footer)}
 .mm .pf .btn{margin-left:auto}
-.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--border);box-shadow:0 -8px 30px rgba(0,0,0,.22);max-height:78%;overflow:auto;animation:rise .18s ease-out}
-@keyframes rise{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
-.scrim{position:absolute;inset:0;background:rgba(0,0,0,.5)}
+.mm .pn{padding:6px 14px 10px;font-size:12px;color:var(--muted-fg)}
+.sheet-scrim{position:absolute;inset:0;background:rgba(10,20,30,.3);z-index:40}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-radius:16px 16px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.2);z-index:41;animation:sheetin .2s ease-out;max-height:70%;overflow:auto;padding-bottom:8px}
 .sheet .grab{width:36px;height:4px;border-radius:2px;background:var(--border);margin:8px auto 4px}
+@keyframes sheetin{from{transform:translateY(30px)}to{transform:none}}
 
-/* ---------- chart ---------- */
-.chart{flex:none}
-.chart .card-b{padding:8px 12px 6px;display:flex;flex-direction:column;gap:4px;overflow:hidden}
-.chart .head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
-.chart .fig{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-.chart .delta{font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
-.chart .cmp{margin-left:auto;display:inline-flex;background:var(--muted);border:1px solid var(--border);border-radius:8px;padding:2px;gap:2px;height:36px}
-.chart .cmp button{border:0;background:transparent;padding:0 12px;border-radius:6px;font:inherit;font-size:12px;color:var(--muted-fg);cursor:pointer;white-space:nowrap}
-.chart .cmp button.on{background:var(--card);color:var(--fg);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
-.chart svg.bars{width:100%;height:150px;display:block}
-.phone .chart svg.bars{height:120px}
-.chart .legend{display:flex;gap:14px;font-size:11px;color:var(--muted-fg);flex-wrap:wrap}
-.chart .legend span{white-space:nowrap}
-.chart .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
-.phone .chart .cmp{margin-left:0;width:100%}
-.phone .chart .cmp button{flex:1;padding:0 6px}
-.phone .chart .fig{font-size:24px}
-
-/* ---------- lower split ---------- */
-.split{display:flex;gap:10px;flex:1;min-height:0}
-.split>.card{flex:1;min-width:0}
-.phone .split{flex-direction:column}
-.phone .split>.card{flex:none;max-height:none}
-.phone .split>.card.orders{max-height:230px}
-.orders .card-h .sub{margin-left:2px}
-.report .card-h{gap:6px;flex-wrap:wrap}
-.sel2{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 8px 0 10px;border:1px solid var(--border);border-radius:6px;background:var(--card);font-size:13px;cursor:pointer;white-space:nowrap;max-width:100%;font-weight:600}
-.sel2 .k{color:var(--muted-fg);font-weight:400}
-.sel2 .car{color:var(--muted-fg);display:inline-flex}
-.sel2:hover{background:var(--hover)}
-.doc-paper{background:var(--paper);padding:14px 16px;display:flex;flex-direction:column;gap:12px;font-size:13px}
-.kv{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px}
-.kv .k{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-fg);font-weight:600;margin-bottom:2px}
-.kv .v{font-size:14px}
-.kv .v.hero{font-size:22px;font-weight:700}
-.dsec{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-fg);font-weight:600;margin-top:4px}
-.settled{color:var(--info);font-weight:600}
-.arrow{color:var(--muted-fg);margin:0 4px}
-.empty{padding:36px 16px;text-align:center;color:var(--muted-fg);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:10px}
-.empty .big{font-size:15px;color:var(--fg);font-weight:600}
-.heading{font-size:12px;color:var(--muted-fg);padding:8px 12px;border-bottom:1px solid var(--border)}
-.heading b{color:var(--fg)}
-.thermal{font-family:var(--mono);font-size:12px;line-height:1.5;white-space:pre;padding:14px 16px;background:var(--paper);color:var(--fg)}
-.fmt .brand{font-size:16px;font-weight:700;margin-bottom:2px}
-.fmt table.t th{position:static}
-
-/* ---------- below the frame ---------- */
-.panelmock{width:380px;background:#fff;border:1px solid #d2d8df;border-radius:8px;overflow:hidden;flex:none;color:#162330}
-.panelmock .hero{padding:16px 14px 10px}
-.panelmock .hero .amt{font-size:32px;font-weight:700;font-variant-numeric:tabular-nums}
-.panelmock .tiles3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 14px 12px}
-.panelmock .tiles3 .btn{height:56px;font-size:14px;font-weight:600}
-.panelmock .lr{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border-top:1px solid #d2d8df;font-size:13px}
-.panelmock .lr .r{margin-left:auto;font-weight:600;font-variant-numeric:tabular-nums}
-.panelmock .lr.hl{background:#e6f2fb;box-shadow:inset 3px 0 0 #0069bd}
-.panelmock .pf{padding:10px 14px;border-top:1px solid #d2d8df;background:#e6ecf2}
-.map{display:flex;flex-direction:column;gap:10px}
-.map .m{display:flex;gap:10px;align-items:flex-start;font-size:13px}
-.map .m .n{width:22px;height:22px;border-radius:50%;background:#0069bd;color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex:none;margin-top:1px}
-pre#statejson{font-family:var(--mono);font-size:11px;background:#1f2937;color:#e5e7eb;padding:12px;border-radius:8px;max-height:260px;overflow:auto}
-.q{background:#fff;border:1px solid #d2d8df;border-radius:8px;padding:12px 16px;margin:8px 0 28px}
-.q li{margin:6px 0}
-.leg{font-size:12px;color:#495766}
+/* ---------- below the frame: register panel mapping ---------- */
+.pm{display:grid;grid-template-columns:320px 1fr;gap:20px;align-items:start;margin-top:8px}
+.pm .panelmock{background:#fff;border:1px solid #c7ced6;border-radius:10px;overflow:hidden;font-size:13px;color:#162330}
+.pm .panelmock .ph2{padding:10px 12px;font-weight:700;border-bottom:1px solid #d2d8df;background:#dfe5ec}
+.pm .panelmock .r{display:flex;align-items:center;gap:8px;padding:11px 12px;border-bottom:1px solid #e6ecf2;min-height:44px}
+.pm .panelmock .r:last-child{border-bottom:0}
+.pm .panelmock .r .n{width:22px;height:22px;border-radius:50%;background:#0069bd;color:#fff;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.pm ol{margin:0;padding-left:20px}
+.pm li{margin:6px 0}
+.statejson{font-family:var(--mono);font-size:11px;background:#111827;color:#d1d5db;padding:10px 14px;border-radius:8px;overflow:auto;max-width:1180px;margin:0 auto;white-space:pre-wrap}
+@media (max-width:1250px){.frame.tablet{transform-origin:top center;transform:scale(.85)}}
 </style>
 </head>
 <body>
 
-<div class="doc">
-  <h1>Reports — second cut: the chart, the orders, the report</h1>
-  <p class="lead">Prototype for <a href="https://github.com/wcpos/roadmap/issues/304">wcpos/roadmap#304</a>. After the first cut read as complex, this one is the app's own Reports page rehosted: the filter pills it already has, the chart it already has (now a comparison), the orders list with its checkboxes, and the report pane. The report picker is one select in the report card's header, the merchant's templates sit beside it, and sessions live inside the date pill. Catalogue from #303, contract from #305. The dark strip is not part of the design.</p>
+<div class="strip">
+  <div class="g"><b>Width</b><span class="seg"><button data-set="viewport" data-v="tablet">Tablet</button><button data-set="viewport" data-v="phone">Phone</button></span></div>
+  <div class="g"><b>Edition</b><span class="seg"><button data-set="pro" data-v="true">Pro</button><button data-set="pro" data-v="false">Free</button></span></div>
+  <div class="g"><b>Register</b><span class="seg"><button data-set="regOpen" data-v="true">Session open</button><button data-set="regOpen" data-v="false">Closed</button></span></div>
+  <div class="g"><b>Stores</b><span class="seg"><button data-set="stores" data-v="1">1</button><button data-set="stores" data-v="2">2</button></span></div>
+  <div class="g"><b>Network</b><span class="seg"><button data-set="online" data-v="true">Online</button><button data-set="online" data-v="false">Offline</button></span></div>
+  <div class="g"><b>Theme</b><span class="seg"><button data-set="theme" data-v="light">Light</button><button data-set="theme" data-v="dark">Dark</button></span></div>
+  <div class="g" style="margin-left:auto;color:#9ca3af">Third cut · Sales is a glance, Closures is the documents</div>
 </div>
-<div class="strip" id="strip"></div>
-<div class="stage"><div id="frame" class="frame tablet"></div></div>
+
+<div class="stage">
+  <div id="frame" class="frame tablet" data-theme="light"></div>
+</div>
 
 <div class="doc">
-  <h2>Where the register panel's X-report and last-closure reprint sit</h2>
-  <p class="leg">The panel as decided on #214 (left) and what each of its two report rows does (right). The panel prints; Reports reads.</p>
-  <div class="row" style="gap:24px;align-items:flex-start;flex-wrap:wrap">
-    <div class="panelmock" id="panelmock"></div>
-    <div class="map" style="max-width:560px">
-      <div class="m"><span class="n">1</span><div><b>Print X-report</b> prints the Session report for the open session on the till's printer, right there. It is a shortcut into the same document Reports shows when the date pill says <i>Open now</i> and the report is <i>Session</i>; it does not navigate. Free.</div></div>
-      <div class="m"><span class="n">2</span><div><b>Last closure row</b> — <i>Reprint copy</i> prints Closure 12 again (Free floor: reprint the last closure). Tapping the row opens Reports with the date pill on that closure and the report on Session. On Free that works while the closure is today's on this register; an older last closure still reprints from here but does not open on Reports.</div></div>
-      <div class="m"><span class="n">3</span><div><b>Reports › Session</b> carries the same two actions in its footer: <i>Print X-report</i> for the open session, <i>Reprint copy</i> for a closed one. Same document, same template, so a merchant who edits the closure template in WP Admin changes both.</div></div>
+  <h2>Where the register panel's two report rows land</h2>
+  <div class="pm">
+    <div class="panelmock" id="panelmock">
+      <div class="ph2">Front till · Dylan · open since 13:00</div>
+      <div class="r"><span>Cash in drawer</span><span style="margin-left:auto;font-weight:600">£293.70</span></div>
+      <div class="r"><span class="n">1</span><span>Print X-report</span></div>
+      <div class="r"><span class="n">2</span><span>Last closure · 12:30 · Priya</span><span style="margin-left:auto;color:#d40924;font-weight:600">−£2.00</span></div>
+      <div class="r"><span style="color:#0069bd;font-weight:600">Close register</span></div>
     </div>
-  </div>
-
-  <h2>State</h2>
-  <pre id="statejson"></pre>
-
-  <h2>What to react to</h2>
-  <div class="q">
     <ol>
-      <li><b>The chart is the top of the page.</b> One headline figure with a delta, three comparisons: <i>today vs yesterday</i> by hour, <i>this week vs last</i> by day, <i>online vs POS</i> by day. It follows the pills (register, cashier, store) and the ticked orders. On phone it keeps the figure and the bars, the comparison switch goes full-width.</li>
-      <li><b>One select for the report</b>, in the report card's header, grouped: Sales summary and the Sales groupings, Cash movements, Session, Closures, then <i>From plugins</i>. An entry the current scope cannot answer is dimmed with the reason (<i>pick a session</i> / <i>pick dates</i>) rather than hidden.</li>
-      <li><b>Templates from WP Admin</b> sit in a second select beside it, listing the merchant's own templates for the type the chosen report uses (<code>closure</code> for Session, <code>report</code> for the tables). The pane renders the chosen template, the way the Z-report pane renders today. <i>Default</i> is the built-in; <i>Thermal 80 mm</i> and <i>A4 sales sheet</i> are the merchant's. A template formats a report; it cannot add data — that is what a registered report is for.</li>
-      <li><b>Sessions live in the date pill.</b> Its popover starts with <i>Open now</i> and today's closures, then the date presets. No separate mode switch: choosing a session scopes the page to that session; choosing dates scopes it to the range. Session and Closures dim in the report select according to which was chosen.</li>
-      <li><b>The orders list keeps its checkboxes.</b> Unticking an order takes it out of the figure, the chart and the Sales report. It does not touch Session or Closures, which are records, not queries.</li>
-      <li><b>Free</b> is unchanged from the first cut's decision: Pro rows in the date, register and store popovers are dimmed with a lock; tapping one names the tapped thing in the popover foot with <i>See Pro</i>. Nothing on the page is blurred.</li>
+      <li><b>Print X-report</b> prints the open session from the till, no navigation. The same document opens from <i>Closures › open session › Print X-report</i>, so it is one document in two places.</li>
+      <li><b>Last closure</b> reprints from the till; tapping the row opens <i>Reports › Closures</i> on that closure. Same document, same templates.</li>
+      <li>Nothing on the register panel points at the Sales room. The glance is for the owner; the panel is for the cashier.</li>
     </ol>
   </div>
+
+  <h2>What to react to</h2>
+  <ol>
+    <li>Does the Sales room feel like a glance rather than a report builder? One number, its comparison, the hours, eight tiles.</li>
+    <li>The comparison is <b>on by default</b> and the referent is the <b>same weekday last week</b> (what Shopify, Toast and Square do). Yesterday and last year are one tap away. Right default?</li>
+    <li>Ghost bars for the comparison period, including the hours still to come today. Helpful or noise?</li>
+    <li>Tiles open the real table in a side panel with Export and Print; Print is where the WP Admin template is chosen. Is that deep enough for the "few clicks" reach?</li>
+    <li>Orders is a tile; its panel has the checkboxes, and unticking shows as a chip on the hero. Is folding the checkboxes one level down acceptable?</li>
+    <li>Closures is its own room, with the open session at the top. Does the split Sales / Closures read as "the numbers" vs "the paperwork"?</li>
+    <li>Free: today only on this register, and the comparison still shows (assumption; the ghost needs last week's orders on the device). Stepping back or picking Week/Month names the thing in a small popover.</li>
+  </ol>
+  <h2>State</h2>
+  <div class="statejson" id="statejson"></div>
 </div>
 
 <script>
 /* ============================ data ============================ */
-const REG = { front:{name:'Front counter',store:'uk'}, back:{name:'Back office',store:'uk'}, till3:{name:'Till 3',store:'uk'}, dub:{name:'Counter',store:'dub'} };
-const STORES = { uk:'UK Store', dub:'Dublin' };
-const WHO = { dc:{ini:'DC',name:'Demo Cashier'}, sr:{ini:'SR',name:'Sam Reilly'}, ao:{ini:'AO',name:'Amy Okafor'} };
-const SESSIONS = [
-  { id:'s13', number:13, reg:'front', day:'today', open:true, opened:'Sun 14 Sep 13:00', openedBy:'dc', float:200, expected:480.80, cashSales:300.80, cashRefunds:15.00, card:412.00, sales:18, refunds:1, tax:118.85, gross:727.80, unsynced:0,
-    movements:[['13:42','Paid out',-5.00,'dc','Milk for the café',false],['14:10','No sale',0,'dc','',false]] },
-  { id:'c12', number:12, reg:'front', day:'today', opened:'Sun 14 Sep 09:02', openedBy:'dc', closed:'Sun 14 Sep 12:30', closedBy:'dc', float:200, expected:372.10, counted:370.10, cashSales:172.10, cashRefunds:0, card:288.40, sales:14, refunds:0, tax:76.75, gross:460.50, printed:true, copies:0, unsynced:0, movements:[] },
-  { id:'c10', number:10, reg:'front', day:'Sat 13 Sep', opened:'Sat 13 Sep 08:58', openedBy:'dc', closed:'Sat 13 Sep 18:02', closedBy:'dc', float:200, expected:572.10, counted:570.10, cashSales:392.10, cashRefunds:20.00, card:640.00, sales:41, refunds:2, tax:172.00, gross:1032.10, printed:true, copies:1, unsynced:0, movements:[['11:20','Paid in',50.00,'dc','Change from bank',false],['16:05','Paid out',-30.00,'dc','Window cleaner',false]] },
-  { id:'c7', number:7, reg:'back', day:'Sat 13 Sep', opened:'Sat 13 Sep 10:00', openedBy:'sr', closed:'Sat 13 Sep 16:30', closedBy:'sr', float:100, expected:156.00, counted:156.00, cashSales:56.00, cashRefunds:0, card:210.00, sales:9, refunds:0, tax:44.30, gross:266.00, printed:true, copies:0, unsynced:0, movements:[] },
-  { id:'c11', number:11, reg:'front', day:'Fri 12 Sep', opened:'Fri 12 Sep 09:03', openedBy:'ao', closed:'Fri 12 Sep 17:58', closedBy:'sr', float:195, expected:468.70, counted:468.70, cashSales:288.70, cashRefunds:15.00, card:602.00, sales:33, refunds:1, tax:148.45, gross:890.70, printed:true, copies:0, unsynced:0, movements:[],
-    corrections:[['Sat 13 Sep 09:14','late sale','Order FC-1186a landed after close',5.00]] },
-  { id:'c2', number:2, reg:'till3', day:'Thu 11 Sep', opened:'Thu 11 Sep 09:15', openedBy:'dc', closed:'Thu 11 Sep 17:50', closedBy:'dc', float:150, expected:419.60, counted:480.80, cashSales:269.60, cashRefunds:0, card:120.00, sales:22, refunds:0, tax:64.90, gross:389.60, printed:true, copies:0, unsynced:3, movements:[] },
-  { id:'c1', number:1, reg:'till3', day:'Thu 11 Sep', opened:'Thu 11 Sep 08:50', openedBy:'dc', closed:'Thu 11 Sep 09:11', closedBy:'dc', float:150, expected:195.00, counted:177.50, cashSales:45.00, cashRefunds:0, card:0, sales:3, refunds:0, tax:7.50, gross:45.00, printed:true, copies:0, unsynced:0, movements:[] },
-];
-// Today's orders. [number, time, total, tax, method, cashier, channel, hour]
-const ORDERS = [
-  [1241,'15:05',12.40,2.07,'Cash','dc','pos',15],[1240,'14:52',48.00,8.00,'Card','dc','pos',14],[1239,'14:31',9.60,1.60,'Cash','dc','pos',14],
-  [1238,'14:12',120.00,20.00,'Card','ao','online',14],[1237,'13:48',22.10,3.68,'Cash','dc','pos',13],[1236,'13:20',64.00,10.67,'Card','dc','pos',13],
-  [1235,'12:14',15.00,2.50,'Card','ao','online',12],[1234,'11:58',36.50,6.08,'Cash','dc','pos',11],[1233,'11:31',88.00,14.67,'Card','dc','pos',11],
-  [1232,'10:47',19.80,3.30,'Cash','dc','pos',10],[1231,'10:20',142.00,23.67,'Card','ao','online',10],[1230,'09:55',27.30,4.55,'Cash','dc','pos',9],
-  [1229,'09:31',41.60,6.93,'Card','dc','pos',9],[1228,'09:08',81.50,13.58,'Cash','dc','pos',9],
-];
-const REPORTS = [
-  { key:'summary', title:'Sales summary', type:'report', needs:'any' },
-  { key:'payment', title:'Sales by payment method', short:'by payment method', type:'report', needs:'any', group:true },
-  { key:'cashier', title:'Sales by cashier', short:'by cashier', type:'report', needs:'any', group:true },
-  { key:'register', title:'Sales by register', short:'by register', type:'report', needs:'any', group:true },
-  { key:'tax', title:'Sales by tax rate', short:'by tax rate', type:'report', needs:'any', group:true },
-  { key:'item', title:'Sales by item', short:'by item', type:'report', needs:'any', group:true },
-  { key:'category', title:'Sales by category', short:'by category', type:'report', needs:'any', group:true },
-  { key:'cash', title:'Cash movements', type:'report', needs:'any' },
-  { key:'session', title:'Session', type:'closure', needs:'session', hint:'pick a session in the date pill' },
-  { key:'closures', title:'Closures', type:'report', needs:'range', hint:'pick dates in the date pill' },
-  { key:'deposits', title:'Deposits outstanding', type:'report', needs:'range', plugin:'WCPOS Deposits', hint:'pick dates in the date pill' },
-];
-const TEMPLATES = { report:[['default','Default'],['thermal','Thermal 80 mm'],['a4','A4 sales sheet']], closure:[['default','Default'],['thermal','Thermal 80 mm'],['a4','A4 closure']] };
-const RANGES = [['today','Today'],['yesterday','Yesterday'],['week','This week'],['last7','Last 7 days'],['month','This month'],['custom','Custom…']];
-const RANGE_MULT = { today:1, yesterday:0.96, week:4.9, last7:6.4, month:19.3, custom:3.1 };
+const TODAY = new Date(2026, 8, 14); // Monday 14 Sep 2026
+const NOWH = 17; // "now" is 5:30 pm
+const HOURS = [8,9,10,11,12,13,14,15,16,17,18,19];
+const P = [0,.04,.09,.08,.06,.15,.09,.10,.14,.13,.08,.04]; // hourly shape of a normal day
+const WD = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const WDL = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const DP = [.12,.11,.12,.13,.17,.22,.13]; // weekday weights
+const MON = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYTOTAL_OVERRIDE = { 1: 1392.10, 7: 1108.20, 364: 986.40 };
 
-const fmt = (n, sign=false) => { const a=Math.abs(n).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}); return (n<0?'−':(sign&&n>0?'+':''))+'£'+a; };
-const fmtv = (n) => n===0 ? '<span class="b">Exact</span>' : `<span class="${n>0?'pos':'neg'} b">${fmt(n,true)}</span>`;
-const who = (k) => `<span class="avi">${WHO[k].ini}</span>${WHO[k].name.split(' ')[0]}`;
+// number,time,total,tax,method,cashier,channel,items,hour  (today; Priya closed at 12:30, Dylan opened at 13:00)
+const ORDERS = [
+  [1227,'09:12', 24.50, 4.08,'Cash','Priya','In store',2,9],
+  [1228,'09:40',118.00,19.67,'Card','Priya','In store',3,9],
+  [1229,'10:05', 36.90, 6.15,'Card','Priya','Online',1,10],
+  [1230,'10:31', 72.40,12.07,'Cash','Priya','In store',4,10],
+  [1231,'11:02', 15.00, 2.50,'Cash','Priya','In store',1,11],
+  [1232,'11:48',149.99,25.00,'Card','Priya','Online',2,11],
+  [1233,'12:10', 88.20,14.70,'Card','Priya','In store',3,12],
+  [1234,'12:35',124.20,20.70,'Card','Priya','In store',5,12],
+  [1235,'13:20', 49.00, 8.17,'PayPal','Dylan','Online',1,13],
+  [1236,'14:05', 96.50,16.08,'Card','Dylan','Online',2,14],
+  [1237,'15:15',203.80,33.97,'Card','Dylan','In store',3,15],
+  [1238,'16:02',134.70,22.45,'Cash','Dylan','In store',1,16],
+  [1239,'16:44', 68.31,11.39,'Card','Dylan','In store',2,16],
+  [1240,'17:10', 59.00, 9.83,'Cash','Dylan','In store',3,17],
+].map(a => ({ n:a[0], time:a[1], total:a[2], tax:a[3], method:a[4], cashier:a[5], channel:a[6], items:a[7], hour:a[8] }));
+
+const PRODUCTS = [['Oat flat white',.16],['Sourdough loaf',.14],['House blend 250 g',.12],['Almond croissant',.09],['Tote bag',.07],['Filter, cup',.06]];
+const CASHIERS = ['Priya','Dylan'];
+const REGISTERS = [{id:'front',name:'Front till'},{id:'back',name:'Back office'}];
+const STORES = [{id:'uk',name:'UK Store'},{id:'eu',name:'EU Store'}];
+const TEMPLATES = {
+  report:  [{id:'default',name:'Default',s:'built in'},{id:'thermal',name:'Thermal 80 mm',s:'WP Admin'},{id:'a4',name:'A4 sales sheet',s:'WP Admin'}],
+  closure: [{id:'default',name:'Default',s:'built in'},{id:'thermal',name:'Thermal 80 mm',s:'WP Admin'},{id:'a4',name:'A4 closure',s:'WP Admin'}],
+};
+const CLOSURES = [
+  { id:'c12', day:0, dayLabel:'Today',     reg:'Front till', by:'Priya', open:'09:02', close:'12:30', num:'#412', orders:8, sales:629.19, cash:111.90, card:468.29, other:49.00, float:100.00, cashOut:0,    counted:209.90, variance:-2.00 },
+  { id:'c10', day:2, dayLabel:'Saturday',  reg:'Front till', by:'Dylan', open:'08:55', close:'18:10', num:'#411', orders:19, sales:1740.30, cash:402.10, card:1290.20, other:48.00, float:100.00, cashOut:150.00, counted:352.10, variance:0 },
+  { id:'c7',  day:2, dayLabel:'Saturday',  reg:'Back office', by:'Paul', open:'10:00', close:'16:30', num:'#410', orders:4, sales:318.00, cash:0, card:318.00, other:0, float:0, cashOut:0, counted:0, variance:0 },
+  { id:'c11', day:3, dayLabel:'Friday',    reg:'Front till', by:'Priya', open:'09:00', close:'17:45', num:'#409', orders:16, sales:1436.80, cash:322.00, card:1094.80, other:20.00, float:100.00, cashOut:0, counted:412.00, variance:-10.00, corrected:{ counted:422.00, by:'Paul', at:'Fri 18:40', reason:'coins found in tray' }, settled:true },
+  { id:'c2',  day:4, dayLabel:'Thursday',  reg:'Front till', by:'Dylan', open:'09:05', close:'17:30', num:'#408', orders:15, sales:1288.40, cash:361.20, card:927.20, other:0, float:100.00, cashOut:0, counted:522.40, variance:61.20, unsynced:true },
+  { id:'c1',  day:4, dayLabel:'Thursday',  reg:'Back office', by:'Paul', open:'11:00', close:'15:00', num:'#407', orders:3, sales:96.50, cash:17.50, card:79.00, other:0, float:50.00, cashOut:0, counted:50.00, variance:-17.50 },
+];
+const OPEN_SESSION = { id:'s13', reg:'Front till', by:'Dylan', open:'13:00', float:100.00, expected:293.70 };
 
 /* ============================ state ============================ */
+const Q = new URLSearchParams(location.search);
 const S = {
-  viewport:'tablet', pro:true, theme:'light', online:true, regOpen:true, stores:1,
-  scope:{kind:'session', sessionId:'s13', range:'today'}, register:'front', store:'uk', cashier:'any',
-  report:'summary', template:'default', cmp:'yesterday', unticked:new Set(), pop:null, gateHint:null, selClosure:null, phoneTab:'report',
-};
-const qs = new URLSearchParams(location.search);
-['viewport','theme','report','cmp'].forEach(k=>{ if(qs.get(k)) S[k]=qs.get(k); });
-if (qs.get('pro')) S.pro = qs.get('pro')!=='0';
-
-const I = {
-  reports:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M7 15l3-4 3 2 4-6"/></svg>',
-  pos:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="10" width="18" height="10" rx="1.5"/><path d="M7 10V6h10v4M3 14h18M8 17h2M14 17h2"/></svg>',
-  products:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8h16v12H4zM4 8l2-4h12l2 4M12 8v12M9 4v4M15 4v4"/></svg>',
-  orders:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21zM9 8h6M9 12h6M9 16h4"/></svg>',
-  coupons:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4z"/><path d="M9 9l6 6" stroke-linecap="round"/></svg>',
-  customers:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19c0-3 2.7-5 6-5s6 2 6 5M15 15.5c2.6 0 5 1.5 5 3.5"/></svg>',
-  health:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/></svg>',
-  settings:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>',
-  support:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H9l-5 4z"/></svg>',
-  bell:'<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22a2.5 2.5 0 0 0 2.4-2h-4.8A2.5 2.5 0 0 0 12 22zm7-6V11a7 7 0 0 0-5-6.7V3a2 2 0 1 0-4 0v1.3A7 7 0 0 0 5 11v5l-2 2v1h18v-1z"/></svg>',
-  bars:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
-  print:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 8V4h10v4M5 8h14a2 2 0 0 1 2 2v6h-4v4H7v-4H3v-6a2 2 0 0 1 2-2zM7 14h10"/></svg>',
-  lock:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
-  down:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>',
-  check:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5 9-10"/></svg>',
-  back:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 5l-7 7 7 7"/></svg>',
-  cloudOff:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6.2 9.5 4 4 0 0 0 7 18zM4 4l16 16"/></svg>',
-  up:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 19V5M5 12l7-7 7 7"/></svg>',
-  dn:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12l7 7 7-7"/></svg>',
-  chev:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>',
+  viewport: Q.get('viewport') === 'phone' ? 'phone' : 'tablet',
+  pro: Q.get('pro') !== '0', theme: Q.get('theme') === 'dark' ? 'dark' : 'light',
+  online: true, regOpen: true, stores: 1,
+  view: Q.get('view') === 'closures' ? 'closures' : 'sales',
+  gran: ['day','week','month'].includes(Q.get('gran')) ? Q.get('gran') : 'day', off: 0,
+  cmp: ['lastweek','yesterday','lastyear'].includes(Q.get('cmp')) ? Q.get('cmp') : 'lastweek',
+  register:'front', store:'uk', cashier:'all',
+  unticked: new Set(), detail: null, closure: null, xreport: false, tpl:'default',
+  pop: null, hint: null, tip: null, frameH: 780,
 };
 
 /* ============================ helpers ============================ */
-const rep = () => REPORTS.find(r=>r.key===S.report);
-const ses = (id) => SESSIONS.find(s=>s.id===id);
-const openSession = () => S.regOpen ? SESSIONS.find(s=>s.open) : null;
-const freeOk = (s) => s.reg==='front' && s.day==='today';
-const lastFree = () => SESSIONS.find(s=>!s.open && freeOk(s));
-const lastAny = () => SESSIONS.filter(s=>!s.open && s.reg==='front')[0];
-function ensureScope(){
-  if (!S.pro) { S.register='front'; S.store='uk'; if (S.scope.kind==='range') S.scope.range='today'; }
-  if (S.scope.kind==='session') { const cur=ses(S.scope.sessionId); if (!cur || (cur.open && !S.regOpen) || (!S.pro && !freeOk(cur))) { const o=openSession(); S.scope.sessionId = o?o.id:(S.pro?lastAny().id:lastFree().id); } }
-  const r = rep();
-  if (r.needs==='session' && S.scope.kind!=='session') S.report='summary';
-  if (r.needs==='range' && S.scope.kind!=='range') S.report='summary';
-  const tt = TEMPLATES[rep().type]; if (!tt.find(t=>t[0]===S.template)) S.template='default';
-}
-const scopeLabel = () => { if (S.scope.kind==='session') { const s=ses(S.scope.sessionId); return s.open?`Open now · since ${s.opened.split(' ').pop()}`:`Closure ${s.number} · ${s.day==='today'?'today':s.day}`; } return RANGES.find(r=>r[0]===S.scope.range)[1]; };
-const scopeHeading = () => { if (S.scope.kind==='session') { const s=ses(S.scope.sessionId); return s.open?`Session ${s.number}, open since ${s.opened.split(' ').pop()}`:`Closure ${s.number}, ${s.opened.split(' ').pop()}–${s.closed.split(' ').pop()} ${s.day==='today'?'today':s.day}`; } return RANGES.find(r=>r[0]===S.scope.range)[1]; };
-// Orders in scope, before the ticks. Session 13 = from 13:00; closure 12 = 09:02–12:30; today = all.
-function ordersInScope(){
-  let o = ORDERS.slice();
-  if (S.scope.kind==='session') { const s=ses(S.scope.sessionId); if (s.id==='s13') o=o.filter(x=>x[7]>=13); else if (s.id==='c12') o=o.filter(x=>x[7]<13); else o=[]; }
-  if (S.cashier!=='any') o=o.filter(x=>x[5]===S.cashier);
-  return o;
-}
-const ticked = () => ordersInScope().filter(o=>!S.unticked.has(o[0]));
-const sumTicked = () => ticked().reduce((a,o)=>a+o[2],0);
-const mult = () => S.scope.kind==='range' ? RANGE_MULT[S.scope.range] : 1;
-const sessionsInRange = () => { let list=SESSIONS.filter(s=>!s.open); if(!S.pro) list=list.filter(freeOk); if (S.register!=='all') list=list.filter(s=>s.reg===S.register); if (S.store!=='all') list=list.filter(s=>REG[s.reg].store===S.store); if (S.scope.range==='today') list=list.filter(s=>s.day==='today'); else if (S.scope.range==='yesterday') list=list.filter(s=>s.day==='Sat 13 Sep'); return list; };
+const fmt = n => (n < 0 ? '−' : '') + '£' + Math.abs(n).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmt0 = n => (n < 0 ? '−' : '') + '£' + Math.abs(Math.round(n)).toLocaleString('en-GB');
+const pct = n => Math.round(n * 100) + '%';
+const sum = (a, f) => a.reduce((s, x) => s + (f ? f(x) : x), 0);
+const r2 = n => Math.round(n * 100) / 100;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+const h01 = s => { let x = 7; for (const c of String(s)) x = (x * 31 + c.charCodeAt(0)) >>> 0; return (x % 1000) / 1000; };
+const dateOf = off => new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() - off);
+const wdOf = off => (dateOf(off).getDay() + 6) % 7; // 0 = Monday
+const dstr = off => { const d = dateOf(off); return `${WD[wdOf(off)]} ${d.getDate()} ${MON[d.getMonth()].slice(0,3)}`; };
+const phone = () => S.viewport === 'phone';
+const I = {
+  chev: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>',
+  car:  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>',
+  left: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg>',
+  right:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>',
+  lock: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>',
+  ck:   '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg>',
+  x:    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  filt: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18M6 12h12M10 19h4"/></svg>',
+  menu: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>',
+  up:   '<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5l8 10H4z"/></svg>',
+  down: '<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 19L4 9h16z"/></svg>',
+  print:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V3h12v6M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v7H6z"/></svg>',
+  rail: { pos:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 14h4"/></svg>', orders:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/></svg>', products:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 5-9 5-9-5 9-5zM3 13l9 5 9-5"/></svg>', customers:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg>', reports:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>', settings:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>' },
+};
 
-/* ============================ strip ============================ */
-function renderStrip(){
-  const seg = (k, opts) => `<span class="seg">${opts.map(([v,l])=>`<button class="${String(S[k])===String(v)?'on':''}" data-set="${k}" data-v="${v}">${l}</button>`).join('')}</span>`;
-  document.getElementById('strip').innerHTML = `
-    <div class="g"><b>Width</b>${seg('viewport',[['tablet','Tablet'],['phone','Phone']])}</div>
-    <div class="g"><b>Edition</b>${seg('pro',[[true,'Pro'],[false,'Free']])}</div>
-    <div class="g"><b>Register</b>${seg('regOpen',[[true,'session open'],[false,'closed']])}</div>
-    <div class="g"><b>Stores</b>${seg('stores',[[1,'1'],[2,'2 (Pro)']])}</div>
-    <div class="g"><b>Network</b>${seg('online',[[true,'Online'],[false,'Offline']])}</div>
-    <div class="g"><b>Theme</b>${seg('theme',[['light','Light'],['dark','Dark']])}</div>`;
+/* ============================ period model ============================ */
+function dayTotal(off) {
+  if (off === 0) return sum(ORDERS, o => o.total);
+  if (DAYTOTAL_OVERRIDE[off] != null) return DAYTOTAL_OVERRIDE[off];
+  return r2(640 + DP[wdOf(off)] * 7 * 300 + h01('d' + off) * 380);
+}
+function hourly(off, list) { // array over HOURS
+  if (list) { const a = HOURS.map(() => 0); list.forEach(o => { const i = HOURS.indexOf(o.hour); if (i >= 0) a[i] += o.total; }); return a; }
+  const t = dayTotal(off); return P.map(p => r2(t * p));
+}
+function monthDays(off) { // days of the month `off` months back: [{off, d}]
+  const first = new Date(TODAY.getFullYear(), TODAY.getMonth() - off, 1);
+  const n = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+  const out = []; for (let d = 1; d <= n; d++) { const dt = new Date(first.getFullYear(), first.getMonth(), d); out.push({ d, off: Math.round((TODAY - dt) / 86400000) }); }
+  return out;
+}
+// buckets: [{label, off, cur:bool (has happened), val}]
+function buckets(gran, off) {
+  if (gran === 'day') {
+    const hs = HOURS.map((h, i) => ({ label: h === 12 ? '12pm' : h > 12 ? (h - 12) + 'pm' : h + 'am', hour: h, past: off > 0 || h <= NOWH }));
+    return hs;
+  }
+  if (gran === 'week') return WD.map((w, i) => ({ label: w, off: off * 7 - i, past: off * 7 - i >= 0 }));
+  return monthDays(off).map(x => ({ label: String(x.d), off: x.off, past: x.off >= 0 }));
+}
+function periodTitle(gran, off) {
+  if (gran === 'day') return off === 0 ? 'Today' : off === 1 ? 'Yesterday' : `${WDL[wdOf(off)]} ${dateOf(off).getDate()} ${MON[dateOf(off).getMonth()].slice(0,3)}`;
+  if (gran === 'week') return off === 0 ? 'This week' : off === 1 ? 'Last week' : `Week of ${dateOf(off * 7).getDate()} ${MON[dateOf(off * 7).getMonth()].slice(0,3)}`;
+  const d = new Date(TODAY.getFullYear(), TODAY.getMonth() - off, 1); return off === 0 ? `${MON[d.getMonth()]} so far` : MON[d.getMonth()];
+}
+const CMP_OFF = { lastweek: 7, yesterday: 1, lastyear: 364 };
+const CMP_LABEL = { lastweek: 'same day last week', yesterday: 'the day before', lastyear: 'same day last year' };
+function refLabel() {
+  if (S.gran === 'day') return S.off === 0 ? { lastweek: `last ${WDL[0]}`, yesterday: 'yesterday', lastyear: 'a year ago' }[S.cmp] : CMP_LABEL[S.cmp];
+  if (S.gran === 'week') return 'the week before';
+  return `${MON[(TODAY.getMonth() - S.off - 1 + 12) % 12]}`;
 }
 
-/* ============================ frame ============================ */
-function renderRail(){
-  const items = [['pos'],['products'],['orders'],['coupons'],['customers'],['reports']];
-  const bottom = [['bell'],['health'],['settings'],['support']];
-  const it = ([k]) => `<div class="it ${k==='reports'?'on':''}">${I[k]}</div>`;
-  return `<div class="rail"><div class="logo"><i></i></div>${items.map(it).join('')}<div class="sp"></div>${bottom.map(it).join('')}<div class="it"><span class="av">DC</span></div><div class="ver">v 2.0</div></div>`;
+/* orders in the period (today = real; anything else = synthetic, shaped like today) */
+const ORD_CACHE = {};
+function ordersFor(gran, off) {
+  const key = gran + ':' + off;
+  if (ORD_CACHE[key]) return ORD_CACHE[key];
+  let list;
+  if (gran === 'day' && off === 0) list = ORDERS.map(o => ({ ...o, key: 'day:0:' + o.n }));
+  else {
+    const raw = gran === 'day' ? dayTotal(off) : sum(buckets(gran, off).filter(b => b.past), b => dayTotal(b.off));
+    const n = Math.max(3, Math.round(raw / 88.6));
+    list = []; let acc = 0;
+    for (let i = 0; i < n; i++) { const b = ORDERS[i % ORDERS.length]; const w = b.total * (0.7 + h01(key + i) * 0.6); list.push({ ...b, n: 1226 - (off * 40 + i), w, key: key + ':' + i }); acc += w; }
+    const k = raw / acc; list.forEach(o => { o.total = r2(o.w * k); o.tax = r2(o.total / 6); delete o.w; });
+    if (gran === 'day') list.forEach((o, i) => { o.hour = HOURS[Math.min(11, 1 + Math.floor(i * 11 / n))]; o.time = String(o.hour).padStart(2, '0') + ':' + String(Math.floor(h01('t' + o.key) * 60)).padStart(2, '0'); });
+    list.sort((a, b) => a.time < b.time ? -1 : 1);
+  }
+  if (S.cashier !== 'all') list = list.filter(o => o.cashier === S.cashier);
+  return ORD_CACHE[key] = list;
 }
-function pagebar(title, back, backAct){
-  const phone = S.viewport==='phone';
-  return `<div class="pagebar">${back?`<span class="back" data-act="${backAct}">${I.back}<span>${back}</span></span>`:(phone?`<span class="burger">${I.bars}</span>`:'')}<span class="ttl2">${title}</span><span class="chrome-r">${!S.online?`<span class="pill warn">${I.cloudOff} Offline</span>`:''}${phone?'':`<span class="mut sm">${STORES[S.store==='all'?'uk':S.store]}</span><span class="av">DC</span>`}</span></div>`;
-}
-function renderFrame(){
-  ensureScope();
-  const f = document.getElementById('frame');
-  f.className = `frame ${S.viewport}`; f.dataset.theme = S.theme;
-  const phone = S.viewport==='phone';
-  let inner;
-  const drill = phone && S.report==='closures' && S.selClosure;
-  if (drill) inner = pagebar(`Closure ${ses(S.selClosure).number}`, 'Closures', 'unselect') + `<div class="pad">${sessionDoc(ses(S.selClosure))}</div>`;
-  else if (phone) inner = pagebar('Reports') + `<div class="pad">${filters()}${chart()}<div class="split">${S.phoneTab==='orders'?ordersCard():reportCard()}</div></div>`;
-  else inner = pagebar('Reports') + `<div class="pad">${filters()}${chart()}<div class="split">${ordersCard()}${reportCard()}</div></div>`;
-  f.innerHTML = `<div class="body">${phone?'':renderRail()}<div class="main">${inner}${renderPop()}</div></div>`;
-  document.getElementById('statejson').textContent = JSON.stringify({edition:S.pro?'Pro':'Free', scope:S.scope, register:S.register, store:S.store, cashier:S.cashier, report:S.report, template:S.template, chart:S.cmp, unticked:[...S.unticked], online:S.online, registerOpen:S.regOpen, popover:S.pop, gateHint:S.gateHint}, null, 1);
+const ticked = list => list.filter(o => !S.unticked.has(o.key));
+
+function model() {
+  const all = ordersFor(S.gran, S.off), t = ticked(all);
+  const rawAll = sum(all, o => o.total), total = sum(t, o => o.total), scale = rawAll ? total / rawAll : 1;
+  const bk = buckets(S.gran, S.off);
+  let cur, prev, prevRef, prevTotal;
+  if (S.gran === 'day') {
+    cur = hourly(S.off, t);
+    prev = hourly(S.off + CMP_OFF[S.cmp]);
+    prevTotal = sum(prev);
+    prevRef = S.off === 0 ? sum(prev.filter((_, i) => HOURS[i] <= NOWH)) : prevTotal;
+  } else {
+    const pOff = S.gran === 'week' ? 7 : 0;
+    cur = bk.map(b => b.past ? r2(dayTotal(b.off) * scale) : 0);
+    const pb = S.gran === 'week' ? buckets('week', S.off + 1) : buckets('month', S.off + 1);
+    prev = bk.map((b, i) => pb[i] ? dayTotal(pb[i].off) : 0);
+    prevTotal = sum(prev);
+    prevRef = S.off === 0 ? sum(prev.filter((_, i) => bk[i].past)) : prevTotal;
+  }
+  const orders = t.length, prevOrders = Math.max(1, Math.round(prevRef / 88.6));
+  const items = sum(t, o => o.items), prevItems = Math.round(prevOrders * 2.2);
+  // busiest bucket
+  let bi = 0; cur.forEach((v, i) => { if (v > cur[bi]) bi = i; });
+  const busiest = cur[bi] > 0 ? { label: S.gran === 'day' ? bk[bi].label.replace('am', ' am').replace('pm', ' pm') : (S.gran === 'week' ? WDL[bi] : `the ${bk[bi].label}${['th','st','nd','rd'][(bk[bi].label % 10 < 4 && ![11,12,13].includes(+bk[bi].label)) ? bk[bi].label % 10 : 0]}`), val: cur[bi], n: S.gran === 'day' ? t.filter(o => o.hour === bk[bi].hour).length : null } : null;
+  const by = (f) => { const m = {}; t.forEach(o => { m[f(o)] = (m[f(o)] || 0) + o.total; }); return m; };
+  const cnt = (f) => { const m = {}; t.forEach(o => { m[f(o)] = (m[f(o)] || 0) + 1; }); return m; };
+  return { all, t, total, scale, bk, cur, prev, prevRef, prevTotal, orders, prevOrders, items, prevItems, busiest,
+    byMethod: by(o => o.method), cntMethod: cnt(o => o.method), byChannel: by(o => o.channel), cntChannel: cnt(o => o.channel),
+    byCashier: by(o => o.cashier), cntCashier: cnt(o => o.cashier), tax: sum(t, o => o.tax), excluded: all.length - t.length };
 }
 
-/* ============================ filter pills ============================ */
-function filters(){
-  const chip = (k, v, p, locked, on) => `<span class="chip ${on?'on':''}" data-act="pop" data-p="${p}">${k?`<span class="k">${k}</span>`:''}<span class="v">${v}</span>${locked?`<span class="lk">${I.lock}</span>`:`<span class="car">${I.down}</span>`}</span>`;
-  const phone = S.viewport==='phone';
-  return `<div class="filters">
-    ${chip('', scopeLabel(), 'date', !S.pro, true)}
-    ${chip('Status', 'Completed', 'status', false)}
-    ${chip('Register', S.register==='all'?'All':REG[S.register].name, 'register', !S.pro)}
-    ${(S.stores===2||S.store!=='uk')?chip('Store', S.store==='all'?'All':STORES[S.store], 'store', !S.pro):''}
-    ${chip('Cashier', S.cashier==='any'?'Any':WHO[S.cashier].name.split(' ')[0], 'cashier', false)}
-    ${phone?'':chip('Customer', 'Any', 'customer', false)}
+/* ============================ render ============================ */
+const F = document.getElementById('frame');
+function render() {
+  if (!S.pro) { S.off = 0; S.gran = 'day'; S.register = 'front'; S.store = 'uk'; }
+  if (S.view === 'closures') S.detail = null; else { S.closure = null; S.xreport = false; }
+  F.className = 'frame ' + S.viewport; F.dataset.theme = S.theme;
+  F.innerHTML = `<div class="body">${phone() ? '' : rail()}<div class="main">${pagebar()}${S.view === 'sales' ? sales() : closures()}${panel()}${popover()}</div></div>`;
+  document.querySelectorAll('.strip button[data-set]').forEach(b => { const v = String(S[b.dataset.set]); b.classList.toggle('on', v === b.dataset.v); });
+  document.getElementById('statejson').textContent = JSON.stringify({ ...S, unticked: [...S.unticked] }, null, 1).replace(/\n\s*/g, ' ');
+  S.frameH = F.clientHeight;
+}
+function rail() {
+  const items = [['pos','POS'],['orders','Orders'],['products','Products'],['customers','Customers'],['reports','Reports']];
+  return `<div class="rail"><div class="logo"><i></i></div>${items.map(([k, l]) => `<div class="it ${k === 'reports' ? 'on' : ''}" title="${l}">${I.rail[k]}</div>`).join('')}<div class="sp"></div><div class="it">${I.rail.settings}</div><div class="it"><span class="av">D</span></div><div class="ver">2.0</div></div>`;
+}
+function pagebar() {
+  const inPanel = phone() && (S.detail || S.closure || S.xreport);
+  if (inPanel) return `<div class="pagebar"><button class="back btn ic" data-act="closePanel" style="width:auto;padding:0 8px 0 2px">${I.left}<span>${S.view === 'sales' ? 'Sales' : 'Closures'}</span></button><span class="ttl2 grow" style="text-align:center">${esc(panelTitle())}</span><span style="width:70px"></span></div>`;
+  const scopeName = `${REGISTERS.find(r => r.id === S.register).name}${S.stores > 1 ? ' · ' + STORES.find(s => s.id === S.store).name : ''}`;
+  const segc = `<span class="segc"><button class="${S.view === 'sales' ? 'on' : ''}" data-act="view" data-v="sales">Sales</button><button class="${S.view === 'closures' ? 'on' : ''}" data-act="view" data-v="closures">Closures</button></span>`;
+  return `<div class="pagebar">${phone() ? `<span class="burger">${I.menu}</span>` : `<span class="ttl2">Reports</span>`}${phone() ? segc : `<span style="margin-left:6px">${segc}</span>`}<div class="chrome-r"><button class="scope" data-act="pop" data-p="scope">${esc(phone() ? REGISTERS.find(r => r.id === S.register).name : scopeName)}${!S.pro ? `<span class="lk">${I.lock}</span>` : ''}<span class="car">${I.car}</span></button>${S.view === 'sales' ? `<button class="btn ic fbtn" data-act="pop" data-p="filter" title="Filter">${I.filt}${S.cashier !== 'all' ? '<span class="dot"></span>' : ''}</button>` : ''}${phone() ? '' : `<span class="av">D</span>`}</div></div>`;
+}
+function panelTitle() {
+  if (S.xreport) return 'X-report';
+  if (S.closure) { const c = CLOSURES.find(c => c.id === S.closure); return `${c.dayLabel} ${c.open}–${c.close}`; }
+  return { payments: 'Sales by payment method', channels: 'In store and online', products: 'Top products', cashiers: 'Sales by cashier', taxes: 'Taxes collected', orders: 'Orders', refunds: 'Refunds and discounts', deposits: 'Deposits' }[S.detail] || '';
+}
+
+/* ---- Sales room ---- */
+function sales() {
+  const m = model();
+  return `<div class="pad">${periodBar()}${hero(m)}${tiles(m)}</div>`;
+}
+function periodBar() {
+  return `<div class="pbar"><button class="btn ic" data-act="step" data-v="1" title="Earlier">${I.left}</button><span class="ttl">${esc(periodTitle(S.gran, S.off))}</span><button class="btn ic" data-act="step" data-v="-1" ${S.off === 0 ? 'disabled' : ''} title="Later">${I.right}</button><span class="segc">${['day','week','month'].map(g => `<button class="${S.gran === g ? 'on' : ''}" data-act="gran" data-v="${g}">${g[0].toUpperCase() + g.slice(1)}${!S.pro && g !== 'day' ? `<span class="lk">${I.lock}</span>` : ''}</button>`).join('')}</span></div>`;
+}
+function deltaChip(cur, prev) {
+  if (!prev) return '';
+  const d = (cur - prev) / prev, a = Math.abs(d) * 100;
+  const cls = a < 0.5 ? 'flat' : d > 0 ? 'up' : 'down';
+  return `<span class="delta ${cls}">${cls === 'up' ? I.up : cls === 'down' ? I.down : ''}${a < 10 ? a.toFixed(1) : Math.round(a)}%</span>`;
+}
+function hero(m) {
+  const prevLine = S.gran === 'day' && S.off === 0 ? `${fmt(m.prevRef)} by now ${refLabel()}` : S.gran !== 'day' && S.off === 0 ? `${fmt(m.prevRef)} at this point ${refLabel()}` : `${fmt(m.prevRef)} ${refLabel()}`;
+  const cmpBtn = S.gran === 'day' ? `<button class="cmpbtn" data-act="pop" data-p="cmp">vs ${esc(CMP_LABEL[S.cmp])}<span class="car">${I.car}</span></button>` : `<span class="mut sm" style="height:30px;display:inline-flex;align-items:center">vs ${esc(refLabel())}</span>`;
+  const kp = (l, n, p) => `<div class="kpi"><div class="l">${l}</div><div class="n">${n}</div><div class="p">${p}</div></div>`;
+  const avg = m.orders ? m.total / m.orders : 0, pavg = m.prevOrders ? m.prevRef / m.prevOrders : 0;
+  return `<div class="card hero">
+    <div class="hero-top">
+      <div>
+        <div class="lbl">Sales</div>
+        <div class="big">${fmt(m.total)}</div>
+        <div class="prev">${deltaChip(m.total, m.prevRef)}<span>${prevLine}</span>${m.excluded ? `<span class="excl">${m.excluded} order${m.excluded > 1 ? 's' : ''} left out<button data-act="resetTicks" title="Put them back">${I.x}</button></span>` : ''}</div>
+        <div style="margin-top:4px">${cmpBtn}</div>
+      </div>
+      <div class="kpis">${kp('Orders', m.orders, m.prevOrders + ' ' + (S.off === 0 ? 'by now' : 'before'))}${kp('Avg order', fmt(avg), fmt(pavg))}${kp('Items', m.items, m.prevItems)}</div>
+    </div>
+    ${chart(m)}
+  </div>`;
+}
+function chart(m) {
+  const W = phone() ? 340 : 1090, H = phone() ? 130 : 140, padB = 20, top = 8;
+  const n = m.bk.length, gap = S.gran === 'month' ? 3 : 8, bw = (W - gap * (n - 1)) / n;
+  const max = Math.max(1, ...m.cur, ...m.prev);
+  const y = v => top + (H - padB - top) * (1 - v / max);
+  const every = S.gran === 'month' ? 7 : (phone() && S.gran === 'day' ? 2 : 1);
+  let s = `<svg class="bars" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+  m.bk.forEach((b, i) => {
+    const x = i * (bw + gap);
+    const pv = m.prev[i], cv = m.cur[i];
+    if (pv > 0) s += `<rect x="${x}" y="${y(pv)}" width="${bw}" height="${H - padB - y(pv)}" rx="2" fill="var(--ghost)"/>`;
+    if (cv > 0) s += `<rect x="${x + (pv > 0 ? bw * 0.15 : 0)}" y="${y(cv)}" width="${pv > 0 ? bw * 0.7 : bw}" height="${H - padB - y(cv)}" rx="2" fill="var(--bar1)"/>`;
+    s += `<rect class="hit" data-i="${i}" x="${x}" y="0" width="${bw + gap}" height="${H}" fill="transparent"/>`;
+    if (i % every === 0) s += `<text x="${x + bw / 2}" y="${H - 5}" text-anchor="middle" font-size="11" fill="var(--muted-fg)">${b.label}</text>`;
+  });
+  s += `</svg>`;
+  const tip = S.tip != null ? (() => { const i = S.tip; const b = m.bk[i]; return `<div class="tip" style="left:${(i + .5) * (bw + gap) / W * 100}%;top:0"><b>${fmt(m.cur[i])}</b> · ${fmt(m.prev[i])} ${esc(refLabel())}</div>`; })() : '';
+  const busy = m.busiest ? (S.gran === 'day' ? `Busiest hour <b>${esc(m.busiest.label)}</b>, ${fmt(m.busiest.val)} from ${m.busiest.n} order${m.busiest.n === 1 ? '' : 's'}` : `Best day <b>${esc(m.busiest.label)}</b>, ${fmt(m.busiest.val)}`) : 'Nothing sold yet';
+  return `<div class="chart" style="position:relative">${tip}${s}<div class="cap"><span>${busy}</span><span class="lg" style="margin-left:auto"><i style="background:var(--bar1)"></i>${esc(periodTitle(S.gran, S.off))}</span><span class="lg"><i style="background:var(--ghost)"></i>${esc(refLabel())}</span></div></div>`;
+}
+function tiles(m) {
+  const T = m.total || 1;
+  const card = m.byMethod.Card || 0, cash = m.byMethod.Cash || 0, other = T - card - cash;
+  const inst = m.byChannel['In store'] || 0, onl = m.byChannel.Online || 0;
+  const prods = PRODUCTS.map(([n, s]) => [n, r2(T * s)]);
+  const cashiers = Object.entries(m.byCashier).sort((a, b) => b[1] - a[1]);
+  const tax20 = r2(m.tax * 0.958), tax5 = r2(m.tax - tax20);
+  const largest = m.t.length ? Math.max(...m.t.map(o => o.total)) : 0;
+  const t = (k, l, n, body, extra) => `<button class="tile ${extra || ''}" data-act="detail" data-v="${k}"><div class="l">${l}<span class="chev">${I.chev}</span></div><div class="n">${n}</div>${body}</button>`;
+  const sb = segs => `<div class="sbar">${segs.map(([v, c]) => v > 0 ? `<i style="flex:${v};background:${c}"></i>` : '').join('')}</div>`;
+  return `<div class="tiles">
+    ${t('payments', 'Payments', card ? `Card ${pct(card / T)}` : '—', sb([[card, 'var(--bar1)'], [cash, 'var(--bar2)'], [other, 'var(--bar3)']]) + `<div class="line">Card <b>${fmt0(card)}</b> · Cash <b>${fmt0(cash)}</b>${other > 0.5 ? ` · Other <b>${fmt0(other)}</b>` : ''}</div>`)}
+    ${t('channels', 'In store · Online', inst ? `In store ${pct(inst / T)}` : '—', sb([[inst, 'var(--bar1)'], [onl, 'var(--bar4)']]) + `<div class="line">In store <b>${fmt0(inst)}</b> · Online <b>${fmt0(onl)}</b></div>`)}
+    ${t('products', 'Top products', esc(prods[0][0]), `<ul class="top">${prods.slice(0, 3).map(([n, v]) => `<li><span>${esc(n)}</span><span>${fmt0(v)}</span></li>`).join('')}</ul>`)}
+    ${t('cashiers', 'Cashiers', cashiers.length ? esc(cashiers[0][0]) : '—', `<ul class="top">${cashiers.slice(0, 3).map(([n, v]) => `<li><span><span class="avi">${n[0]}</span>${esc(n)}</span><span>${fmt0(v)}</span></li>`).join('')}</ul>`)}
+    ${t('taxes', 'Taxes', fmt(m.tax), `<div class="line">VAT 20% <b>${fmt(tax20)}</b><br>VAT 5% <b>${fmt(tax5)}</b></div>`)}
+    ${t('orders', 'Orders', `${m.orders}`, `<div class="line">Largest <b>${fmt(largest)}</b><br>${m.excluded ? `<b>${m.excluded} left out</b> of ${m.all.length}` : 'Tick or untick which count'}</div>`)}
+    ${t('refunds', 'Refunds · Discounts', fmt(0), `<div class="line">No refunds<br>Discounts <b>${fmt(r2(T * 0.011))}</b> on ${Math.max(1, Math.round(m.orders / 5))} orders</div>`)}
+    ${S.online ? t('deposits', `Deposits <span class="plug">Plugin</span>`, fmt(r2(T * 0.08)), `<div class="line">${Math.max(1, Math.round(m.orders / 6))} deposits taken<br>${fmt(r2(T * 0.03))} released</div>`) : t('deposits', `Deposits <span class="plug">Plugin</span>`, 'Unavailable offline', `<div class="line">Comes from the server</div>`, 'dim')}
   </div>`;
 }
 
-/* ============================ chart ============================ */
-function chart(){
-  const t = ticked();
-  const byHour = (list, from, to) => { const a=[]; for(let h=from;h<=to;h++) a.push(list.filter(o=>o[7]===h).reduce((s,o)=>s+o[2],0)); return a; };
-  const hours = [9,10,11,12,13,14,15,16,17];
-  const todayH = byHour(t, 9, 17);
-  const yestH = [96.20,148.40,119.90,72.10,84.30,131.60,143.20,151.10,85.30];
-  const weekT = [612.40,704.10,0,0,0,0,0]; weekT[6] = sumTicked();
-  const weekL = [583.10,671.20,690.40,720.30,890.70,1032.10,644.20];
-  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  const posD = [512.40,604.10,0,0,0,0,t.filter(o=>o[6]==='pos').reduce((a,o)=>a+o[2],0)], onlD = [100.00,100.00,0,0,0,0,t.filter(o=>o[6]==='online').reduce((a,o)=>a+o[2],0)];
-  let a, b, labels, la, lb, head, deltaTxt, up, stacked=false;
-  // The first comparison follows the date pill: today (or a session) by hour vs yesterday; a longer range by day vs the range before it.
-  const longRange = S.scope.kind==='range' && !['today','yesterday'].includes(S.scope.range);
-  const firstLabel = longRange ? `${RANGES.find(r=>r[0]===S.scope.range)[1]} vs before` : S.scope.kind==='range'&&S.scope.range==='yesterday' ? 'Yesterday vs the day before' : 'Today vs yesterday';
-  if (S.cmp==='yesterday' && longRange) { const m=mult()/6.4; a=weekL.map(v=>v*m*1.04); b=weekL.map(v=>v*m*0.93); labels=days; la=RANGES.find(r=>r[0]===S.scope.range)[1]; lb='The period before'; const now=a.reduce((x,y)=>x+y,0), then=b.reduce((x,y)=>x+y,0); head=fmt(now); up=now>=then; deltaTxt=`${Math.abs(Math.round((now-then)/then*100))}% vs the period before`; }
-  else if (S.cmp==='yesterday') { a=todayH; b=yestH; labels=hours.map(h=>`${h}:00`); la='Today'; lb='Yesterday'; const now=sumTicked(), then=yestH.slice(0,7).reduce((x,y)=>x+y,0); head=fmt(now); up=now>=then; deltaTxt=`${Math.abs(Math.round((now-then)/then*100))}% vs yesterday by this time`; }
-  else if (S.cmp==='week') { a=weekT; b=weekL; labels=days; la='This week'; lb='Last week'; const now=weekT.reduce((x,y)=>x+y,0), then=weekL.slice(0,2).reduce((x,y)=>x+y,0)+weekL[6]*0.6; head=fmt(now); up=now>=then; deltaTxt=`${Math.abs(Math.round((now-then)/then*100))}% vs last week by this point`; }
-  else { a=posD; b=onlD; labels=days; la='POS'; lb='Online'; stacked=true; const p=posD.reduce((x,y)=>x+y,0), o=onlD.reduce((x,y)=>x+y,0); head=fmt(p+o); up=true; deltaTxt=`${Math.round(p/(p+o)*100)}% at the till, ${Math.round(o/(p+o)*100)}% online this week`; }
-  const W=S.viewport==='phone'?340:1090, H=S.viewport==='phone'?120:150, padL=6, padB=18, n=a.length, gw=(W-padL*2)/n, bw=stacked?gw*0.62:gw*0.30, max=Math.max(...a.map((v,i)=>stacked?v+b[i]:Math.max(v,b[i])))||1, sc=(H-padB-10)/max;
-  const bars = a.map((v,i)=>{ const x0=padL+i*gw+gw/2; if (stacked) { const hb=b[i]*sc, ha=v*sc; return `<rect x="${x0-bw/2}" y="${H-padB-ha}" width="${bw}" height="${ha}" fill="var(--bar1)" rx="2"/><rect x="${x0-bw/2}" y="${H-padB-ha-hb}" width="${bw}" height="${hb}" fill="var(--bar3)" rx="2"/>`; } const hb=b[i]*sc, ha=v*sc; return `<rect x="${x0-bw-1}" y="${H-padB-ha}" width="${bw}" height="${ha}" fill="var(--bar1)" rx="2"/><rect x="${x0+1}" y="${H-padB-hb}" width="${bw}" height="${hb}" fill="var(--bar2)" rx="2"/>`; }).join('');
-  const lab = labels.map((l,i)=>`<text x="${padL+i*gw+gw/2}" y="${H-4}" font-size="11" text-anchor="middle" fill="var(--muted-fg)" font-family="var(--sys)">${l}</text>`).join('');
-  const cmp = `<span class="cmp"><button class="${S.cmp==='yesterday'?'on':''}" data-act="cmp" data-c="yesterday">${firstLabel}</button><button class="${S.cmp==='week'?'on':''}" data-act="cmp" data-c="week">This week vs last</button><button class="${S.cmp==='online'?'on':''}" data-act="cmp" data-c="online">Online vs POS</button></span>`;
-  return `<div class="card chart"><div class="card-b">
-    <div class="head"><span class="fig">${head}</span><span class="delta ${up?'pos':'neg'}">${up?I.up:I.dn}${deltaTxt}</span>${S.viewport==='phone'?'':cmp}</div>
-    ${S.viewport==='phone'?cmp:''}
-    <svg class="bars" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><line x1="0" y1="${H-padB}" x2="${W}" y2="${H-padB}" stroke="var(--border)"/>${bars}${lab}</svg>
-    <div class="legend"><span><i style="background:var(--bar1)"></i>${la}</span><span><i style="background:${stacked?'var(--bar3)':'var(--bar2)'}"></i>${lb}</span>${S.scope.kind==='session'&&S.cmp==='yesterday'?`<span class="mut">· ${scopeHeading()}</span>`:''}${S.unticked.size?`<span class="mut">· ${S.unticked.size} order${S.unticked.size>1?'s':''} unticked</span>`:''}</div>
-  </div></div>`;
+/* ---- Closures room ---- */
+function closures() {
+  const open = S.regOpen;
+  const last = CLOSURES[0];
+  const sess = open
+    ? `<div class="card sess"><div><div class="row"><span class="pill open">Open</span><span class="who">${OPEN_SESSION.reg} · ${OPEN_SESSION.by} · since ${OPEN_SESSION.open}</span></div><div class="big" style="margin-top:6px">${fmt(OPEN_SESSION.expected)}</div><div class="who">expected in drawer</div></div><div class="acts"><button class="btn" data-act="xreport">${I.print}Print X-report</button></div></div>`
+    : `<div class="card sess"><div><div class="row"><span class="pill mutp">Closed</span><span class="who">${last.reg} · closed ${last.close} by ${last.by}</span></div><div class="big" style="margin-top:6px">${fmt(last.sales)}</div><div class="who">last closure ${last.num}${last.variance ? ` · <span class="${last.variance < 0 ? 'neg' : 'pos'}">${fmt(last.variance)}</span>` : ''}</div></div><div class="acts"><button class="btn" data-act="reprint" data-v="${last.id}">${I.print}Reprint</button></div></div>`;
+  const rows = []; let lastDay = null;
+  CLOSURES.forEach(c => {
+    const regName = S.register === 'all' ? null : REGISTERS.find(r => r.id === S.register).name; if (regName && c.reg !== regName) return;
+    const locked = !S.pro && c.day > 0;
+    if (c.dayLabel !== lastDay) { rows.push(`<tr class="grp"><td class="g" colspan="${phone() ? 3 : S.register === "all" ? 5 : 4}">${c.dayLabel}</td></tr>`); lastDay = c.dayLabel; }
+    const v = c.settled ? `<span class="pill info">settled</span>` : Math.abs(c.variance) < 0.005 ? `<span class="pill open">balanced</span>` : `<span class="${c.variance < 0 ? 'neg' : 'pos'} b">${fmt(c.variance)}</span>`;
+    rows.push(`<tr class="click ${locked ? 'lock' : ''} ${S.closure === c.id ? 'sel' : ''}" data-act="${locked ? 'hint' : 'closure'}" data-v="${locked ? 'closures' : c.id}"><td>${c.open}–${c.close}${locked ? `<span class="lk">${I.lock}</span>` : ''}${c.unsynced ? ` <span class="pill warn">not synced</span>` : ''}</td>${phone() ? "" : `<td><span class="avi">${c.by[0]}</span>${c.by}</td>${S.register === "all" ? `<td class="mut">${c.reg}</td>` : ""}`}<td class="r">${fmt(c.sales)}</td><td class="r">${v}</td></tr>`);
+  });
+  return `<div class="pad">${sess}<div class="card"><table class="t"><thead><tr><th>Session</th>${phone() ? "" : `<th>Cashier</th>${S.register === "all" ? "<th>Register</th>" : ""}`}<th class="r">Sales</th><th class="r">Drawer</th></tr></thead><tbody>${rows.join('')}</tbody></table></div></div>`;
 }
 
-/* ============================ orders ============================ */
-function ordersCard(){
-  const o = ordersInScope(); const t=ticked();
-  const phone = S.viewport==='phone';
-  return `<div class="card orders"><div class="card-h"><span>Orders</span><span class="sub">${o.length} · ${t.length===o.length?'all selected':`${t.length} selected`}</span>${phone?`<span class="grow"></span><button class="btn sm" data-act="phoneTab" data-t="report">Report ${I.chev}</button>`:''}</div>
-    <div class="card-b tight">${o.length?`<table class="t"><thead><tr><th><input class="cb" type="checkbox" ${t.length===o.length?'checked':''} data-act="tickAll"></th><th>#</th><th>Time</th>${phone?'':'<th>Cashier</th>'}<th class="r">Total</th><th>Paid</th></tr></thead><tbody>${o.map(x=>`<tr class="${S.unticked.has(x[0])?'off':''}"><td><input class="cb" type="checkbox" ${S.unticked.has(x[0])?'':'checked'} data-act="tick" data-n="${x[0]}"></td><td class="b">${x[0]}</td><td class="mut">${x[1]}</td>${phone?'':`<td>${who(x[5])}</td>`}<td class="r">${fmt(x[2])}</td><td>${x[4]}${x[6]==='online'?' <span class="pill info">Online</span>':''}</td></tr>`).join('')}</tbody></table>`:`<div class="empty"><span class="big">No orders in this session</span></div>`}</div></div>`;
-}
-
-/* ============================ report card ============================ */
-function reportCard(){
-  const r = rep();
-  const phone = S.viewport==='phone';
-  const tpl = TEMPLATES[r.type].find(t=>t[0]===S.template)[1];
-  const body = S.report==='session' ? sessionDoc(ses(S.scope.sessionId)) : S.report==='closures' ? closuresList() : S.report==='cash' ? cashTable() : S.report==='deposits' ? depositsTable() : S.report==='summary' ? summaryDoc() : salesTable();
-  let foot;
-  if (S.report==='session') { const s=ses(S.scope.sessionId); foot = `<div class="card-f"><span class="mut sm grow status">${s.open?'Prints as an X-report':`Z-report printed ${s.closed.split(' ').pop()}`}</span><button class="btn">Export PDF</button>${s.open?'':`<button class="btn">Recount…</button>`}<button class="btn p">${I.print} ${s.open?'Print X-report':'Reprint copy'}</button></div>`; }
-  else foot = `<div class="card-f"><button class="btn">Export CSV</button><button class="btn p">${I.print} Print</button></div>`;
-  return `<div class="card report"><div class="card-h">${phone?`<button class="btn sm" data-act="phoneTab" data-t="orders">${I.back} Orders</button>`:''}<span class="sel2" data-act="pop" data-p="report"><span>${r.title}</span><span class="car">${I.down}</span></span><span class="sel2" data-act="pop" data-p="template"><span class="k">Template</span><span>${tpl}</span><span class="car">${I.down}</span></span></div>
-    <div class="card-b tight">${body}</div>${foot}</div>`;
-}
-function tplWrap(inner, opts={}){
-  // The pane renders the chosen template. Default and A4 are HTML; Thermal is the 80 mm receipt look.
-  if (S.template==='thermal') return `<div class="thermal">${opts.thermal||''}</div>`;
-  if (S.template==='a4') return `<div class="doc-paper fmt"><div class="brand">UK Store</div><div class="mut sm">${opts.title||''} · ${scopeHeading()} · printed Sun 14 Sep 15:12</div>${inner}</div>`;
-  return inner;
-}
-function summaryDoc(){
-  const t = ticked(); const m=mult();
-  const n = Math.round(t.length*m), total = sumTicked()*m, tax = t.reduce((a,o)=>a+o[3],0)*m, refunds = (S.scope.kind==='session'&&S.scope.sessionId==='c12')?0:15.00*m, disc=12.50*m;
-  const pm = [['Cash', t.filter(o=>o[4]==='Cash').reduce((a,o)=>a+o[2],0)*m],['Card', t.filter(o=>o[4]==='Card').reduce((a,o)=>a+o[2],0)*m]];
-  const rows = [['Total orders', n],['Net sales', fmt(total-tax)],['Tax collected', fmt(tax)],['Total sales', fmt(total), true],['Refunds', refunds?fmt(-refunds):'—'],['Discounts', fmt(disc)]];
-  const html = `<div class="heading">${scopeHeading()} · counts <b>sales</b>${S.unticked.size?` · ${S.unticked.size} unticked`:''}</div><table class="t"><tbody>${rows.map(r=>`<tr><td ${r[2]?'class="b"':''}>${r[0]}</td><td class="r ${r[2]?'b':''}">${r[1]}</td></tr>`).join('')}</tbody></table><div class="dsec" style="padding:10px 12px 4px">Payment methods</div><table class="t"><tbody>${pm.map(p=>`<tr><td>${p[0]}</td><td class="r">${fmt(p[1])}</td></tr>`).join('')}</tbody></table><div class="dsec" style="padding:10px 12px 4px">Taxes</div><table class="t"><tbody><tr><td>Standard 20%</td><td class="r">${fmt(tax*0.92)}</td></tr><tr><td>Reduced 5%</td><td class="r">${fmt(tax*0.08)}</td></tr></tbody></table>`;
-  const th = `UK STORE (ID: 1)\nReport generated: 2026-09-14 15:12\n${scopeHeading()}\nCashier: Demo Cashier\n\n----------------------------------------\n            SALES SUMMARY\n----------------------------------------\nTotal Orders                       ${String(n).padStart(8)}\nTotal Net Sales                ${fmt(total-tax).padStart(12)}\nTotal Tax Collected            ${fmt(tax).padStart(12)}\nTOTAL SALES                    ${fmt(total).padStart(12)}\nTotal Discounts                ${fmt(disc).padStart(12)}\n\n----------------------------------------\n           PAYMENT METHODS\n----------------------------------------\n${pm.map(p=>p[0].padEnd(31)+fmt(p[1]).padStart(12)).join('\n')}\n\n----------------------------------------\n                TAXES\n----------------------------------------\nStandard 20%                   ${fmt(tax*0.92).padStart(12)}\nReduced 5%                     ${fmt(tax*0.08).padStart(12)}`;
-  return tplWrap(html, {title:'Sales summary', thermal:th});
-}
-function salesTable(){
-  const g = S.report; const k = (sumTicked()/727.80)*mult();
-  const M = (n) => Math.round(n*k*100)/100;
-  const cols = { payment:['Method','Payments','Taken','Refunded','Net'], cashier:['Cashier','Sales','Gross','Refunds','Net','Tax'], register:['Register','Sales','Gross','Refunds','Net','Tax'], tax:['Rate','Sales','Taxable base','Tax'], item:['Item','Qty','Gross','Refunds','Net'], category:['Category','Qty','Gross','Refunds','Net'] }[g];
-  const base = { payment:[['Cash',11,300.80,-15.00],['Card · terminal',8,412.00,0],['Card · online',1,15.00,0]], cashier:[['Demo Cashier',12,486.20,-15.00,79.40],['Amy Okafor',6,241.60,0,39.45]], register:[['Front counter',14,560.80,-15.00,89.10],['Back office',4,167.00,0,29.75]], tax:[['Standard 20%',15,506.80,101.36],['Reduced 5%',3,125.00,6.25],['Zero 0%',2,96.00,0]], item:[['Flat white',22,66.00,-3.00],['Sourdough loaf',9,40.50,0],['Croissant',18,45.00,0],['Coffee beans 250g',6,57.00,-9.50],['Oat latte',11,41.80,0]], category:[['Drinks',48,214.60,-3.00],['Bakery',31,131.40,0],['Retail',9,114.00,-9.50]] }[g];
-  const rows = base.map(r=>{ if (g==='payment') return [r[0], Math.round(r[1]*k), fmt(M(r[2])), r[3]?fmt(M(r[3])):'—', fmt(M(r[2]+r[3]))]; if (g==='tax') return [r[0], Math.round(r[1]*k), fmt(M(r[2])), fmt(M(r[3]))]; if (g==='item'||g==='category') return [r[0], Math.round(r[1]*k), fmt(M(r[2])), r[3]?fmt(M(r[3])):'—', fmt(M(r[2]+r[3]))]; return [r[0], Math.round(r[1]*k), fmt(M(r[2])), r[3]?fmt(M(r[3])):'—', fmt(M(r[2]+r[3])), fmt(M(r[4]))]; });
-  const totals = rows[0].map((_,i)=> i===0 ? 'Total' : (i===1 ? rows.reduce((a,r)=>a+r[1],0) : fmt(rows.reduce((a,r)=>a+(parseFloat(String(r[i]).replace(/[^\d.−-]/g,'').replace('−','-'))||0),0))));
-  const basis = S.scope.kind==='session' ? (g==='payment' ? 'payment and refund rows by tender-time session, the drawer\'s basis' : 'sales completed in the session, the closure\'s basis') : 'sales completed in the range by the store\'s clock';
-  const html = `<div class="heading">${scopeHeading()} · counts <b>${g==='payment'?'payments':'sales'}</b> · ${basis}</div><table class="t"><thead><tr>${cols.map((c,i)=>`<th class="${i?'r':''}">${c}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td class="${i?'r':''}">${c}</td>`).join('')}</tr>`).join('')}<tr class="tot">${totals.map((c,i)=>`<td class="${i?'r':''}">${c}</td>`).join('')}</tr></tbody></table>`;
-  const th = `UK STORE\n${rep().title.toUpperCase()}\n${scopeHeading()}\n----------------------------------------\n${rows.map(r=>r[0].slice(0,18).padEnd(19)+String(r[r.length-1]).padStart(21)).join('\n')}\n----------------------------------------\n${'TOTAL'.padEnd(19)+String(totals[totals.length-1]).padStart(21)}`;
-  return tplWrap(html, {title:rep().title, thermal:th});
-}
-function sessionDoc(s){
-  const rec = s.counted!==undefined ? s.counted-s.expected : null;
-  const corr = (s.corrections||[]).reduce((a,c)=>a+c[3],0); const settledExp = s.expected + corr; const settledVar = s.counted!==undefined ? s.counted - settledExp : null;
-  const tenders = `<table class="t"><thead><tr><th>Tender</th><th class="r">Sales</th><th class="r">Refunds</th><th class="r">${s.open?'Expected':'Counted'}</th></tr></thead><tbody><tr><td>Cash</td><td class="r">${fmt(s.cashSales)}</td><td class="r">${s.cashRefunds?fmt(-s.cashRefunds):'—'}</td><td class="r b">${fmt(s.open?s.expected:s.counted)}</td></tr><tr><td>Card · terminal</td><td class="r">${fmt(s.card)}</td><td class="r">—</td><td class="r mut">—</td></tr></tbody></table>`;
-  const movs = s.movements.length ? `<table class="t"><tbody>${s.movements.map(m=>`<tr><td class="mut">${m[0]}</td><td>${m[1]}</td><td class="r ${m[2]<0?'neg':m[2]>0?'pos':''}">${m[2]?fmt(m[2],true):'—'}</td><td class="mut">${m[4]}</td></tr>`).join('')}</tbody></table>` : `<div class="mut sm">None</div>`;
-  const corrections = (s.corrections||[]).length ? `<div class="dsec">Corrections</div><table class="t"><tbody>${s.corrections.map(c=>`<tr><td class="mut">${c[0]}</td><td><span class="pill info">${c[1]}</span></td><td>${c[2]}</td><td class="r pos b">${fmt(c[3],true)}</td></tr>`).join('')}</tbody></table><div class="mut sm">The figures above read as at close; the settled figures include these rows.</div>` : '';
-  const title = s.open ? `Session ${s.number}` : `Closure ${s.number}`;
-  const html = `<div class="doc-paper">
-    <div class="row" style="flex-wrap:wrap"><span class="b" style="font-size:15px">${title}</span><span class="mut sm">${REG[s.reg].name} · ${s.open?`open since ${s.opened.split(' ').pop()}`:`as recorded ${s.closed}`}</span>${s.unsynced?`<span class="pill warn">Unsynced</span>`:''}${(s.corrections||[]).length?`<span class="pill info">Settled</span>`:''}${s.open?`<span class="pill open">Open</span>`:''}</div>
-    <div class="kv">
-      <div><div class="k">Opened</div><div class="v">${s.opened} · ${WHO[s.openedBy].name}</div></div>
-      <div><div class="k">${s.open?'Now':'Closed'}</div><div class="v">${s.open?'Sun 14 Sep 15:12 · trading':`${s.closed} · ${WHO[s.closedBy].name}`}</div></div>
-      <div><div class="k">Opening float</div><div class="v">${fmt(s.float)} <span class="mut">(expected £200.00)</span></div></div>
-      <div><div class="k">Receipts</div><div class="v">${s.sales} sales${s.refunds?`, ${s.refunds} refund${s.refunds>1?'s':''}`:''}</div></div>
-      <div><div class="k">Expected in drawer</div><div class="v hero">${fmt(s.expected)}</div>${corr?`<div class="sm"><span class="settled">settled ${fmt(settledExp)}</span></div>`:''}</div>
-      <div><div class="k">Counted</div><div class="v hero">${s.open?'<span class="mut">—</span>':fmt(s.counted)}</div>${s.open?'<div class="mut sm">at close</div>':''}</div>
-      <div><div class="k">Variance</div><div class="v">${rec===null?'<span class="mut">—</span>':fmtv(rec)}${corr?`<span class="arrow">→</span><span class="settled">settled ${fmt(settledVar,true)}</span>`:''}</div></div>
-      <div><div class="k">Tax</div><div class="v">${fmt(s.tax)} <span class="mut">of ${fmt(s.gross)} gross</span></div></div>
-    </div>
-    <div class="dsec">Tenders</div>${tenders}<div class="dsec">Cash movements</div>${movs}${corrections}</div>`;
-  const th = `UK STORE · ${REG[s.reg].name}\n${s.open?'X-REPORT':'Z-REPORT'} · ${title}\nOpened  ${s.opened} ${WHO[s.openedBy].name}\n${s.open?'Now     Sun 14 Sep 15:12':'Closed  '+s.closed+' '+WHO[s.closedBy].name}\n----------------------------------------\nOpening float                  ${fmt(s.float).padStart(12)}\nCash sales                     ${fmt(s.cashSales).padStart(12)}\nCash refunds                   ${fmt(-s.cashRefunds).padStart(12)}\nExpected in drawer             ${fmt(s.expected).padStart(12)}\n${s.open?'':'Counted                        '+fmt(s.counted).padStart(12)+'\nVariance                       '+fmt(rec,true).padStart(12)}\n----------------------------------------\nCard · terminal                ${fmt(s.card).padStart(12)}\nTax                            ${fmt(s.tax).padStart(12)}`;
-  return tplWrap(html, {title, thermal:th});
-}
-function closuresList(){
-  const list = sessionsInRange(); const phone = S.viewport==='phone';
-  const sel = S.selClosure && list.find(s=>s.id===S.selClosure) ? ses(S.selClosure) : null;
-  if (sel && !phone) return `<div class="row" style="padding:8px 10px;border-bottom:1px solid var(--border)"><span class="back" style="display:inline-flex;align-items:center;gap:2px;color:var(--primary);cursor:pointer;height:36px" data-act="unselect">${I.back} Closures</span></div>${sessionDoc(sel)}`;
-  const rows = list.map(s=>{ const v=s.counted-s.expected; return `<tr class="click" data-act="select" data-s="${s.id}"><td class="b">${s.number}</td>${phone?'':`<td>${REG[s.reg].name}</td>`}<td class="mut">${s.day==='today'?'Today':s.day} ${s.closed.split(' ').pop()}</td>${phone?'':`<td>${who(s.closedBy)}</td>`}<td class="r b">${fmt(s.counted)}</td><td class="r">${fmtv(v)}</td><td>${s.unsynced?`<span class="pill warn">Unsynced</span>`:''}${(s.corrections||[]).length?`<span class="pill info">Settled</span>`:''}</td></tr>`; }).join('');
-  return `<div class="heading">${scopeHeading()}${S.register==='all'?' · all registers':''} · ${list.length} closure${list.length===1?'':'s'} · tap one to read it as recorded</div>${list.length?`<table class="t"><thead><tr><th>#</th>${phone?'':'<th>Register</th>'}<th>Closed</th>${phone?'':'<th>By</th>'}<th class="r">Counted</th><th class="r">Variance</th><th></th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="empty"><span class="big">No closures ${S.scope.range==='today'?'today':'in this range'}</span><span>${openSession()?'Session 13 is still open. It appears here once it is closed.':'Close the register to write the first one.'}</span></div>`}`;
-}
-function cashTable(){
-  let rows=[];
-  if (S.scope.kind==='session') { const s=ses(S.scope.sessionId); rows = s.movements.map(m=>[m[0], m[1], m[2], m[3], m[4], m[5]]); }
-  else { const list = S.scope.range==='today' ? SESSIONS.filter(x=>x.day==='today') : SESSIONS.filter(x=>!x.open); rows = list.flatMap(s=>s.movements.map(m=>[`${s.day==='today'?'Today':s.day} ${m[0]}`, m[1], m[2], m[3], m[4], m[5]])); if (S.scope.range!=='today') rows.push(['Fri 12 Sep 15:02','Paid out',-12.00,'ao','Parking (voided 15:04)',true]); }
-  const net = rows.filter(r=>!r[5]).reduce((a,r)=>a+r[2],0);
-  const html = `<div class="heading">${scopeHeading()} · ${REG[S.register==='all'?'front':S.register].name}</div>${rows.length?`<table class="t"><thead><tr><th>When</th><th>Movement</th><th class="r">Amount</th><th>By</th><th>Reason</th></tr></thead><tbody>${rows.map(r=>`<tr class="${r[5]?'void':''}"><td class="mut">${r[0]}</td><td>${r[1]}</td><td class="r ${r[2]<0?'neg':r[2]>0?'pos':''}">${r[2]?fmt(r[2],true):'—'}</td><td>${who(r[3])}</td><td class="mut">${r[4]}</td></tr>`).join('')}<tr class="tot"><td colspan="2">Net movement</td><td class="r ${net<0?'neg':net>0?'pos':''}">${net?fmt(net,true):'—'}</td><td colspan="2"></td></tr></tbody></table>`:`<div class="empty"><span class="big">No cash movements</span><span>Paid in, paid out and no-sale events appear here.</span></div>`}`;
-  const th = `UK STORE\nCASH MOVEMENTS · ${scopeHeading()}\n----------------------------------------\n${rows.map(r=>(r[0].split(' ').pop()+' '+r[1]).padEnd(24)+(r[2]?fmt(r[2],true):'—').padStart(16)).join('\n')}\n----------------------------------------\n${'NET'.padEnd(24)+(net?fmt(net,true):'—').padStart(16)}`;
-  return tplWrap(html, {title:'Cash movements', thermal:th});
-}
-function depositsTable(){
-  const r = rep();
-  if (!S.online) return `<div class="empty"><span class="big">Report unavailable offline</span><span>Deposits outstanding is computed on your store. It needs a connection.</span><button class="btn">Retry</button></div>`;
-  const rows = [['#1183','Nadia Hussain','Sun 14 Sep',120.00,480.00,'Fri 19 Sep'],['#1179','Tom Whelan','Sat 13 Sep',50.00,150.00,'Sat 20 Sep'],['#1162','Priya Nair','Thu 11 Sep',300.00,610.00,'Mon 15 Sep']];
-  const html = `<div class="heading">${scopeHeading()} · from ${r.plugin}</div><table class="t"><thead><tr><th>Order</th><th>Customer</th><th>Taken</th><th class="r">Deposit</th><th class="r">Balance due</th><th>Due</th></tr></thead><tbody>${rows.map(x=>`<tr><td class="b">${x[0]}</td><td>${x[1]}</td><td class="mut">${x[2]}</td><td class="r">${fmt(x[3])}</td><td class="r b">${fmt(x[4])}</td><td>${x[5]}</td></tr>`).join('')}<tr class="tot"><td colspan="3">Total</td><td class="r">${fmt(470)}</td><td class="r">${fmt(1240)}</td><td></td></tr></tbody></table>`;
-  const th = `UK STORE\nDEPOSITS OUTSTANDING\n----------------------------------------\n${rows.map(x=>(x[0]+' '+x[1]).slice(0,22).padEnd(24)+fmt(x[4]).padStart(16)).join('\n')}\n----------------------------------------\n${'TOTAL'.padEnd(24)+fmt(1240).padStart(16)}`;
-  return tplWrap(html, {title:r.title, thermal:th});
-}
-
-/* ============================ popovers ============================ */
-function renderPop(){
-  if (!S.pop) return '';
-  const phone = S.viewport==='phone';
-  const row = (label, sub, on, act, data, locked, dim) => `<div class="pr ${on?'on':''} ${locked?'lock':''} ${dim?'dim':''}" data-act="${locked?'gatehint':dim?'':act}" ${data} data-label="${label}"><span class="ck">${on?I.check:''}</span><span>${label}${sub?` <span class="s">${sub}</span>`:''}</span>${locked?`<span class="lk">${I.lock}</span>`:''}</div>`;
-  let head='', body='', foot='';
-  const hintFor = (label) => { const l=(label||'').toLowerCase(); if (l.startsWith('closure')) return 'Earlier sessions are in WCPOS Pro.'; if (l.includes('store')||l==='dublin'||l==='counter') return 'Other stores are in WCPOS Pro.'; if (['all registers','back office','till 3'].includes(l)) return 'Other registers are in WCPOS Pro.'; return 'Earlier days are in WCPOS Pro.'; };
-  if (S.pop==='date') {
-    head='Session or dates';
-    const o = openSession(); const closed = SESSIONS.filter(s=>!s.open); const free = closed.filter(freeOk), older = closed.filter(s=>!freeOk(s));
-    const onS = (id) => S.scope.kind==='session' && S.scope.sessionId===id;
-    body = (o ? row('Open now', `since ${o.opened.split(' ').pop()} · ${REG[o.reg].name}`, onS(o.id), 'pick', `data-s="${o.id}"`) : `<div class="pr dim">Register closed — no open session</div>`)
-      + free.map(s=>row(`Closure ${s.number}`, `today ${s.closed.split(' ').pop()} · ${REG[s.reg].name}`, onS(s.id), 'pick', `data-s="${s.id}"`)).join('')
-      + `<div class="ph div">Dates</div>` + RANGES.map(([k,l])=>row(l, k==='today'?'Sun 14 Sep':'', S.scope.kind==='range'&&S.scope.range===k, 'range', `data-r="${k}"`, !S.pro && k!=='today')).join('')
-      + `<div class="ph div">Earlier sessions ${S.pro?'':`<span class="pill pro">Pro</span>`}</div>` + older.map(s=>row(`Closure ${s.number}`, `${s.day} · ${REG[s.reg].name}`, onS(s.id), 'pick', `data-s="${s.id}"`, !S.pro)).join('');
-  } else if (S.pop==='register') {
-    head='Register';
-    const regs = Object.entries(REG).filter(([k,r])=>S.store==='all' || r.store===S.store);
-    body = row('All registers','', S.register==='all', 'reg', `data-r="all"`, !S.pro) + regs.map(([k,r])=>row(r.name, k==='front'?'this device':'', S.register===k, 'reg', `data-r="${k}"`, !S.pro && k!=='front')).join('');
-  } else if (S.pop==='store') {
-    head='Store';
-    body = row('All stores','', S.store==='all','store',`data-r="all"`, !S.pro) + Object.entries(STORES).map(([k,n])=>row(n, k==='uk'?'this device':'', S.store===k,'store',`data-r="${k}"`, !S.pro && k!=='uk')).join('');
-  } else if (S.pop==='cashier') {
-    head='Cashier';
-    body = row('Any cashier','', S.cashier==='any','cashier',`data-r="any"`) + Object.entries(WHO).map(([k,w])=>row(w.name, '', S.cashier===k,'cashier',`data-r="${k}"`)).join('');
-  } else if (S.pop==='status') { head='Status'; body = ['Completed','Processing','On hold','Refunded','Any'].map((s,i)=>row(s,'',i===0,'noop','')).join(''); }
-  else if (S.pop==='customer') { head='Customer'; body = row('Any customer','',true,'noop','') + row('Guest','',false,'noop',''); }
-  else if (S.pop==='report') {
-    head='Report';
-    const can = (r) => r.needs==='any' || (r.needs==='session' && S.scope.kind==='session') || (r.needs==='range' && S.scope.kind==='range');
-    const rr = (r, sub) => row(sub?r.short:r.title, can(r)?'':r.hint, S.report===r.key, 'report', `data-k="${r.key}"`, false, !can(r)).replace('class="pr', `class="pr ${sub?'sub':''}`);
-    body = rr(REPORTS[0]) + REPORTS.filter(r=>r.group).map(r=>rr(r,true)).join('') + REPORTS.filter(r=>['cash','session','closures'].includes(r.key)).map(r=>rr(r)).join('') + `<div class="ph div">From plugins</div>` + REPORTS.filter(r=>r.plugin).map(r=>rr(r)).join('');
-  } else if (S.pop==='template') {
-    head=`Template · ${rep().type}`;
-    body = TEMPLATES[rep().type].map(([k,l])=>row(l, k==='default'?'built in':'yours, from WP Admin', S.template===k, 'template', `data-t="${k}"`)).join('') + `<div class="pr dim sm" style="min-height:36px">Edit templates in WP Admin › POS › Templates</div>`;
+/* ---- side panel / phone page ---- */
+function panel() {
+  if (!S.detail && !S.closure && !S.xreport) return '';
+  const m = S.detail ? model() : null;
+  let body = '', foot = '', sub = '';
+  const tplSel = (type) => `<button class="sel2" data-act="pop" data-p="tpl" data-v="${type}">${esc(TEMPLATES[type].find(t => t.id === S.tpl).name)}<span class="car">${I.car}</span></button>`;
+  if (S.closure || S.xreport) {
+    const c = S.xreport ? null : CLOSURES.find(c => c.id === S.closure);
+    body = closureDoc(c);
+    sub = S.xreport ? `${OPEN_SESSION.reg} · open since ${OPEN_SESSION.open}` : `Closure ${c.num} · ${c.reg} · ${c.by}`;
+    foot = S.xreport
+      ? `<span class="status">Interim. Figures keep moving until the register is closed.</span><button class="btn p" data-act="toast" data-v="Printing X-report">${I.print}Print</button>`
+      : `<span class="status">${c.settled ? 'Settled ' + c.corrected.at + ' by ' + c.corrected.by : c.unsynced ? 'Waiting to sync to the server' : 'As recorded at ' + c.close}</span><button class="btn" data-act="toast" data-v="Recount…">Recount…</button><button class="btn p" data-act="toast" data-v="Reprinting">${I.print}Reprint</button>`;
+    return wrapPanel(panelTitle(), sub, tplSel('closure'), body, foot);
   }
-  if (S.gateHint && !S.pro) foot = `<div class="pf">${I.lock}<span>${hintFor(S.gateHint)}</span><button class="btn sm p">See Pro</button></div>`;
-  const inner = `<div class="ph">${head}</div>${body}${foot}`;
-  if (phone) return `<div class="popwrap" data-act="closepop"><div class="scrim"></div><div class="sheet mm" data-stop><div class="grab"></div>${inner}</div></div>`;
-  return `<div class="popwrap" data-act="closepop"><div class="pop mm" data-stop style="left:${S.popX||80}px;top:${S.popY||110}px;max-height:${(S.frameH||760)-(S.popY||110)-14}px">${inner}</div></div>`;
+  sub = `${periodTitle(S.gran, S.off)} · ${REGISTERS.find(r => r.id === S.register).name}`;
+  const T = m.total || 1;
+  const tbl = (head, rows, tot) => `<table class="t"><thead><tr>${head.map((h, i) => `<th class="${i ? 'r' : ''}">${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map((c, i) => `<td class="${i ? 'r' : ''}">${c}</td>`).join('')}</tr>`).join('')}${tot ? `<tr class="tot">${tot.map((c, i) => `<td class="${i ? 'r' : ''}">${c}</td>`).join('')}</tr>` : ''}</tbody></table>`;
+  switch (S.detail) {
+    case 'payments': { const ks = Object.keys(m.byMethod).sort((a, b) => m.byMethod[b] - m.byMethod[a]); body = tbl(['Method', 'Orders', 'Amount', 'Share'], ks.map(k => [k, m.cntMethod[k], fmt(m.byMethod[k]), pct(m.byMethod[k] / T)]), ['Total', m.orders, fmt(m.total), '']); break; }
+    case 'channels': { const ks = ['In store', 'Online'].filter(k => m.byChannel[k]); body = tbl(['Channel', 'Orders', 'Amount', 'Share'], ks.map(k => [k, m.cntChannel[k], fmt(m.byChannel[k]), pct(m.byChannel[k] / T)]), ['Total', m.orders, fmt(m.total), '']); break; }
+    case 'products': { body = tbl(['Product', 'Qty', 'Amount'], PRODUCTS.map(([n, s], i) => [esc(n), Math.max(1, Math.round(m.items * s * 1.1)), fmt(r2(T * s))]), ['All products', m.items, fmt(m.total)]); break; }
+    case 'cashiers': { const ks = Object.keys(m.byCashier).sort((a, b) => m.byCashier[b] - m.byCashier[a]); body = tbl(['Cashier', 'Orders', 'Avg order', 'Amount'], ks.map(k => [`<span class="avi">${k[0]}</span>${k}`, m.cntCashier[k], fmt(m.byCashier[k] / m.cntCashier[k]), fmt(m.byCashier[k])]), ['Total', m.orders, fmt(m.orders ? m.total / m.orders : 0), fmt(m.total)]); break; }
+    case 'taxes': { const t20 = r2(m.tax * .958), t5 = m.tax - t20; body = tbl(['Rate', 'Net', 'Tax', 'Gross'], [['VAT 20%', fmt(t20 * 5), fmt(t20), fmt(t20 * 6)], ['VAT 5%', fmt(t5 * 20), fmt(t5), fmt(t5 * 21)]], ['Total', fmt(m.total - m.tax), fmt(m.tax), fmt(m.total)]); break; }
+    case 'refunds': { body = tbl(['Kind', 'Count', 'Amount'], [['Refunds', 0, fmt(0)], ['Discounts', Math.max(1, Math.round(m.orders / 5)), fmt(r2(T * .011))], ['Voided', 0, fmt(0)]], null); break; }
+    case 'deposits': { body = S.online ? tbl(['Deposit', 'Order', 'Amount', 'Status'], m.t.slice(0, Math.max(1, Math.round(m.orders / 6))).map((o, i) => [`DEP-${o.n}`, `#${o.n}`, fmt(r2(o.total * .5)), i === 0 ? 'Released' : 'Held']), null) + `<div class="mut sm" style="padding:10px 12px">From the Deposits plugin. Computed on the server, so it needs a connection.</div>` : `<div class="mut" style="padding:24px 16px">Report unavailable offline.</div>`; break; }
+    case 'orders': {
+      const rowsHtml = m.all.slice(0, 60).map(o => { const on = !S.unticked.has(o.key); return `<tr class="${on ? '' : 'off'}"><td style="width:36px"><input class="cb" type="checkbox" data-act="tick" data-k="${o.key}" ${on ? 'checked' : ''}></td><td>#${o.n}<div class="xs mut">${o.time} · ${o.cashier}</div></td>${phone() ? '' : `<td class="mut">${o.method}</td>`}<td class="r">${fmt(o.total)}</td></tr>`; }).join('');
+      body = `<table class="t"><thead><tr><th style="width:36px"><input class="cb" type="checkbox" data-act="tickAll" ${m.excluded ? '' : 'checked'}></th><th>Order</th>${phone() ? '' : '<th>Paid by</th>'}<th class="r">Total</th></tr></thead><tbody>${rowsHtml}</tbody>${m.all.length > 60 ? `<tfoot><tr><td colspan="4" class="mut sm">and ${m.all.length - 60} more</td></tr></tfoot>` : ''}</table>`;
+      break;
+    }
+  }
+  const status = S.detail === 'orders' ? `${m.orders} of ${m.all.length} counted${m.excluded ? ' · the numbers follow' : ''}` : `${m.orders} orders · ${fmt(m.total)}`;
+  foot = `<span class="status">${status}</span><button class="btn" data-act="toast" data-v="Exporting CSV">Export CSV</button><button class="btn p" data-act="pop" data-p="print">${I.print}Print</button>`;
+  return wrapPanel(panelTitle(), sub, '', body, foot);
+}
+function wrapPanel(title, sub, hdrExtra, body, foot) {
+  const hdr = phone() ? (hdrExtra ? `<div class="pnl-h" style="height:auto;padding:8px 12px"><span class="sub grow">${esc(sub)}</span>${hdrExtra}</div>` : '') : `<div class="pnl-h"><div style="min-width:0"><div class="ttl">${esc(title)}</div><div class="sub">${esc(sub)}</div></div>${hdrExtra ? `<span style="margin-left:auto">${hdrExtra}</span>` : ''}<button class="btn ic x" data-act="closePanel" ${hdrExtra ? 'style="margin-left:0"' : ''}>${I.x}</button></div>`;
+  return `${phone() ? '' : `<div class="scrim" data-act="closePanel"></div>`}<div class="panel">${hdr}<div class="pnl-b">${body}</div><div class="pnl-f">${foot}</div></div>`;
+}
+function closureDoc(c) {
+  const x = !c;
+  const d = x ? { num: 'X-report', reg: OPEN_SESSION.reg, by: OPEN_SESSION.by, open: OPEN_SESSION.open, close: 'now', orders: 6, sales: 611.31, cash: 193.70, card: 368.61, other: 49.00, float: 100.00, cashOut: 0, counted: null, variance: null, dayLabel: 'Today' } : c;
+  const expected = d.float + d.cash - d.cashOut;
+  const rows = [
+    ['Sales', [['Orders', d.orders], ['Gross sales', fmt(d.sales)], ['Refunds', fmt(0)], ['Net sales', fmt(d.sales)]]],
+    ['Payments', [['Cash', fmt(d.cash)], ['Card', fmt(d.card)], ...(d.other ? [['Other', fmt(d.other)]] : [])]],
+    ['Cash drawer', [['Opening float', fmt(d.float)], ['Cash sales', fmt(d.cash)], ...(d.cashOut ? [['Cash out', fmt(-d.cashOut)]] : []), ['Expected', fmt(expected)],
+      ...(x ? [] : [['Counted', d.corrected ? `<span class="was">${fmt(d.counted)}</span>${fmt(d.corrected.counted)}` : fmt(d.counted)], ['Difference', d.corrected ? `<span class="was">${fmt(d.variance)}</span>${fmt(d.corrected.counted - expected)}` : fmt(d.variance)]])]],
+    ['Taxes', [['VAT 20%', fmt(r2(d.sales / 6 * .958))], ['VAT 5%', fmt(r2(d.sales / 6 * .042))]]],
+  ];
+  if (S.tpl === 'thermal') {
+    const line = (a, b) => (a + ' ').padEnd(24, '.') + String(b).replace(/<[^>]+>/g, '').padStart(12);
+    return `<div class="docv thermal">${esc(['      UK STORE', `${x ? 'X-REPORT (INTERIM)' : 'CLOSURE ' + d.num}`, `${d.reg} / ${d.by}`, `${d.dayLabel} ${d.open}-${d.close}`, '', ...rows.flatMap(([t, rs]) => [t.toUpperCase(), ...rs.map(([a, b]) => line(a, b)), '']), d.corrected ? `Corrected ${d.corrected.at} by ${d.corrected.by}: ${d.corrected.reason}` : '', d.unsynced ? 'NOT YET SYNCED' : ''].join('\n'))}</div>`;
+  }
+  const inner = `${rows.map(([t, rs]) => `<div class="sec">${t}</div>${rs.map(([a, b], i) => `<div class="dr ${i === rs.length - 1 && (t === 'Sales' || t === 'Cash drawer') ? 'tot' : ''}"><span>${a}</span><span>${b}</span></div>`).join('')}`).join('')}
+    ${d.corrected ? `<div class="note">Counted corrected ${esc(d.corrected.at)} by ${esc(d.corrected.by)}: ${esc(d.corrected.reason)}. Settled at ${fmt(d.corrected.counted)}.</div>` : ''}
+    ${d.unsynced ? `<div class="warnb">Not yet on the server. Prints from this device; the server copy follows when it syncs.</div>` : ''}`;
+  if (S.tpl === 'a4') return `<div class="docv a4"><div class="brand"><i></i><b>UK Store</b><span class="mut sm" style="margin-left:auto">${x ? 'X-report' : 'Closure ' + d.num}</span></div><div class="dh"><div><div class="t">${d.reg}</div><div class="mut sm">${d.by} · ${d.dayLabel} ${d.open}–${d.close}</div></div></div>${inner}</div>`;
+  return `<div class="docv"><div class="dh"><div><div class="t">${x ? 'X-report' : 'Closure ' + d.num}${x ? ' <span class="pill warn">interim</span>' : ''}</div><div class="mut sm">${d.reg} · ${d.by} · ${d.dayLabel} ${d.open}–${d.close}</div></div><div class="mut sm">UK Store</div></div>${inner}</div>`;
 }
 
-/* ============================ panel mock ============================ */
-function renderPanel(){
-  const n = (i) => `<span style="width:22px;height:22px;border-radius:50%;background:#0069bd;color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">${i}</span>`;
-  document.getElementById('panelmock').innerHTML = `<div class="hero"><div class="amt">£480.80</div><div class="mut sm">in the drawer · Front counter · opened 13:00 by Demo Cashier</div></div>
-    <div class="tiles3"><button class="btn">Paid in</button><button class="btn">Paid out</button><button class="btn">No sale</button></div>
-    <div class="lr"><span>Cash</span><span class="r">£480.80</span></div><div class="lr"><span>Card</span><span class="r">£412.00</span></div><div class="lr"><span>Paid in / out</span><span class="r">−£5.00</span><span class="mut">${I.chev}</span></div>
-    <div class="lr hl">${n(1)}<span>${I.print} Print X-report</span></div>
-    <div class="lr hl">${n(2)}<span>Closure 12 · 12:30 · −£2.00</span><button class="btn sm" style="margin-left:auto">${I.print} Reprint copy</button><span class="mut">${I.chev}</span></div>
-    <div class="pf"><button class="btn" style="width:100%">Close register</button></div>`;
+/* ---- popovers ---- */
+function popover() {
+  if (!S.pop) return '';
+  const p = S.pop;
+  const row = (label, on, act, v, extra = '', lock = false) => `<div class="pr ${on ? 'on' : ''} ${lock ? 'lock' : ''}" data-act="${lock ? 'hint' : act}" data-v="${lock ? extra : v}" ${lock ? '' : ''}><span class="ck">${on ? I.ck : ''}</span>${label}${lock ? `<span class="lk">${I.lock}</span>` : (extra ? `<span class="s">${extra}</span>` : '')}</div>`;
+  let inner = '';
+  if (p.kind === 'scope') {
+    inner = `<div class="ph">Register</div>${REGISTERS.map(r => row(r.name, S.register === r.id, 'register', r.id, 'registers', !S.pro && r.id !== 'front')).join('')}${row('All registers', S.register === 'all', 'register', 'all', 'registers', !S.pro)}`;
+    if (S.stores > 1) inner += `<div class="ph div">Store</div>${STORES.map(s => row(s.name, S.store === s.id, 'store', s.id, 'stores', !S.pro && s.id !== 'uk')).join('')}`;
+  } else if (p.kind === 'filter') {
+    inner = `<div class="ph">Cashier</div>${row('Everyone', S.cashier === 'all', 'cashier', 'all')}${CASHIERS.map(c => row(c, S.cashier === c, 'cashier', c)).join('')}<div class="pn">Orders that are completed or processing. Refunds are counted on the day they were made.</div>`;
+  } else if (p.kind === 'cmp') {
+    inner = `<div class="ph">Compare with</div>${row('Same day last week', S.cmp === 'lastweek', 'cmp', 'lastweek', 'Mon 7 Sep')}${row('The day before', S.cmp === 'yesterday', 'cmp', 'yesterday', 'Sun 13 Sep')}${row('Same day last year', S.cmp === 'lastyear', 'cmp', 'lastyear', 'Mon 15 Sep 2025', !S.pro)}`;
+  } else if (p.kind === 'print' || p.kind === 'tpl') {
+    const type = p.kind === 'tpl' ? p.v : 'report';
+    inner = `<div class="ph">${p.kind === 'print' ? 'Print with' : 'Template'}</div>${TEMPLATES[type].map(t => row(t.name, S.tpl === t.id, p.kind === 'print' ? 'printWith' : 'tpl', t.id, t.s)).join('')}<div class="pn">Templates are managed in WP Admin › POS › Templates.</div>`;
+  } else if (p.kind === 'hint') {
+    inner = `<div class="pf"><span>${esc(hintText(p.v))}</span><button class="btn sm p" data-act="toast" data-v="Opening wcpos.com/pro">See Pro</button></div>`;
+  }
+  if (S.hint && p.kind !== 'hint') inner += `<div class="pf"><span>${esc(hintText(S.hint))}</span><button class="btn sm p" data-act="toast" data-v="Opening wcpos.com/pro">See Pro</button></div>`;
+  if (phone()) return `<div class="sheet-scrim" data-act="closePop"></div><div class="sheet mm"><div class="grab"></div>${inner}</div>`;
+  const maxH = (S.frameH || 780) - p.y - 14;
+  return `<div class="popwrap" data-act="closePop"><div class="pop mm" style="left:${p.x}px;top:${p.y}px;max-height:${maxH}px" data-stop="1">${inner}</div></div>`;
+}
+function hintText(k) {
+  return { registers: 'Other registers are in WCPOS Pro', stores: 'Other stores are in WCPOS Pro', earlier: 'Earlier days are in WCPOS Pro', ranges: 'Weeks and months are in WCPOS Pro', closures: 'Earlier closures are in WCPOS Pro', lastyear: 'Last year is in WCPOS Pro' }[k] || 'This is in WCPOS Pro';
 }
 
 /* ============================ events ============================ */
-document.addEventListener('click', (e)=>{
-  const st = e.target.closest('[data-set]');
-  if (st) { const k=st.dataset.set; let v=st.dataset.v; if (v==='true') v=true; else if (v==='false') v=false; else if (/^\d+$/.test(v)) v=+v; S[k]=v; S.pop=null; S.gateHint=null; if (k==='stores' && v===1) S.store='uk'; if (k==='regOpen') { const o=openSession(); if (o) S.scope={kind:'session',sessionId:o.id,range:'today'}; else S.scope={kind:'range',sessionId:null,range:'today'}; } renderStrip(); renderFrame(); return; }
-  const a = e.target.closest('[data-act]');
-  if (!a) return;
-  if (e.target.closest('[data-stop]') && a.dataset.act==='closepop') return;
-  const act = a.dataset.act;
-  if (act==='pop') { const r=a.getBoundingClientRect(), f=document.getElementById('frame').getBoundingClientRect(); S.popX=Math.min(r.left-f.left, f.width-380); S.popY=r.bottom-f.top+6; S.frameH=f.height; S.pop=a.dataset.p; S.gateHint=null; }
-  else if (act==='closepop') { S.pop=null; S.gateHint=null; }
-  else if (act==='gatehint') { S.gateHint=a.dataset.label; }
-  else if (act==='pick') { S.scope={kind:'session', sessionId:a.dataset.s, range:S.scope.range}; S.pop=null; S.selClosure=null; }
-  else if (act==='range') { S.scope={kind:'range', sessionId:S.scope.sessionId, range:a.dataset.r}; S.pop=null; S.selClosure=null; }
-  else if (act==='reg') { S.register=a.dataset.r; S.pop=null; S.selClosure=null; }
-  else if (act==='store') { S.store=a.dataset.r; S.pop=null; S.selClosure=null; if (S.store!=='all' && S.register!=='all' && REG[S.register].store!==S.store) S.register = Object.keys(REG).find(k=>REG[k].store===S.store); }
-  else if (act==='cashier') { S.cashier=a.dataset.r; S.pop=null; }
-  else if (act==='report') { S.report=a.dataset.k; S.pop=null; S.selClosure=null; }
-  else if (act==='template') { S.template=a.dataset.t; S.pop=null; }
-  else if (act==='cmp') { S.cmp=a.dataset.c; }
-  else if (act==='tick') { const n=+a.dataset.n; if (S.unticked.has(n)) S.unticked.delete(n); else S.unticked.add(n); }
-  else if (act==='tickAll') { const o=ordersInScope(); if (o.every(x=>!S.unticked.has(x[0]))) o.forEach(x=>S.unticked.add(x[0])); else o.forEach(x=>S.unticked.delete(x[0])); }
-  else if (act==='select') { S.selClosure=a.dataset.s; }
-  else if (act==='unselect') { S.selClosure=null; }
-  else if (act==='phoneTab') { S.phoneTab=a.dataset.t; }
-  else if (act==='noop') { S.pop=null; }
-  else return;
-  renderFrame();
+function openPop(kind, el, v) {
+  const fr = F.getBoundingClientRect(), r = el.getBoundingClientRect();
+  let x = r.left - fr.left, y = r.bottom - fr.top + 6;
+  if (x + 300 > fr.width - 8) x = Math.max(8, r.right - fr.left - 300);
+  if (phone()) { x = 0; y = 0; }
+  S.pop = { kind, x, y, v }; S.hint = null;
+}
+document.querySelector('.strip').addEventListener('click', e => {
+  const b = e.target.closest('button[data-set]'); if (!b) return;
+  const k = b.dataset.set, v = b.dataset.v;
+  S[k] = v === 'true' ? true : v === 'false' ? false : isNaN(+v) ? v : +v;
+  S.pop = null; S.hint = null; S.tip = null;
+  if (k === 'stores' && S.stores === 1) S.store = 'uk';
+  if (k === 'viewport') { S.detail = null; S.closure = null; S.xreport = false; }
+  render();
 });
-document.addEventListener('keydown', (e)=>{ if (e.key==='Escape' && S.pop) { S.pop=null; S.gateHint=null; renderFrame(); } });
-
-renderStrip(); renderFrame(); renderPanel();
+F.addEventListener('click', e => {
+  const hit = e.target.closest('rect.hit');
+  if (hit) { S.tip = S.tip === +hit.dataset.i ? null : +hit.dataset.i; render(); return; }
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  if (e.target.closest('[data-stop]') && el.dataset.act === 'closePop') return;
+  const a = el.dataset.act, v = el.dataset.v;
+  const anchor = el;
+  switch (a) {
+    case 'view': S.view = v; S.pop = null; S.tip = null; break;
+    case 'gran':
+      if (!S.pro && v !== 'day') { openPop('hint', anchor, 'ranges'); break; }
+      S.gran = v; S.off = 0; S.tip = null; S.pop = null; break;
+    case 'step':
+      if (!S.pro && +v > 0) { openPop('hint', anchor, 'earlier'); break; }
+      S.off = Math.max(0, S.off + +v); S.tip = null; S.pop = null; break;
+    case 'pop': S.pop && S.pop.kind === el.dataset.p ? (S.pop = null) : openPop(el.dataset.p, anchor, v); break;
+    case 'closePop': S.pop = null; S.hint = null; break;
+    case 'hint': S.hint = v; if (!S.pop) openPop('hint', anchor, v); break;
+    case 'register': S.register = v; S.pop = null; break;
+    case 'store': S.store = v; S.pop = null; break;
+    case 'cashier': S.cashier = v; S.pop = null; Object.keys(ORD_CACHE).forEach(k => delete ORD_CACHE[k]); break;
+    case 'cmp': if (!S.pro && v === 'lastyear') { S.hint = 'lastyear'; break; } S.cmp = v; S.pop = null; break;
+    case 'detail': S.detail = v; S.tpl = 'default'; S.pop = null; break;
+    case 'closePanel': S.detail = null; S.closure = null; S.xreport = false; S.pop = null; break;
+    case 'closure': S.closure = v; S.xreport = false; S.tpl = 'default'; S.pop = null; break;
+    case 'reprint': S.closure = v; S.tpl = 'default'; break;
+    case 'xreport': S.xreport = true; S.closure = null; S.tpl = 'default'; break;
+    case 'tick': { if (S.unticked.has(el.dataset.k)) S.unticked.delete(el.dataset.k); else S.unticked.add(el.dataset.k); break; }
+    case 'tickAll': { const all = ordersFor(S.gran, S.off); const anyOff = all.some(o => S.unticked.has(o.key)); all.forEach(o => anyOff ? S.unticked.delete(o.key) : S.unticked.add(o.key)); break; }
+    case 'resetTicks': S.unticked.clear(); break;
+    case 'tpl': S.tpl = v; S.pop = null; break;
+    case 'printWith': S.tpl = v; S.pop = null; toast(`Printing with ${TEMPLATES.report.find(t => t.id === v).name}`); break;
+    case 'toast': toast(v); S.pop = null; break;
+  }
+  render();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (S.pop) { S.pop = null; S.hint = null; } else { S.detail = null; S.closure = null; S.xreport = false; } render(); } });
+function toast(msg) {
+  const t = document.createElement('div'); t.textContent = msg;
+  t.style.cssText = 'position:absolute;left:50%;bottom:18px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:8px;font-size:13px;z-index:60;pointer-events:none';
+  F.appendChild(t); setTimeout(() => t.remove(), 1400);
+}
+render();
 </script>
 </body>
 </html>
