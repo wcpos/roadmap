@@ -311,7 +311,7 @@ input.cb{width:20px;height:20px;accent-color:var(--primary);margin:0;cursor:poin
   <h2>What to react to</h2>
   <ol>
     <li>Does the Sales room feel like a glance rather than a report builder? One number, its comparison, the hours, the tiles.</li>
-    <li>Dates: the title is the menu. Today, Yesterday, This week, Last week, This month, Last month, and a custom range up to 3 months; ‹ › step by the unit chosen. Is the 3-month cap right, with longer runs pointed at WP Admin Analytics?</li>
+    <li>Dates: the title is the menu. Today, Yesterday, This week, Last week, This month, Last month, and a custom range as far back as the device's history goes (the Pro retention period, one number in one place); ‹ › step by the unit chosen.</li>
     <li>Templates: one select in every panel header, listing the merchant's WP Admin templates for that type (report / closure); the pane renders in it and Print prints what you see. Try Weekend handover on Sales summary.</li>
     <li>The comparison is <b>on by default</b> and the referent is the <b>same weekday last week</b> (what Shopify, Toast and Square do). Yesterday and last year are one tap away. Right default?</li>
     <li>Ghost bars for the comparison period, including the hours still to come today. Helpful or noise?</li>
@@ -328,6 +328,7 @@ input.cb{width:20px;height:20px;accent-color:var(--primary);margin:0;cursor:poin
 /* ============================ data ============================ */
 const TODAY = new Date(2026, 8, 14); // Monday 14 Sep 2026
 const NOWH = 17; // "now" is 5:30 pm
+const RETENTION_DAYS = 92; // Pro retention. The custom-range cap IS this number (Paul, 2026-09-14): one number in one place, not a second limit.
 const HOURS = [8,9,10,11,12,13,14,15,16,17,18,19];
 const P = [0,.04,.09,.08,.06,.15,.09,.10,.14,.13,.08,.04]; // hourly shape of a normal day
 const WD = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -733,7 +734,7 @@ function popover() {
     const pre = [['Today', 'day', 0], ['Yesterday', 'day', 1], ['This week', 'week', 0], ['Last week', 'week', 1], ['This month', 'month', 0], ['Last month', 'month', 1]];
     inner = `<div class="ph">Dates</div>` + pre.map(([l, g, o]) => { const lk = !S.pro && !(g === 'day' && o === 0); return row(l, S.gran === g && S.off === o, 'preset', g + ':' + o, '', lk, 'earlier'); }).join('');
     inner += `<div class="ph div">Custom range</div>`;
-    inner += S.pro ? `<div class="crange"><input type="date" id="cFrom" value="${isoOf(S.gran === 'custom' ? S.cFrom : 13)}" max="${isoOf(0)}"><span class="mut">to</span><input type="date" id="cTo" value="${isoOf(S.gran === 'custom' ? S.cTo : 0)}" max="${isoOf(0)}"><button class="btn sm p" data-act="applyRange">Apply</button></div><div class="pn" id="rangeNote">${S.rangeErr || 'Up to 3 months at a time.'}</div>` : row('Pick dates…', false, 'hint', 'earlier', '', true, 'earlier');
+    inner += S.pro ? `<div class="crange"><input type="date" id="cFrom" value="${isoOf(S.gran === 'custom' ? S.cFrom : 13)}" max="${isoOf(0)}"><span class="mut">to</span><input type="date" id="cTo" value="${isoOf(S.gran === 'custom' ? S.cTo : 0)}" max="${isoOf(0)}"><button class="btn sm p" data-act="applyRange">Apply</button></div><div class="pn" id="rangeNote">${S.rangeErr || 'As far back as your history goes.'}</div>` : row('Pick dates…', false, 'hint', 'earlier', '', true, 'earlier');
   } else if (p.kind === 'cmp') {
     inner = `<div class="ph">Compare with</div>${row('Same day last week', S.cmp === 'lastweek', 'cmp', 'lastweek', 'Mon 7 Sep')}${row('The day before', S.cmp === 'yesterday', 'cmp', 'yesterday', 'Sun 13 Sep')}${row('Same day last year', S.cmp === 'lastyear', 'cmp', 'lastyear', 'Mon 15 Sep 2025', !S.pro, 'lastyear')}`;
   } else if (p.kind === 'tpl') {
@@ -784,7 +785,7 @@ F.addEventListener('click', e => {
       const toOff = d => Math.round((TODAY - new Date(d + 'T00:00:00')) / 86400000);
       const a = toOff(f), z = toOff(t);
       if (!f || !t || isNaN(a) || isNaN(z) || a < z || z < 0) { S.rangeErr = 'Pick a start on or before the end, no later than today.'; break; }
-      if (a - z + 1 > 92) { S.rangeErr = 'Up to 3 months at a time. Longer runs are in WP Admin › Analytics.'; break; }
+      if (a - z + 1 > RETENTION_DAYS) { S.rangeErr = 'That is further back than your history goes. Longer runs are in WP Admin › Analytics.'; break; }
       S.gran = 'custom'; S.cFrom = a; S.cTo = z; S.off = 0; S.tip = null; S.pop = null; S.rangeErr = null; break;
     }
     case 'step':

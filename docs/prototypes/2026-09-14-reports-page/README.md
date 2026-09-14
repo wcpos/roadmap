@@ -26,7 +26,7 @@ What the research decided:
 
 ## Dates
 
-The period title is the menu: six presets and a custom range (two date fields, Apply). The cap is three months at a time, with longer runs pointed at WP Admin › Analytics; the popover says so if the range is longer. ‹ › step by the unit chosen, custom ranges included. The comparison for a day is a menu (same day last week by default, yesterday, same day last year); for a week, month or custom range it is the period of the same length immediately before.
+The period title is the menu: six presets and a custom range (two date fields, Apply). The cap is the Pro retention period, not a second number (Paul, 2026-09-14: *"as you recommend"*): the copy says *as far back as your history goes*, and a longer range gets one line pointing at WP Admin › Analytics. ‹ › step by the unit chosen, custom ranges included. The comparison for a day is a menu (same day last week by default, yesterday, same day last year); for a week, month or custom range it is the period of the same length immediately before.
 
 ## Templates
 
@@ -79,6 +79,7 @@ Below the frame: the register panel from #214 with its two report rows numbered.
 - **2026-09-14, Free gate: in the picker.** No banner; the Pro rows sit dimmed with a lock inside the popover and the upgrade line shows in its foot only when tapped.
 - **2026-09-14, upgrade copy: name the tapped thing.** One line per locked row kind, one button *See Pro*.
 - **2026-09-14, first cut rejected as complex; second cut built the same day** (the app's own shape with a comparison chart, checkboxes, a report select and a template select).
+- **2026-09-14, custom-range cap = retention.** Asked whether three months is the line or the cap should follow Pro retention; *"as you recommend"*: it follows retention.
 - **2026-09-14, third cut: "This is looking much better!!"** Asked for date range options with a custom range (about 3 months max), whether the visual version covers everything the first cut had, and how custom templates are presented. Fourth pass answers all three; the coverage table above is the answer to the second.
 - **2026-09-14, second cut rejected as the same design.** Paul: *"you've reproduced the same shitty design that currently exists. Take a step back. Do some proper research on Mobbin and try to come up with something a little more inspired."* Mobbin's POS report screens turned out to be login-gated and not indexed, so the survey used vendor help centres, changelogs and app-store reviews for eight POS apps plus the fintech "engaging numbers" references. Third cut is what came out; both earlier cuts are in git history.
 

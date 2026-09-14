@@ -31,7 +31,7 @@ fs.mkdirSync(OUT, { recursive: true });
   await act('[data-act="step"][data-v="1"]'); await shot('sales-last-week');
   await act('.datebtn'); await act('.pop .pr[data-v="month:0"]'); await shot('sales-month'); await has('September so far');
   await act('.datebtn'); await page.fill('#cFrom', '2026-08-01'); await page.fill('#cTo', '2026-09-14'); await act('[data-act="applyRange"]'); await shot('sales-custom-range'); await has('45 days');
-  await act('.datebtn'); await page.fill('#cFrom', '2026-05-01'); await act('[data-act="applyRange"]'); await shot('date-range-too-long'); await has('Up to 3 months'); await esc();
+  await act('.datebtn'); await page.fill('#cFrom', '2026-05-01'); await act('[data-act="applyRange"]'); await shot('date-range-too-long'); await has('further back than your history'); await esc();
   await act('.datebtn'); await act('.pop .pr[data-v="day:0"]');
   await act('.hero .printb'); await shot('detail-summary'); await has('Sales summary');
   await act('.sel2[data-p="tpl"]'); await shot('detail-template-menu'); await has('Template · report'); await act('.pop .pr[data-v="handover"]'); await shot('detail-summary-handover');
