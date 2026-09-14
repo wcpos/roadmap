@@ -142,8 +142,12 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     a redirect-return claim. What is missing is one rule in that hydration step. **Decided (Paul,
     2026-09-14): the cookie gates `/pos` and adds its user to the device; the app owns the active
     user across a refresh.** Switch user survives a reload; Sign out still ends the cookie session.
-    Tracked as a monorepo issue (linked from wcpos/roadmap#287), not a map ticket: it is one
-    conditional in `PROCESS_INITIAL_PROPS`, no plugin change.
+    Tracked as [wcpos/monorepo#2043](https://github.com/wcpos/monorepo/issues/2043), not a map
+    ticket: it is one conditional in `PROCESS_INITIAL_PROPS`, no plugin change. **Paul's caution
+    (2026-09-14): be very careful managing the logged-in user once several share a device.** The
+    case to design and test against: user A's token expires, the re-auth form appears, and user B
+    signs in on it. The form must name whose session it renews, and B signing in must become a
+    switch to B, never A's session with B's token. The test flows are on the issue.
 
 ## Rejected while drawing
 
