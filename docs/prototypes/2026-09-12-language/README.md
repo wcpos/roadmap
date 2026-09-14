@@ -180,8 +180,24 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     red (9 % wash, no border; Shopify critical, Material tonal) · one joined control, Void |
     Checkout as two cells of one rectangle · two pills at 34/66 (Talabat, CHOPT) · filled red
     (Toast). Live under *Void button*; the matched outline is the default. The rejected rounds
-    are folded into a collapsed section at the bottom of the board. **Pick: outlined red,
-    matched.**
+    are folded into a collapsed section at the bottom of the board. Paul: *"either 1 or 5."*
+    **Outlined red matched is the default; filled red stays in the switch as the other finalist.**
+    The final pick waits on the personality direction, since a red box reads differently on cream
+    paper than on white.
+25. **Personality.** Paul: *"I like the design. I just find it uninspired, boring, dull."*
+    Diagnosis: the language is the 2026 SaaS default with the brand removed (grey-blue neutrals,
+    one blue, 8 px radius, system font, hairlines, grey tiles, copy nobody wrote). Personality
+    lives in type with a voice, a canvas that is not white, the money as the hero, moments, and
+    copy written by a person. `personality/board.html` (captures `personality/screens/board/`):
+    six directions, the same register and data, only tokens, seams and words moved: (1) **the
+    paper till** — cream canvas, ink buttons, serif italic total, mono numbers, the cart as a
+    receipt with a torn edge; (2) **bold money** (Cash App, Wise) — white, black, lime; the
+    total at 44 pt; pills; (3) **the warm shop** (Fresha, Aesop) — warm off-white, terracotta,
+    Fraunces for money, tiles as colour swatches; (4) **the market stall** — category colours,
+    Manrope, 2 px ink outlines, coral with a hard shadow, emoji fallbacks, copy with a person
+    behind it; (5) **the dark stage** (Linear) — near-black, violet as light, glow on the total;
+    (6) **Woo, owned** — WooCommerce purple and Bricolage Grotesque, everything else as today.
+    **Pick: (3) as the base, with (4)'s category colours on the tiles and (2)'s 44 pt total.**
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·
