@@ -28,7 +28,7 @@ fs.mkdirSync(OUT, { recursive: true });
     for (const s of ['lines2', 'line1', 'chips', 'cards', 'numbered', 'edge']) { await set('tabStyle', s); await scn('many-orders'); await page.click('.ordlist [data-act="ordlist"]'); await shot(`tabs-${s}-${w}`); } }
   await set('w', 'tablet'); await set('tabStyle', 'line1');
   // the void styles, live: tablet, session open; the menu opened, the hold mid-press
-  for (const v of ['life', 'doc', 'bar', 'tail', 'pill', 'outline', 'menu']) {
+  for (const v of ['red', 'tonal', 'joined', 'pills', 'fill', 'outline']) {
     await set('voidStyle', v); await scn('open');
     if (v === 'menu' || v === 'chip') await page.click('[data-act="vmenu"]');
     if (v === 'details') await page.click('[data-pop="details"]');
@@ -36,7 +36,9 @@ fs.mkdirSync(OUT, { recursive: true });
     await shot(`void-${v}`);
     if (v === 'hold') await page.mouse.up();
   }
-  await set('voidStyle', 'life');
+  await set('voidStyle', 'red');
+  // phone: the ⋮ replaces the pair whatever the switch says
+  await set('w', 'phone'); await scn('open'); await shot('void-phone-dots'); await page.click('[data-act="vmenu"]'); await shot('void-phone-dots-open'); await set('w', 'tablet');
   await browser.close();
   if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
   console.log('ok · variants in ' + OUT);

@@ -13,6 +13,7 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   const errors = [];
   page.on('pageerror', e => errors.push('pageerror: ' + e.message));
   await page.goto('file://' + path.join(DIR, NAME + '.html'));
+  await page.evaluate(() => document.querySelectorAll('details').forEach(d => { d.open = true; }));
   const panels = page.locator('section.panel');
   const n = await panels.count();
   for (let i = 0; i < n; i++) {

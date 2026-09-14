@@ -88,9 +88,26 @@ svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:
 .r4 .line{display:block} .r4 .tail .btn.p{flex:none;height:56px}
 .r4 .topay{display:flex;justify-content:space-between;align-items:baseline;padding:10px 16px 6px;font-weight:700;font-size:16px;flex:none}
 .r4 .sq{width:56px;height:56px;border:var(--hair) solid var(--border);border-radius:var(--r);display:inline-flex;align-items:center;justify-content:center;color:var(--fg);flex:none}
+
+/* round five: the pair again */
+.r5 .board{grid-template-columns:repeat(3,440px)} .r5 .frame{height:230px;justify-content:flex-end}
+.r5 .vd{height:56px;font-weight:600;padding:0 20px;border:var(--hair) solid var(--border);border-radius:var(--r);display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--card);font-size:16px;flex:none}
+.r5 .vd.red{color:var(--destructive);border-color:color-mix(in oklch,var(--destructive) 55%,transparent)}
+.r5 .vd.tonal{color:var(--destructive);background:color-mix(in oklch,var(--destructive) 9%,var(--card));border-color:transparent}
+.r5 .vd.fill{color:var(--destructive-fg);background:var(--destructive);border-color:transparent}
+.r5 .pair{display:flex;flex:1;border-radius:var(--r);overflow:hidden;height:56px;border:var(--hair) solid var(--border)} .r5 .pair .vd,.r5 .pair .btn.p{border-radius:0;border:0;height:100%} .r5 .pair .vd{background:var(--muted);color:var(--destructive);border-right:var(--hair) solid var(--border)}
+.r5 .pills .vd,.r5 .pills .btn.p{border-radius:999px} .r5 .pills .vd{color:var(--destructive);flex:0 0 34%}
+.r5 .vd.today{height:44px;color:var(--destructive);font-size:14px;font-weight:500;align-self:center;padding:0 16px}
+.r5 .dots{width:44px;height:44px;border:var(--hair) solid var(--border);border-radius:var(--r);display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg);align-self:center;flex:none}
+.r5 .frame.ph{width:390px}
+details.rej{margin-top:40px;background:#fff;border:1px solid #d1d5db;border-radius:8px;padding:8px 16px} details.rej summary{cursor:pointer;font-weight:600;font-size:15px;padding:6px 0} details.rej h1{margin-top:28px}
 </style>
 </head>
 <body>
+<h1>Round five — Void | Checkout, again</h1>
+<p class="lead">Paul: <em>"get rid of them all. Only keep the small screen version with the dots, just make sure the dots button is not the same size as the checkout button. Have another try of the Void | Checkout."</em> So: on a phone the footer is a 44 pt ⋮ beside the 56 pt Checkout, no switch. On tablet and desktop the pair stays, and here are five executions of it that were not on the earlier boards, plus today's for comparison. All live in the register under <em>Void button</em>.</p>
+<div class="r5"><div class="board" id="board5"></div></div>
+<details class="rej"><summary>Rejected rounds, kept for the record: four (structures), three (the button restyled), two (no button), one (placements)</summary>
 <h1>Round four — the end of the sale, re-imagined</h1>
 <p class="lead">Paul: <em>"the problem is not whether the button has a border or not, it's far more fundamental than that."</em> Agreed. Today's footer is a dialog's button row (Cancel | OK) put under a cart, so Void and Checkout read as peers, and every round so far restyled the wrong half of that pair. What the references do instead: the money and the sale's fate are two jobs and live in two places. <em>Fresha</em> (the one real POS on Mobbin with this footer): a <em>To pay</em> row, one full-width <em>Pay now</em>, a quiet ⋮ for everything else. <em>Shopify</em> treats the draft order as a document: <em>Discard</em> and <em>Save</em> sit in its title bar, nothing destructive at the foot. <em>Glovo, UNIQLO, 7-Eleven</em>: the footer is a bar, the total is the biggest thing on it, one action beside it. <em>Lightspeed</em>: park and discard are quiet text above Pay. Six structures below, each the whole cart column so the hierarchy is visible, not the button. The first four are live in the register under <em>Void button</em>.</p>
 <div class="r4"><div class="board" id="board4"></div></div>
@@ -104,6 +121,7 @@ svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:
 <h1 style="margin-top:40px">For the record — seven placements of a Void button (first board)</h1>
 <p class="lead">The round Paul rejected (<em>"placements of a red button are not design"</em>), kept so the comparison stays on one page. The ⋮ beside Checkout (02) remains a phone-only candidate.</p>
 <div class="v1"><div class="board" id="board1" style="grid-template-columns:repeat(2,440px)"></div></div>
+</details>
 <script>
 const I={sliders:'<svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg>',plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',chevd:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',chev:'<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',drawer:'<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="9" rx="2"/><path d="M3 15h18M10 17.5h4M6 11V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/></svg>',dots:'<svg viewBox="0 0 24 24"><circle cx="12" cy="6" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="18" r="1.2"/></svg>',trash:'<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>',x:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',check:'<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',pen:'<svg viewBox="0 0 24 24"><path d="M4 20h4l10.5-10.5a2 2 0 0 0-4-4L4 16z"/></svg>',park:'<svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 16V8h4a2.5 2.5 0 0 1 0 5H9"/></svg>',print:'<svg viewBox="0 0 24 24"><path d="M7 8V4h10v4M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v6H7z"/></svg>',cart:'<svg viewBox="0 0 24 24"><path d="M3 4h2l2.4 11.2a1 1 0 0 0 1 .8h9.5a1 1 0 0 0 1-.8L21 8H6.5"/><circle cx="9.5" cy="20" r="1.2"/><circle cx="17.5" cy="20" r="1.2"/></svg>',undo:'<svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/></svg>'};
 const bar=(l='UK Store')=>`<div class="bar"><b>${l}</b><span class="grow"></span><span class="ibtn">${I.drawer}</span><span class="av">DC</span></div>`;
@@ -193,6 +211,23 @@ const P=[
   `${bar()}${cust()}${rows}${totalsSmall}<div class="topay"><span>To pay</span><span>£22.60</span></div><div class="cf"><span class="sq">${I.dots}</span><span class="btn p">Pay now</span></div>${tabs}`],
 ];
 document.getElementById('board4').innerHTML=P.map(([k,t,a,w,h],i)=>`<section class="panel" data-n="s${i+1}-${k}"><div class="cap"><b><span class="n">${String(i+1).padStart(2,'0')}</span>${t} <span class="mut" style="font-weight:400">· after ${a}</span></b>${w}</div><div class="frame" ${k==='rail'?'style="flex-direction:row"':''}>${h}</div></section>`).join('');
+})();</script>
+<script>(function(){
+const T=`<div class="totals"><div class="mut"><span>VAT 20%</span><span>£3.77</span></div><div class="big"><span>Total</span><span>£22.60</span></div></div>`;
+const CK=`<span class="btn p">Checkout £22.60</span>`;
+const tabs=`<div class="tabs"><span class="otab on">£22.60</span><span class="otab">£8.40 <i></i></span></div>`;
+const P=[
+ ['red','Outlined red, matched','today, corrected','the outline you said was still best, made right: 56 pt like Checkout, the word at 600, the border a red hairline at half strength so it reads as a line, not a box, and the width is the word plus 40'],
+ ['tonal','Tonal red','Shopify critical secondary, Material tonal','no border at all: a 9 % wash of red under red text; it sits in the same family as Checkout (a filled surface) one tone down, and the press deepens the wash'],
+ ['joined','One control, Void | Checkout','Square split actions, iOS toolbars','the two halves of one 56 pt rounded rectangle, a hairline between them; the pair is read as a single object with a way out on the left and the way through on the right'],
+ ['pills','Two pills, 34 / 66','Talabat, CHOPT, Glovo checkout','the consumer-checkout footer: both fully rounded, the secondary outlined with red text at a third of the width, the primary filled'],
+ ['fill','Filled red','Toast, Material filled error','the honest version of a red box: a real filled destructive button, white on red, narrow, the same height as Checkout'],
+ ['today','Outlined red, 44 pt','WCPOS today','for comparison'],
+];
+const cell=k=>k==='joined'?`<div class="cf"><div class="pair"><span class="vd">Void</span>${CK}</div></div>`:k==='pills'?`<div class="cf pills"><span class="vd">Void</span>${CK}</div>`:`<div class="cf"><span class="vd ${k}">Void</span>${CK}</div>`;
+let h=P.map(([k,t,a,w],i)=>`<section class="panel" data-n="v${i+1}-${k}"><div class="cap"><b><span class="n">${String(i+1).padStart(2,'0')}</span>${t} <span class="mut" style="font-weight:400">· after ${a}</span></b>${w}</div><div class="frame">${T}${cell(k)}${tabs}</div></section>`).join('');
+h+=`<section class="panel" data-n="v7-phone"><div class="cap"><b><span class="n">07</span>Phone: ⋮ at 44 pt beside Checkout at 56 <span class="mut" style="font-weight:400">· decided</span></b>the ⋮ is now visibly the smaller thing: a 44 pt square centred on the 56 pt Checkout, holding Order details, Save, Print and Void</div><div class="frame ph">${T}<div class="cf"><span class="dots">${I.dots}</span>${CK}</div>${tabs}</div></section>`;
+document.getElementById('board5').innerHTML=h;
 })();</script>
 </body>
 </html>

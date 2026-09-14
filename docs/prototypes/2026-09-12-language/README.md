@@ -172,9 +172,16 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     — one muted card holding the sale's name with *Void* at its head, the tax rows, *To pay*, and
     *Pay now*; (5) **action rail** — the cart's verbs down its edge, Void at the bottom;
     (6) Fresha exactly, for the record. (1)–(4) are live under the register's *Void button*
-    switch; (1) is the default. **Pick: (1) the lifecycle row** — it removes two buttons from the
-    footer, keeps Void visible and one tap, and makes it a sibling of Save instead of Checkout.
-    ⋮ stays the phone treatment.
+    switch; (1) is the default. Paul: *"Nope, get rid of them all. Only keep the small screen
+    version with the dots, just make sure the dots button is not the same size as the checkout
+    button. Have another try of the Void | Checkout."* **Decided: phone = ⋮ at 44 pt beside
+    Checkout at 56, no switch.** Round five, the pair for tablet and desktop, five executions not
+    seen before: outlined red matched (56 pt, 600 weight, red hairline at half strength) · tonal
+    red (9 % wash, no border; Shopify critical, Material tonal) · one joined control, Void |
+    Checkout as two cells of one rectangle · two pills at 34/66 (Talabat, CHOPT) · filled red
+    (Toast). Live under *Void button*; the matched outline is the default. The rejected rounds
+    are folded into a collapsed section at the bottom of the board. **Pick: outlined red,
+    matched.**
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·
