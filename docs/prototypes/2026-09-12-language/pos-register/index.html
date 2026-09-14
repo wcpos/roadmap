@@ -214,6 +214,13 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .otab.more{color:var(--primary);font-weight:600;flex:none;align-items:center;flex-direction:row;gap:calc(var(--u)*1)}
 .otab.plus{flex:none;align-items:center;justify-content:center;padding:0 calc(var(--u)*2);flex-direction:row;color:var(--muted-fg)}
 .tabs .sp{flex:1}
+/* the void button, round three: same height as Checkout, red only where it means something */
+.btn.vd{font-weight:600;min-width:calc(var(--fs)*7);padding:0 calc(var(--u)*4)}
+.btn.vd.pill{background:var(--muted);border-color:transparent;color:var(--destructive)} .btn.vd.pill:active{background:color-mix(in oklch,var(--destructive) 14%,var(--muted))}
+.btn.vd.link{background:transparent;border-color:transparent;color:var(--destructive);font-weight:500} .btn.vd.link:active{background:color-mix(in oklch,var(--destructive) 10%,transparent)}
+.btn.vd.ghost{background:transparent;border-color:var(--border);color:var(--muted-fg);font-weight:500} .btn.vd.ghost:active,.btn.vd.ghost:hover{color:var(--destructive);border-color:color-mix(in oklch,var(--destructive) 40%,var(--border))}
+.btn.vd.outline2{background:var(--card);border-color:var(--border);color:var(--destructive)} .btn.vd.outline2:active{background:color-mix(in oklch,var(--destructive) 10%,var(--card));border-color:color-mix(in oklch,var(--destructive) 40%,var(--border))}
+.btn.vd.square{width:max(calc(var(--tile)*.875),var(--floor));min-width:0;padding:0;background:transparent;border-color:var(--border);color:var(--muted-fg)} .btn.vd.square:active,.btn.vd.square:hover{color:var(--destructive)}
 /* void styles */
 .vmenu{position:absolute;left:calc(var(--u)*4);bottom:calc(100% - var(--u)*2);width:240px;background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);padding:calc(var(--u)*2);z-index:25;animation:drop var(--t) var(--ease)}
 .vmenu button{display:flex;align-items:center;gap:calc(var(--u)*2.5);width:100%;height:max(var(--row),var(--floor));padding:0 calc(var(--u)*2.5);border-radius:calc(var(--r) - 2px);text-align:left}
@@ -395,7 +402,7 @@ const S={ w:'tablet', theme:'light', scale:'regular', scn:'open',
   phoneTab:'cart', panel:false, sheet:null, tender:false, view:'keypad', entry:null, method:'cash', settle:null, online:true, long:false,
   pop:null, tabsPos:'bottom', registers:1, counted:'', open:'200.00', reveal:null, edit:null, orders:2, ordlist:false, view2:'grid',
   closePos:'tr', legacy:'header-text', termStep:1, sortCart:'newest-last', tabStyle:'line1',   /* Paul 2026-09-14: amount + dot, with a format setting */
-  voidStyle:'chip', vmenu:false, toast:null };
+  voidStyle:'pill', vmenu:false, toast:null };
 const STR=()=>S.long?{
   search:'Produkte suchen',scan:'Scannen',priceCheck:'Nur Preisprüfung, bis die Kasse geöffnet ist.',counting:'Keine Verkäufe, während die Kasse gezählt wird.',
   customer:'Kunde',guest:'Gast',details:'Bestelldetails',save:'Bestellung speichern',void:'Stornieren',checkout:'Zur Kasse',subtotal:'Zwischensumme',fees:'Gebühren',tax:'MwSt. 19 %',total:'Gesamt',
@@ -459,7 +466,7 @@ function renderStrip(){
     <div class="g"><b>Registers</b>${seg('registers',[[1,'1'],[3,'3']])}</div>
     <div class="g"><b>Tender close</b>${seg('closePos',[['tl','top-left ×'],['tr','top-right ×'],['bottom','Back to cart under keypad']])}</div>
     <div class="g"><b>Tab style</b>${seg('tabStyle',[['lines2','amount over status'],['line1','amount + dot'],['chips','chips'],['cards','cards'],['numbered','numbered'],['edge','status edge']])}</div>
-    <div class="g"><b>Void style</b>${seg('voidStyle',[['chip','order chip menu'],['tab','close the tab'],['none','emptying is voiding'],['menu','⋮ beside Checkout'],['hold','hold to void'],['outline','outlined red (today)'],['details','row in Order details']])}</div>
+    <div class="g"><b>Void button</b>${seg('voidStyle',[['pill','red text on a grey pill (Apple)'],['link','red text, no surface (Linear)'],['ghost','grey, red on press (Stripe)'],['iconword','trash + Void, quiet'],['outline2','outline refined'],['square','56 pt square, icon only'],['outline','outlined red (today)'],['menu','⋮ (phone only)']])}</div>
     <div class="g"><b>Legacy switch</b>${seg('legacy',[['header-text','header · text toggle (decided)'],['header-icons','header · icons'],['tile','tile in the grid'],['bottom','link under the keypad']])}</div>
     <div class="g"><b>State</b><span class="seg">${SCENES.map(([v,l])=>`<button class="${S.scn===v?'on':''}" data-scn="${v}">${l}</button>`).join('')}</span></div>`;
 }
@@ -628,7 +635,15 @@ function renderCart(){
   else if (vs==='hold') foot=`<div class="cart-f"><button class="btn press hold" data-hold="1" ${dis} aria-label="Hold to void"><span class="fill"></span><span style="position:relative">Hold to void</span></button>${checkout}</div>`;
   else if (vs==='text') foot=`<div class="cart-f" style="flex-direction:column;gap:0">${checkout}<button class="btn q press" style="color:var(--destructive);height:40px" data-act="void" ${dis}>${t.void} order</button></div>`;
   else if (vs==='outline') foot=`<div class="cart-f"><button class="btn d press" ${dis} data-act="void">${t.void}</button>${checkout}</div>`;
-  else foot=`<div class="cart-f">${checkout}</div>`;   /* discard · trash · details put Void elsewhere */
+  /* round three: the button itself, done properly — every variant is 56 pt like Checkout, a press state within 100 ms,
+     and red carries meaning without shouting (Apple's red text on a grey pill; Linear's danger-zone link; Stripe's neutral Cancel) */
+  else if (vs==='pill') foot=`<div class="cart-f"><button class="btn xl vd pill press" ${dis} data-act="void">${t.void}</button>${checkout}</div>`;
+  else if (vs==='link') foot=`<div class="cart-f"><button class="btn xl vd link press" ${dis} data-act="void">${t.void}</button>${checkout}</div>`;
+  else if (vs==='ghost') foot=`<div class="cart-f"><button class="btn xl vd ghost press" ${dis} data-act="void">${t.void}</button>${checkout}</div>`;
+  else if (vs==='iconword') foot=`<div class="cart-f"><button class="btn xl vd ghost press" ${dis} data-act="void">${I.trash}${t.void}</button>${checkout}</div>`;
+  else if (vs==='outline2') foot=`<div class="cart-f"><button class="btn xl vd outline2 press" ${dis} data-act="void">${t.void}</button>${checkout}</div>`;
+  else if (vs==='square') foot=`<div class="cart-f"><button class="btn xl vd square press" ${dis} data-act="void" aria-label="${t.void} sale" title="${t.void} sale">${I.trash}</button>${checkout}</div>`;
+  else foot=`<div class="cart-f">${checkout}</div>`;   /* chip · tab · none · discard · trash · details put Void elsewhere */
   const pop=false?`<div class="pop" style="right:calc(var(--u)*3);top:calc(max(var(--ctl),var(--floor)) * 2 + var(--u)*4)" data-stop="1">
       <div class="hh">Cart</div>
       <div class="opt h2">Sort items</div>

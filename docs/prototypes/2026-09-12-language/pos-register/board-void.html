@@ -64,10 +64,25 @@ svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:
 .v1 .sheet{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-top:var(--hair) solid var(--border);border-radius:16px 16px 0 0;padding:16px;z-index:6} .sheet .h{font-weight:700;font-size:16px;margin-bottom:4px}
 .v1 .scrim{position:absolute;inset:0;background:oklch(0.2 0.02 250 / .28);z-index:5}
 
+
+/* round three: the button done properly */
+.r3 .board{grid-template-columns:repeat(3,440px)} .r3 .frame{height:230px;justify-content:flex-end}
+.vd{height:56px;font-weight:600;min-width:98px;padding:0 16px;border:var(--hair) solid var(--border);border-radius:var(--r);display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--card);font-size:16px}
+.vd.pill{background:var(--muted);border-color:transparent;color:var(--destructive)}
+.vd.link{background:transparent;border-color:transparent;color:var(--destructive);font-weight:500}
+.vd.ghost{background:transparent;color:var(--muted-fg);font-weight:500}
+.vd.outline2{color:var(--destructive)}
+.vd.square{width:56px;min-width:0;padding:0;background:transparent;color:var(--muted-fg)}
+.vd.today{height:44px;color:var(--destructive);font-size:14px;font-weight:500;align-self:center}
+.pressed{outline:2px dashed color-mix(in oklch,var(--destructive) 50%,transparent);outline-offset:3px}
 </style>
 </head>
 <body>
-<h1>POS — five ways to have no Void button</h1>
+<h1>Round three — the Void button, done properly</h1>
+<p class="lead">Paul: the models are not it; the outlined red is still the best of the lot, "but you need to do better", and the ⋮ stays for phones only. What the references actually do with a destructive secondary beside a primary: <em>Apple</em> puts red text on a neutral grey pill; <em>Linear</em> uses a plain red text link in the danger zone; <em>Stripe</em> keeps Cancel neutral and saves red for the confirm. Nobody draws a red-outlined rectangle. Six treatments below, each the same height as Checkout with a press state; the today button for comparison. All live in the prototype under <em>Void button</em>.</p>
+<div class="r3"><div class="board" id="board3"></div></div>
+<h1 style="margin-top:40px">Round two — five ways to have no Void button</h1>
+
 <p class="lead">What the best products do about discarding a draft: Stripe's invoice editor has no delete on the page at all; Shopify shows <em>Discard</em> only while there are unsaved changes and puts cancellation under the order's own actions; Linear deletes from the item's ⋯ with an Undo toast; Apple swipes the row and keeps a Recently Deleted; browsers close the tab. None puts a red button beside the primary. Five models below, each a different answer to "where does a sale end", in the cart column at 440. Captures: <code>screens/board-void-2/NN-slug.jpg</code>.</p>
 <div class="board" id="board"></div>
 <h1 style="margin-top:40px">For the record — seven placements of a Void button (first board)</h1>
@@ -124,6 +139,20 @@ B.push(panel(6,'Destructive row in Order details','iOS settings, Stripe detail s
 B.push(panel(7,'Quiet text under Checkout','Square "Discard", Stripe "Cancel"','a full-width quiet destructive text button under the primary; visible, never competing',
  `${bar()}${cust()}${lines}${totals}${f2}<div class="cf" style="flex-direction:column;align-items:stretch;gap:0"><span class="btn p">Checkout £22.60</span><span class="btn dq" style="height:40px">Void order</span></div>${tabs}`));
 document.getElementById('board1').innerHTML=B.join('');
+})();</script>
+<script>(function(){
+const T=`<div class="totals"><div class="mut"><span>VAT 20%</span><span>£3.77</span></div><div class="big"><span>Total</span><span>£22.60</span></div></div>`;
+const CK=`<span class="btn p">Checkout £22.60</span>`;
+const P=[
+ ['pill','Red text on a grey pill','Apple sheets','the same surface as every other secondary, the word carries the meaning; press tints it red'],
+ ['link','Red text, no surface','Linear danger zone','a text button with a 56 pt hit area; nothing drawn until pressed'],
+ ['ghost','Neutral, red on press','Stripe Cancel','grey until the finger lands; hover and press turn it red, so the resting screen has no red at all'],
+ ['iconword','Trash + Void, quiet','Gmail, Linear row actions','the glyph does the recognising, the word confirms; neutral at rest'],
+ ['outline2','Outline, refined','today, corrected','red text, but the border stays the hairline colour and the height matches Checkout; the red box is gone'],
+ ['square','56 pt square, icon only','Square, Fresha','a small neutral square leaves the whole width to Checkout; the label is a tooltip and the press is red'],
+ ['today','Outlined red, 44 pt','WCPOS today','for comparison: a red box on a hairline screen, shorter than the button beside it'],
+];
+document.getElementById('board3').innerHTML=P.map(([k,t,a,w],i)=>`<section class="panel" data-n="r${i+1}-${k}"><div class="cap"><b><span class="n">${String(i+1).padStart(2,'0')}</span>${t} <span class="mut" style="font-weight:400">· after ${a}</span></b>${w}</div><div class="frame">${T}<div class="cf"><span class="vd ${k}">${k==='iconword'?I.trash+'Void':k==='square'?I.trash:'Void'}</span>${CK}</div><div class="tabs"><span class="otab on">£22.60</span><span class="otab">£8.40 <i></i></span></div></div></section>`).join('');
 })();</script>
 </body>
 </html>
