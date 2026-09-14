@@ -121,8 +121,33 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     edge; the most information, the tallest;
     (e) **numbered** — like (a) with #1, #2… so a cashier can say "cart 3";
     (f) **status edge** — one line with a coloured top edge per status, amount and customer.
-    **Decided (Paul, 2026-09-14): (a) amount over status.** It is the prototype's default; the
-    other five stay in the strip for the record.
+    **Revised the same day: Paul prefers the simplicity of (b) amount + dot, with a format
+    setting.** The default is now amount + dot, and cart settings gain *Tab shows*: amount and
+    status dot · amount and customer · amount over status · customer (amount for guests) · number
+    and amount. Custom titles (table number, a name) come with the restaurant extension later.
+    **Code check** (`pos/cart/tab-chip.tsx` on `next`): the chip on a tab that is *not* active
+    has exactly seven labels in a fixed priority — *Save refused* (error) → *Paid · receipt*
+    (success) → *Waiting for terminal · £* → *Partly paid · £ due* → *Saving order…* / *In
+    checkout · offline* / *In checkout* (all info) → none; the active tab never carries one.
+    The dot colours follow: red · green · amber for waiting and partly paid · grey for the three
+    in-progress states. **The open-orders list takes the whole cart column** (Paul), a full
+    overlay with its own header and ×, not a popover.
+23. **Void.** Paul: *"the Void button sucks, do some research on Mobbin."* Seven placements on
+    `pos-register/board-void.html` (captures in `screens/board-void/`): outlined red beside
+    Checkout (today) · ⋮ beside Checkout with Void, Save and Order details inside (Fresha) · a
+    quiet *Discard* text button in the bar (Shopify draft order) · a trash icon in the customer row
+    (Gmail, Linear) · *Hold to void*, a quiet button that fills while held, the hold being the
+    confirmation (Slack, Revolut) · a destructive row at the bottom of the Order details slide-out
+    (iOS settings, Stripe) · quiet red text under Checkout (Square, Stripe). **Pick: ⋮ beside
+    Checkout** — it also gives Save and Order details a home so the footer is Checkout alone, and
+    Void keeps its Undo. Second: hold to void, if the footer must keep a visible way out.
+24. **More product-list options.** `pos-register/board-table-2.html` (captures in
+    `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
+    comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·
+    quantity steppers (wholesale) · category tabs above (Square item library) · two columns ·
+    sort chips with no header (Linear) · search-first with keyboard hints (Superhuman, Raycast).
+    These are layers on the base, not replacements: category tabs, sort chips and search-first
+    combine with any row style.
 Orders, after Paul's first thoughts (2026-09-14):
 
 20. **The list's frame.** Paul: away from the rounded-corner chrome table. Four styles in the

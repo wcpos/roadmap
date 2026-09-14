@@ -214,7 +214,10 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .otab.more{color:var(--primary);font-weight:600;flex:none;align-items:center;flex-direction:row;gap:calc(var(--u)*1)}
 .otab.plus{flex:none;align-items:center;justify-content:center;padding:0 calc(var(--u)*2);flex-direction:row;color:var(--muted-fg)}
 .tabs .sp{flex:1}
-.ordlist{position:absolute;left:calc(var(--u)*3);right:calc(var(--u)*3);bottom:calc(max(calc(var(--ctl) + 8px),52px) + var(--u)*2);max-height:70%;overflow:auto;z-index:25;background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);animation:drop var(--t) var(--ease)}
+/* the open-orders list takes the whole cart column (Paul, 2026-09-14) */
+.ordlist{position:absolute;inset:0;overflow:auto;z-index:25;background:var(--card);animation:drop var(--t) var(--ease);display:flex;flex-direction:column}
+.ordlist .hh{height:max(var(--ctl),var(--floor));border-bottom:var(--hair) solid var(--border);padding:0 calc(var(--u)*2) 0 calc(var(--u)*4);flex:none;font-size:calc(var(--fs)*1.1)}
+.ordlist .orow{min-height:max(calc(var(--row) + 12px),56px)}
 .ordlist .hh{padding:calc(var(--u)*3) calc(var(--u)*4) calc(var(--u)*1);font-weight:600;display:flex;align-items:center;gap:calc(var(--u)*2)}
 .orow{display:grid;grid-template-columns:1fr auto;align-items:center;gap:calc(var(--u)*3);min-height:max(calc(var(--row) + 8px),52px);padding:calc(var(--u)*1.5) calc(var(--u)*4);border-top:var(--hair) solid var(--border);width:100%;text-align:left}
 .orow:active,.orow:hover{background:var(--muted)} .orow.on{background:color-mix(in oklch,var(--primary) 8%,transparent)}
@@ -381,7 +384,7 @@ const OPEN=[
 const S={ w:'tablet', theme:'light', scale:'regular', scn:'open',
   phoneTab:'cart', panel:false, sheet:null, tender:false, view:'keypad', entry:null, method:'cash', settle:null, online:true, long:false,
   pop:null, tabsPos:'bottom', registers:1, counted:'', open:'200.00', reveal:null, edit:null, orders:2, ordlist:false, view2:'grid',
-  closePos:'tr', legacy:'header-text', termStep:1, sortCart:'newest-last', tabStyle:'lines2' };
+  closePos:'tr', legacy:'header-text', termStep:1, sortCart:'newest-last', tabStyle:'line1' };   /* Paul 2026-09-14: amount + dot, with a format setting */
 const STR=()=>S.long?{
   search:'Produkte suchen',scan:'Scannen',priceCheck:'Nur Preisprüfung, bis die Kasse geöffnet ist.',counting:'Keine Verkäufe, während die Kasse gezählt wird.',
   customer:'Kunde',guest:'Gast',details:'Bestelldetails',save:'Bestellung speichern',void:'Stornieren',checkout:'Zur Kasse',subtotal:'Zwischensumme',fees:'Gebühren',tax:'MwSt. 19 %',total:'Gesamt',
@@ -512,6 +515,9 @@ function renderSide(){
         ${[['Qty',1],['Image',0],['Item',1],['SKU',0],['Price',1],['Regular price',0],['Total',1],['Tax',0]].map(([l,on])=>`<div class="opt"><span class="grip">${I.grip}</span><span class="cb ${on?'on':''}">${I.check}</span>${l}</div>`).join('')}
         <div class="opt h2">Open orders</div>
         <div class="opt"><span>Tabs</span><span class="grow"></span><span class="segt" style="height:36px"><button class="${S.tabsPos==='top'?'on':''}" data-set="tabsPos" data-v="top">Top</button><button class="${S.tabsPos==='bottom'?'on':''}" data-set="tabsPos" data-v="bottom">Bottom</button></span></div>
+        <div class="opt xs mut" style="min-height:auto;padding-bottom:calc(var(--u)*1)">Tab shows</div>
+        ${[['line1','Amount and status dot'],['amountcust','Amount and customer'],['lines2','Amount over status'],['cust','Customer, or amount for guests'],['numbered','Number and amount']].map(([v,l])=>`<button class="opt press" data-set="tabStyle" data-v="${v}"><span class="radio ${S.tabStyle===v?'on':''}"></span>${l}</button>`).join('')}
+        <div class="opt xs mut" style="min-height:auto;padding-bottom:calc(var(--u)*2)">Custom titles (table number, name) come with the restaurant extension.</div>
         <div class="opt h2">After checkout</div>
         <div class="opt"><span>Show receipt</span><span class="sw on"></span></div><div class="opt"><span>Print receipt</span><span class="sw"></span></div>
         <div class="opt"><span>Quick discounts</span><span class="grow"></span><span class="mut">5 · 10 · 15 · 20 %</span></div>
@@ -549,6 +555,8 @@ function tabHtml(o,i,style,t){
   const sub=o.chip?chip:`<span class="c mut">${o.age==='now'?t.cart:o.age}</span>`;
   switch(style){
     case 'line1': return `<button class="otab l1 press ${on}" data-act="selOrder" data-id="${o.id}"><span class="a"><b class="money">${fmt(o.t)}</b></span>${dot}</button>`;
+    case 'amountcust': return `<button class="otab l1 press ${on}" data-act="selOrder" data-id="${o.id}"><span class="a"><b class="money">${fmt(o.t)}</b><span class="ell" style="max-width:10ch;font-weight:400">${o.c}</span></span>${dot}</button>`;
+    case 'cust': return `<button class="otab l1 press ${on}" data-act="selOrder" data-id="${o.id}"><span class="a"><b class="ell" style="max-width:12ch">${o.c==='Guest'?fmt(o.t):o.c}</b></span>${dot}</button>`;
     case 'chips': return `<button class="otab chip2 press ${on}" data-act="selOrder" data-id="${o.id}"><span class="a"><b class="money">${fmt(o.t)}</b></span>${dot}</button>`;
     case 'cards': return `<button class="otab cardt press ${on}" data-act="selOrder" data-id="${o.id}"><span class="a"><b class="money">${fmt(o.t)}</b></span><span class="c mut ell" style="max-width:100%">${o.c}</span>${o.chip?chip:`<span class="c mut">${o.age==='now'?t.cart:o.age}</span>`}</button>`;
     case 'numbered': return `<button class="otab press ${on}" data-act="selOrder" data-id="${o.id}"><span class="a"><span class="num">#${i+1}</span><b class="money">${fmt(o.t)}</b>${cust}</span>${sub}</button>`;
