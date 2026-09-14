@@ -71,7 +71,7 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .notes b{color:#111}
 
 /* ---- the frame ---- */
-.frame{background:var(--bg);color:var(--fg);font-size:var(--fs);line-height:1.35;overflow:hidden;position:relative;display:flex;flex-direction:column;
+.frame{background:var(--bg);color:var(--fg);font-size:var(--fs);line-height:1.35;overflow:clip;position:relative;display:flex;flex-direction:column;
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-variant-numeric:tabular-nums;border:1px solid #c9ced6}
 .frame[data-w="desktop"]{width:1440px;height:860px;border-radius:8px}
 .frame[data-w="tablet"]{width:1024px;height:768px;border-radius:12px}
@@ -361,6 +361,7 @@ const I = {
   trash:'<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>',
   grip:'<svg viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.2"/><circle cx="15" cy="6" r="1.2"/><circle cx="9" cy="12" r="1.2"/><circle cx="15" cy="12" r="1.2"/><circle cx="9" cy="18" r="1.2"/><circle cx="15" cy="18" r="1.2"/></svg>',
   back:'<svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>',
+  dots:'<svg viewBox="0 0 24 24"><circle cx="12" cy="6" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="18" r="1.2"/></svg>',
   keypad:'<svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="1.6"/><circle cx="12" cy="6" r="1.6"/><circle cx="18" cy="6" r="1.6"/><circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/><circle cx="6" cy="18" r="1.6"/><circle cx="12" cy="18" r="1.6"/><circle cx="18" cy="18" r="1.6"/></svg>',
 };
 const CUR='£';
