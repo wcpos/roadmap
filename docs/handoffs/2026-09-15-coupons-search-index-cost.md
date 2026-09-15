@@ -76,6 +76,45 @@ twice in RxDB's change-event buffer, up to 100 events deep, which is what took a
 to 3.2 GB over an 11-hour shift. monorepo#2070 caps that history and removes the crash. **It does not
 make the index smaller, and the re-pull cadence is untouched.**
 
+## They are not fetched on demand, and the code says they should be
+
+The owner expected coupons to be fetched when the coupon select is first opened. They are not.
+
+Measured on the same soak, which never opened a coupon surface at all: the app authenticated at
+14:44:34 and the **first full coupon pull began at 14:44:57**, about 30 seconds after boot. Over the
+hour it re-pulled them 254 times in bursts of about 25 pages.
+
+`packages/sync-engine/src/scheduler/rx-pos-bootstrap-seeder.ts` contradicts itself about this:
+
+- File header, line 11: *"Categories, brands, tags, and coupons are fetched on demand, not seeded at boot."*
+- `REFERENCE_LANE_CONFIGS` comment: *"These lanes are seeded by on-demand and upkeep refreshes, never boot."*
+- `referenceLaneTaskFor` comment, twenty lines later: *"Used both at boot and by the change-signal tick."*
+
+What actually pulls them is the `reference-seed` maintenance lane
+(`packages/sync-engine/src/maintenance/maintenance-lanes.ts`, registered in
+`maintenance/lane-registry.ts` at `defaultMs: 5 * 60_000`). Each tick it counts every reference
+collection and then:
+
+- **count > 0** — re-seeds the lane, unconditionally, every five minutes, whether or not anything
+  changed. Only `REFERENCE_REFRESH_DEDUPE_MS` (four minutes) stops it being more often.
+- **count === 0** — asks the census, and backfills if the server reports any rows at all.
+
+So on a till's first launch the second branch pulls the entire coupon set because the server has
+coupons, not because anyone wants one. From then on the first branch re-pulls all of them every five
+minutes for the life of the session. On this store that is 25 requests per refresh, roughly 300 an
+hour, several thousand across a shift, each re-writing rows that feed the FlexSearch append pipeline.
+
+This is the more actionable half of the problem. The index size is a one-off cost; the refresh
+cadence is a permanent one, and it is what turned the index into a crash by driving the exports that
+#2070 now caps. It also applies to categories, brands and tags, which share the lane. They are
+cheaper per row, but they are on the same five-minute clock.
+
+**Worth deciding separately from the index question:** whether a reference collection that has not
+changed needs re-pulling at all when the change-signal tick already reports collection changes, and
+whether coupons should be in the boot set rather than fetched when the coupon picker opens, which is
+what the seeder's own header claims happens. Note `require-plane.ts:1034` already carves out picker
+opens from the dedupe window, so an on-demand path exists and is respected.
+
 ## Options, with a recommendation
 
 **A. Drop `description` from the coupon index; keep `code`. (Recommended.)**
