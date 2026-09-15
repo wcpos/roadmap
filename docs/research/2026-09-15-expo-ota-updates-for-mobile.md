@@ -4,8 +4,9 @@
 phones cost a store build ($3, ~45 min) plus store review, and more than half of the releases never
 reached phones at all. EAS Update turns that leg into a three-minute publish from the release SHA,
 with a rollback that is faster than the store. One-time cost: one store build (the binary must embed
-`expo-updates`) and one dev-client rebuild. Ongoing cost on the current Starter plan: $0 up to 3,000
-monthly active devices.
+`expo-updates`) and one dev-client rebuild. Ongoing cost on the current Starter plan: monthly active
+devices are covered up to 3,000; bandwidth is the only line that can bill (100 GiB included, then
+$0.10/GiB), and 3,000 devices × 4 updates × 9 MB ≈ 102 GiB, so a few dollars a month at most.
 
 Prompted by the 1.10.15 train (monorepo#2051 → 1.10.15), where the mobile leg was again a full
 `build.yml` submit for a one-line guard fix. Web already has an OTA lane (jsDelivr `@1.10`);
@@ -19,7 +20,8 @@ desktop has electron-updater; mobile is the only client without one.
   09-07, 09-09, 09-10, 09-14). Nine releases never reached phones.
 - Last change that moved the native fingerprint: the Sentry native SDK (25dac40d1e, 2026-09-08),
   before 1.10.9. Everything from **1.10.9 to 1.10.15 shares one native fingerprint** — seven releases,
-  three store builds spent, all publishable as OTA updates against the 1.10.9 binary.
+  three store builds spent. Had 1.10.9 been an OTA-capable binary, 1.10.10–1.10.15 would all have been
+  publishable as updates to it; the shipped 1.10.9 binary itself can never receive one.
   (`fix(native)` b05c941f78 on 09-09 patches `expo-opfs` JS only; reanimated 4.5.5 on 09-03 was the
   previous real native move.)
 
@@ -32,7 +34,7 @@ desktop has electron-updater; mobile is the only client without one.
 | Per-update payload | iOS production export: Hermes bytecode **22.9 MB raw, 9.1 MB gzip**; assets 672 KB (cached across updates). Budget ≈ 9 MB per device per release. |
 | Plan limits (expo.dev/pricing, 2026-09-15) | Free: 1,000 MAU, 100 GiB, no overage possible. **Starter ($19, ours): 3,000 MAU, 100 GiB bandwidth, 20 GiB storage; overage $0.005/MAU, $0.10/GiB, $0.05/GiB storage.** Production ($199): 50,000 MAU, 1 TiB. MAU = a unique install that downloads ≥1 update in the billing month. |
 | Code signing | Optional; **gated to Production/Enterprise plans**. Skip; transport is TLS to `u.expo.dev`. |
-| Dev client / native E2E | `expo-updates` is inert in debug builds (all APIs reject, `Updates.channel` null); the dev client keeps loading from Metro. Installing the module moves the fingerprint, so **one dev-client rebuild** is needed. |
+| Dev client / native E2E | By default debug builds load from Metro and the updates APIs reject (`Updates.channel` null); building the dev client with `EX_UPDATES_NATIVE_DEBUG=1` enables updates there for end-to-end preview. Installing the module moves the fingerprint, so **one dev-client rebuild** is needed. |
 | Store review | Not needed for an update. A new binary is still needed whenever the fingerprint moves. |
 
 Note for a later cleanup: `app.config.ts` freezes `DEV_CLIENT_NATIVE_VERSION` because "version feeds the
@@ -51,16 +53,20 @@ removing the freeze; it may be a relic of an older `@expo/fingerprint`.
 - Default client behaviour: on cold start, check in the background (`fallbackToCacheTimeout: 0`, no
   startup delay), download, apply on the **next** cold start. `useUpdates()` exposes
   `isUpdatePending` for an optional "restart to update" affordance.
-- Rollback: `eas update:rollback` republishes a previous update or rolls clients back to the embedded
-  bundle. Percentage rollouts exist (`--rollout-percentage`).
-- `eas fingerprint:compare --build-id <last production build>` answers "is the working tree still
-  compatible with the last store build?" — that is the train's OTA-or-build decision.
+- Restore a known-good update with `eas update:republish --group <id>`; `eas update:rollback` rolls
+  clients back to the bundle embedded in the store binary. Percentage rollouts exist
+  (`--rollout-percentage`).
+- `eas fingerprint:compare --build-id <last iOS production build> --build-id <last Android production build> --environment production`
+  answers "is the working tree still compatible with the last store build?" on both platforms — that is
+  the train's OTA-or-build decision. The local `npx @expo/fingerprint` hash covers both platforms in one
+  value and is what the run record tabulates; `app.config.ts` reads no EAS environment variables, so the
+  environment flag changes nothing today.
 - Sentry: OTA bundles need their own source maps. Wrap `metro.config.js` with
   `getSentryExpoConfig` (assigns Debug IDs; must compose with the existing serializer-cache config) and
-  upload with `npx @sentry/expo-upload-sourcemaps dist` after each publish. Symbolication matches on
+  upload with `npx sentry-expo-upload-sourcemaps dist` (the bin `@sentry/react-native` installs) after each publish. Symbolication matches on
   Debug ID, not release/dist, so the native-release derivation in `sentry-sink.native.ts` stays as is.
-  This upload runs in Actions, so `SENTRY_AUTH_TOKEN` also needs to be a repo secret (today it is only
-  an EAS env var, because native builds run on EAS).
+  This upload runs in Actions; `SENTRY_AUTH_TOKEN` already reaches Actions as an organisation secret
+  (the web-bundle publish uses it), separate from the EAS env var native builds read.
 
 ## Proposed integration
 
@@ -75,7 +81,7 @@ removing the freeze; it may be a relic of an older `@expo/fingerprint`.
    `pnpm run -w build:main` → `eas update --channel <channel> --environment production --message "app v<ver> <sha>" --non-interactive`
    → Sentry source-map upload. `EXPO_PUBLIC_*` values are inlined at publish time, same as a build.
 3. **Train change** (roadmap `docs/releases` recipe): after the web-bundle leg, run
-   `eas fingerprint:compare --build-id <last production build id>`. Unchanged → dispatch the OTA
+   the fingerprint comparison above (both platforms). Unchanged → dispatch the OTA
    workflow at the merge SHA and record the update group id in the run record. Changed → `build.yml`
    as today (the new binary embeds the JS; no OTA needed for that release). Keep a periodic store build
    anyway (each fingerprint move, or roughly monthly) so new installs start close to current.
@@ -89,7 +95,8 @@ removing the freeze; it may be a relic of an older `@expo/fingerprint`.
 ## Open questions for Paul
 
 - **Mobile monthly active devices.** Below 3,000 the Starter plan covers it at $0; at 10,000 it is
-  $35/month plus bandwidth (10,000 × 4 releases × 9 MB ≈ 360 GB → ~$26). Read it off App Store Connect
+  $19 (plan) + $35 (7,000 × $0.005) = $54/month plus bandwidth (10,000 × 4 releases × 9 MB ≈ 360 GB
+  → ~$26). Read it off App Store Connect
   and the Play console; I cannot.
 - Whether the first OTA-capable binary should be 1.10.16 (carrying #2054 as well) or wait for a
   fingerprint-moving change that needs a build anyway.
