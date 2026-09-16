@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cart line — quantity, edit and remove, five ways, tablet and desktop</title>
+<style>
+:root{--u:4px;--fs:14px;--ctl:44px;--row:44px;--r:8px;--hair:1px;
+  --bg:oklch(0.975 0.004 250);--fg:oklch(0.22 0.02 250);--card:oklch(1 0 0);--muted:oklch(0.955 0.006 250);--muted-fg:oklch(0.50 0.02 250);--border:oklch(0.90 0.008 250);
+  --primary:oklch(0.50 0.18 240);--primary-fg:oklch(0.99 0.01 240);--ok:oklch(0.55 0.16 155);--warn:oklch(0.68 0.16 70);--bad:oklch(0.58 0.2 25);--destructive:oklch(0.55 0.22 25);--ease:cubic-bezier(.2,.8,.2,1)}
+*{box-sizing:border-box}
+body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;padding:0 24px 24px}
+h1{font-size:20px;margin:0 0 4px} .lead{color:#374151;margin:0 0 16px;max-width:110ch;font-size:13px} .lead b{color:#111} kbd{font:inherit;border:1px solid #9ca3af;border-radius:4px;padding:0 4px;background:#fff;font-size:12px}
+.strip{position:sticky;top:0;z-index:50;background:#111827;color:#e5e7eb;padding:10px 24px;margin:0 -24px 20px;display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;font-size:12px}
+.strip .g{display:flex;align-items:center;gap:8px} .strip .g>span{color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;font-size:10.5px;font-weight:700}
+.seg{display:inline-flex;border:1px solid #374151;border-radius:8px;overflow:hidden} .seg button{border:0;background:transparent;color:#d1d5db;padding:5px 9px;font-size:12px;cursor:pointer;font-family:inherit} .seg button.on{background:#f3f4f6;color:#111827;font-weight:600}
+.board{display:grid;grid-template-columns:repeat(2,440px);gap:28px 32px}
+.panel .cap{display:flex;align-items:baseline;gap:10px;margin:0 0 8px;font-size:13px;color:#374151;flex-wrap:wrap} .panel .cap b{font-size:15px;color:#111} .panel .cap .n{font-weight:700;color:#6b7280}
+.panel .note{font-size:12.5px;color:#374151;margin:8px 0 0;line-height:1.45} .panel .note b{color:#111}
+.frame{width:440px;height:560px;background:var(--card);color:var(--fg);font-size:var(--fs);line-height:1.35;font-variant-numeric:tabular-nums;border:1px solid #c9ced6;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;position:relative;user-select:none;outline:none}
+.frame *{font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;font-family:inherit;cursor:pointer;text-align:left}
+svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.mut{color:var(--muted-fg)} .b{font-weight:600} .money{white-space:nowrap} .grow{flex:1;min-width:0}
+.bar{height:44px;display:flex;align-items:center;gap:8px;padding:0 8px 0 16px;border-bottom:var(--hair) solid var(--border);flex:none} .bar .av{width:30px;height:30px;border-radius:50%;background:var(--muted);font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-left:auto}
+.ibtn{width:44px;height:44px;border-radius:var(--r);display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg)} .ibtn:hover{background:var(--muted);color:var(--fg)}
+.custrow{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 16px;border-bottom:var(--hair) solid var(--border);flex:none} .chip{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;border-radius:999px;border:var(--hair) solid var(--border)}
+.cth{display:grid;grid-template-columns:44px 1fr 70px 80px;gap:12px;padding:0 16px;height:32px;align-items:center;color:var(--muted-fg);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;border-bottom:var(--hair) solid var(--border);flex:none} .cth .r{text-align:right}
+.lines{flex:1;min-height:0;overflow:hidden;position:relative}
+.line{position:relative;border-bottom:var(--hair) solid var(--border);overflow:hidden;background:var(--card)}
+.line .lb{display:grid;grid-template-columns:44px 1fr 70px 80px;gap:12px;padding:6px 16px;min-height:44px;align-items:center;background:var(--card);position:relative;z-index:1;transition:transform 220ms var(--ease),background-color 120ms} .line.drag .lb{transition:none}
+.line .q{height:36px;min-width:36px;border:var(--hair) solid var(--border);border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-weight:600} .line .r{text-align:right} .line .sub{display:block;color:var(--muted-fg);font-size:12px} .line .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.line.sel .lb{background:color-mix(in srgb,var(--primary) 8%,var(--card))} .line.gone{max-height:0;border-bottom:0;transition:max-height 220ms var(--ease)} .line{max-height:200px}
+.frame[data-pt="mouse"] .line:hover .lb{background:var(--muted)} .frame[data-pt="mouse"] .line.sel:hover .lb{background:color-mix(in srgb,var(--primary) 11%,var(--card))}
+/* the stepper, wherever it appears */
+.step{display:inline-flex;align-items:center;height:36px;border:var(--hair) solid var(--border);border-radius:6px;background:var(--card);overflow:hidden;flex:none} .step button{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;color:var(--fg)} .step button:hover{background:var(--muted)} .step b{min-width:28px;text-align:center}
+.step button.del{color:var(--destructive)}
+/* small icon actions */
+.acts{display:inline-flex;gap:2px} .act{width:36px;height:36px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg)} .act:hover{background:var(--muted);color:var(--fg)} .act.del:hover{background:color-mix(in oklch,var(--destructive) 12%,transparent);color:var(--destructive)}
+/* 01 the selected line expands */
+.line .more{display:none;align-items:center;gap:8px;padding:0 16px 10px;background:color-mix(in srgb,var(--primary) 8%,var(--card))} .line.sel .more{display:flex} .more .grow{flex:1} .more .btn{height:36px;padding:0 12px;border:var(--hair) solid var(--border);border-radius:6px;display:inline-flex;align-items:center;gap:6px;background:var(--card)} .more .btn.del{color:var(--destructive);border-color:color-mix(in oklch,var(--destructive) 45%,transparent)}
+/* 02 the quantity is the button: popover */
+.qpop{position:absolute;left:16px;top:calc(100% - 6px);z-index:6;display:flex;align-items:center;gap:8px;background:var(--card);border:var(--hair) solid var(--border);border-radius:10px;box-shadow:0 8px 24px oklch(0.2 0.02 250 / .16);padding:6px;animation:pop 140ms var(--ease)} @keyframes pop{from{opacity:0;transform:scale(.94)}} .qpop .step{border:0} .qpop .kb{display:grid;grid-template-columns:repeat(3,40px);gap:2px} .qpop .kb button{height:34px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-weight:600} .qpop .kb button:hover{background:var(--muted)}
+.line.pop{overflow:visible;z-index:5}
+/* 03 reveal in place (mouse) / swipe (touch) */
+.line .hov{display:none;position:absolute;right:12px;top:50%;transform:translateY(-50%);z-index:2;background:var(--card);padding-left:10px;box-shadow:-12px 0 10px -6px var(--card)}
+.frame[data-pt="mouse"] .line:hover .hov,.frame[data-pt="mouse"] .line.sel .hov{display:inline-flex}
+.line .un{position:absolute;top:0;bottom:0;right:0;display:flex;z-index:0} .line .un button{width:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;font-weight:600;color:var(--fg);background:var(--muted)} .line .un button.del{background:var(--destructive);color:#fff} .line .un button.del svg{stroke:#fff}
+.frame[data-pt="mouse"] .line .un{display:none}
+/* 04 the … menu */
+.menu{position:absolute;right:12px;top:calc(100% - 6px);z-index:6;background:var(--card);border:var(--hair) solid var(--border);border-radius:10px;box-shadow:0 8px 24px oklch(0.2 0.02 250 / .16);padding:6px;min-width:200px;animation:pop 140ms var(--ease)} .menu>button,.menu .mrow{display:flex;align-items:center;gap:10px;width:100%;height:38px;padding:0 10px;border-radius:6px;white-space:nowrap} .menu>button:hover{background:var(--muted)} .menu .mrow .step{margin-left:auto;height:30px} .menu .mrow .step button{width:30px;height:30px} .menu .del{color:var(--destructive)}
+/* 05 the selected line: stepper in place */
+.line.sel .q.grow-step{display:none} .line .stepin{display:none} .line.sel .stepin{display:inline-flex}
+.totals{margin-top:auto;padding:12px 16px 8px;border-top:var(--hair) solid var(--border);flex:none} .totals div{display:flex;justify-content:space-between;padding:3px 0} .totals .big{font-size:18px;font-weight:700;padding-top:6px}
+.cf{display:flex;gap:8px;padding:0 16px 16px;flex:none} .btn{height:44px;border:var(--hair) solid var(--border);border-radius:var(--r);padding:0 16px;display:inline-flex;align-items:center;justify-content:center;font-weight:500;flex:1} .btn.p{background:var(--primary);color:var(--primary-fg);border-color:transparent;font-weight:600;height:56px;font-size:16px;flex:3} .btn.d{color:var(--destructive);flex:1;border-color:color-mix(in oklch,var(--destructive) 55%,transparent)}
+.hint{position:absolute;left:0;right:0;bottom:0;padding:6px 16px;font-size:11.5px;color:var(--muted-fg);background:var(--muted);border-top:var(--hair) solid var(--border);z-index:3}
+.toast{position:absolute;left:16px;right:16px;bottom:150px;background:var(--fg);color:var(--bg);border-radius:8px;padding:10px 12px;font-size:13px;display:flex;align-items:center;gap:8px;z-index:8;animation:pop 140ms var(--ease)} .toast button{margin-left:auto;font-weight:600;color:oklch(0.85 0.1 240)}
+.frame:focus-visible{box-shadow:0 0 0 2px var(--primary)}
+</style>
+</head>
+<body>
+<div class="strip">
+  <div class="g"><span>Pointer</span><div class="seg" data-k="pt"><button data-v="touch" class="on">Tablet · touch</button><button data-v="mouse">Desktop · mouse</button></div></div>
+  <div class="g"><span style="color:#d1d5db;text-transform:none;letter-spacing:0;font-weight:400">Every frame is live: tap or click a line, drag it left on touch, hover on mouse. With a line selected, <kbd>+</kbd> <kbd>−</kbd> change quantity and <kbd>⌫</kbd> removes (click the frame first).</span></div>
+</div>
+<h1>Cart line — quantity, edit and remove, five ways</h1>
+<p class="lead">Paul: the stepper is right for cart quantity but takes too much room, so it should only be active on the active line; the swipe is intuitive on a tablet, but a row that slides on mouse-over would confuse desktop users, who still need two things on every line: <b>edit</b> (the line's details) and <b>remove</b>. Five answers, each drawn for touch and for mouse. The <b>Pointer</b> switch shows both; the same code runs, the reveal changes.</p>
+<div class="board" id="board"></div>
+<script>
+const I={plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',minus:'<svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>',chevd:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',x:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',pen:'<svg viewBox="0 0 24 24"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3M13.5 6.5l3 3"/></svg>',trash:'<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>',dots:'<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg>',info:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>',sliders:'<svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg>',drawer:'<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="9" rx="2"/><path d="M3 15h18M10 17.5h4M6 11V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/></svg>',keypad:'<svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h.01M12 7h.01M16 7h.01M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01"/></svg>'};
+const CUR='£'; const fmt=n=>`${CUR}${n.toFixed(2)}`;
+const G={pt:'touch'};
+const LINES=()=>[{q:2,n:'Flat white',s:'Oat milk',p:3.2},{q:1,n:'Sourdough loaf',s:'',p:4.2},{q:1,n:'Tote bag',s:'Black · M',p:14},{q:3,n:'Croissant',s:'',p:2.4}];
+
+function makeCart(frame,mode){
+  const S={lines:LINES(),sel:null,pop:null,menu:null,undo:null};
+  const head=`<div class="bar"><b>UK Store</b><span class="ibtn" style="margin-left:auto">${I.drawer}</span><span class="av">DC</span></div><div class="custrow"><span class="mut">Customer</span><span class="chip">Guest ${I.chevd}</span><span class="grow"></span><span class="ibtn">${I.plus}</span><span class="ibtn">${I.sliders}</span></div><div class="cth"><span>Qty</span><span>Item</span><span class="r">Price</span><span class="r">Total</span></div>`;
+  const stepper=(i,cls='')=>`<span class="step ${cls}"><button data-act="dec" data-i="${i}" class="${S.lines[i].q<=1?'del':''}">${S.lines[i].q<=1?I.trash:I.minus}</button><b>${S.lines[i].q}</b><button data-act="inc" data-i="${i}">${I.plus}</button></span>`;
+  const acts=(i)=>`<span class="acts"><button class="act" data-act="edit" data-i="${i}" title="Edit line">${I.pen}</button><button class="act del" data-act="del" data-i="${i}" title="Remove">${I.trash}</button></span>`;
+  const under=(i)=>`<div class="un"><button data-act="edit" data-i="${i}">${I.pen}Edit</button><button class="del" data-act="del" data-i="${i}">${I.trash}Remove</button></div>`;
+  const line=(l,i)=>{
+    const sel=S.sel===i; const name=`<span class="nm">${l.n}${l.s?`<span class="sub">${l.s}</span>`:''}</span>`; const money=`<span class="r mut money">${fmt(l.p)}</span><span class="r b money">${fmt(l.q*l.p)}</span>`;
+    switch(mode){
+      case 'expand': /* 01 tap selects; the selected line grows a second row with the stepper, edit and remove */
+        return `<div class="line ${sel?'sel':''}" data-i="${i}" data-act="sel"><div class="lb"><span class="q">${l.q}</span>${name}${money}</div><div class="more">${stepper(i)}<span class="grow"></span><button class="btn" data-act="edit" data-i="${i}">${I.pen}Edit</button><button class="btn del" data-act="del" data-i="${i}">${I.trash}Remove</button></div></div>`;
+      case 'qtybtn': /* 02 the quantity box is the button: a popover with stepper and keypad; name opens edit; remove is swipe or hover */
+        return `<div class="line ${S.pop===i?'pop':''}" data-i="${i}">${under(i)}<div class="lb"><button class="q" data-act="qpop" data-i="${i}">${l.q}</button><button class="nm" data-act="edit" data-i="${i}">${l.n}${l.s?`<span class="sub">${l.s}</span>`:''}</button>${money}<span class="hov"><button class="act del" data-act="del" data-i="${i}" title="Remove">${I.trash}</button></span></div>${S.pop===i?`<div class="qpop">${stepper(i)}<span class="kb">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-act="setq" data-i="${i}" data-q="${n}">${n}</button>`).join('')}</span></div>`:''}</div>`;
+      case 'reveal': /* 03 nothing on the line until you hover (mouse) or swipe (touch); the stepper lives in the revealed strip too */
+        return `<div class="line ${sel?'sel':''}" data-i="${i}" data-act="sel">${under(i)}<div class="lb"><span class="q">${l.q}</span>${name}${money}<span class="hov">${stepper(i)}${acts(i)}</span></div></div>`;
+      case 'menu': /* 04 a … at the line end, always there; its menu holds quantity, edit, remove */
+        return `<div class="line ${S.menu===i?'pop':''}" data-i="${i}">${under(i)}<div class="lb" style="grid-template-columns:44px 1fr 70px 80px 36px"><span class="q">${l.q}</span>${name}${money}<button class="act" data-act="menu" data-i="${i}">${I.dots}</button></div>${S.menu===i?`<div class="menu"><div class="mrow">Quantity ${stepper(i)}</div><button data-act="edit" data-i="${i}">${I.pen}Edit line</button><button class="del" data-act="del" data-i="${i}">${I.trash}Remove from cart</button></div>`:''}</div>`;
+      case 'inplace': /* 05 tap selects; on the selected line the quantity box becomes the stepper in place and edit/remove appear at the end; the others stay compact */
+        return `<div class="line ${sel?'sel':''}" data-i="${i}" data-act="sel">${under(i)}<div class="lb" style="grid-template-columns:${sel?'110px 1fr 74px 76px':'44px 1fr 70px 80px'}">${sel?stepper(i):`<span class="q">${l.q}</span>`}${name}${sel?`<span class="r"><span class="b money">${fmt(l.q*l.p)}</span><span class="sub">${l.q} × ${fmt(l.p)}</span></span>`:money}${sel?`<span class="hov" style="display:inline-flex;position:static;transform:none;box-shadow:none;padding:0;background:transparent">${acts(i)}</span>`:''}</div></div>`;
+    }};
+  const render=()=>{
+    const sub=S.lines.reduce((a,l)=>a+l.q*l.p,0), vat=sub*0.2;
+    frame.dataset.pt=G.pt; frame.tabIndex=0;
+    frame.innerHTML=`${head}<div class="lines">${S.lines.map(line).join('')}${S.undo?`<div class="toast">${I.trash}${S.undo.n} removed<button data-act="undo">Undo</button></div>`:''}</div><div class="totals"><div class="mut"><span>Subtotal</span><span>${fmt(sub)}</span></div><div class="mut"><span>VAT 20%</span><span>${fmt(vat)}</span></div><div class="big"><span>Total</span><span>${fmt(sub+vat)}</span></div></div><div class="cf"><span class="btn d">Void</span><span class="btn p">Checkout ${fmt(sub+vat)}</span></div>`;
+  };
+  const remove=(i)=>{ const [l]=S.lines.splice(i,1); S.sel=null;S.pop=null;S.menu=null; S.undo={...l,at:i}; render(); clearTimeout(S.ut); S.ut=setTimeout(()=>{S.undo=null;render();},2600); };
+  frame.addEventListener('click',e=>{
+    const t=e.target.closest('[data-act]'); const act=t?t.dataset.act:null; const i=t?+t.dataset.i:null;
+    if(!t){S.sel=null;S.pop=null;S.menu=null;render();return;}
+    if(act==='inc'){S.lines[i].q++;render();return;} if(act==='dec'){ if(S.lines[i].q<=1) remove(i); else {S.lines[i].q--;render();} return;}
+    if(act==='setq'){S.lines[i].q=+t.dataset.q;S.pop=null;render();return;}
+    if(act==='del'){remove(i);return;} if(act==='undo'){S.lines.splice(S.undo.at,0,{q:S.undo.q,n:S.undo.n,s:S.undo.s,p:S.undo.p});S.undo=null;render();return;}
+    if(act==='edit'){ frame.querySelector('.lines').insertAdjacentHTML('beforeend',`<div class="toast">${I.pen}Edit line: ${S.lines[i].n} (opens the line slide-out)</div>`); setTimeout(()=>{const x=frame.querySelector('.toast'); if(x&&x.textContent.startsWith('Edit')) x.remove();},1500); return;}
+    if(act==='qpop'){S.pop=S.pop===i?null:i;S.menu=null;render();return;}
+    if(act==='menu'){S.menu=S.menu===i?null:i;S.pop=null;render();return;}
+    if(act==='sel'){ if(e.target.closest('.hov,.step,.acts,.more,.un')) return; S.sel=S.sel===i?null:i; render(); return; }
+  });
+  frame.addEventListener('keydown',e=>{ if(S.sel==null) return; if(e.key==='+'||e.key==='='){S.lines[S.sel].q++;render();} else if(e.key==='-'){ if(S.lines[S.sel].q>1){S.lines[S.sel].q--;render();} } else if(e.key==='Backspace'||e.key==='Delete'){remove(S.sel);} else if(e.key==='ArrowDown'){S.sel=Math.min(S.lines.length-1,S.sel+1);render();} else if(e.key==='ArrowUp'){S.sel=Math.max(0,S.sel-1);render();} else return; e.preventDefault(); });
+  /* touch: drag a line left to reveal edit and remove; past 240 px it removes */
+  frame.addEventListener('pointerdown',e=>{
+    if(G.pt!=='touch') return; const ln=e.target.closest('.line'); if(!ln||!ln.querySelector('.un')||e.target.closest('button')) return;
+    const lb=ln.querySelector('.lb'); const x0=e.clientX; let dx=0; const open=ln.classList.contains('open'); ln.classList.add('drag'); ln.setPointerCapture(e.pointerId);
+    const move=ev=>{dx=Math.min(0,Math.max(-260,ev.clientX-x0-(open?160:0))); lb.style.transform=`translateX(${dx}px)`;};
+    const up=()=>{ln.removeEventListener('pointermove',move);ln.removeEventListener('pointerup',up);ln.removeEventListener('pointercancel',up); ln.classList.remove('drag');
+      if(dx<-240){lb.style.transform='translateX(-100%)';setTimeout(()=>remove(+ln.dataset.i),160);} else if(dx<-80){lb.style.transform='translateX(-160px)';ln.classList.add('open');} else {lb.style.transform='';ln.classList.remove('open');} };
+    ln.addEventListener('pointermove',move);ln.addEventListener('pointerup',up);ln.addEventListener('pointercancel',up);
+  });
+  render(); return {S,render};
+}
+const panel=(n,mode,title,touch,mouse,note)=>`<section class="panel" data-n="${String(n).padStart(2,'0')}-${title.toLowerCase().replace(/[^a-z0-9]+/g,'-')}"><div class="cap"><span class="n">${String(n).padStart(2,'0')}</span><b>${title}</b></div><div class="frame" data-mode="${mode}"></div><p class="note"><b>Touch:</b> ${touch} <b>Mouse:</b> ${mouse} ${note}</p></section>`;
+document.getElementById('board').innerHTML=[
+ panel(1,'expand','The selected line expands','tap a line and it grows a second row: the stepper, Edit, Remove. Tap again or elsewhere to close. Swipe still removes.','the same on click, plus hover tint. Keys: + − ⌫.','One idea, both pointers, no hidden gesture. Costs a row of height on the active line only, and the cart never has to reflow anything but that line.'),
+ panel(2,'qtybtn','The quantity is the button','tap the quantity box for a popover with the stepper and a keypad; tap the name to edit; swipe left to remove.','click the box for the same popover; hover shows a trash at the line end; the name is a link to edit.','The line stays exactly as it is. Quantity gets a real keypad, which a cashier typing 12 will thank you for. Remove is the only thing that differs by pointer.'),
+ panel(3,'reveal','Nothing until you ask','swipe left to reveal Edit and Remove under the line.','hover the line and the stepper, Edit and Remove fade in at its end, over the total, without the line moving. Click a line to pin them.','The cleanest cart at rest. The mouse version is the Gmail and Linear pattern: reveal in place, never slide. The tablet version is the iOS Mail pattern. The two never have to look alike, only to do the same things.'),
+ panel(4,'menu','A … on every line','tap … for a menu: quantity stepper, Edit line, Remove. Swipe left still works.','click … for the same menu. Keys too.','The explicit version: one visible control per line, no gesture needed on either pointer, and it takes 36 px at the line end, not a stepper\'s 110. This is Lightspeed R and Shopify\'s answer. Dullest, safest.'),
+ panel(5,'inplace','Stepper in place on the selected line','tap a line: its quantity box widens into − n + where it was, the total stacks over "n × price", and Edit and Remove appear at the end. Other lines stay compact. Swipe removes.','click a line for the same; hover tints. Keys: + − ⌫.','Paul\'s brief exactly: the stepper only exists on the active line. The reflow is one line\'s columns. The trap is the tap target: the line must select on a tap anywhere, so the stepper\'s buttons need to swallow their own taps (they do here).'),
+].join('');
+window.APPS=[...document.querySelectorAll('.frame')].map(f=>makeCart(f,f.dataset.mode));
+document.querySelector('.strip').addEventListener('click',e=>{const b=e.target.closest('button[data-v]'); if(!b) return; const seg=b.closest('.seg'); G[seg.dataset.k]=b.dataset.v; seg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); APPS.forEach(a=>{a.S.sel=null;a.S.pop=null;a.S.menu=null;a.render();});});
+</script>
+</body>
+</html>

@@ -358,6 +358,35 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     resets) is a new idiom; the hold, the +, the price, the stepper, the word and the swipe stay
     in the strip for comparison. Also fixed: `.in` on the count pill matched the search field's
     class and inherited its padding; the state class is now `.has`.
+    **Paul (2026-09-17): with that. The table has the last column anyway for the variable products'
+    chevron, so the + sits there and becomes the quantity; whether the whole row or only the icon
+    is the button he leaves to me. Ruled by that: the whole row is the button, the + stays as the
+    affordance and becomes the count.**
+36. **The cart line: quantity, edit, remove, on touch and on mouse (2026-09-17).** Paul: the
+    stepper is right for cart quantity but takes too much room, so only on the active line; the
+    swipe is really intuitive on a tablet but a row sliding on mouse-over would confuse desktop
+    users, who need edit (the line's details) and remove on every line; workshop it. New live
+    board `pos-register/board-cart.html` (captures in `screens/board-cart/`, touch and mouse for
+    each): 01 **the selected line expands** (a second row: stepper, Edit, Remove; both pointers
+    the same) · 02 **the quantity is the button** (a popover with the stepper and a 1–9 keypad;
+    the name opens edit; remove is swipe on touch, a trash on hover on mouse) · 03 **nothing until
+    you ask** (swipe left reveals Edit and Remove on touch; on mouse, hovering fades the stepper,
+    Edit and Remove in at the line's end, over the total, the line never moves; click pins them)
+    · 04 **a … on every line** (menu: quantity stepper, Edit line, Remove; Lightspeed R and
+    Shopify's answer) · 05 **the stepper in place on the selected line** (the quantity box widens
+    into − n +, the total stacks over n × price, Edit and Remove appear at the end; the others
+    stay compact; Paul's brief exactly). All five: − at 1 becomes a trash; remove shows a 2.6 s
+    Undo toast; on desktop + − ⌫ ↑ ↓ act on the selected line. **Pick: 03 with 02's quantity
+    popover** (the line never reflows, quantity gets a keypad); 05 if the stepper should be seen.
+37. **The products footer (2026-09-17).** Paul's screenshot of today's app: *Tax based on: Shop
+    base address* left, *Showing 24 of 209 ⟳* right; important, and cluttered; icons perhaps.
+    Five treatments under `Footer` on board 4: today's text · icons with the values (a percent
+    glyph for the tax basis, a list glyph for the count) · one compact 32 px line (*% Shop base ·
+    12 of 1,204 · ⟳*) · the tax basis moves to the cart's customer row as a chip (it is a property
+    of the sale, set by the customer's address, not of the product list) and the footer keeps
+    count and sync · no footer (count inside the search field's right end, sync in the toolbar,
+    tax chip in the cart). **Pick: tax basis to the cart, count and sync as the compact line.**
+    The filter pills now carry the app's icons (box, tag, star, folder), as in the screenshot.
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·

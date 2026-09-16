@@ -37,6 +37,7 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
   <a href="#ideas">Personality — ideas + live touches</a>
   <a href="#personality">Personality — 6 directions</a>
   <a href="#void">Void | Checkout — round five</a>
+  <a href="#cartline">Cart line — quantity, edit, remove (live)</a>
   <a href="#table4">POS table — bar, slide, header, footer, add (live)</a>
   <a href="#table3">POS table — the surface, 10 ways</a>
   <a href="#table1">POS table — 7 idioms in situ</a>
@@ -52,6 +53,7 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
   <h2>What changed</h2>
   <div class="meta">Newest first. Every push adds a line here; the date is the day it landed.</div>
   <div class="log">
+    <div><time>2026-09-17 · later 4</time><span><b>The cart line, five ways, and the footer.</b> Paul: with that, the row is the button and the last column holds the + (the variable products need the column anyway) which becomes the count; the stepper is right for cart quantity but too big to be always there, so only on the active line; the swipe is intuitive on a tablet but a row sliding on mouse-over would confuse desktop users, who still need edit and remove on every line. New live board, five cart lines with a Tablet / Desktop switch: the selected line expands · the quantity is the button (popover with keypad) · nothing until you ask (swipe on touch, reveal in place on mouse) · a … on every line · the stepper in place on the selected line. Keys work on desktop: + − ⌫. And from Paul's screenshot of today's app, the products footer: a <kbd>Footer</kbd> switch on the table board tries today's text, icons with values, one compact line, the tax basis moved to the cart's customer row, and no footer at all (count beside the search, sync in the toolbar). The filter pills carry the app's icons now.</span></div>
     <div><time>2026-09-17 · later 3</time><span><b>Row is the button; how the tablet POS apps add.</b> Paul: a native tablet app, swiping to add is too many moves, the whole row as a button is more intuitive; research how the other POS systems do it. Square, Shopify POS, Lightspeed X and R, Loyverse, Toast, Clover, Zettle read from their own help pages: the tile or row is the button, one tap adds, a second tap adds another, quantity is edited on the cart line, none swipes to add, long-press is for editing the layout. Clover alone has a quantity bar (×1 ×2 ×3 …) you tap before the item. The board's default is now <i>Row is the button</i>, Clover's quantity-first is a new idiom in the strip, the rest stay for comparison. Also fixed: the count pill was inheriting the search field's padding.</span></div>
     <div><time>2026-09-17 · later 2</time><span><b>Swipe to add.</b> Paul: the cart will have a slide to remove, so explore a slide to add, maybe with the stepper, and on desktop it will have to reveal itself on mouse-over. Seventh idiom in the strip: drag a row to the right and a green <i>Add</i> comes out from under it, let go past a third of the way and the item is in; with a mouse, hovering a row slides it left to show a − n + stepper at its end. The count sits in the narrow last column as before.</span></div>
     <div><time>2026-09-17 · later</time><span><b>Add: + adds, hold + for quantity.</b> Paul likes the + that turns into a stepper but the column it needs is a waste of space, and likes the press-and-hold. Now the default on the board: the + as today, a tap adds one, holding the + for half a second opens the − n + stepper as a popover on the row, and once the item is in the + shows the count in its place. Works on variations too. The other five idioms stay in the strip for comparison.</span></div>
@@ -90,7 +92,9 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
   <div class="ask"><ol>
     <li><b>Table surface:</b> today's, the floating sheet, or all white. All three live on the board with the slide; pick there.</li>
     <li><b>Header:</b> caps over a hairline, sentence case, tinted band, or bold with a rule. My pick: sentence case on all white; caps on the other two.</li>
-    <li><b>Add to cart:</b> the row is the button, as every tablet POS does it; live as the default, a count at the row end. Open: is a quantity gesture wanted in the list at all (hold, or Clover's ×n bar), or does quantity live on the cart line as it does everywhere else?</li>
+    <li><b>Add to cart:</b> ruled: the row is the button; the last column keeps the + (chevron for variable) which becomes the count. Quantity lives on the cart line.</li>
+    <li><b>Cart line:</b> five ways on the new board, each for touch and mouse. My pick: 03 nothing until you ask (swipe on tablet, reveal in place on desktop) with 02's quantity popover on the box, so the line never reflows. 05 is your brief exactly if you prefer the stepper visible on the active line.</li>
+    <li><b>Footer:</b> five treatments under <kbd>Footer</kbd> on the table board. My pick: the tax basis moves to the cart's customer row (it is a property of the sale, not of the list), the footer keeps the count and sync as one compact line.</li>
     <li><b>The slide:</b> is the breadcrumb enough on its own, or should the Category pill also fill (it does now)? And should the filter bar travel with the table, or stay put (it stays now)?</li>
     <li><b>Tab style:</b> amount + dot, or amount over status. Both under <kbd>Tab style</kbd>; add orders with the <kbd>12 open orders</kbd> state.</li>
     <li><b>Touches:</b> ruled 2026-09-16; the settle replaces the count-up. Doodle still open.</li>
@@ -155,6 +159,12 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
   <h2>Void | Checkout — round five <a class="open" href="pos-register/board-void.html">open on its own ↗</a></h2>
   <div class="what">Five executions of the pair and the decided phone ⋮. The four rejected rounds are folded into a collapsed section at the bottom.</div>
   <iframe src="pos-register/board-void.html" style="height:1000px" loading="lazy" title="Void board"></iframe>
+</section>
+
+<section id="cartline">
+  <h2>Cart line — quantity, edit and remove, five ways <a class="open" href="pos-register/board-cart.html">open on its own ↗</a></h2>
+  <div class="what">Live. Switch <kbd>Tablet</kbd> / <kbd>Desktop</kbd> in the strip. Tap or click a line; drag it left on tablet; hover on desktop. With a line selected, <kbd>+</kbd> <kbd>−</kbd> <kbd>⌫</kbd> work after clicking the frame.</div>
+  <iframe src="pos-register/board-cart.html" style="height:2100px" loading="lazy" title="Cart line board"></iframe>
 </section>
 
 <section id="table4">
