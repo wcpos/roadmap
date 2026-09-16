@@ -42,6 +42,7 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
   <a href="#orderboard">Orders — 12 list idioms</a>
   <div class="grp">Words</div>
   <a href="README.md">Decisions list (README)</a>
+  <a href="../../design/2026-09-16-icon-set-research.md">Icon set research (doc)</a>
   <a href="../../design/2026-09-12-direction.md">The direction</a>
 </nav>
 <main>
@@ -49,6 +50,7 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
   <h2>What changed</h2>
   <div class="meta">Newest first. Every push adds a line here; the date is the day it landed.</div>
   <div class="log">
+    <div><time>2026-09-16 · icons decided</time><span><b>Icons decided: Tabler at 1.5 px, for a while.</b> Paul: "let's go with that for a while … huge icons is quite good as well." The register now defaults to it; the switch keeps Hugeicons and the old Lucide for comparison only. All the research (families, coverage against the app's 133 Font Awesome icons, prices, rulings, and a name-mapping appendix) is written up in <a href="../../design/2026-09-16-icon-set-research.md">docs/design/2026-09-16-icon-set-research.md</a> so it is not lost.</span></div>
     <div><time>2026-09-16 · store glyph</time><span><b>Store icon.</b> Paul likes the Hugeicons store. Tabler has an awning storefront too (<code>building-store</code>) beside its <code>cash-register</code>; the Tabler entries in the register's switch now use the awning for the rail. Comparison strip: <a href="icons/store.html">icons/store.html</a>.</span></div>
     <div><time>2026-09-16 · coverage</time><span><b>Coverage against the app's full icon list.</b> The monorepo bundles 134 Font Awesome Pro solid icons. Matched against the six remaining families: Tabler 131 and Hugeicons 132 of 133 (both effectively complete), Phosphor 126 (only the cart variants missing), Solar 114, Iconoir 115, Plump free subset 91. Table at the bottom of the icons board. Solar, Iconoir and Plump also hand-mapped in the register's switch.</span></div>
     <div><time>2026-09-16 · icons, narrowed</time><span><b>Icons narrowed.</b> Paul: out are MingCute, Flex, Freehand, Sharp; no duotone; Tabler is nice but a little too thick. The switch now holds Lucide (today), Phosphor, Tabler, Tabler at 1.5 px (the same drawings with the stroke thinned), Hugeicons, Solar, Iconoir, Plump.</span></div>
@@ -78,7 +80,6 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
   <h2>Waiting on Paul</h2>
   <div class="ask"><ol>
     <li><b>Tab style:</b> amount + dot, or amount over status. Both under <kbd>Tab style</kbd>; add orders with the <kbd>12 open orders</kbd> state.</li>
-    <li><b>Icons:</b> against the app's full 133, Tabler and Hugeicons are complete and Phosphor misses only the cart variants; Solar and Iconoir have real gaps. My pick: Tabler at 1.5 px.</li>
     <li><b>Touches:</b> ruled 2026-09-16; the settle replaces the count-up. Doodle still open.</li>
     <li><b>Theme:</b> Market Stall is liked; is it the direction, or a mood to borrow from?</li>
     <li><b>Void:</b> you said 1 or 5. Outlined red matched is the default; filled red is in the switch. Say which when you see them in whichever personality wins, since the answer changes with the canvas.</li>
@@ -121,7 +122,7 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
 
 <section id="register">
   <h2>POS register — live <a class="open" href="pos-register/index.html">open on its own ↗</a></h2>
-  <div class="what">The dark strip is not the design. <b>Icons</b> swaps every glyph in the register between twelve families. <b>Touches</b> has <kbd>before</kbd> / <kbd>after</kbd> to flip all seven personality behaviours at once, then one toggle each. <b>Theme</b> carries the five personality directions beside the defaults. <b>State</b> jumps to every state; <b>Tab style</b> holds the two candidates left. Decided and no longer switchable: tender close top-right, Void outlined red, Legacy as the header text toggle. Everything in the frame is live: tap a tile, swipe a line, open the ⋮ or the order chip, hold to void, check out, type on the keypad, take a terminal payment.</div>
+  <div class="what">The dark strip is not the design. <b>Icons</b> is decided (Tabler at 1.5 px) and keeps Hugeicons and Lucide for comparison. <b>Touches</b> has <kbd>before</kbd> / <kbd>after</kbd> to flip all seven personality behaviours at once, then one toggle each. <b>Theme</b> carries the five personality directions beside the defaults. <b>State</b> jumps to every state; <b>Tab style</b> holds the two candidates left. Decided and no longer switchable: tender close top-right, Void outlined red, Legacy as the header text toggle. Everything in the frame is live: tap a tile, swipe a line, open the ⋮ or the order chip, hold to void, check out, type on the keypad, take a terminal payment.</div>
   <iframe src="pos-register/index.html" style="height:1060px" loading="lazy" title="POS register prototype"></iframe>
 </section>
 

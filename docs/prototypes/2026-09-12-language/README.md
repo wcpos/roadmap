@@ -266,6 +266,9 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     91. Table on the icons board. **Tabler and Hugeicons are complete; Phosphor near enough; Solar
     and Iconoir have real gaps (no cash register in Solar, no receipt in Iconoir). Pick: Tabler at
     1.5 px.**
+    **Decided (Paul, 2026-09-16): Tabler at 1.5 px, for a while; Hugeicons is the standing
+    alternative ("quite good as well"). Tabler's rail glyph is `building-store`. Full write-up:
+    `docs/design/2026-09-16-icon-set-research.md`.**
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·
