@@ -255,6 +255,10 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     and the duotone fill is the personality. If spending: Streamline Plump is the only warm set;
     the hybrid (buy Plump, commission the 15 brand-carrying glyphs) is the route to a set that is
     nobody else's.
+    Paul (2026-09-16): out are MingCute, Flex, Freehand, Sharp; no duotone; Tabler is nice but a
+    little too thick → a Tabler variant with the stroke thinned to 1.5 px added to the register's
+    *Icons* switch, which now holds Lucide, Phosphor, Tabler, Tabler 1.5, Hugeicons, Solar,
+    Iconoir, Plump.
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·
