@@ -37,6 +37,7 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
   <a href="#ideas">Personality — ideas + live touches</a>
   <a href="#personality">Personality — 6 directions</a>
   <a href="#void">Void | Checkout — round five</a>
+  <a href="#table4">POS table — filter bar + slide (live)</a>
   <a href="#table3">POS table — the surface, 10 ways</a>
   <a href="#table1">POS table — 7 idioms in situ</a>
   <a href="#table2">POS table — 9 more</a>
@@ -51,6 +52,7 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
   <h2>What changed</h2>
   <div class="meta">Newest first. Every push adds a line here; the date is the day it landed.</div>
   <div class="log">
+    <div><time>2026-09-16 · filter bar, slide</time><span><b>Filter bar, and the table slides for variations and categories.</b> Paul is between today's surface and the floating sheet, and wants two changes drawn now: the filter bar under the search (it is coming back, and users will add their own filter buttons), and variations that slide the table left with a breadcrumb at the top instead of expanding down, the same for a category picked from a row chip or from the bar. New live board, two frames (today's surface, the floating sheet), the app's real pills (Stock, Featured, On sale, Category, Tag, Brand, a quick filter, +). Press Tote bag or a category to see it slide.</span></div>
     <div><time>2026-09-16 · table surface</time><span><b>The product table's surface, ten ways.</b> Paul: not happy with the background of the table, no box around it either, find the compromise; every table Mobbin has, five or six really different versions. Swept Mobbin (44 screens, 40 apps, all saved in the board), then a new board: the same decided table and cart with only the surfaces moved. Today for reference · the white sheet (Attio, Twenty, Linear: data white, chrome tinted) · all white, one seam (Shopify, Fresha, Stripe) · the header band (Employment Hero, Hotjar) · rows as cards (Navan, Zillow) · zebra, no lines (Uxcel, Supabase) · the well, a sunken tint (Gemini, Revolut) · the floating sheet, shadow and no stroke (Podia, Airwallex) · the grid (Dovetail, Neon) · the dark till (Fey, Revolut). Under each panel, the Mobbin screens it came from.</span></div>
     <div><time>2026-09-16 · icons decided</time><span><b>Icons decided: Tabler at 1.5 px, for a while.</b> Paul: "let's go with that for a while … huge icons is quite good as well." The register now defaults to it; the switch keeps Hugeicons and the old Lucide for comparison only. All the research (families, coverage against the app's 133 Font Awesome icons, prices, rulings, and a name-mapping appendix) is written up in <a href="../../design/2026-09-16-icon-set-research.md">docs/design/2026-09-16-icon-set-research.md</a> so it is not lost.</span></div>
     <div><time>2026-09-16 · store glyph</time><span><b>Store icon.</b> Paul likes the Hugeicons store. Tabler has an awning storefront too (<code>building-store</code>) beside its <code>cash-register</code>; the Tabler entries in the register's switch now use the awning for the rail. Comparison strip: <a href="icons/store.html">icons/store.html</a>.</span></div>
@@ -81,7 +83,8 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
 <section id="ask">
   <h2>Waiting on Paul</h2>
   <div class="ask"><ol>
-    <li><b>Table surface:</b> ten treatments on the new board, the Mobbin originals under each. Pick a direction (my pick: 02 the white sheet, with 04 the header band as the runner-up), then it goes into the register at every width and theme.</li>
+    <li><b>Table surface:</b> narrowed by Paul to today's or the floating sheet. Both are live on the filter-bar board with the slide; pick there.</li>
+    <li><b>The slide:</b> is the breadcrumb enough on its own, or should the Category pill also fill (it does now)? And should the filter bar travel with the table, or stay put (it stays now)?</li>
     <li><b>Tab style:</b> amount + dot, or amount over status. Both under <kbd>Tab style</kbd>; add orders with the <kbd>12 open orders</kbd> state.</li>
     <li><b>Touches:</b> ruled 2026-09-16; the settle replaces the count-up. Doodle still open.</li>
     <li><b>Theme:</b> Market Stall is liked; is it the direction, or a mood to borrow from?</li>
@@ -145,6 +148,12 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
   <h2>Void | Checkout — round five <a class="open" href="pos-register/board-void.html">open on its own ↗</a></h2>
   <div class="what">Five executions of the pair and the decided phone ⋮. The four rejected rounds are folded into a collapsed section at the bottom.</div>
   <iframe src="pos-register/board-void.html" style="height:1000px" loading="lazy" title="Void board"></iframe>
+</section>
+
+<section id="table4">
+  <h2>POS table — filter bar, and the slide for variations and categories <a class="open" href="pos-register/board-table-4.html">open on its own ↗</a></h2>
+  <div class="what">Live. Two surfaces (today's, the floating sheet). Press <kbd>Category</kbd> or a row's category chip, or press Tote bag; <kbd>Products</kbd> in the breadcrumb comes back. <kbd>+</kbd> on a variation adds it to the cart.</div>
+  <iframe src="pos-register/board-table-4.html" style="height:1560px" loading="lazy" title="POS table filter bar and slide"></iframe>
 </section>
 
 <section id="table3">

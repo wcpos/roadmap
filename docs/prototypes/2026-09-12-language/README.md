@@ -286,6 +286,23 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     page is the commonest shape for a product list but it is the box Paul ruled out; row-cards
     and zebra are the two ways to keep a grey page without a box. **Pick: 02 the white sheet,
     runner-up 04 the header band.** Waiting on Paul.
+    **Paul (2026-09-16): leaning to today's surface or the floating sheet, not sure.**
+32. **Filter bar, and the slide (2026-09-16).** Paul: the filter bar from the existing app comes
+    back under the search, and grows (users will add their own filter buttons); variations should
+    not expand the table down but slide it left, with a breadcrumb at the top so the whole table
+    becomes the variations view; a category chosen from a row's chip or from the bar does the same.
+    Drawn live in `pos-register/board-table-4.html` (captures in `screens/board-table-4/`) on both
+    surfaces he is between. The bar holds the app's own pills, read from
+    `packages/core/src/screens/main/pos/products/filter-bar/pos-filter-bar.tsx`: Stock status,
+    Featured, On sale, Category, Tag, Brand, the user's quick filters and an add button. The
+    Category column in the table is a chip; pressing it, or a category from the pill's menu,
+    slides the table left (280 ms, the old pane drifts 24% and fades) and a breadcrumb *Products ›
+    Coffee · 4 products* takes the top; the Category pill fills with the name and its × is another
+    way back. A variable product slides to *Products › Tote bag · 3 variations* with the product's
+    image, SKU and starting price on the right of the crumb, attribute columns in the table, + adds
+    the variation to the cart. On the floating sheet the sheet is the stage and its corners clip
+    the slide. Waiting on Paul: which surface; whether the bar stays put or travels; whether the
+    pill should fill.
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·
