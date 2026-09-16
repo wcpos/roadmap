@@ -259,6 +259,13 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     little too thick → a Tabler variant with the stroke thinned to 1.5 px added to the register's
     *Icons* switch, which now holds Lucide, Phosphor, Tabler, Tabler 1.5, Hugeicons, Solar,
     Iconoir, Plump.
+    Coverage against the app's full list (134 Font Awesome Pro solid icons in
+    `packages/components/src/icon/svg/fontawesome/solid`, 133 without the WCPOS mark), matched by
+    name and synonyms against each family's free collection: Tabler 131, Hugeicons 132, Phosphor
+    126 (only cart-plus / cart-check variants missing), Solar 114, Iconoir 115, Plump free subset
+    91. Table on the icons board. **Tabler and Hugeicons are complete; Phosphor near enough; Solar
+    and Iconoir have real gaps (no cash register in Solar, no receipt in Iconoir). Pick: Tabler at
+    1.5 px.**
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·
