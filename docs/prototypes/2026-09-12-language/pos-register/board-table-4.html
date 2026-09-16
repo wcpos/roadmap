@@ -30,7 +30,7 @@ svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:
 .fbar{display:flex;align-items:center;gap:6px;padding:0 0 10px 16px;flex:none;overflow:hidden;position:relative;mask-image:linear-gradient(90deg,#000 calc(100% - 40px),transparent)}
 .pill{display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 10px 0 12px;border-radius:999px;border:var(--hair) solid var(--border);background:var(--card);color:var(--fg);white-space:nowrap;font-size:13px} .pill svg{width:14px;height:14px;color:var(--muted-fg)} .pill.on{background:var(--fg);color:var(--bg);border-color:var(--fg);font-weight:600} .pill.on svg{color:inherit} .pill.on .x{margin-left:2px} .pill.q{border-style:dashed} .pill.add{padding:0 10px;color:var(--muted-fg)}
 .pill:active{background:var(--muted)} .pill.on:active{background:var(--fg);filter:brightness(1.3)}
-.menu{position:absolute;left:16px;top:38px;z-index:5;background:var(--card);border:var(--hair) solid var(--border);border-radius:10px;box-shadow:0 8px 24px oklch(0.2 0.02 250 / .14);padding:6px;min-width:180px} .menu button{display:flex;align-items:center;gap:8px;width:100%;height:36px;padding:0 10px;border-radius:6px;white-space:nowrap} .menu button:hover{background:var(--muted)} .menu button .n{margin-left:auto;color:var(--muted-fg);font-size:12px}
+.fwrap{position:relative;flex:none} .menu{position:absolute;left:16px;top:36px;z-index:5;background:var(--card);border:var(--hair) solid var(--border);border-radius:10px;box-shadow:0 8px 24px oklch(0.2 0.02 250 / .14);padding:6px;min-width:180px} .menu button{display:flex;align-items:center;gap:8px;width:100%;height:36px;padding:0 10px;border-radius:6px;white-space:nowrap} .menu button:hover{background:var(--muted)} .menu button .n{margin-left:auto;color:var(--muted-fg);font-size:12px}
 /* the stage the table slides on */
 .stage{position:relative;flex:1;min-height:0;overflow:hidden;margin-left:16px}
 .pane{position:absolute;inset:0;display:flex;flex-direction:column;background:inherit;transition:transform 280ms var(--ease),opacity 280ms var(--ease);will-change:transform}
@@ -87,11 +87,10 @@ const cartLines=()=>[['2','Flat white','Oat milk',3.2],['1','Sourdough loaf','',
 
 function makeApp(frame){
   const S={view:'products',cat:null,prod:null,lines:cartLines(),menu:false};
-  const fbar=()=>`<div class="fbar">
+  const fbar=()=>`<div class="fwrap"><div class="fbar">
     ${S.cat?`<button class="pill on" data-act="pop">Category · ${S.cat}<span class="x">${I.x}</span></button>`:`<button class="pill" data-act="menu">Category ${I.chevd}</button>`}
     <span class="pill">Stock ${I.chevd}</span><span class="pill">On sale</span><span class="pill">Featured</span><span class="pill">Tag ${I.chevd}</span><span class="pill q">Morning menu</span><span class="pill add">${I.plus}</span>
-    ${S.menu?`<div class="menu">${CATS.map(c=>`<button data-act="cat" data-c="${c}">${c}<span class="n">${P.filter(p=>p.c===c).length}</span></button>`).join('')}</div>`:''}
-  </div>`;
+  </div>${S.menu?`<div class="menu">${CATS.map(c=>`<button data-act="cat" data-c="${c}">${c}<span class="n">${P.filter(p=>p.c===c).length}</span></button>`).join('')}</div>`:''}</div>`;
   const hd=(g,cols,r)=>`<div class="thead" style="grid-template-columns:${g}">${cols.map((c,i)=>`<div class="th ${r.includes(i)?'r':''}">${c}</div>`).join('')}</div>`;
   const row=(p,i)=>`<div class="tr" data-i="${i}" style="grid-template-columns:${G}"><div class="td c"><span class="img"></span></div><div class="td">${p.v?`<button class="nm" data-act="var" data-i="${i}">${p.n}<span class="sub">${p.v.length} variations</span></button>`:`${p.n}<span class="sub">${p.sku}</span>`}</div><div class="td"><button class="cat" data-act="cat" data-c="${p.c}">${p.c}</button></div><div class="td r money">${p.v?'from '+fmt(Math.min(...p.v.map(x=>x[3]))):fmt(p.p)}</div><div class="td r">${stock(p.s)}</div><div class="td c"><button class="add" data-act="${p.v?'var':'add'}" data-i="${i}">${p.v?I.chevr:I.plus}</button></div></div>`;
   const crumb=(here,cnt,extra='')=>`<div class="crumb"><button data-act="pop">${I.chevl}Products</button><span class="sep">›</span><span class="here">${here}</span><span class="cnt">· ${cnt}</span>${extra}</div>`;
@@ -107,16 +106,16 @@ function makeApp(frame){
   const full=()=>{frame.innerHTML=`${rail}<div class="prod">${toolbar}${fbar()}<div class="stage">${pane()}</div></div><div class="divider"></div>${cart()}`;};
   const slide=(dir)=>{ /* dir: 'push' (new comes from the right) or 'pop' (new comes from the left) */
     const stage=frame.querySelector('.stage'); const old=stage.querySelector('.pane:not(.exit-l):not(.exit-r)');
-    frame.querySelector('.fbar').outerHTML=fbar();
+    frame.querySelector('.fwrap').outerHTML=fbar();
     stage.insertAdjacentHTML('beforeend',pane()); const nw=stage.lastElementChild;
     nw.classList.add(dir==='push'?'enter-r':'enter-l',dir==='push'?'over':'under'); if(old){old.classList.add(dir==='push'?'under':'over');}
     void nw.offsetWidth; requestAnimationFrame(()=>{nw.classList.remove('enter-r','enter-l'); if(old) old.classList.add(dir==='push'?'exit-l':'exit-r');});
     setTimeout(()=>{ if(old) old.remove(); nw.classList.remove('over','under'); },320); };
   frame.addEventListener('click',e=>{
-    const t=e.target.closest('[data-act]'); if(!t){ if(S.menu){S.menu=false;frame.querySelector('.fbar').outerHTML=fbar();} return; }
+    const t=e.target.closest('[data-act]'); if(!t){ if(S.menu){S.menu=false;frame.querySelector('.fwrap').outerHTML=fbar();} return; }
     const act=t.dataset.act;
-    if(act==='menu'){S.menu=!S.menu;frame.querySelector('.fbar').outerHTML=fbar();return;}
-    if(act==='cat'){const c=t.dataset.c;S.menu=false;if(S.view==='cat'&&S.cat===c){frame.querySelector('.fbar').outerHTML=fbar();return;}const dir=S.view==='products'?'push':'push';S.view='cat';S.cat=c;S.prod=null;slide(dir);return;}
+    if(act==='menu'){S.menu=!S.menu;frame.querySelector('.fwrap').outerHTML=fbar();return;}
+    if(act==='cat'){const c=t.dataset.c;S.menu=false;if(S.view==='cat'&&S.cat===c){frame.querySelector('.fwrap').outerHTML=fbar();return;}const dir=S.view==='products'?'push':'push';S.view='cat';S.cat=c;S.prod=null;slide(dir);return;}
     if(act==='var'){S.view='var';S.prod=+t.dataset.i;slide('push');return;}
     if(act==='pop'){S.menu=false;if(S.view==='var'&&S.cat){S.view='cat';S.prod=null;}else{S.view='products';S.cat=null;S.prod=null;}slide('pop');return;}
     if(act==='add'){const p=P[+t.dataset.i];const r=t.closest('.tr');r.classList.add('flash');setTimeout(()=>r.classList.remove('flash'),300);S.lines.push([1,p.n,'',p.p,1]);frame.querySelector('.cart').outerHTML=cart();return;}
