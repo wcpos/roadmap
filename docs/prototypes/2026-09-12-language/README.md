@@ -215,6 +215,10 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     undo never dialogs, the scanner as a character, time of day, the receipt the customer keeps,
     opt-in sounds, physical feedback. **Pick: all but the doodle stay; the doodle needs a better
     drawing.**
+    Paul (2026-09-16): likes the Market Stall theme and some of the touches, but the raised
+    pence are too much for the default themes. **Ruled: price-tag pence only when the theme is
+    Market Stall; the default themes keep plain numbers and the system typeface.** What personality
+    is still missing is open.
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·
