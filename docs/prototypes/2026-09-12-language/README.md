@@ -219,6 +219,17 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     pence are too much for the default themes. **Ruled: price-tag pence only when the theme is
     Market Stall; the default themes keep plain numbers and the system typeface.** What personality
     is still missing is open.
+27. **Signature layouts.** Asked which lever to pull next (layout, motion, brand layer, copy),
+    Paul chose layout. `layouts/board.html` (captures `layouts/screens/board/`): five shapes for
+    the same register, same sale: (1) **the till roll** — catalogue | a strip of receipt paper the
+    sale prints onto | the money (amount at display size, Card, Cash, Park, Void); (2) **the menu
+    board** — products as a three-column menu with dotted leaders, the sale as a drawer along the
+    bottom with item chips and Take; (3) **keypad first** — a huge amount display, the keypad with
+    Take as its long key, quick keys for the most-sold products, catalogue and cart in a side
+    sheet; (4) **two faces** — the right 40 % is the customer's: their items in large type, the
+    total, "Hi Sarah", tap to pay; (5) **the counter** — the sale runs across the top as cards with
+    a dark running-total board at the end, products take the full width below. **Pick: the till
+    roll**, with the counter second for wide screens.
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·
