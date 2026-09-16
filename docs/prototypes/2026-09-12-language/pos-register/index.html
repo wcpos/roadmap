@@ -167,7 +167,7 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .av{width:calc(var(--ctl) - 14px);height:calc(var(--ctl) - 14px);border-radius:50%;background:var(--muted);color:var(--fg);font-size:calc(var(--fs)*.8);font-weight:700;display:inline-flex;align-items:center;justify-content:center}
 .custrow{display:flex;align-items:center;gap:calc(var(--u)*2);padding:calc(var(--u)*2) calc(var(--u)*2) calc(var(--u)*2) calc(var(--u)*4);border-bottom:var(--hair) solid var(--border);flex:none}
 /* cart table: a header row (rule: columns can be confused), qty · item · price · total */
-.cart-th{display:grid;grid-template-columns:var(--qty) 1fr var(--pricew) var(--totalw);gap:calc(var(--u)*3);align-items:center;padding:0 calc(var(--u)*4);height:max(calc(var(--row) - 12px),28px);color:var(--muted-fg);font-size:calc(var(--fs)*.78);font-weight:600;letter-spacing:.05em;text-transform:uppercase;border-bottom:var(--hair) solid var(--border);background:var(--muted);flex:none}
+.cart-th{display:grid;grid-template-columns:var(--qty) 1fr var(--pricew) var(--totalw);gap:calc(var(--u)*3);align-items:center;padding:0 calc(var(--u)*4);height:max(calc(var(--row) - 8px),32px);color:var(--muted-fg);font-size:calc(var(--fs)*.8);font-weight:600;letter-spacing:.05em;text-transform:uppercase;border-bottom:var(--hair) solid var(--border);flex:none}   /* Paul 2026-09-16: one header language, the table's; no band */
 .cartcol{--qty:calc(var(--ctl) - 8px);--pricew:calc(var(--fs)*5);--totalw:calc(var(--fs)*5.4)}
 .cart-th .r{text-align:right}
 .lines{flex:1;overflow:auto;min-height:0}

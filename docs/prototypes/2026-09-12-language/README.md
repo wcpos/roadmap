@@ -303,6 +303,11 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     the variation to the cart. On the floating sheet the sheet is the stage and its corners clip
     the slide. Waiting on Paul: which surface; whether the bar stays put or travels; whether the
     pill should fill.
+33. **One header language (2026-09-16).** Paul: the cart's header was a tinted band while the
+    products table's is text over a hairline, "that just looks weird". The table's is the decided
+    language (decision 22), so the cart header drops the band and takes the same height, type and
+    hairline, in the register and on boards 3 and 4. The band survives nowhere; if a band is ever
+    wanted it is the surface board's 04 for both tables at once, not one of them.
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·
