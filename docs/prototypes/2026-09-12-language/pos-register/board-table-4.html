@@ -40,6 +40,7 @@ svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:
 /* the stage the table slides on */
 .stage{position:relative;flex:1;min-height:0;overflow:hidden;margin-left:16px}
 .pane{position:absolute;inset:0;display:flex;flex-direction:column;background:inherit;transition:transform 280ms var(--ease),opacity 280ms var(--ease);will-change:transform}
+.pane .rows{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden}
 .pane.enter-r{transform:translateX(100%)} .pane.exit-l{transform:translateX(-24%);opacity:.35}
 .pane.enter-l{transform:translateX(-24%);opacity:.35} .pane.exit-r{transform:translateX(100%)} .pane.under{z-index:0} .pane.over{z-index:1}
 .crumb{display:flex;align-items:center;gap:4px;height:40px;flex:none;color:var(--muted-fg);font-size:13px;padding-right:8px} .crumb button{display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 8px 0 4px;border-radius:6px;color:var(--fg);font-weight:500} .crumb button:hover{background:var(--muted)} .crumb .sep{color:var(--border);font-size:16px} .crumb .here{color:var(--fg);font-weight:600;padding:0 4px} .crumb .num{margin-left:4px}
@@ -51,7 +52,7 @@ svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:
 .frame[data-h="band"] .thead{background:var(--muted);height:36px;border-bottom:0;border-radius:6px 6px 0 0}
 .frame[data-h="strong"] .thead{text-transform:none;letter-spacing:0;font-size:13px;font-weight:600;color:var(--fg);height:36px;border-bottom:2px solid var(--fg)}
 .tr{display:grid;align-items:center;min-height:44px;border-bottom:var(--hair) solid var(--border);transition:background-color 120ms;position:relative} .tr:hover{background:var(--muted)} .tr.flash{background:color-mix(in oklch,var(--primary) 12%,transparent)}
-.td{padding:6px 12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .td.r{text-align:right} .td.c{display:flex;justify-content:center;align-items:center} .td .sub{display:block;color:var(--muted-fg);font-size:12px}
+.td{padding:4px 12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .td.r{text-align:right} .td.c{display:flex;justify-content:center;align-items:center} .td .sub{display:block;color:var(--muted-fg);font-size:12px}
 .td button.nm{display:block;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cat{display:inline-flex;align-items:center;height:24px;padding:0 9px;border-radius:999px;background:var(--muted);color:var(--muted-fg);font-size:12px;font-weight:500;border:var(--hair) solid transparent} .cat:hover{border-color:var(--border);color:var(--fg);background:var(--card)}
 .img{width:40px;height:40px;border-radius:6px;background:var(--muted);display:inline-block}
@@ -74,7 +75,7 @@ svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:
 /* footer: what the app's table footer carries (tax basis select · showing n of m · sync) */
 .foot .fi{width:22px;height:22px;border-radius:5px;background:var(--muted);display:inline-flex;align-items:center;justify-content:center;margin-right:2px} .foot .fi svg{width:13px;height:13px}
 .foot.compact{height:32px;font-size:12px;gap:8px} .foot.compact .tax svg{width:13px;height:13px} .foot.compact .dot{color:var(--border)} .foot.compact .sync{width:26px;height:26px} .foot.compact .sync svg{width:14px;height:14px}
-.chip.taxchip{color:var(--muted-fg);font-size:13px;gap:4px} .chip.taxchip svg{width:14px;height:14px} .chip.taxchip b{color:var(--fg)}
+.chip.taxchip{color:var(--muted-fg);font-size:13px;gap:4px;white-space:nowrap;height:36px} .chip.taxchip svg{width:14px;height:14px} .chip.taxchip b{color:var(--fg)}
 .in .incount{margin-left:auto;font-size:12px;color:var(--muted-fg)}
 .foot{display:flex;align-items:center;gap:12px;height:40px;padding:0 4px 0 12px;border-top:var(--hair) solid var(--border);color:var(--muted-fg);flex:none;margin-top:auto;font-size:12.5px} .foot .tax{display:inline-flex;align-items:center;gap:4px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .foot .tax b{color:var(--fg);font-weight:500} .foot .tax svg{width:14px;height:14px} .foot .sync{width:32px;height:32px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center} .foot .sync:hover{background:var(--muted);color:var(--fg)} .foot .sync svg{width:16px;height:16px}
 .divider{width:8px;flex:none;position:relative} .divider::after{content:"";position:absolute;left:2px;top:50%;width:4px;height:48px;margin-top:-24px;border-radius:2px;background:var(--border)}
@@ -169,10 +170,10 @@ function makeApp(frame){
   const crumb=(here,cnt,extra='')=>`<div class="crumb"><button data-act="pop">${I.chevl}Products</button><span class="sep">›</span><span class="here">${here}</span><span class="num">· ${cnt}</span>${extra}</div>`;
   const pane=()=>{
     if(S.view==='var'){const p=P[S.prod];const two=!!p.v[0][1];const k=two?'var2':'var1';
-      return `<div class="pane">${crumb(p.n,`${p.v.length} variations`,`<span class="pv"><span class="img"></span>${p.sku} · from ${fmt(Math.min(...p.v.map(x=>x[3])))}</span>`)}${hd(k,two?['','Colour','Size','SKU','Price','Stock','']:['','Variety','SKU','Price','Stock',''],two?[4,5]:[3,4])}${p.v.map((v,j)=>vrow(p,v,j,k,two)).join('')}${foot(`${p.v.length} variations of ${p.n}`)}</div>`;}
+      return `<div class="pane">${crumb(p.n,`${p.v.length} variations`,`<span class="pv"><span class="img"></span>${p.sku} · from ${fmt(Math.min(...p.v.map(x=>x[3])))}</span>`)}${hd(k,two?['','Colour','Size','SKU','Price','Stock','']:['','Variety','SKU','Price','Stock',''],two?[4,5]:[3,4])}<div class="rows">${p.v.map((v,j)=>vrow(p,v,j,k,two)).join('')}</div>${foot(`${p.v.length} variations of ${p.n}`)}</div>`;}
     const k=S.view==='cat'?'cat':'products';
     const list=S.view==='cat'?P.map((p,i)=>[p,i]).filter(([p])=>p.c===S.cat):P.map((p,i)=>[p,i]);
-    return `<div class="pane">${S.view==='cat'?crumb(S.cat,`${list.length} products`):''}${hd(k,['','Name','Category','Price','Stock',''],[3,4])}${list.map(([p,i])=>row(p,i,k)).join('')}${foot(S.view==='cat'?`Showing ${list.length} of ${list.length}`:'Showing 12 of 1,204')}</div>`;};
+    return `<div class="pane">${S.view==='cat'?crumb(S.cat,`${list.length} products`):''}${hd(k,['','Name','Category','Price','Stock',''],[3,4])}<div class="rows">${list.map(([p,i])=>row(p,i,k)).join('')}</div>${foot(S.view==='cat'?`Showing ${list.length} of ${list.length}`:'Showing 12 of 1,204')}</div>`;};
   const cart=()=>`<div class="cart"><div class="bar"><b>UK Store</b><span class="ibtn" style="margin-left:auto">${I.drawer}</span><span class="av">DC</span></div><div class="custrow"><span class="mut">Customer</span><span class="chip">Guest ${I.chevd}</span>${G.f==='cart'||G.f==='none'?`<span class="chip taxchip" title="Tax based on">${I.percent}Shop base ${I.chevd}</span>`:''}<span class="grow"></span><span class="ibtn">${I.plus}</span><span class="ibtn">${I.sliders}</span></div>
     <div class="cth"><span>Qty</span><span>Item</span><span class="r">Price</span><span class="r">Total</span></div>
     ${S.lines.map(([q,n,s,p,nw])=>`<div class="line ${nw?'new':''}"><span class="q">${q}</span><span>${n}${s?`<span class="sub">${s}</span>`:''}</span><span class="r mut money">${fmt(p)}</span><span class="r b money">${fmt(q*p)}</span></div>`).join('')}
