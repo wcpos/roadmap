@@ -20,7 +20,7 @@ Copy the boxes below into the run record's **Checklist** section and fill them i
 
 ## C. Cut
 
-- [ ] **C1. Monorepo `release/<ver>`** via the git-data API: `apps/main/package.json` bump only; PR ready; auto-merge queued. The release PR's own Merge Gate runs (≈15 min); the push Deploy is NOT waited on for a version bump (Paul, 2026-09-16) — the publish workflows take `override_release_gate='I accept a red main'`.
+- [ ] **C1. Monorepo `release/<ver>`** via the git-data API: `apps/main/package.json` bump only; PR opened and **admin-merged in the same breath** (`gh pr merge <n> -R wcpos/monorepo --merge --admin`). A pure version bump waits for NOTHING: not its own Merge Gate, not the push Deploy (Paul, 2026-09-16: *"There's absolutely no reason to wait for the tests"*). The publish workflows take `override_release_gate='I accept a red main'`. The same applies to the free, Pro and electron bump PRs once their turn comes. A `main` → `next` sync is NOT a version bump and rides its gate (F1).
 - [ ] **C2. Free `release/<ver>`** via the git-data API: `package.json`, `readme.txt` (`Stable tag` + the B2 entry under `== Changelog ==`), `woocommerce-pos.php` (header + `VERSION`). Opened as a **draft** and left a draft until D4.
 - [ ] **C3. Pro `release/<ver>`**: `package.json`, `CHANGELOG.md` (B2 entry + "(Bundles free plugin <ver>. …)"), `woocommerce-pos-pro.php` (header + `VERSION`). Draft until free is published.
 - [ ] **C4. Electron `release/<desk ver>`**: `package.json` + `.monorepo-ref` = `v<app ver>` (a tag, never a SHA). Draft until the app tag exists.
