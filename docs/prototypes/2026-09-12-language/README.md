@@ -269,6 +269,23 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     **Decided (Paul, 2026-09-16): Tabler at 1.5 px, for a while; Hugeicons is the standing
     alternative ("quite good as well"). Tabler's rail glyph is `building-store`. Full write-up:
     `docs/design/2026-09-16-icon-set-research.md`.**
+31. **The table's surface (2026-09-16).** Paul: not happy with the background of the table, but no
+    box around it; find a compromise; every table Mobbin has, in five or six really different
+    versions. Today the products sit on the page grey beside a white cart panel. Mobbin sweep: 44
+    screens from 40 apps, saved to `pos-register/screens/mobbin-tables/` and shown under each
+    panel of `pos-register/board-table-3.html` (captures in `screens/board-table-3/`). Ten
+    treatments of the decided table, surfaces only: 01 today · 02 the white sheet, data white and
+    chrome tinted (Attio, Twenty, folk, Linear) · 03 all white, one seam (Shopify, Fresha,
+    Klaviyo, Stripe, Square) · 04 the header band (Employment Hero, Hotjar, Copy.ai, Wix) · 05 rows
+    as cards on the grey (Navan, Zillow, Aboard, Luma) · 06 zebra, no lines (Uxcel, Supabase,
+    Adaline) · 07 the well, a sunken tint with no stroke (Gemini, Revolut Business, Cursor) · 08
+    the floating sheet, shadow and no stroke (Podia, Airwallex, Workable, Deel) · 09 the grid
+    (Dovetail, Neon, Attio, Retool, n8n) · 10 the dark till, white sheet beside a charcoal cart
+    (Fey, Revolut Business, Linear dark). What Mobbin shows: data-first products (CRMs, Linear,
+    Shopify's index) put the records on white and the chrome on grey; the white card on a grey
+    page is the commonest shape for a product list but it is the box Paul ruled out; row-cards
+    and zebra are the two ways to keep a grey page without a box. **Pick: 02 the white sheet,
+    runner-up 04 the header band.** Waiting on Paul.
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·
