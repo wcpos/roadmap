@@ -36,6 +36,9 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   await scn('paid'); await page.waitForTimeout(300); const after = await page.locator('#frame .paidwrap').innerHTML();
   await flip('0'); await page.waitForTimeout(300); const before = await page.locator('#frame .paidwrap').innerHTML(); await flip('1');
   if (after === before) errors.push('before/after did not change the paid screen: ' + after);
+  // the icon sets, session open
+  for (const k of ['ph','ph-duotone','tabler','hugeicons','solar','mingcute','iconoir','streamline-plump','streamline-flex','streamline-freehand','streamline-sharp']) { await set('icons', k); await scn('open'); await shot(`icons-${k}`); }
+  await set('icons', 'lucide');
   // phone: the dots
   await set('w', 'phone'); await scn('open'); await shot('phone-dots'); await page.click('[data-act="vmenu"]'); await shot('phone-dots-open'); await set('w', 'tablet');
   await browser.close();
