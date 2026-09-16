@@ -2,19 +2,24 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>POS table — filter bar, and the table slides for variations and categories (board 4)</title>
+<title>POS table — filter bar, the slide, header, footer, and the add button (board 4)</title>
 <style>
 :root{--u:4px;--fs:14px;--ctl:44px;--row:44px;--r:8px;--hair:1px;--tile:64px;
   --bg:oklch(0.975 0.004 250);--fg:oklch(0.22 0.02 250);--card:oklch(1 0 0);--muted:oklch(0.955 0.006 250);--muted-fg:oklch(0.50 0.02 250);--border:oklch(0.90 0.008 250);
   --primary:oklch(0.50 0.18 240);--primary-fg:oklch(0.99 0.01 240);--rail:oklch(0.955 0.014 250);--rail-fg:oklch(0.40 0.03 250);--rail-border:oklch(0.90 0.012 250);
   --ok:oklch(0.55 0.16 155);--warn:oklch(0.68 0.16 70);--bad:oklch(0.58 0.2 25);--info:oklch(0.58 0.14 240);--neutral:oklch(0.62 0.01 250);--destructive:oklch(0.55 0.22 25);--ease:cubic-bezier(.2,.8,.2,1)}
 *{box-sizing:border-box}
-body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;padding:24px}
-h1{font-size:20px;margin:0 0 4px} .lead{color:#374151;margin:0 0 20px;max-width:110ch;font-size:13px} .lead b{color:#111} .lead kbd{font:inherit;border:1px solid #9ca3af;border-radius:4px;padding:0 4px;background:#fff}
+body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;padding:0 24px 24px}
+h1{font-size:20px;margin:0 0 4px} .lead{color:#374151;margin:0 0 16px;max-width:110ch;font-size:13px} .lead b{color:#111} .lead kbd,.note kbd{font:inherit;border:1px solid #9ca3af;border-radius:4px;padding:0 4px;background:#fff}
+.strip{position:sticky;top:0;z-index:50;background:#111827;color:#e5e7eb;padding:10px 24px;margin:0 -24px 20px;display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;font-size:12px}
+.strip .g{display:flex;align-items:center;gap:8px} .strip .g>span{color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;font-size:10.5px;font-weight:700}
+.seg{display:inline-flex;border:1px solid #374151;border-radius:8px;overflow:hidden} .seg button{border:0;background:transparent;color:#d1d5db;padding:5px 9px;font-size:12px;cursor:pointer;font-family:inherit} .seg button.on{background:#f3f4f6;color:#111827;font-weight:600}
 .board{display:flex;flex-direction:column;gap:36px}
 .panel .cap{display:flex;align-items:baseline;gap:12px;margin:0 0 8px;font-size:13px;color:#374151;flex-wrap:wrap;max-width:1024px} .panel .cap b{font-size:15px;color:#111} .panel .cap .n{font-weight:700;color:#6b7280}
 .panel .note{font-size:12.5px;color:#374151;max-width:1024px;margin:8px 0 0;line-height:1.45}
-.frame{width:1024px;height:600px;background:var(--bg);color:var(--fg);font-size:var(--fs);line-height:1.35;font-variant-numeric:tabular-nums;border:1px solid #c9ced6;border-radius:12px;overflow:hidden;display:flex;position:relative}
+h2{font-size:16px;margin:28px 0 4px} .refs{display:flex;gap:10px;margin:10px 0 0;max-width:1024px;flex-wrap:wrap} .refs a{display:flex;flex-direction:column;gap:4px;width:334px;text-decoration:none;color:#374151;font-size:11.5px}
+.refs img{width:334px;height:230px;object-fit:cover;object-position:top;border:1px solid #c9ced6;border-radius:6px;background:#fff} .refs a:hover img{border-color:#111}
+.frame{width:1024px;height:600px;background:var(--bg);color:var(--fg);font-size:var(--fs);line-height:1.35;font-variant-numeric:tabular-nums;border:1px solid #c9ced6;border-radius:12px;overflow:hidden;display:flex;position:relative;user-select:none}
 .frame *{font-variant-numeric:tabular-nums}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;font-family:inherit;cursor:pointer;text-align:left}
 svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
@@ -27,49 +32,69 @@ svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:
 .in{height:44px;border:var(--hair) solid var(--border);border-radius:var(--r);background:var(--card);padding:0 12px 0 40px;flex:1;color:var(--muted-fg);display:flex;align-items:center;position:relative} .in svg{position:absolute;left:12px;top:13px}
 .ibtn{width:44px;height:44px;border-radius:var(--r);display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg)}
 /* the filter bar: the app's pills (stock status, featured, on sale, category, tag, brand), a user's quick filter, and add */
+.fwrap{position:relative;flex:none}
 .fbar{display:flex;align-items:center;gap:6px;padding:0 0 10px 16px;flex:none;overflow:hidden;position:relative;mask-image:linear-gradient(90deg,#000 calc(100% - 40px),transparent)}
 .pill{display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 10px 0 12px;border-radius:999px;border:var(--hair) solid var(--border);background:var(--card);color:var(--fg);white-space:nowrap;font-size:13px} .pill svg{width:14px;height:14px;color:var(--muted-fg)} .pill.on{background:var(--fg);color:var(--bg);border-color:var(--fg);font-weight:600} .pill.on svg{color:inherit} .pill.on .x{margin-left:2px} .pill.q{border-style:dashed} .pill.add{padding:0 10px;color:var(--muted-fg)}
 .pill:active{background:var(--muted)} .pill.on:active{background:var(--fg);filter:brightness(1.3)}
-.fwrap{position:relative;flex:none} .menu{position:absolute;left:16px;top:36px;z-index:5;background:var(--card);border:var(--hair) solid var(--border);border-radius:10px;box-shadow:0 8px 24px oklch(0.2 0.02 250 / .14);padding:6px;min-width:180px} .menu button{display:flex;align-items:center;gap:8px;width:100%;height:36px;padding:0 10px;border-radius:6px;white-space:nowrap} .menu button:hover{background:var(--muted)} .menu button .n{margin-left:auto;color:var(--muted-fg);font-size:12px}
+.menu{position:absolute;left:16px;top:36px;z-index:5;background:var(--card);border:var(--hair) solid var(--border);border-radius:10px;box-shadow:0 8px 24px oklch(0.2 0.02 250 / .14);padding:6px;min-width:180px} .menu button{display:flex;align-items:center;gap:8px;width:100%;height:36px;padding:0 10px;border-radius:6px;white-space:nowrap} .menu button:hover{background:var(--muted)} .menu button .n{margin-left:auto;color:var(--muted-fg);font-size:12px}
 /* the stage the table slides on */
 .stage{position:relative;flex:1;min-height:0;overflow:hidden;margin-left:16px}
 .pane{position:absolute;inset:0;display:flex;flex-direction:column;background:inherit;transition:transform 280ms var(--ease),opacity 280ms var(--ease);will-change:transform}
 .pane.enter-r{transform:translateX(100%)} .pane.exit-l{transform:translateX(-24%);opacity:.35}
 .pane.enter-l{transform:translateX(-24%);opacity:.35} .pane.exit-r{transform:translateX(100%)} .pane.under{z-index:0} .pane.over{z-index:1}
-.crumb{display:flex;align-items:center;gap:4px;height:40px;flex:none;color:var(--muted-fg);font-size:13px;padding-right:8px} .crumb button{display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 8px 0 4px;border-radius:6px;color:var(--fg);font-weight:500} .crumb button:hover{background:var(--muted)} .crumb .sep{color:var(--border);font-size:16px} .crumb .here{color:var(--fg);font-weight:600;padding:0 4px} .crumb .cnt{margin-left:4px}
+.crumb{display:flex;align-items:center;gap:4px;height:40px;flex:none;color:var(--muted-fg);font-size:13px;padding-right:8px} .crumb button{display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 8px 0 4px;border-radius:6px;color:var(--fg);font-weight:500} .crumb button:hover{background:var(--muted)} .crumb .sep{color:var(--border);font-size:16px} .crumb .here{color:var(--fg);font-weight:600;padding:0 4px} .crumb .num{margin-left:4px}
 .crumb .pv{display:inline-flex;align-items:center;gap:8px;margin-left:auto;color:var(--muted-fg)} .crumb .pv .img{width:28px;height:28px}
-.thead{display:grid;align-items:center;height:32px;border-bottom:var(--hair) solid var(--border);color:var(--muted-fg);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;flex:none} .th{padding:0 12px;white-space:nowrap} .th.r{text-align:right}
-.tr{display:grid;align-items:center;min-height:44px;border-bottom:var(--hair) solid var(--border);transition:background-color 120ms} .tr:hover{background:var(--muted)} .tr.flash{background:color-mix(in oklch,var(--primary) 12%,transparent)}
-.td{padding:6px 12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .td.r{text-align:right} .td.c{display:flex;justify-content:center} .td .sub{display:block;color:var(--muted-fg);font-size:12px}
+/* header: caps over a hairline is today's; the strip swaps it */
+.thead{display:grid;align-items:center;height:32px;border-bottom:var(--hair) solid var(--border);color:var(--muted-fg);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;flex:none;position:relative} .th{padding:0 12px;white-space:nowrap;position:relative;height:100%;display:flex;align-items:center;gap:4px} .th.r{justify-content:flex-end} .th svg{width:12px;height:12px}
+.th .rz{position:absolute;right:-4px;top:0;height:100%;width:9px;cursor:col-resize;z-index:2} .th .rz::after{content:"";position:absolute;left:4px;top:25%;height:50%;width:1px;background:var(--border);transition:background-color 120ms,transform 120ms} .th .rz:hover::after,.th .rz.on::after{background:var(--primary);transform:scaleX(2);top:15%;height:70%}
+.frame[data-h="sentence"] .thead{text-transform:none;letter-spacing:0;font-size:13px;font-weight:500;color:var(--fg);height:36px}
+.frame[data-h="band"] .thead{background:var(--muted);height:36px;border-bottom:0;border-radius:6px 6px 0 0}
+.frame[data-h="strong"] .thead{text-transform:none;letter-spacing:0;font-size:13px;font-weight:600;color:var(--fg);height:36px;border-bottom:2px solid var(--fg)}
+.tr{display:grid;align-items:center;min-height:44px;border-bottom:var(--hair) solid var(--border);transition:background-color 120ms;position:relative} .tr:hover{background:var(--muted)} .tr.flash{background:color-mix(in oklch,var(--primary) 12%,transparent)}
+.td{padding:6px 12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .td.r{text-align:right} .td.c{display:flex;justify-content:center;align-items:center} .td .sub{display:block;color:var(--muted-fg);font-size:12px}
 .td button.nm{display:block;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cat{display:inline-flex;align-items:center;height:24px;padding:0 9px;border-radius:999px;background:var(--muted);color:var(--muted-fg);font-size:12px;font-weight:500;border:var(--hair) solid transparent} .cat:hover{border-color:var(--border);color:var(--fg);background:var(--card)}
 .img{width:40px;height:40px;border-radius:6px;background:var(--muted);display:inline-block}
 .add{width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg)} .add:hover{background:var(--card);color:var(--fg);box-shadow:0 0 0 1px var(--border)}
-.foot{display:flex;align-items:center;height:40px;padding:0 12px;border-top:var(--hair) solid var(--border);color:var(--muted-fg);flex:none;margin-top:auto;font-size:13px}
-.empty{padding:40px 12px;color:var(--muted-fg);text-align:center}
+/* add-to-cart idioms */
+.tr.rowbtn{cursor:pointer} .tr.rowbtn:active{background:color-mix(in oklch,var(--primary) 10%,transparent)}
+.cnt{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 7px;border-radius:999px;background:var(--primary);color:var(--primary-fg);font-size:12px;font-weight:700}
+.pricebtn{display:inline-flex;align-items:center;justify-content:center;height:34px;min-width:84px;padding:0 12px;border-radius:8px;border:var(--hair) solid var(--border);background:var(--card);font-weight:600;white-space:nowrap} .pricebtn:hover{border-color:var(--fg)} .pricebtn:active{background:var(--fg);color:var(--bg)} .pricebtn.in{border-color:var(--primary);color:var(--primary)} .pricebtn .cnt{margin-left:8px;height:20px;min-width:20px;font-size:11px}
+.step{display:inline-flex;align-items:center;height:34px;border:var(--hair) solid var(--border);border-radius:999px;background:var(--card);overflow:hidden} .step button{width:32px;height:34px;display:inline-flex;align-items:center;justify-content:center;color:var(--fg)} .step button:hover{background:var(--muted)} .step b{min-width:22px;text-align:center;font-size:13px}
+.word{display:inline-flex;align-items:center;justify-content:center;height:32px;padding:0 14px;border-radius:999px;border:var(--hair) solid var(--fg);font-weight:600;font-size:13px;white-space:nowrap} .word:hover{background:var(--fg);color:var(--bg)} .word.in{border-color:var(--primary);background:var(--primary);color:var(--primary-fg)}
+.qpop{position:absolute;right:52px;top:50%;transform:translateY(-50%);z-index:6;display:flex;align-items:center;gap:6px;background:var(--card);border:var(--hair) solid var(--border);border-radius:999px;box-shadow:0 8px 24px oklch(0.2 0.02 250 / .16);padding:4px 6px 4px 12px;animation:pop 140ms var(--ease)} .qpop .lbl{font-size:12px;color:var(--muted-fg);margin-right:4px} @keyframes pop{from{opacity:0;transform:translateY(-50%) scale(.9)}}
+.tr.holding{background:color-mix(in oklch,var(--primary) 8%,transparent)}
+/* footer: what the app's table footer carries (tax basis select · showing n of m · sync) */
+.foot{display:flex;align-items:center;gap:12px;height:40px;padding:0 4px 0 12px;border-top:var(--hair) solid var(--border);color:var(--muted-fg);flex:none;margin-top:auto;font-size:12.5px} .foot .tax{display:inline-flex;align-items:center;gap:4px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .foot .tax b{color:var(--fg);font-weight:500} .foot .tax svg{width:14px;height:14px} .foot .sync{width:32px;height:32px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center} .foot .sync:hover{background:var(--muted);color:var(--fg)} .foot .sync svg{width:16px;height:16px}
 .divider{width:8px;flex:none;position:relative} .divider::after{content:"";position:absolute;left:2px;top:50%;width:4px;height:48px;margin-top:-24px;border-radius:2px;background:var(--border)}
 .cart{width:400px;flex:none;background:var(--card);border-left:var(--hair) solid var(--border);display:flex;flex-direction:column;color:var(--fg)}
 .bar{height:44px;display:flex;align-items:center;gap:8px;padding:0 8px 0 16px;border-bottom:var(--hair) solid var(--border)} .bar .av{width:30px;height:30px;border-radius:50%;background:var(--muted);font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-left:auto}
 .custrow{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 16px;border-bottom:var(--hair) solid var(--border)} .chip{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;border-radius:999px;border:var(--hair) solid var(--border)}
 .cth{display:grid;grid-template-columns:36px 1fr 70px 76px;gap:12px;padding:0 16px;height:32px;align-items:center;color:var(--muted-fg);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;border-bottom:var(--hair) solid var(--border)} .cth .r{text-align:right}
+.frame[data-h="sentence"] .cth,.frame[data-h="strong"] .cth{text-transform:none;letter-spacing:0;font-size:13px;font-weight:500;color:var(--fg);height:36px} .frame[data-h="strong"] .cth{font-weight:600;border-bottom:2px solid var(--fg)} .frame[data-h="band"] .cth{background:var(--muted);height:36px;border-bottom:0}
 .line{display:grid;grid-template-columns:36px 1fr 70px 76px;gap:12px;padding:6px 16px;min-height:44px;align-items:center;border-bottom:var(--hair) solid var(--border)} .line .q{height:36px;border:var(--hair) solid var(--border);border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-weight:600} .line .r{text-align:right} .line .sub{display:block;color:var(--muted-fg);font-size:12px}
 .line.new{animation:settle 700ms var(--ease)} @keyframes settle{from{background:color-mix(in oklch,var(--primary) 14%,transparent)}to{background:transparent}}
 .totals{margin-top:auto;padding:12px 16px 8px;border-top:var(--hair) solid var(--border)} .totals div{display:flex;justify-content:space-between;padding:3px 0} .totals .big{font-size:18px;font-weight:700;padding-top:6px}
 .cf{display:flex;gap:8px;padding:0 16px 16px} .btn{height:44px;border:var(--hair) solid var(--border);border-radius:var(--r);padding:0 16px;display:inline-flex;align-items:center;justify-content:center;font-weight:500;flex:1} .btn.p{background:var(--primary);color:var(--primary-fg);border-color:transparent;font-weight:600;height:56px;font-size:16px;flex:3} .btn.d{color:var(--destructive);flex:1;border-color:color-mix(in oklch,var(--destructive) 55%,transparent)}
-/* 02 the floating sheet: the stage is the white sheet, the bar and the search sit on the grey above it */
+/* surfaces */
 .frame[data-s="float"] .stage{margin:0 0 16px 16px;border-radius:12px;background:var(--card);box-shadow:0 1px 2px oklch(0.2 0.02 250 / .06),0 6px 16px oklch(0.2 0.02 250 / .07)}
-.frame[data-s="float"] .pane{background:var(--card);padding:0 8px} .frame[data-s="float"] .tr:hover{background:var(--bg)} .frame[data-s="float"] .crumb{padding-left:4px}
-.frame[data-s="float"] .cat:hover{background:var(--muted)}
+.frame[data-s="float"] .pane{background:var(--card);padding:0 8px} .frame[data-s="float"] .tr:hover{background:var(--bg)} .frame[data-s="float"] .crumb{padding-left:4px} .frame[data-s="float"] .cat:hover{background:var(--muted)}
+.frame[data-s="allwhite"]{background:var(--card)} .frame[data-s="allwhite"] .rail{background:var(--card)} .frame[data-s="allwhite"] .divider{display:none} .frame[data-s="allwhite"] .tr:hover{background:var(--bg)} .frame[data-s="allwhite"] .cat{background:var(--bg);border-color:var(--border)} .frame[data-s="allwhite"] .cat:hover{background:var(--muted)}
 </style>
 </head>
 <body>
-<h1>POS table — the filter bar, and the table slides for variations and categories</h1>
-<p class="lead">Both frames are live. <b>Filter bar</b> under the search, the app's own pills (Stock, Featured, On sale, Category, Tag, Brand) plus a user's quick filter and <kbd>+</kbd>. <b>Variations</b>: press a variable product (Tote bag, Tea tin) and the table slides left, a breadcrumb takes the top, the whole table is now the variations. <b>Categories</b>: press a category chip in a row, or pick one from the <kbd>Category</kbd> pill, and the same slide shows only that category. <kbd>Products</kbd> in the breadcrumb slides back. Pressing <kbd>+</kbd> on a variation adds it to the cart. Two surfaces, the two Paul is between: today's, and the floating sheet.</p>
+<div class="strip">
+  <div class="g"><span>Header</span><div class="seg" data-k="h"><button data-v="caps" class="on">Caps, hairline (today)</button><button data-v="sentence">Sentence case</button><button data-v="band">Tinted band</button><button data-v="strong">Bold, 2 px rule</button></div></div>
+  <div class="g"><span>Add to cart</span><div class="seg" data-k="a"><button data-v="plus" class="on">+ (today)</button><button data-v="row">Row is the button</button><button data-v="price">Price is the button</button><button data-v="stepper">+ then stepper</button><button data-v="word">Add word</button><button data-v="hold">Tap adds, hold for quantity</button></div></div>
+</div>
+<h1>POS table — the filter bar, the slide, the header, the footer, and the add button</h1>
+<p class="lead">Three surfaces, all live: today's, the floating sheet, and all white with one seam. Under the search, the app's own <b>filter bar</b>. Press a category chip, the <kbd>Category</kbd> pill, or a variable product and the table <b>slides</b> left behind a breadcrumb. The header's column edges <b>drag to resize</b>. The <b>footer</b> carries what the app's does: the tax basis, <i>Showing n of m</i>, and sync. The strip above swaps the <b>header</b> treatment and the <b>add-to-cart</b> idiom on all three at once; the Mobbin screens for the add idioms are at the bottom.</p>
 <div class="board" id="board"></div>
+<h2>Where the add idioms come from</h2>
+<div class="refs" id="refs"></div>
 <script>
-const I={search:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',scan:'<svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 9v6M11 9v6M14 9v6M17 9v6"/></svg>',grid:'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>',sliders:'<svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg>',plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',chevd:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',chevr:'<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',chevl:'<svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>',x:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',check:'<svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>',pos:'<svg viewBox="0 0 24 24"><path d="M3 21l18 0M3 7v1a3 3 0 0 0 6 0v-1m0 1a3 3 0 0 0 6 0v-1m0 1a3 3 0 0 0 6 0v-1M5 21v-10.15M19 21v-10.15M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4M2 7l1-4h18l1 4"/></svg>',products:'<svg viewBox="0 0 24 24"><path d="M20 7L12 3 4 7v10l8 4 8-4zM4 7l8 4 8-4M12 11v10"/></svg>',orders:'<svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM15 3v4h4M9 12h6M9 16h6"/></svg>',customers:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4.5-6.2"/></svg>',drawer:'<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="9" rx="2"/><path d="M3 15h18M10 17.5h4M6 11V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/></svg>'};
+const I={search:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',scan:'<svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 9v6M11 9v6M14 9v6M17 9v6"/></svg>',grid:'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>',sliders:'<svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg>',plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',minus:'<svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>',chevd:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',chevr:'<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',chevl:'<svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>',up:'<svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',x:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',sync:'<svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.5-4.5L4 8M4 4v4h4M4 13a8 8 0 0 0 14.5 4.5L20 16M20 20v-4h-4"/></svg>',pos:'<svg viewBox="0 0 24 24"><path d="M3 21l18 0M3 7v1a3 3 0 0 0 6 0v-1m0 1a3 3 0 0 0 6 0v-1m0 1a3 3 0 0 0 6 0v-1M5 21v-10.15M19 21v-10.15M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4M2 7l1-4h18l1 4"/></svg>',products:'<svg viewBox="0 0 24 24"><path d="M20 7L12 3 4 7v10l8 4 8-4zM4 7l8 4 8-4M12 11v10"/></svg>',orders:'<svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM15 3v4h4M9 12h6M9 16h6"/></svg>',customers:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4.5-6.2"/></svg>',drawer:'<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="9" rx="2"/><path d="M3 15h18M10 17.5h4M6 11V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/></svg>'};
 const CUR='£'; const fmt=n=>`${CUR}${n.toFixed(2)}`;
-/* name, price, sku, category, stock, variations[] */
 const P=[
  {n:'Flat white',p:3.2,sku:'FW-12',c:'Coffee',s:12},{n:'Oat latte',p:3.6,sku:'OL-16',c:'Coffee',s:30},{n:'Cold brew',p:3.8,sku:'CB-330',c:'Coffee',s:20},{n:'Espresso cup',p:8,sku:'EC-01',c:'Coffee',s:9},
  {n:'Sourdough loaf',p:4.2,sku:'SD-800',c:'Bakery',s:4},{n:'Croissant',p:2.4,sku:'CR-01',c:'Bakery',s:8},{n:'Cinnamon bun',p:3,sku:'CB-02',c:'Bakery',s:6},
@@ -78,57 +103,114 @@ const P=[
  {n:'Tea tin',p:7.5,sku:'TT',c:'Retail',s:11,v:[['Earl Grey','','TT-EG',7.5,5],['Breakfast','','TT-BF',7.5,6],['Mint','','TT-MT',8,0]]},
  {n:'Gift card',p:20,sku:'GC',c:'Retail',s:null}];
 const CATS=['Coffee','Bakery','Merch','Retail'];
+const G={h:'caps',a:'plus'};   /* the strip's choices, shared by every frame */
 const stock=s=>s==null?'<span class="mut">—</span>':s===0?'<span class="st bad"><i></i>0</span>':s<5?`<span class="st warn"><i></i>${s}</span>`:String(s);
 const rail=`<div class="rail"><div class="logo"></div><div class="it on">${I.pos}</div><div class="it">${I.products}</div><div class="it">${I.orders}</div><div class="it">${I.customers}</div></div>`;
 const toolbar=`<div class="toolbar"><span class="in">${I.search}Search products</span><span class="ibtn">${I.scan}</span><span class="ibtn">${I.grid}</span><span class="ibtn">${I.sliders}</span></div>`;
-const G='56px 1.5fr 104px 108px 72px 52px';
-const GV='56px 1.3fr 1fr 100px 90px 76px 52px';
-const cartLines=()=>[['2','Flat white','Oat milk',3.2],['1','Sourdough loaf','',4.2]];
+const foot=(txt)=>`<div class="foot"><span class="tax">Tax based on: <b>Shop base address</b>${I.chevd}</span><span class="grow"></span><span>${txt}</span><button class="sync" title="Sync">${I.sync}</button></div>`;
 
 function makeApp(frame){
-  const S={view:'products',cat:null,prod:null,lines:cartLines(),menu:false};
+  const S={view:'products',cat:null,prod:null,lines:[[2,'Flat white','Oat milk',3.2],[1,'Sourdough loaf','',4.2]],menu:false,
+    cols:{products:[56,'1.5fr',104,116,72,64],cat:[56,'1.5fr',104,116,72,64],var2:[56,'1.3fr','1fr',100,116,72,64],var1:[56,'1.5fr',104,116,72,64]}};
+  /* column widths: the user's drags live in S.cols; the add idiom sets the last column and, for the price button, the price column */
+  const colsFor=k=>{const c=S.cols[k].slice();const last=c.length-1;const pi=k==='var2'?4:3;
+    c[last]={stepper:112,price:40,word:104,row:56,hold:56}[G.a]||64; if(G.a==='price') c[pi]=Math.max(c[pi],136); return c;};
+  const grid=k=>colsFor(k).map(v=>typeof v==='number'?v+'px':v).join(' ');
+  const inCart=(n,s='')=>S.lines.filter(l=>l[1]===n&&(l[2]||'')===s).reduce((a,l)=>a+l[0],0);
   const fbar=()=>`<div class="fwrap"><div class="fbar">
     ${S.cat?`<button class="pill on" data-act="pop">Category · ${S.cat}<span class="x">${I.x}</span></button>`:`<button class="pill" data-act="menu">Category ${I.chevd}</button>`}
     <span class="pill">Stock ${I.chevd}</span><span class="pill">On sale</span><span class="pill">Featured</span><span class="pill">Tag ${I.chevd}</span><span class="pill q">Morning menu</span><span class="pill add">${I.plus}</span>
   </div>${S.menu?`<div class="menu">${CATS.map(c=>`<button data-act="cat" data-c="${c}">${c}<span class="n">${P.filter(p=>p.c===c).length}</span></button>`).join('')}</div>`:''}</div>`;
-  const hd=(g,cols,r)=>`<div class="thead" style="grid-template-columns:${g}">${cols.map((c,i)=>`<div class="th ${r.includes(i)?'r':''}">${c}</div>`).join('')}</div>`;
-  const row=(p,i)=>`<div class="tr" data-i="${i}" style="grid-template-columns:${G}"><div class="td c"><span class="img"></span></div><div class="td">${p.v?`<button class="nm" data-act="var" data-i="${i}">${p.n}<span class="sub">${p.v.length} variations</span></button>`:`${p.n}<span class="sub">${p.sku}</span>`}</div><div class="td"><button class="cat" data-act="cat" data-c="${p.c}">${p.c}</button></div><div class="td r money">${p.v?'from '+fmt(Math.min(...p.v.map(x=>x[3]))):fmt(p.p)}</div><div class="td r">${stock(p.s)}</div><div class="td c"><button class="add" data-act="${p.v?'var':'add'}" data-i="${i}">${p.v?I.chevr:I.plus}</button></div></div>`;
-  const crumb=(here,cnt,extra='')=>`<div class="crumb"><button data-act="pop">${I.chevl}Products</button><span class="sep">›</span><span class="here">${here}</span><span class="cnt">· ${cnt}</span>${extra}</div>`;
+  const hd=(k,cols,r)=>`<div class="thead" data-k="${k}" style="grid-template-columns:${grid(k)}">${cols.map((c,i)=>`<div class="th ${r.includes(i)?'r':''}">${c}${c==='Name'||c==='Colour'||c==='Variety'?I.up:''}${i<cols.length-1?`<span class="rz" data-i="${i}"></span>`:''}</div>`).join('')}</div>`;
+  /* the add control for one product row; the idiom comes from the strip */
+  const priceCell=(p,i)=>{const from=p.v?'from '+fmt(Math.min(...p.v.map(x=>x[3]))):fmt(p.p);const n=p.v?0:inCart(p.n);
+    if(G.a==='price'&&!p.v) return `<div class="td r"><button class="pricebtn ${n?'in':''}" data-act="add" data-i="${i}">${fmt(p.p)}${n?`<span class="cnt">${n}</span>`:''}</button></div>`;
+    return `<div class="td r money">${from}</div>`;};
+  const endCell=(p,i)=>{const n=p.v?0:inCart(p.n);
+    if(p.v) return `<div class="td c"><button class="add" data-act="var" data-i="${i}">${I.chevr}</button></div>`;
+    switch(G.a){
+      case 'row': case 'hold': return `<div class="td c">${n?`<span class="cnt">${n}</span>`:''}</div>`;
+      case 'price': return `<div class="td c"></div>`;
+      case 'stepper': return `<div class="td c">${n?`<span class="step"><button data-act="dec" data-i="${i}">${I.minus}</button><b>${n}</b><button data-act="add" data-i="${i}">${I.plus}</button></span>`:`<button class="add" data-act="add" data-i="${i}">${I.plus}</button>`}</div>`;
+      case 'word': return `<div class="td c"><button class="word ${n?'in':''}" data-act="add" data-i="${i}">${n?`Added · ${n}`:'Add'}</button></div>`;
+      default: return `<div class="td c"><button class="add" data-act="add" data-i="${i}">${I.plus}</button></div>`;
+    }};
+  const rowIsBtn=()=>G.a==='row'||G.a==='hold';
+  const row=(p,i,k)=>`<div class="tr ${rowIsBtn()&&!p.v?'rowbtn':''}" data-i="${i}" ${rowIsBtn()&&!p.v?`data-act="rowadd"`:''} style="grid-template-columns:${grid(k)}"><div class="td c"><span class="img"></span></div><div class="td">${p.v?`<button class="nm" data-act="var" data-i="${i}">${p.n}<span class="sub">${p.v.length} variations</span></button>`:`${p.n}<span class="sub">${p.sku}</span>`}</div><div class="td"><button class="cat" data-act="cat" data-c="${p.c}">${p.c}</button></div>${priceCell(p,i)}<div class="td r">${stock(p.s)}</div>${endCell(p,i)}</div>`;
+  const vrow=(p,v,j,k,two)=>{const vs=[v[0],v[1]].filter(Boolean).join(' · ');const n=inCart(p.n,vs);
+    const end=G.a==='stepper'?(n?`<span class="step"><button data-act="decv" data-j="${j}">${I.minus}</button><b>${n}</b><button data-act="addv" data-j="${j}">${I.plus}</button></span>`:`<button class="add" data-act="addv" data-j="${j}">${I.plus}</button>`):G.a==='word'?`<button class="word ${n?'in':''}" data-act="addv" data-j="${j}">${n?`Added · ${n}`:'Add'}</button>`:(rowIsBtn()||G.a==='price')?(n?`<span class="cnt">${n}</span>`:''):`<button class="add" data-act="addv" data-j="${j}">${I.plus}</button>`;
+    const price=G.a==='price'?`<button class="pricebtn ${n?'in':''}" data-act="addv" data-j="${j}">${fmt(v[3])}${n?`<span class="cnt">${n}</span>`:''}</button>`:`<span class="money">${fmt(v[3])}</span>`;
+    return `<div class="tr ${rowIsBtn()?'rowbtn':''}" data-j="${j}" ${rowIsBtn()?`data-act="rowaddv"`:''} style="grid-template-columns:${grid(k)}"><div class="td c"><span class="img"></span></div><div class="td">${v[0]}</div>${two?`<div class="td">${v[1]}</div>`:''}<div class="td mut">${v[2]}</div><div class="td r">${price}</div><div class="td r">${stock(v[4])}</div><div class="td c">${end}</div></div>`;};
+  const crumb=(here,cnt,extra='')=>`<div class="crumb"><button data-act="pop">${I.chevl}Products</button><span class="sep">›</span><span class="here">${here}</span><span class="num">· ${cnt}</span>${extra}</div>`;
   const pane=()=>{
-    if(S.view==='var'){const p=P[S.prod];const attr=p.v[0][1]?['Colour','Size']:['Variety'];
-      return `<div class="pane">${crumb(p.n,`${p.v.length} variations`,`<span class="pv"><span class="img"></span>${p.sku} · from ${fmt(Math.min(...p.v.map(x=>x[3])))}</span>`)}${hd(attr.length===2?GV:G,attr.length===2?['',...attr,'SKU','Price','Stock','']:['',attr[0],'SKU','Price','Stock',''],attr.length===2?[4,5]:[3,4])}${p.v.map((v,j)=>attr.length===2?`<div class="tr" style="grid-template-columns:${GV}"><div class="td c"><span class="img"></span></div><div class="td">${v[0]}</div><div class="td">${v[1]}</div><div class="td mut">${v[2]}</div><div class="td r money">${fmt(v[3])}</div><div class="td r">${stock(v[4])}</div><div class="td c"><button class="add" data-act="addv" data-j="${j}">${I.plus}</button></div></div>`:`<div class="tr" style="grid-template-columns:${G}"><div class="td c"><span class="img"></span></div><div class="td">${v[0]}</div><div class="td mut">${v[2]}</div><div class="td r money">${fmt(v[3])}</div><div class="td r">${stock(v[4])}</div><div class="td c"><button class="add" data-act="addv" data-j="${j}">${I.plus}</button></div></div>`).join('')}<div class="foot">${p.v.length} variations of ${p.n}</div></div>`;}
+    if(S.view==='var'){const p=P[S.prod];const two=!!p.v[0][1];const k=two?'var2':'var1';
+      return `<div class="pane">${crumb(p.n,`${p.v.length} variations`,`<span class="pv"><span class="img"></span>${p.sku} · from ${fmt(Math.min(...p.v.map(x=>x[3])))}</span>`)}${hd(k,two?['','Colour','Size','SKU','Price','Stock','']:['','Variety','SKU','Price','Stock',''],two?[4,5]:[3,4])}${p.v.map((v,j)=>vrow(p,v,j,k,two)).join('')}${foot(`${p.v.length} variations of ${p.n}`)}</div>`;}
+    const k=S.view==='cat'?'cat':'products';
     const list=S.view==='cat'?P.map((p,i)=>[p,i]).filter(([p])=>p.c===S.cat):P.map((p,i)=>[p,i]);
-    return `<div class="pane">${S.view==='cat'?crumb(S.cat,`${list.length} products`):''}${hd(G,['','Name','Category','Price','Stock',''],[3,4])}${list.map(([p,i])=>row(p,i)).join('')}<div class="foot">${S.view==='cat'?`${list.length} in ${S.cat}`:'Showing 12 of 1,204'}</div></div>`;};
+    return `<div class="pane">${S.view==='cat'?crumb(S.cat,`${list.length} products`):''}${hd(k,['','Name','Category','Price','Stock',''],[3,4])}${list.map(([p,i])=>row(p,i,k)).join('')}${foot(S.view==='cat'?`Showing ${list.length} of ${list.length}`:'Showing 12 of 1,204')}</div>`;};
   const cart=()=>`<div class="cart"><div class="bar"><b>UK Store</b><span class="ibtn" style="margin-left:auto">${I.drawer}</span><span class="av">DC</span></div><div class="custrow"><span class="mut">Customer</span><span class="chip">Guest ${I.chevd}</span><span class="grow"></span><span class="ibtn">${I.plus}</span><span class="ibtn">${I.sliders}</span></div>
     <div class="cth"><span>Qty</span><span>Item</span><span class="r">Price</span><span class="r">Total</span></div>
     ${S.lines.map(([q,n,s,p,nw])=>`<div class="line ${nw?'new':''}"><span class="q">${q}</span><span>${n}${s?`<span class="sub">${s}</span>`:''}</span><span class="r mut money">${fmt(p)}</span><span class="r b money">${fmt(q*p)}</span></div>`).join('')}
     ${(()=>{const sub=S.lines.reduce((a,[q,,,p])=>a+q*p,0);const vat=sub*0.2;return `<div class="totals"><div class="mut"><span>Subtotal</span><span>${fmt(sub)}</span></div><div class="mut"><span>VAT 20%</span><span>${fmt(vat)}</span></div><div class="big"><span>Total</span><span>${fmt(sub+vat)}</span></div></div><div class="cf"><span class="btn d">Void</span><span class="btn p">Checkout ${fmt(sub+vat)}</span></div>`;})()}</div>`;
-  const full=()=>{frame.innerHTML=`${rail}<div class="prod">${toolbar}${fbar()}<div class="stage">${pane()}</div></div><div class="divider"></div>${cart()}`;};
-  const slide=(dir)=>{ /* dir: 'push' (new comes from the right) or 'pop' (new comes from the left) */
+  const full=()=>{frame.dataset.h=G.h;frame.innerHTML=`${rail}<div class="prod">${toolbar}${fbar()}<div class="stage">${pane()}</div></div><div class="divider"></div>${cart()}`;};
+  const repaint=()=>{ /* same view, new contents (an add): swap the pane in place, no slide */
+    const stage=frame.querySelector('.stage'); const cur=stage.querySelector('.pane:not(.exit-l):not(.exit-r)'); if(cur) cur.outerHTML=pane(); frame.querySelector('.cart').outerHTML=cart(); };
+  const slide=(dir)=>{
     const stage=frame.querySelector('.stage'); const old=stage.querySelector('.pane:not(.exit-l):not(.exit-r)');
     frame.querySelector('.fwrap').outerHTML=fbar();
     stage.insertAdjacentHTML('beforeend',pane()); const nw=stage.lastElementChild;
     nw.classList.add(dir==='push'?'enter-r':'enter-l',dir==='push'?'over':'under'); if(old){old.classList.add(dir==='push'?'under':'over');}
     void nw.offsetWidth; requestAnimationFrame(()=>{nw.classList.remove('enter-r','enter-l'); if(old) old.classList.add(dir==='push'?'exit-l':'exit-r');});
     setTimeout(()=>{ if(old) old.remove(); nw.classList.remove('over','under'); },320); };
+  const flash=(el)=>{const r=el&&el.closest('.tr'); if(!r) return; r.classList.add('flash'); setTimeout(()=>r.classList.remove('flash'),300);};
+  const addLine=(n,s,p,q=1)=>{S.lines.forEach(l=>l[4]=0);const l=S.lines.find(x=>x[1]===n&&(x[2]||'')===s); if(l){l[0]+=q; if(l[0]<=0) S.lines.splice(S.lines.indexOf(l),1); else l[4]=1;} else if(q>0) S.lines.push([q,n,s,p,1]);};
+  const closePop=()=>{const q=frame.querySelector('.qpop'); if(q){q.remove();} frame.querySelectorAll('.tr.holding').forEach(r=>r.classList.remove('holding'));};
+  /* clicks */
+  let holdTimer=null, held=false;
   frame.addEventListener('click',e=>{
-    const t=e.target.closest('[data-act]'); if(!t){ if(S.menu){S.menu=false;frame.querySelector('.fwrap').outerHTML=fbar();} return; }
+    if(held){held=false;return;}
+    const t=e.target.closest('[data-act]');
+    if(!t){ if(S.menu){S.menu=false;frame.querySelector('.fwrap').outerHTML=fbar();} closePop(); return; }
     const act=t.dataset.act;
     if(act==='menu'){S.menu=!S.menu;frame.querySelector('.fwrap').outerHTML=fbar();return;}
-    if(act==='cat'){const c=t.dataset.c;S.menu=false;if(S.view==='cat'&&S.cat===c){frame.querySelector('.fwrap').outerHTML=fbar();return;}const dir=S.view==='products'?'push':'push';S.view='cat';S.cat=c;S.prod=null;slide(dir);return;}
+    if(act==='cat'){const c=t.dataset.c;S.menu=false;if(S.view==='cat'&&S.cat===c){frame.querySelector('.fwrap').outerHTML=fbar();return;}S.view='cat';S.cat=c;S.prod=null;slide('push');return;}
     if(act==='var'){S.view='var';S.prod=+t.dataset.i;slide('push');return;}
-    if(act==='pop'){S.menu=false;if(S.view==='var'&&S.cat){S.view='cat';S.prod=null;}else{S.view='products';S.cat=null;S.prod=null;}slide('pop');return;}
-    if(act==='add'){const p=P[+t.dataset.i];const r=t.closest('.tr');r.classList.add('flash');setTimeout(()=>r.classList.remove('flash'),300);S.lines.push([1,p.n,'',p.p,1]);frame.querySelector('.cart').outerHTML=cart();return;}
-    if(act==='addv'){const p=P[S.prod];const v=p.v[+t.dataset.j];const r=t.closest('.tr');r.classList.add('flash');setTimeout(()=>r.classList.remove('flash'),300);S.lines.push([1,p.n,[v[0],v[1]].filter(Boolean).join(' · '),v[3],1]);frame.querySelector('.cart').outerHTML=cart();return;}
+    if(act==='pop'){S.menu=false;closePop();if(S.view==='var'&&S.cat){S.view='cat';S.prod=null;}else{S.view='products';S.cat=null;S.prod=null;}slide('pop');return;}
+    if(act==='add'||act==='rowadd'){ if(frame.querySelector('.qpop')){closePop();return;} const p=P[+t.dataset.i];flash(t);addLine(p.n,'',p.p,1);repaint();return;}
+    if(act==='dec'){const p=P[+t.dataset.i];addLine(p.n,'',p.p,-1);repaint();return;}
+    if(act==='addv'||act==='rowaddv'){const p=P[S.prod];const v=p.v[+t.dataset.j];flash(t);addLine(p.n,[v[0],v[1]].filter(Boolean).join(' · '),v[3],1);repaint();return;}
+    if(act==='decv'){const p=P[S.prod];const v=p.v[+t.dataset.j];addLine(p.n,[v[0],v[1]].filter(Boolean).join(' · '),v[3],-1);repaint();return;}
+    if(act==='qinc'||act==='qdec'){e.stopPropagation();const pop=t.closest('.qpop');const i=+pop.dataset.i;const d=act==='qinc'?1:-1;const p=P[i];addLine(p.n,'',p.p,d);const n=inCart(p.n);pop.querySelector('b').textContent=n;const cell=frame.querySelector(`.tr[data-i="${i}"] .td:last-child`);if(cell) cell.innerHTML=n?`<span class="cnt">${n}</span>`:'';frame.querySelector('.cart').outerHTML=cart();return;}
   });
-  full(); return {S,full,slide};
+  /* the qpop's own buttons must not bubble into the row's tap-adds */
+  frame.addEventListener('click',e=>{ if(e.target.closest('.qpop')&&!e.target.closest('[data-act]')) e.stopPropagation(); },true);
+  /* hold for quantity: press and keep pressing a row for 450 ms */
+  frame.addEventListener('pointerdown',e=>{
+    if(G.a!=='hold') return; const r=e.target.closest('.tr.rowbtn[data-act="rowadd"]'); if(!r||e.target.closest('[data-act="cat"]')||e.target.closest('.qpop')) return;
+    clearTimeout(holdTimer); holdTimer=setTimeout(()=>{ held=true; closePop(); r.classList.add('holding'); const i=+r.dataset.i; const p=P[i]; const n=inCart(p.n);
+      r.insertAdjacentHTML('beforeend',`<span class="qpop" data-i="${i}"><span class="lbl">${p.n}</span><span class="step"><button data-act="qdec">${I.minus}</button><b>${n}</b><button data-act="qinc">${I.plus}</button></span></span>`); },450);
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(ev=>frame.addEventListener(ev,()=>clearTimeout(holdTimer)));
+  /* drag a column edge */
+  frame.addEventListener('pointerdown',e=>{
+    const h=e.target.closest('.rz'); if(!h) return; e.preventDefault(); const head=h.closest('.thead'); const k=head.dataset.k; const i=+h.dataset.i; const cols=S.cols[k]; if(typeof cols[i]!=='number') return;
+    const x0=e.clientX, w0=cols[i]; h.classList.add('on'); h.setPointerCapture(e.pointerId);
+    const move=ev=>{cols[i]=Math.max(44,Math.round(w0+(ev.clientX-x0))); const g=grid(k); frame.querySelectorAll('.pane .thead, .pane .tr').forEach(el=>el.style.gridTemplateColumns=g);};
+    const up=()=>{h.classList.remove('on'); h.removeEventListener('pointermove',move); h.removeEventListener('pointerup',up);};
+    h.addEventListener('pointermove',move); h.addEventListener('pointerup',up);
+  });
+  full(); return {S,full};
 }
 const panel=(n,s,title,gives,note)=>`<section class="panel" data-n="${String(n).padStart(2,'0')}-${title.toLowerCase().replace(/[^a-z0-9]+/g,'-')}"><div class="cap"><span class="n">${String(n).padStart(2,'0')}</span><b>${title}</b><span class="mut">— ${gives}</span></div><div class="frame" data-s="${s}" data-app></div><p class="note">${note}</p></section>`;
 document.getElementById('board').innerHTML=[
- panel(1,'today','Today\'s surface','frameless rows on the page, the filter bar under the search, the table slides','The bar and the search stay put; only the table under them slides. In the category view the Category pill fills with the name and its × is the way back, as is <b>Products</b> in the breadcrumb. In the variations view the breadcrumb carries the product\'s image, SKU and starting price on the right.'),
- panel(2,'float','The floating sheet','the same, on the white sheet','The sheet is the stage: the slide happens inside it and the rounded corners clip it, so the table visibly travels. The search and the filter bar sit on the grey above the sheet, which is where the filters read as belonging to the page rather than the table.'),
+ panel(1,'today','Today\'s surface','frameless rows on the page grey','The bar and the search stay put; only the table under them slides. In the category view the Category pill fills with the name and its × is the way back, as is <kbd>Products</kbd> in the breadcrumb.'),
+ panel(2,'float','The floating sheet','the table on a white sheet with a shadow, no stroke','The sheet is the stage: the slide happens inside it and the rounded corners clip it. The footer sits inside the sheet.'),
+ panel(3,'allwhite','All white, one seam','one surface, one hairline between products and cart','No tint anywhere: rail, products and cart are one sheet. Category chips get a hairline so they still read as chips on white. This is the Shopify, Fresha, Stripe shape.'),
 ].join('');
 window.APPS=[...document.querySelectorAll('[data-app]')].map(f=>makeApp(f));
+document.querySelector('.strip').addEventListener('click',e=>{const b=e.target.closest('button[data-v]'); if(!b) return; const seg=b.closest('.seg'); G[seg.dataset.k]=b.dataset.v; seg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); APPS.forEach(a=>a.full());});
+const REF=[["sweatpals","Sweatpals \u00b7 plus, then a stepper","LfohifK5","7eae57a4-fe73-45de-a0a6-d83d56289617"],["instacart","Instacart \u00b7 Add word, then a stepper","K82uupN4","89ba135c-e20c-4172-8622-9862f17eae13"],["snoonu","Snoonu \u00b7 the price is the button","WU8pnXkP","9f96aa50-4f70-4d8f-aeb4-9fb27e88fffc"],["chipotle","Chipotle \u00b7 count badge with a stepper","k8TXgW9S","00afdbf5-224e-4696-8cfc-d64fde3bab77"],["bolt","Bolt Food \u00b7 plus on the image","wG7JWFtt","9ebf6aa2-21cf-4411-aeb6-f939fd7e916e"],["ikea","IKEA \u00b7 filled basket button","RUi6Dplk","e2a374d0-6f07-4c39-9a0b-68d4f0e6d515"],["thrive","Thrive Market \u00b7 Add with a cart glyph","kmToW4cn","3d24d48d-5eb1-409e-96c4-057c6943de18"],["hellofresh","HelloFresh \u00b7 Add, then \"1 in your box\" stepper","z5wgMfeL","8c1c5e91-3a0e-44b7-9212-391020f0fd62"],["walmart","Walmart \u00b7 quantity stepper on every row","mKFHevNJ","fd11011b-cfa3-4552-9d6f-caf36a1a2456"],["kiwi","Kiwi.com \u00b7 price then \u2212 n +","NEsEagYY","82e18988-c3a4-4a47-af14-185b057901b1"],["shopee","Shopee \u00b7 \u2212 0 + on every row","QGUG3iG5","39faee02-3f1b-4b26-91d2-7abe75d7cb42"],["cava","CAVA \u00b7 count with a picker","jmcP1aII","65d6012d-e2ed-414f-8f8f-5d6b464b6280"]];
+document.getElementById('refs').innerHTML=REF.map(([slug,label,short,id])=>`<a href="https://mobbin.com/screens/${id}" target="_blank" rel="noopener"><img src="screens/mobbin-add/${slug}.webp" alt="${label}" loading="lazy"><span>${label}</span></a>`).join('');
 </script>
 </body>
 </html>

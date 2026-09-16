@@ -308,6 +308,24 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     language (decision 22), so the cart header drops the band and takes the same height, type and
     hairline, in the register and on boards 3 and 4. The band survives nowhere; if a band is ever
     wanted it is the surface board's 04 for both tables at once, not one of them.
+34. **All white, the header, the resize, the footer, the add button (2026-09-17).** Paul: show
+    it all white like one of the examples; play with the header; the resizable columns and the
+    existing app's table footer have to be there; think outside the box on Add to cart. Board 4
+    grew: a third frame (all white, one seam), and a strip that swaps, on every frame, the
+    **header** (caps over a hairline, today · sentence case, 13 px medium, dark · tinted band ·
+    bold with a 2 px dark rule; the cart's header follows each) and the **add idiom** (+ at the row
+    end, today · the row is the button, a count badge at the end · the price is the button, an
+    outlined pill that fills blue with a count · + that becomes a − n + stepper once in the cart ·
+    the word *Add* that becomes *Added · n* · tap adds, hold 450 ms for a − n + popover on the row).
+    Column edges in the header drag to resize (`S.cols` per view, a 44 px floor, the name column
+    takes the remainder). The footer is the app's (`data-table/footer.tsx`): *Tax based on: Shop
+    base address ▾* left, *Showing n of m* and the sync button right; in the variations view the
+    count reads *3 variations of Tote bag*. Mobbin behind the add idioms (12 screens in
+    `screens/mobbin-add/`, at the bottom of the board): Sweatpals and Instacart (+ or Add, then a
+    stepper), Snoonu (the price is the button), Chipotle and HelloFresh (count with a stepper),
+    IKEA (filled basket), Walmart, Shopee, Kiwi (a stepper on every row), CAVA (count with a
+    picker). **Picks: sentence case on all white, caps elsewhere; tap adds + hold for quantity
+    with the count badge, price-as-button the strongest alternative.** Waiting on Paul.
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·

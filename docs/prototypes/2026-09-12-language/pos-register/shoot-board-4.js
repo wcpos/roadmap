@@ -1,4 +1,4 @@
-// Capture board-table-4 in its states: products, category (via the pill), variations, mid-slide. Throwaway.
+// Capture board-table-4: each frame through its states, then the header and add-to-cart idioms on the all-white frame. Throwaway.
 //   node shoot-board-4.js   → screens/board-table-4/
 const { chromium } = require('/Users/kilbot/Projects/monorepo-v2/node_modules/playwright');
 const path = require('path');
@@ -10,6 +10,7 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   const page = await browser.newPage({ viewport: { width: 1300, height: 900 } });
   const errors = []; page.on('pageerror', e => errors.push('pageerror: ' + e.message));
   await page.goto('file://' + path.join(DIR, 'board-table-4.html'));
+  const set = async (k, v) => { await page.locator(`.seg[data-k="${k}"] button[data-v="${v}"]`).click(); await page.waitForTimeout(60); };
   const panels = page.locator('section.panel'); const n = await panels.count();
   for (let i = 0; i < n; i++) {
     const p = panels.nth(i); const name = await p.getAttribute('data-n'); const f = p.locator('.frame');
@@ -23,10 +24,32 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
     await f.locator('.tr [data-act="addv"][data-j="2"]').click(); await page.waitForTimeout(200); await shot('6-variation-added');
     const crumb = await f.locator('.crumb').innerText(); if (!/Tote bag/.test(crumb)) throw new Error('no breadcrumb for ' + name);
     const total = await f.locator('.btn.p').innerText(); if (!/29\.52/.test(total)) throw new Error('cart did not take the variation: ' + total);
+    // drag the SKU column edge 40 px wider and check the grid changed
+    const rz = f.locator('.thead .rz[data-i="3"]'); const box = await rz.boundingBox();
+    const before = await f.locator('.thead').evaluate(el => el.style.gridTemplateColumns);
+    await page.mouse.move(box.x + 4, box.y + 10); await page.mouse.down(); await page.mouse.move(box.x + 44, box.y + 10, { steps: 6 }); await shot('7-resizing'); await page.mouse.up();
+    const after = await f.locator('.thead').evaluate(el => el.style.gridTemplateColumns);
+    if (before === after) throw new Error('resize did nothing on ' + name);
     await f.locator('.crumb [data-act="pop"]').click(); await page.waitForTimeout(500);
   }
+  // header and add idioms, on the all-white frame, one Flat white added so the in-cart states show
+  const f = panels.nth(2).locator('.frame'); const name = await panels.nth(2).getAttribute('data-n');
+  for (const h of ['caps', 'sentence', 'band', 'strong']) { await set('h', h); await f.screenshot({ path: path.join(OUT, `${name}-header-${h}.jpg`), type: 'jpeg', quality: 84 }); }
+  await set('h', 'caps');
+  for (const a of ['plus', 'row', 'price', 'stepper', 'word', 'hold']) {
+    await set('a', a);
+    const target = a === 'price' ? f.locator('.tr[data-i="2"] .pricebtn') : (a === 'row' || a === 'hold') ? f.locator('.tr[data-i="2"]') : f.locator('.tr[data-i="2"] [data-act="add"]');
+    await target.click(); await page.waitForTimeout(150);
+    if (a === 'hold') { const b = await f.locator('.tr[data-i="4"]').boundingBox(); await page.mouse.move(b.x + 200, b.y + 20); await page.mouse.down(); await page.waitForTimeout(600); }
+    await f.screenshot({ path: path.join(OUT, `${name}-add-${a}.jpg`), type: 'jpeg', quality: 84 });
+    if (a === 'hold') { await page.mouse.up(); if (!(await f.locator('.qpop').count())) throw new Error('hold popover did not open'); }
+    const total = await f.locator('.btn.p').innerText(); if (!/34\.08/.test(total) && a !== 'hold') throw new Error(`add idiom ${a} did not add: ${total}`);
+    // reset the cart line we added so each idiom starts the same
+    await page.evaluate(() => { const app = window.APPS[2]; app.S.lines = app.S.lines.filter(l => l[1] !== 'Cold brew'); app.full(); });
+  }
+  await set('a', 'plus');
   await page.screenshot({ path: path.join(OUT, '00-full.jpg'), type: 'jpeg', quality: 70, fullPage: true });
   await browser.close();
   if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
-  console.log(`ok · ${n} frames × 6 states in ${OUT}`);
+  console.log(`ok · ${n} frames in ${OUT}`);
 })().catch(e => { console.error(e); process.exit(1); });
