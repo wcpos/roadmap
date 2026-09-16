@@ -22,7 +22,7 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   // the personality themes, session open
   for (const th of ['paper', 'bold', 'warm', 'market', 'stage']) { await set('theme', th); await scn('open'); await page.waitForTimeout(300); await shot(`theme-${th}`); }
   await set('theme', 'light');
-  // the touches: after (all on) and before (all off), in three states
+  // the touches: after (all on) and before (all off), in three states; the whimsical ones under Market Stall too
   const flip = (v) => page.click(`.strip button[data-txall="${v}"]`);
   for (const [v, tag] of [['1', 'after'], ['0', 'before']]) {
     await flip(v);
@@ -31,10 +31,11 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
     await scn('paid'); await page.waitForTimeout(500); await shot(`touch-${tag}-paid`);
   }
   await flip('1');
+  await set('theme', 'market'); await scn('open'); await shot('touch-after-market'); await set('theme', 'light');
   // assert the flip actually changes the copy
-  await scn('open'); const after = await page.locator('#frame .cart-f .btn.p').textContent();
-  await flip('0'); const before = await page.locator('#frame .cart-f .btn.p').textContent(); await flip('1');
-  if (after === before) errors.push('before/after did not change the Checkout label: ' + after);
+  await scn('paid'); await page.waitForTimeout(300); const after = await page.locator('#frame .paidwrap').innerHTML();
+  await flip('0'); await page.waitForTimeout(300); const before = await page.locator('#frame .paidwrap').innerHTML(); await flip('1');
+  if (after === before) errors.push('before/after did not change the paid screen: ' + after);
   // phone: the dots
   await set('w', 'phone'); await scn('open'); await shot('phone-dots'); await page.click('[data-act="vmenu"]'); await shot('phone-dots-open'); await set('w', 'tablet');
   await browser.close();

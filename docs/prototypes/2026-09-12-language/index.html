@@ -33,6 +33,7 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
   <a href="#register">POS register</a>
   <a href="#orders">Orders</a>
   <div class="grp">Boards (options side by side)</div>
+  <a href="#icons">Icon sets — 12 families</a>
   <a href="#ideas">Personality — ideas + live touches</a>
   <a href="#personality">Personality — 6 directions</a>
   <a href="#void">Void | Checkout — round five</a>
@@ -48,6 +49,7 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
   <h2>What changed</h2>
   <div class="meta">Newest first. Every push adds a line here; the date is the day it landed.</div>
   <div class="log">
+    <div><time>2026-09-16 · icons</time><span><b>Touches ruled, and an icon-set board.</b> Paul on the touches: the count-up would get boring (now a single 220 ms settle of the total, no spinning); PAID stamp stays; the voice is out (translations); pence and the tear-off belong to the whimsical themes only (Market Stall, Paper till); the sold-today badge is kept as a tile badge for a property from POS Products settings, showing stock for now. New board: the register's 26 icons drawn in twelve families (Lucide today, Phosphor regular and duotone, Tabler, Hugeicons, Solar, MingCute, Iconoir, Streamline Plump, Flex, Freehand, Sharp), with what each costs.</span></div>
     <div><time>2026-09-16 · consolidated</time><span><b>Consolidated.</b> Paul: wrong direction again; consolidate and clean up. Decided and their switches removed from the register: tender close top-right · Void is outlined red, matched · Legacy is the header text toggle. Tab style narrowed to two candidates (amount + dot, amount over status). Woo theme removed. The layouts board is off the hub (kept in the folder for the record). And the Touches before / after buttons now work: the strip's click handler had never been listening for them.</span></div>
     <div><time>2026-09-16 · later</time><span><b>Signature layouts (rejected).</b> Paul picked the layout lever: themes are a skin, touches are small, the bones are still two panes. Five register shapes on a new board, same sale and products: the till roll (three columns: catalogue, a strip of receipt paper, the money) · the menu board (products as a menu on the wall, the sale as a drawer at the bottom) · keypad first (the amount pad is home) · two faces (a customer side on the same screen) · the counter (the sale runs across the top like a till display, products take the full width).</span></div>
     <div><time>2026-09-16</time><span><b>Pence back to normal on the default themes.</b> Paul likes the Market Stall theme and some of the touches, but the raised pence are too much for the defaults: they now apply only when Market Stall is the theme. The default themes never changed typeface; the system stack is untouched.</span></div>
@@ -72,7 +74,8 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
   <h2>Waiting on Paul</h2>
   <div class="ask"><ol>
     <li><b>Tab style:</b> amount + dot, or amount over status. Both under <kbd>Tab style</kbd>; add orders with the <kbd>12 open orders</kbd> state.</li>
-    <li><b>Touches:</b> <kbd>before</kbd> / <kbd>after</kbd> now works. Add a line for the roll, jump to Paid for the stamp, Print it · Next sale for the tear, empty cart for the doodle. Which stay?</li>
+    <li><b>Icons:</b> which family, or which to buy? My pick: Phosphor duotone for the rail and the big moments, Phosphor regular everywhere else. It is free, complete for every icon we have, one drawing at six weights, and the duotone fill is the personality. If you want to spend: Streamline Plump ($19/month, 100 icons per project) is the only set that is actually warm, and a hybrid (buy Plump, commission the 15 glyphs that carry the brand) is the route to a set that is nobody else's.</li>
+    <li><b>Touches:</b> ruled 2026-09-16; the settle replaces the count-up. Doodle still open.</li>
     <li><b>Theme:</b> Market Stall is liked; is it the direction, or a mood to borrow from?</li>
     <li><b>Void:</b> you said 1 or 5. Outlined red matched is the default; filled red is in the switch. Say which when you see them in whichever personality wins, since the answer changes with the canvas.</li>
     <li><b>Product list layers:</b> anything from the second table board to layer onto the decided rows (category tabs, sort chips, search-first, steppers)?</li>
@@ -85,16 +88,22 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
   <div class="what"><a href="layouts/board.html">Signature layouts board</a> (five register shapes): wrong direction, Paul 2026-09-16. The void board's earlier rounds are folded into its collapsed section.</div>
 </section>
 
+<section id="icons">
+  <h2>Icon sets — the register's 26 icons in twelve families <a class="open" href="icons/board.html">open on its own ↗</a></h2>
+  <div class="what">Each cell is the real glyph from that family, matched by name. A dot means the family's free index has no icon for that concept. Prices and licences are at the bottom of the board, dated.</div>
+  <iframe src="icons/board.html" style="height:1900px" loading="lazy" title="Icon sets board"></iframe>
+</section>
+
 <section id="ideas">
   <h2>Personality — the ideas, and what is live</h2>
   <div class="what">Paul: <b>"Not just a skin of what is there, but subtle changes that give this app its own personality."</b> Research: Cash App (the number is the hero, and it moves), Wise (giant numerals, one loud colour), Duolingo (a character and a voice, but restraint is what makes the copy land), Tally, Typeform and Cake (one hand-drawn line for every empty state), Linear and Gmail (undo instead of dialogs), the paper receipt every shop prints. Every fintech on Mobbin celebrates with confetti; that is the one thing to avoid. The through-line for WCPOS: <b>it is a till, run by a person</b>. Seven touches are live in the register under <kbd>Touches</kbd>, each on its own toggle; the rest are listed for later.</div>
   <div class="log">
-    <div><time>live · numbers roll</time><span>The total counts from the old value to the new one over 420 ms when a line lands, like a mechanical counter; the tab chip and the Take button roll with it. <i>Cash App.</i></span></div>
+    <div><time>live · total settles</time><span>Was a count-up; Paul: it would get boring. Now one 220 ms nudge of the total and the Checkout amount when a line lands, and nothing spins.</span></div>
     <div><time>live · PAID stamp</time><span>No confetti. A rubber stamp slams onto the paid screen at 8°, with a little ink fade. The one moment of theatre in the app, and it is the shop's own. <i>Airline boarding passes, Notion's Done.</i></span></div>
-    <div><time>live · a voice</time><span>Words a person behind the counter would use: Sale not Order, Till not Register, Park this sale, Walk-in, "Nothing on the till yet." "Find or scan…" "Drawer's open." <i>Basecamp, Linear's changelog, Typeform's doggo.</i></span></div>
-    <div><time>live · price-tag pence</time><span>Pence small and raised, £24<sup>10</sup>, the way a price tag writes it. Market Stall only, by Paul's ruling; the default themes keep plain numbers.</span></div>
-    <div><time>live · sold today</time><span>A small ×14 on the tiles you have sold most today. The register knows your day. Later: a "Sold today" sort, and the grid gently reordering overnight. <i>Square's top items.</i></span></div>
-    <div><time>live · receipt tears off</time><span>After a sale, the cart column tears along a perforated edge and drops away; the fresh one rolls down from the top. The cart is a till roll. <i>The real thing.</i></span></div>
+    <div><time>out · a voice</time><span>Paul: the plain labels are safer with translations. Removed.</span></div>
+    <div><time>live · price-tag pence</time><span>Pence small and raised, £24<sup>10</sup>. Whimsical themes only (Market Stall, Paper till); the default themes keep plain numbers.</span></div>
+    <div><time>live · tile badge</time><span>Paul did not want sold-today, but kept the badge: it now shows a property chosen in POS Products settings (stock for now, amber when low). Could be sale price or category instead.</span></div>
+    <div><time>live · receipt tears off</time><span>After a sale, the cart column tears along a perforated edge and drops away; the fresh one rolls down. Whimsical themes only.</span></div>
     <div><time>live · doodle</time><span>One hand-drawn line of a till with a curl of receipt for the empty cart; the same family would serve closed, offline and nothing found. The only illustration in the app. <i>Tally, Typeform, Cake.</i></span></div>
     <div><time>next · the cashier's day</time><span>The user sheet and the close screen say how the day is going: 42 sales · £612 · busiest 12–1, with a tiny hour sparkline; "First one. Have a good day." on the first sale. <i>Cash App earnings, Duolingo's restraint.</i></span></div>
     <div><time>next · undo, never dialogs</time><span>Every destructive action is a toast with Undo: void, remove line, close. A trait, not a feature: the till trusts you. <i>Gmail, Linear.</i></span></div>

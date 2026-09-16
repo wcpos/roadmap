@@ -237,6 +237,24 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     style to two candidates, amount + dot and amount over status (17), still open. Woo theme
     removed. Switches for the decided items removed from the register; the Touches before/after
     buttons fixed (the strip's click handler had not been listening for them).
+29. **Touches ruled (2026-09-16).** Total: the count-up would get boring → a single 220 ms settle,
+    nothing spins. PAID stamp: keep. Voice: out, plain labels are safer with translations.
+    Price-tag pence: whimsical themes only (Market Stall, Paper till). Sold-today: out, but the
+    tile badge is kept for a property chosen in POS Products settings (stock for now, amber when
+    low). Receipt tear-off: whimsical themes only. Doodle: still open.
+30. **Icon set.** Paul: *"a custom icon set could be very, very interesting… I would be willing to
+    pay for a nice icon set if it adds some personality."* `icons/board.html` (captures
+    `icons/screens/board/`): the register's 26 icons (rail, cart, tender) drawn from twelve
+    families by name from the Iconify collections — Lucide (today), Phosphor regular and duotone,
+    Tabler, Hugeicons stroke, Solar linear, MingCute, Iconoir, Streamline Plump, Flex, Freehand,
+    Sharp — with coverage counts and 2026-09-16 prices: Streamline Icons plan from $19/month
+    annual, 300,000+ icons, 100 icons per project; Hugeicons Pro from $99/year, 60,000 icons,
+    10 styles; Nucleo $149 one-time for 44,282 icons, $99 per family; Untitled UI from $59
+    one-time; custom drawing of ~40 icons roughly $1,500–4,000. **Pick: Phosphor, duotone for the
+    rail and the big moments, regular elsewhere** — free, complete, one drawing at six weights,
+    and the duotone fill is the personality. If spending: Streamline Plump is the only warm set;
+    the hybrid (buy Plump, commission the 15 brand-carrying glyphs) is the route to a set that is
+    nobody else's.
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·
