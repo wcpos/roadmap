@@ -230,6 +230,13 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     total, "Hi Sarah", tap to pay; (5) **the counter** — the sale runs across the top as cards with
     a dark running-total board at the end, products take the full width below. **Pick: the till
     roll**, with the counter second for wide screens.
+    Paul (2026-09-16): *"No wrong direction again."* Layouts board rejected, off the hub.
+28. **Consolidation (2026-09-16).** Paul: consolidate what we have and the decisions made, remove
+    the toggles, clean up. **Decided:** tender close is top-right (14); Void is outlined red,
+    matched (23, round five no. 1); Legacy is the header text toggle (15). **Narrowed:** tab
+    style to two candidates, amount + dot and amount over status (17), still open. Woo theme
+    removed. Switches for the decided items removed from the register; the Touches before/after
+    buttons fixed (the strip's click handler had not been listening for them).
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·

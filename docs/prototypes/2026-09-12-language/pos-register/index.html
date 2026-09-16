@@ -453,7 +453,7 @@ const OPEN=[
 const S={ w:'tablet', theme:'light', scale:'regular', scn:'open',
   phoneTab:'cart', panel:false, sheet:null, tender:false, view:'keypad', entry:null, method:'cash', settle:null, online:true, long:false,
   pop:null, tabsPos:'bottom', registers:1, counted:'', open:'200.00', reveal:null, edit:null, orders:2, ordlist:false, view2:'grid',
-  closePos:'tr', legacy:'header-text', termStep:1, sortCart:'newest-last', tabStyle:'line1',   /* Paul 2026-09-14: amount + dot, with a format setting */
+  closePos:'tr', legacy:'header-text',   /* Paul 2026-09-16: decided, switches removed. Void = outlined red, matched (voidStyle 'red'). */ termStep:1, sortCart:'newest-last', tabStyle:'line1',   /* Paul 2026-09-14: amount + dot, with a format setting */
   voidStyle:'red', vmenu:false, toast:null,
   /* personality touches (research: personality/ideas on the hub). Each is one small behaviour, not a skin. */
   tx:{roll:1,stamp:1,voice:1,pence:1,today:1,tear:1,doodle:1} };
@@ -518,15 +518,12 @@ function renderStrip(){
   const seg=(k,opts)=>`<span class="seg">${opts.map(([v,l])=>`<button class="${S[k]===v?'on':''}" data-set="${k}" data-v="${v}">${l}</button>`).join('')}</span>`;
   document.getElementById('strip').innerHTML=`
     <div class="g"><b>Width</b>${seg('w',[['phone','Phone 390'],['tablet','Tablet 1024'],['desktop','Desktop 1440']])}</div>
-    <div class="g"><b>Theme</b>${seg('theme',[['light','Default light'],['dark','Default dark'],['paper','Paper till'],['bold','Bold money'],['warm','Warm shop'],['market','Market stall'],['stage','Dark stage'],['woo','Woo, owned'],['ocean','Ocean'],['sunset','Sunset'],['monochrome','Monochrome']])}</div>
+    <div class="g"><b>Theme</b>${seg('theme',[['light','Default light'],['dark','Default dark'],['paper','Paper till'],['bold','Bold money'],['warm','Warm shop'],['market','Market stall'],['stage','Dark stage'],['ocean','Ocean'],['sunset','Sunset'],['monochrome','Monochrome']])}</div>
     <div class="g"><b>Scale</b>${seg('scale',[['compact','Compact'],['regular','Regular'],['spacious','Spacious']])}</div>
     <div class="g"><b>Tabs</b>${seg('tabsPos',[['bottom','bottom'],['top','top']])}</div>
     <div class="g"><b>Touches</b><span class="seg">${(()=>{const all=Object.values(S.tx).every(Boolean), none=!Object.values(S.tx).some(Boolean); return `<button class="${none?'on':''}" data-txall="0">before</button><button class="${all?'on':''}" data-txall="1">after</button>`;})()}</span><span class="seg">${[['roll','numbers roll'],['stamp','PAID stamp'],['voice','a voice'],['pence','price-tag pence (market stall only)'],['today','sold today'],['tear','receipt tears off'],['doodle','doodle']].map(([k,l])=>`<button class="${S.tx[k]?'on':''}" data-tx="${k}">${l}</button>`).join('')}</span></div>
     <div class="g"><b>Registers</b>${seg('registers',[[1,'1'],[3,'3']])}</div>
-    <div class="g"><b>Tender close</b>${seg('closePos',[['tl','top-left ×'],['tr','top-right ×'],['bottom','Back to cart under keypad']])}</div>
-    <div class="g"><b>Tab style</b>${seg('tabStyle',[['lines2','amount over status'],['line1','amount + dot'],['chips','chips'],['cards','cards'],['numbered','numbered'],['edge','status edge']])}</div>
-    <div class="g"><b>Void button</b>${seg('voidStyle',[['red','outlined red, matched'],['tonal','tonal red'],['joined','one control, Void | Checkout'],['pills','two pills, 34 / 66'],['fill','filled red'],['outline','today, untouched']])}</div>
-    <div class="g"><b>Legacy switch</b>${seg('legacy',[['header-text','header · text toggle (decided)'],['header-icons','header · icons'],['tile','tile in the grid'],['bottom','link under the keypad']])}</div>
+    <div class="g"><b>Tab style</b>${seg('tabStyle',[['line1','amount + dot'],['lines2','amount over status']])}</div>
     <div class="g"><b>State</b><span class="seg">${SCENES.map(([v,l])=>`<button class="${S.scn===v?'on':''}" data-scn="${v}">${l}</button>`).join('')}</span></div>`;
 }
 function renderRail(){
@@ -867,7 +864,7 @@ function render(){
 }
 function stepTerminal(){ clearTimeout(termTimer); if(S.view!=='terminal') return; if(S.termStep<3){ termTimer=setTimeout(()=>{ S.termStep++; render(); stepTerminal(); }, S.termStep===1?2600:900); } else termTimer=setTimeout(()=>{ S.view='paid'; render(); },500); }
 document.addEventListener('click',e=>{
-  const b=e.target.closest('[data-set],[data-scn],[data-act]');
+  const b=e.target.closest('[data-set],[data-scn],[data-act],[data-tx],[data-txall]');
   if(!b){ if(!e.target.closest('[data-stop]') && (S.pop||S.ordlist||S.reveal!=null||S.edit!=null)){ S.pop=null; S.ordlist=false; S.reveal=null; S.edit=null; render(); } return; }
   if(b.dataset.set){ const v=b.dataset.v; S[b.dataset.set]=(v==='1'||v==='3')?+v:v; render(); return; }
   if(b.dataset.tx){ S.tx[b.dataset.tx]=S.tx[b.dataset.tx]?0:1; render(); return; }

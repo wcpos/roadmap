@@ -1,10 +1,10 @@
-// The workshop switches: capture the tender pane under each Legacy-switch placement and each
-// close position, tablet light regular. Run after shoot.js (which clears screens/).
+// The open switches only: the two tab styles, the personality themes, and the touches before / after.
+// Decided items (tender close, void, legacy) no longer have switches. Run after shoot.js.
 const { chromium } = require('/Users/kilbot/Projects/monorepo-v2/node_modules/playwright');
 const path = require('path');
 const fs = require('fs');
 const DIR = __dirname; const OUT = path.join(DIR, 'screens', 'variants');
-fs.mkdirSync(OUT, { recursive: true });
+fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive: true });
 (async () => {
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 1500, height: 1000 }, reducedMotion: 'reduce' });
@@ -13,39 +13,30 @@ fs.mkdirSync(OUT, { recursive: true });
   await page.goto('file://' + path.join(DIR, 'index.html'));
   const set = (k, v) => page.click(`.strip button[data-set="${k}"][data-v="${v}"]`);
   const scn = (v) => page.click(`.strip button[data-scn="${v}"]`);
-  // clicks scroll the page and the sticky strip would overlap the frame; reset before every capture
   const shot = async (name) => { await page.evaluate(() => window.scrollTo(0, 0)); await page.locator('#frame').screenshot({ path: path.join(OUT, name + '.jpg'), type: 'jpeg', quality: 82, animations: 'disabled' }); };
   await set('w', 'tablet'); await set('theme', 'light'); await set('scale', 'regular');
-  for (const leg of ['tile', 'header-icons', 'header-text', 'bottom']) {
-    await set('legacy', leg); await scn('tender'); await shot(`legacy-${leg}`);
-    await scn('tender-legacy'); await shot(`legacy-${leg}-view`);
-  }
-  await set('legacy', 'header-text');
-  for (const c of ['tl', 'tr', 'bottom']) { await set('closePos', c); await scn('tender'); await shot(`close-${c}`); }
-  await set('closePos', 'tr');
-  // the open-order tab styles, 12 orders, list closed, tablet and phone
+  // the two tab styles left, 12 orders, tablet and phone
   for (const w of ['tablet', 'phone']) { await set('w', w);
-    for (const s of ['lines2', 'line1', 'chips', 'cards', 'numbered', 'edge']) { await set('tabStyle', s); await scn('many-orders'); await page.click('.ordlist [data-act="ordlist"]'); await shot(`tabs-${s}-${w}`); } }
+    for (const s of ['line1', 'lines2']) { await set('tabStyle', s); await scn('many-orders'); await page.click('.ordlist [data-act="ordlist"]'); await shot(`tabs-${s}-${w}`); } }
   await set('w', 'tablet'); await set('tabStyle', 'line1');
-  // the void styles, live: tablet, session open; the menu opened, the hold mid-press
-  for (const v of ['red', 'tonal', 'joined', 'pills', 'fill', 'outline']) {
-    await set('voidStyle', v); await scn('open');
-    if (v === 'menu' || v === 'chip') await page.click('[data-act="vmenu"]');
-    if (v === 'details') await page.click('[data-pop="details"]');
-    if (v === 'hold') { await page.hover('[data-hold]'); await page.mouse.down(); await page.waitForTimeout(350); }
-    await shot(`void-${v}`);
-    if (v === 'hold') await page.mouse.up();
-  }
-  await set('voidStyle', 'red');
-  for (const th of ['paper','bold','warm','market','stage','woo']) { await set('theme', th); await scn('open'); await page.waitForTimeout(300); await shot(`theme-${th}`); }
+  // the personality themes, session open
+  for (const th of ['paper', 'bold', 'warm', 'market', 'stage']) { await set('theme', th); await scn('open'); await page.waitForTimeout(300); await shot(`theme-${th}`); }
   await set('theme', 'light');
-  // the touches: open (pence, sold today), empty (doodle + voice), paid (stamp)
-  await scn('open'); await shot('touch-open'); await scn('empty'); await shot('touch-empty'); await scn('paid'); await page.waitForTimeout(500); await shot('touch-paid');
-  for (const k of ['roll','stamp','voice','pence','today','tear','doodle']) await page.click(`.strip button[data-tx="${k}"]`);
-  await scn('open'); await shot('touch-off-open'); await scn('paid'); await page.waitForTimeout(500); await shot('touch-off-paid');
-  for (const k of ['roll','stamp','voice','pence','today','tear','doodle']) await page.click(`.strip button[data-tx="${k}"]`);
-  // phone: the ⋮ replaces the pair whatever the switch says
-  await set('w', 'phone'); await scn('open'); await shot('void-phone-dots'); await page.click('[data-act="vmenu"]'); await shot('void-phone-dots-open'); await set('w', 'tablet');
+  // the touches: after (all on) and before (all off), in three states
+  const flip = (v) => page.click(`.strip button[data-txall="${v}"]`);
+  for (const [v, tag] of [['1', 'after'], ['0', 'before']]) {
+    await flip(v);
+    await scn('open'); await shot(`touch-${tag}-open`);
+    await scn('empty'); await shot(`touch-${tag}-empty`);
+    await scn('paid'); await page.waitForTimeout(500); await shot(`touch-${tag}-paid`);
+  }
+  await flip('1');
+  // assert the flip actually changes the copy
+  await scn('open'); const after = await page.locator('#frame .cart-f .btn.p').textContent();
+  await flip('0'); const before = await page.locator('#frame .cart-f .btn.p').textContent(); await flip('1');
+  if (after === before) errors.push('before/after did not change the Checkout label: ' + after);
+  // phone: the dots
+  await set('w', 'phone'); await scn('open'); await shot('phone-dots'); await page.click('[data-act="vmenu"]'); await shot('phone-dots-open'); await set('w', 'tablet');
   await browser.close();
   if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
   console.log('ok · variants in ' + OUT);
