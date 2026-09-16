@@ -55,7 +55,7 @@ svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:
 .td button.nm{display:block;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cat{display:inline-flex;align-items:center;height:24px;padding:0 9px;border-radius:999px;background:var(--muted);color:var(--muted-fg);font-size:12px;font-weight:500;border:var(--hair) solid transparent} .cat:hover{border-color:var(--border);color:var(--fg);background:var(--card)}
 .img{width:40px;height:40px;border-radius:6px;background:var(--muted);display:inline-block}
-.add{width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg)} .add:hover{background:var(--card);color:var(--fg);box-shadow:0 0 0 1px var(--border)}
+.add{width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg)} .add:hover{background:var(--card);color:var(--fg);box-shadow:0 0 0 1px var(--border)} .add.in{background:var(--primary);color:var(--primary-fg);font-size:13px;font-weight:700;width:32px;height:32px;border-radius:999px;box-shadow:none} .add.in:hover{filter:brightness(1.1)} .add.in svg{display:none}
 /* add-to-cart idioms */
 .tr.rowbtn{cursor:pointer} .tr.rowbtn:active{background:color-mix(in oklch,var(--primary) 10%,transparent)}
 .cnt{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 7px;border-radius:999px;background:var(--primary);color:var(--primary-fg);font-size:12px;font-weight:700}
@@ -64,6 +64,12 @@ svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:
 .word{display:inline-flex;align-items:center;justify-content:center;height:32px;padding:0 14px;border-radius:999px;border:var(--hair) solid var(--fg);font-weight:600;font-size:13px;white-space:nowrap} .word:hover{background:var(--fg);color:var(--bg)} .word.in{border-color:var(--primary);background:var(--primary);color:var(--primary-fg)}
 .qpop{position:absolute;right:52px;top:50%;transform:translateY(-50%);z-index:6;display:flex;align-items:center;gap:6px;background:var(--card);border:var(--hair) solid var(--border);border-radius:999px;box-shadow:0 8px 24px oklch(0.2 0.02 250 / .16);padding:4px 6px 4px 12px;animation:pop 140ms var(--ease)} .qpop .lbl{font-size:12px;color:var(--muted-fg);margin-right:4px} @keyframes pop{from{opacity:0;transform:translateY(-50%) scale(.9)}}
 .tr.holding{background:color-mix(in oklch,var(--primary) 8%,transparent)}
+/* swipe to add: drag the row right and let go to add; on a mouse, hovering slides the row to show the stepper */
+.tr.sw{display:block;padding:0;overflow:hidden} .tr.sw .lb{display:grid;align-items:center;min-height:44px;position:relative;z-index:1;background:inherit;transition:transform 220ms var(--ease)} .tr.sw.drag .lb{transition:none}
+.tr.sw .un{position:absolute;top:0;bottom:0;display:flex;align-items:center;gap:8px;padding:0 14px;z-index:0} .tr.sw .un-l{left:0;background:var(--ok);color:#fff;font-weight:600;border-radius:8px 0 0 8px} .tr.sw .un-l svg{stroke:#fff} .tr.sw .un-r{right:0;background:var(--muted)}
+.tr.sw .lb{background:var(--card)} .frame[data-s="today"] .tr.sw .lb{background:var(--bg)}
+@media (hover:hover){ .tr.sw:not(.drag):hover .lb{transform:translateX(-152px)} }
+.tr.sw.past .un-l{filter:brightness(1.08)}
 /* footer: what the app's table footer carries (tax basis select · showing n of m · sync) */
 .foot{display:flex;align-items:center;gap:12px;height:40px;padding:0 4px 0 12px;border-top:var(--hair) solid var(--border);color:var(--muted-fg);flex:none;margin-top:auto;font-size:12.5px} .foot .tax{display:inline-flex;align-items:center;gap:4px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .foot .tax b{color:var(--fg);font-weight:500} .foot .tax svg{width:14px;height:14px} .foot .sync{width:32px;height:32px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center} .foot .sync:hover{background:var(--muted);color:var(--fg)} .foot .sync svg{width:16px;height:16px}
 .divider{width:8px;flex:none;position:relative} .divider::after{content:"";position:absolute;left:2px;top:50%;width:4px;height:48px;margin-top:-24px;border-radius:2px;background:var(--border)}
@@ -85,7 +91,7 @@ svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:
 <body>
 <div class="strip">
   <div class="g"><span>Header</span><div class="seg" data-k="h"><button data-v="caps" class="on">Caps, hairline (today)</button><button data-v="sentence">Sentence case</button><button data-v="band">Tinted band</button><button data-v="strong">Bold, 2 px rule</button></div></div>
-  <div class="g"><span>Add to cart</span><div class="seg" data-k="a"><button data-v="plus" class="on">+ (today)</button><button data-v="row">Row is the button</button><button data-v="price">Price is the button</button><button data-v="stepper">+ then stepper</button><button data-v="word">Add word</button><button data-v="hold">Tap adds, hold for quantity</button></div></div>
+  <div class="g"><span>Add to cart</span><div class="seg" data-k="a"><button data-v="holdplus" class="on">+ adds, hold + for quantity</button><button data-v="plus">+ (today)</button><button data-v="row">Row is the button</button><button data-v="price">Price is the button</button><button data-v="stepper">+ then stepper</button><button data-v="word">Add word</button><button data-v="hold">Tap adds, hold for quantity</button><button data-v="swipe">Swipe to add · hover reveals</button></div></div>
 </div>
 <h1>POS table — the filter bar, the slide, the header, the footer, and the add button</h1>
 <p class="lead">Three surfaces, all live: today's, the floating sheet, and all white with one seam. Under the search, the app's own <b>filter bar</b>. Press a category chip, the <kbd>Category</kbd> pill, or a variable product and the table <b>slides</b> left behind a breadcrumb. The header's column edges <b>drag to resize</b>. The <b>footer</b> carries what the app's does: the tax basis, <i>Showing n of m</i>, and sync. The strip above swaps the <b>header</b> treatment and the <b>add-to-cart</b> idiom on all three at once; the Mobbin screens for the add idioms are at the bottom.</p>
@@ -103,7 +109,7 @@ const P=[
  {n:'Tea tin',p:7.5,sku:'TT',c:'Retail',s:11,v:[['Earl Grey','','TT-EG',7.5,5],['Breakfast','','TT-BF',7.5,6],['Mint','','TT-MT',8,0]]},
  {n:'Gift card',p:20,sku:'GC',c:'Retail',s:null}];
 const CATS=['Coffee','Bakery','Merch','Retail'];
-const G={h:'caps',a:'plus'};   /* the strip's choices, shared by every frame */
+const G={h:'caps',a:'holdplus'};   /* the strip's choices, shared by every frame */
 const stock=s=>s==null?'<span class="mut">—</span>':s===0?'<span class="st bad"><i></i>0</span>':s<5?`<span class="st warn"><i></i>${s}</span>`:String(s);
 const rail=`<div class="rail"><div class="logo"></div><div class="it on">${I.pos}</div><div class="it">${I.products}</div><div class="it">${I.orders}</div><div class="it">${I.customers}</div></div>`;
 const toolbar=`<div class="toolbar"><span class="in">${I.search}Search products</span><span class="ibtn">${I.scan}</span><span class="ibtn">${I.grid}</span><span class="ibtn">${I.sliders}</span></div>`;
@@ -114,7 +120,7 @@ function makeApp(frame){
     cols:{products:[56,'1.5fr',104,116,72,64],cat:[56,'1.5fr',104,116,72,64],var2:[56,'1.3fr','1fr',100,116,72,64],var1:[56,'1.5fr',104,116,72,64]}};
   /* column widths: the user's drags live in S.cols; the add idiom sets the last column and, for the price button, the price column */
   const colsFor=k=>{const c=S.cols[k].slice();const last=c.length-1;const pi=k==='var2'?4:3;
-    c[last]={stepper:112,price:40,word:104,row:56,hold:56}[G.a]||64; if(G.a==='price') c[pi]=Math.max(c[pi],136); return c;};
+    c[last]={stepper:112,price:40,word:104,row:56,hold:56,swipe:56}[G.a]||64; if(G.a==='price') c[pi]=Math.max(c[pi],136); return c;};
   const grid=k=>colsFor(k).map(v=>typeof v==='number'?v+'px':v).join(' ');
   const inCart=(n,s='')=>S.lines.filter(l=>l[1]===n&&(l[2]||'')===s).reduce((a,l)=>a+l[0],0);
   const fbar=()=>`<div class="fwrap"><div class="fbar">
@@ -133,14 +139,19 @@ function makeApp(frame){
       case 'price': return `<div class="td c"></div>`;
       case 'stepper': return `<div class="td c">${n?`<span class="step"><button data-act="dec" data-i="${i}">${I.minus}</button><b>${n}</b><button data-act="add" data-i="${i}">${I.plus}</button></span>`:`<button class="add" data-act="add" data-i="${i}">${I.plus}</button>`}</div>`;
       case 'word': return `<div class="td c"><button class="word ${n?'in':''}" data-act="add" data-i="${i}">${n?`Added · ${n}`:'Add'}</button></div>`;
+      case 'holdplus': return `<div class="td c"><button class="add ${n?'in':''}" data-act="add" data-hold="1" data-i="${i}">${n||I.plus}</button></div>`;
       default: return `<div class="td c"><button class="add" data-act="add" data-i="${i}">${I.plus}</button></div>`;
     }};
   const rowIsBtn=()=>G.a==='row'||G.a==='hold';
-  const row=(p,i,k)=>`<div class="tr ${rowIsBtn()&&!p.v?'rowbtn':''}" data-i="${i}" ${rowIsBtn()&&!p.v?`data-act="rowadd"`:''} style="grid-template-columns:${grid(k)}"><div class="td c"><span class="img"></span></div><div class="td">${p.v?`<button class="nm" data-act="var" data-i="${i}">${p.n}<span class="sub">${p.v.length} variations</span></button>`:`${p.n}<span class="sub">${p.sku}</span>`}</div><div class="td"><button class="cat" data-act="cat" data-c="${p.c}">${p.c}</button></div>${priceCell(p,i)}<div class="td r">${stock(p.s)}</div>${endCell(p,i)}</div>`;
+  const swRow=(cells,k,attrs,n,stepAttrs)=>`<div class="tr sw" ${attrs}><div class="un un-l">${I.plus}Add</div><div class="un un-r"><span class="step"><button data-act="${stepAttrs.dec}" ${stepAttrs.key}>${I.minus}</button><b>${n}</b><button data-act="${stepAttrs.inc}" ${stepAttrs.key}>${I.plus}</button></span></div><div class="lb" style="grid-template-columns:${grid(k)}">${cells}</div></div>`;
+  const rowCells=(p,i)=>`<div class="td c"><span class="img"></span></div><div class="td">${p.v?`<button class="nm" data-act="var" data-i="${i}">${p.n}<span class="sub">${p.v.length} variations</span></button>`:`${p.n}<span class="sub">${p.sku}</span>`}</div><div class="td"><button class="cat" data-act="cat" data-c="${p.c}">${p.c}</button></div>${priceCell(p,i)}<div class="td r">${stock(p.s)}</div>${G.a==='swipe'&&!p.v?`<div class="td c">${inCart(p.n)?`<span class="cnt">${inCart(p.n)}</span>`:''}</div>`:endCell(p,i)}`;
+  const row=(p,i,k)=>G.a==='swipe'&&!p.v?swRow(rowCells(p,i),k,`data-i="${i}" data-sw="1"`,inCart(p.n),{dec:'dec',inc:'add',key:`data-i="${i}"`}):`<div class="tr ${rowIsBtn()&&!p.v?'rowbtn':''}" data-i="${i}" ${rowIsBtn()&&!p.v?`data-act="rowadd"`:''} style="grid-template-columns:${grid(k)}">${rowCells(p,i)}</div>`;
   const vrow=(p,v,j,k,two)=>{const vs=[v[0],v[1]].filter(Boolean).join(' · ');const n=inCart(p.n,vs);
-    const end=G.a==='stepper'?(n?`<span class="step"><button data-act="decv" data-j="${j}">${I.minus}</button><b>${n}</b><button data-act="addv" data-j="${j}">${I.plus}</button></span>`:`<button class="add" data-act="addv" data-j="${j}">${I.plus}</button>`):G.a==='word'?`<button class="word ${n?'in':''}" data-act="addv" data-j="${j}">${n?`Added · ${n}`:'Add'}</button>`:(rowIsBtn()||G.a==='price')?(n?`<span class="cnt">${n}</span>`:''):`<button class="add" data-act="addv" data-j="${j}">${I.plus}</button>`;
+    const end=G.a==='stepper'?(n?`<span class="step"><button data-act="decv" data-j="${j}">${I.minus}</button><b>${n}</b><button data-act="addv" data-j="${j}">${I.plus}</button></span>`:`<button class="add" data-act="addv" data-j="${j}">${I.plus}</button>`):G.a==='word'?`<button class="word ${n?'in':''}" data-act="addv" data-j="${j}">${n?`Added · ${n}`:'Add'}</button>`:G.a==='holdplus'?`<button class="add ${n?'in':''}" data-act="addv" data-hold="1" data-j="${j}">${n||I.plus}</button>`:(rowIsBtn()||G.a==='price')?(n?`<span class="cnt">${n}</span>`:''):`<button class="add" data-act="addv" data-j="${j}">${I.plus}</button>`;
     const price=G.a==='price'?`<button class="pricebtn ${n?'in':''}" data-act="addv" data-j="${j}">${fmt(v[3])}${n?`<span class="cnt">${n}</span>`:''}</button>`:`<span class="money">${fmt(v[3])}</span>`;
-    return `<div class="tr ${rowIsBtn()?'rowbtn':''}" data-j="${j}" ${rowIsBtn()?`data-act="rowaddv"`:''} style="grid-template-columns:${grid(k)}"><div class="td c"><span class="img"></span></div><div class="td">${v[0]}</div>${two?`<div class="td">${v[1]}</div>`:''}<div class="td mut">${v[2]}</div><div class="td r">${price}</div><div class="td r">${stock(v[4])}</div><div class="td c">${end}</div></div>`;};
+    const cells=`<div class="td c"><span class="img"></span></div><div class="td">${v[0]}</div>${two?`<div class="td">${v[1]}</div>`:''}<div class="td mut">${v[2]}</div><div class="td r">${price}</div><div class="td r">${stock(v[4])}</div><div class="td c">${G.a==='swipe'?(n?`<span class="cnt">${n}</span>`:''):end}</div>`;
+    if(G.a==='swipe') return swRow(cells,k,`data-j="${j}" data-sw="1"`,n,{dec:'decv',inc:'addv',key:`data-j="${j}"`});
+    return `<div class="tr ${rowIsBtn()?'rowbtn':''}" data-j="${j}" ${rowIsBtn()?`data-act="rowaddv"`:''} style="grid-template-columns:${grid(k)}">${cells}</div>`;};
   const crumb=(here,cnt,extra='')=>`<div class="crumb"><button data-act="pop">${I.chevl}Products</button><span class="sep">›</span><span class="here">${here}</span><span class="num">· ${cnt}</span>${extra}</div>`;
   const pane=()=>{
     if(S.view==='var'){const p=P[S.prod];const two=!!p.v[0][1];const k=two?'var2':'var1';
@@ -178,24 +189,39 @@ function makeApp(frame){
     if(act==='pop'){S.menu=false;closePop();if(S.view==='var'&&S.cat){S.view='cat';S.prod=null;}else{S.view='products';S.cat=null;S.prod=null;}slide('pop');return;}
     if(act==='add'||act==='rowadd'){ if(frame.querySelector('.qpop')){closePop();return;} const p=P[+t.dataset.i];flash(t);addLine(p.n,'',p.p,1);repaint();return;}
     if(act==='dec'){const p=P[+t.dataset.i];addLine(p.n,'',p.p,-1);repaint();return;}
-    if(act==='addv'||act==='rowaddv'){const p=P[S.prod];const v=p.v[+t.dataset.j];flash(t);addLine(p.n,[v[0],v[1]].filter(Boolean).join(' · '),v[3],1);repaint();return;}
+    if(act==='addv'||act==='rowaddv'){ if(frame.querySelector('.qpop')){closePop();return;} const p=P[S.prod];const v=p.v[+t.dataset.j];flash(t);addLine(p.n,[v[0],v[1]].filter(Boolean).join(' · '),v[3],1);repaint();return;}
     if(act==='decv'){const p=P[S.prod];const v=p.v[+t.dataset.j];addLine(p.n,[v[0],v[1]].filter(Boolean).join(' · '),v[3],-1);repaint();return;}
-    if(act==='qinc'||act==='qdec'){e.stopPropagation();const pop=t.closest('.qpop');const i=+pop.dataset.i;const d=act==='qinc'?1:-1;const p=P[i];addLine(p.n,'',p.p,d);const n=inCart(p.n);pop.querySelector('b').textContent=n;const cell=frame.querySelector(`.tr[data-i="${i}"] .td:last-child`);if(cell) cell.innerHTML=n?`<span class="cnt">${n}</span>`:'';frame.querySelector('.cart').outerHTML=cart();return;}
+    if(act==='qinc'||act==='qdec'){e.stopPropagation();const pop=t.closest('.qpop');const i=+pop.dataset.i;const j=pop.dataset.j==null?null:+pop.dataset.j;const d=act==='qinc'?1:-1;const p=P[i];const v=j==null?null:p.v[j];const vs=v?[v[0],v[1]].filter(Boolean).join(' · '):'';addLine(p.n,vs,v?v[3]:p.p,d);const n=inCart(p.n,vs);pop.querySelector('b').textContent=n;
+      const row=pop.closest('.tr'); const cell=row.querySelector('.td:last-of-type'); if(G.a==='holdplus'){const b=cell.querySelector('.add'); if(b){b.classList.toggle('in',n>0); b.innerHTML=n||I.plus;}} else cell.innerHTML=n?`<span class="cnt">${n}</span>`:'';
+      frame.querySelector('.cart').outerHTML=cart();return;}
   });
   /* the qpop's own buttons must not bubble into the row's tap-adds */
   frame.addEventListener('click',e=>{ if(e.target.closest('.qpop')&&!e.target.closest('[data-act]')) e.stopPropagation(); },true);
   /* hold for quantity: press and keep pressing a row for 450 ms */
   frame.addEventListener('pointerdown',e=>{
-    if(G.a!=='hold') return; const r=e.target.closest('.tr.rowbtn[data-act="rowadd"]'); if(!r||e.target.closest('[data-act="cat"]')||e.target.closest('.qpop')) return;
-    clearTimeout(holdTimer); holdTimer=setTimeout(()=>{ held=true; closePop(); r.classList.add('holding'); const i=+r.dataset.i; const p=P[i]; const n=inCart(p.n);
-      r.insertAdjacentHTML('beforeend',`<span class="qpop" data-i="${i}"><span class="lbl">${p.n}</span><span class="step"><button data-act="qdec">${I.minus}</button><b>${n}</b><button data-act="qinc">${I.plus}</button></span></span>`); },450);
+    let r=null, j=null;
+    if(G.a==='hold'){ r=e.target.closest('.tr.rowbtn[data-act="rowadd"]'); if(!r||e.target.closest('[data-act="cat"]')||e.target.closest('.qpop')) return; }
+    else if(G.a==='holdplus'){ const b=e.target.closest('[data-hold]'); if(!b) return; r=b.closest('.tr'); if(b.dataset.j!=null) j=+b.dataset.j; }
+    else return;
+    clearTimeout(holdTimer); holdTimer=setTimeout(()=>{ held=true; closePop(); r.classList.add('holding');
+      const p=j==null?P[+r.dataset.i]:P[S.prod]; const v=j==null?null:p.v[j]; const vs=v?[v[0],v[1]].filter(Boolean).join(' · '):''; const n=inCart(p.n,vs);
+      r.insertAdjacentHTML('beforeend',`<span class="qpop" data-i="${j==null?r.dataset.i:S.prod}" ${j==null?'':`data-j="${j}"`}><span class="lbl">${p.n}${vs?' · '+vs:''}</span><span class="step"><button data-act="qdec">${I.minus}</button><b>${n}</b><button data-act="qinc">${I.plus}</button></span></span>`); },450);
   });
   ['pointerup','pointercancel','pointerleave'].forEach(ev=>frame.addEventListener(ev,()=>clearTimeout(holdTimer)));
+  /* swipe to add: a rightward drag on the row's body; past 88 px it adds on release */
+  frame.addEventListener('pointerdown',e=>{
+    if(G.a!=='swipe'||e.pointerType==='mouse'&&e.button!==0) return; const r=e.target.closest('.tr.sw'); if(!r||e.target.closest('button')) return;
+    const lb=r.querySelector('.lb'); const x0=e.clientX; let dx=0; r.classList.add('drag'); r.setPointerCapture(e.pointerId);
+    const move=ev=>{dx=Math.max(0,Math.min(160,ev.clientX-x0)); lb.style.transform=`translateX(${dx}px)`; r.classList.toggle('past',dx>88);};
+    const up=()=>{r.removeEventListener('pointermove',move); r.removeEventListener('pointerup',up); r.removeEventListener('pointercancel',up); const add=dx>88; lb.style.transform=''; r.classList.remove('drag','past');
+      if(add){ if(r.dataset.j!=null){const p=P[S.prod];const v=p.v[+r.dataset.j];addLine(p.n,[v[0],v[1]].filter(Boolean).join(' · '),v[3],1);} else {const p=P[+r.dataset.i];addLine(p.n,'',p.p,1);} flash(r); setTimeout(repaint,240); } };
+    r.addEventListener('pointermove',move); r.addEventListener('pointerup',up); r.addEventListener('pointercancel',up);
+  });
   /* drag a column edge */
   frame.addEventListener('pointerdown',e=>{
     const h=e.target.closest('.rz'); if(!h) return; e.preventDefault(); const head=h.closest('.thead'); const k=head.dataset.k; const i=+h.dataset.i; const cols=S.cols[k]; if(typeof cols[i]!=='number') return;
     const x0=e.clientX, w0=cols[i]; h.classList.add('on'); h.setPointerCapture(e.pointerId);
-    const move=ev=>{cols[i]=Math.max(44,Math.round(w0+(ev.clientX-x0))); const g=grid(k); frame.querySelectorAll('.pane .thead, .pane .tr').forEach(el=>el.style.gridTemplateColumns=g);};
+    const move=ev=>{cols[i]=Math.max(44,Math.round(w0+(ev.clientX-x0))); const g=grid(k); frame.querySelectorAll('.pane .thead, .pane .tr:not(.sw), .pane .tr.sw .lb').forEach(el=>el.style.gridTemplateColumns=g);};
     const up=()=>{h.classList.remove('on'); h.removeEventListener('pointermove',move); h.removeEventListener('pointerup',up);};
     h.addEventListener('pointermove',move); h.addEventListener('pointerup',up);
   });

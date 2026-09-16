@@ -326,6 +326,19 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     IKEA (filled basket), Walmart, Shopee, Kiwi (a stepper on every row), CAVA (count with a
     picker). **Picks: sentence case on all white, caps elsewhere; tap adds + hold for quantity
     with the count badge, price-as-button the strongest alternative.** Waiting on Paul.
+    **Paul (2026-09-17): likes the + that becomes a stepper, but the column it needs is a waste
+    of space; likes the press-and-hold. Ruled: an add button, press-and-hold for quantity, the
+    stepper as a popover.** Drawn as the board's default: the + as today (a 64 px column), a tap
+    adds one, holding the + for 450 ms opens − n + as a popover on the row, and once the item is
+    in the + shows the count in its place (a 32 px blue circle). Variations the same. Open: whether
+    the + should carry the count or stay a plain +.
+    **Paul, same day: the cart will have a slide to remove; explore a slide to add, maybe a slide
+    to add quantity with the stepper; on desktop it has to reveal itself on mouse-over.** Drawn as
+    the seventh idiom (*Swipe to add · hover reveals*): a rightward drag on the row body pulls a
+    green *+ Add* out from under the left edge, past 88 px it adds on release (the row flashes and
+    the count appears in the last column); with a mouse, hovering a row slides its body 152 px
+    left to show a − n + stepper at the right, the cart-line hover actions mirrored. Open: swipe as
+    a second gesture beside the hold, or instead of it.
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·
