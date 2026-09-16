@@ -137,7 +137,7 @@ function makeApp(frame){
   const endCell=(p,i)=>{const n=p.v?0:inCart(p.n);
     if(p.v) return `<div class="td c"><button class="add" data-act="var" data-i="${i}">${I.chevr}</button></div>`;
     switch(G.a){
-      case 'row': case 'hold': return `<div class="td c">${n?`<span class="cnt">${n}</span>`:''}</div>`;
+      case 'row': case 'hold': case 'qty': return `<div class="td c">${n?`<span class="cnt">${n}</span>`:''}</div>`;
       case 'price': return `<div class="td c"></div>`;
       case 'stepper': return `<div class="td c">${n?`<span class="step"><button data-act="dec" data-i="${i}">${I.minus}</button><b>${n}</b><button data-act="add" data-i="${i}">${I.plus}</button></span>`:`<button class="add" data-act="add" data-i="${i}">${I.plus}</button>`}</div>`;
       case 'word': return `<div class="td c"><button class="word ${n?'has':''}" data-act="add" data-i="${i}">${n?`Added · ${n}`:'Add'}</button></div>`;
