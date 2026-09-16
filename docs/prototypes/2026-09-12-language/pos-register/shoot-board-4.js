@@ -21,7 +21,7 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
     await page.waitForTimeout(400); await shot('4-category');
     await f.locator('.crumb [data-act="pop"]').click(); await page.waitForTimeout(500);
     await f.locator('.tr [data-act="var"][data-i="7"]').first().click(); await page.waitForTimeout(500); await shot('5-variations');
-    await f.locator('.tr [data-act="addv"][data-j="2"]').click(); await page.waitForTimeout(200); await shot('6-variation-added');
+    await f.locator('.tr[data-j="2"]').click(); await page.waitForTimeout(200); await shot('6-variation-added');
     const crumb = await f.locator('.crumb').innerText(); if (!/Tote bag/.test(crumb)) throw new Error('no breadcrumb for ' + name);
     const total = await f.locator('.btn.p').innerText(); if (!/29\.52/.test(total)) throw new Error('cart did not take the variation: ' + total);
     // drag the SKU column edge 40 px wider and check the grid changed
@@ -36,24 +36,25 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   const f = panels.nth(2).locator('.frame'); const name = await panels.nth(2).getAttribute('data-n');
   for (const h of ['caps', 'sentence', 'band', 'strong']) { await set('h', h); await f.screenshot({ path: path.join(OUT, `${name}-header-${h}.jpg`), type: 'jpeg', quality: 84 }); }
   await set('h', 'caps');
-  for (const a of ['holdplus', 'plus', 'row', 'price', 'stepper', 'word', 'hold', 'swipe']) {
+  for (const a of ['row', 'qty', 'holdplus', 'plus', 'price', 'stepper', 'word', 'hold', 'swipe']) {
     await set('a', a);
     if (a === 'swipe') { // drag Cold brew 120 px to the right, let go: added. then hover Sourdough: the stepper shows
       const b = await f.locator('.tr[data-i="2"] .lb').boundingBox(); await page.mouse.move(b.x + 200, b.y + 20); await page.mouse.down(); await page.mouse.move(b.x + 260, b.y + 20, { steps: 4 }); await page.mouse.move(b.x + 320, b.y + 20, { steps: 4 });
       await f.screenshot({ path: path.join(OUT, `${name}-add-swipe-dragging.jpg`), type: 'jpeg', quality: 84 }); await page.mouse.up(); await page.waitForTimeout(400);
       const h = await f.locator('.tr[data-i="4"] .lb').boundingBox(); await page.mouse.move(h.x + 200, h.y + 20); await page.waitForTimeout(300);
     } else {
-    const target = a === 'price' ? f.locator('.tr[data-i="2"] .pricebtn') : (a === 'row' || a === 'hold') ? f.locator('.tr[data-i="2"]') : f.locator('.tr[data-i="2"] [data-act="add"]');
+    if (a === 'qty') { await f.locator('.qbar [data-q="3"]').click(); await f.screenshot({ path: path.join(OUT, `${name}-add-qty-armed.jpg`), type: 'jpeg', quality: 84 }); }
+    const target = a === 'price' ? f.locator('.tr[data-i="2"] .pricebtn') : (a === 'row' || a === 'hold' || a === 'qty') ? f.locator('.tr[data-i="2"]') : f.locator('.tr[data-i="2"] [data-act="add"]');
     await target.click(); await page.waitForTimeout(150); }
     if (a === 'hold') { const b = await f.locator('.tr[data-i="4"]').boundingBox(); await page.mouse.move(b.x + 200, b.y + 20); await page.mouse.down(); await page.waitForTimeout(600); }
     if (a === 'holdplus') { const b = await f.locator('.tr[data-i="4"] [data-hold]').boundingBox(); await page.mouse.move(b.x + 16, b.y + 16); await page.mouse.down(); await page.waitForTimeout(600); }
     await f.screenshot({ path: path.join(OUT, `${name}-add-${a}.jpg`), type: 'jpeg', quality: 84 });
-    if (a === 'hold' || a === 'holdplus') { await page.mouse.up(); if (!(await f.locator('.qpop').count())) throw new Error('hold popover did not open for ' + a); if (a === 'holdplus') { await f.locator('.qpop [data-act="qinc"]').click(); await f.screenshot({ path: path.join(OUT, `${name}-add-holdplus-2.jpg`), type: 'jpeg', quality: 84 }); const c = await f.locator('.tr[data-i="4"] .add.in').innerText(); if (c.trim() !== '2') throw new Error('the + did not take the count: ' + c); } }
-    const total = await f.locator('.btn.p').innerText(); if (!/34\.08/.test(total) && a !== 'hold' && a !== 'holdplus') throw new Error(`add idiom ${a} did not add: ${total}`);
+    if (a === 'hold' || a === 'holdplus') { await page.mouse.up(); if (!(await f.locator('.qpop').count())) throw new Error('hold popover did not open for ' + a); if (a === 'holdplus') { await f.locator('.qpop [data-act="qinc"]').click(); await f.screenshot({ path: path.join(OUT, `${name}-add-holdplus-2.jpg`), type: 'jpeg', quality: 84 }); const c = await f.locator('.tr[data-i="4"] .add.has').innerText(); if (c.trim() !== '2') throw new Error('the + did not take the count: ' + c); } }
+    const total = await f.locator('.btn.p').innerText(); if (a === 'qty' ? !/43\.20/.test(total) : (!/34\.08/.test(total) && a !== 'hold' && a !== 'holdplus')) throw new Error(`add idiom ${a} did not add: ${total}`);
     // reset the cart line we added so each idiom starts the same
     await page.evaluate(() => { const app = window.APPS[2]; app.S.lines = app.S.lines.filter(l => l[1] !== 'Cold brew' && l[1] !== 'Sourdough loaf').concat([[1,'Sourdough loaf','',4.2]]); app.full(); });
   }
-  await set('a', 'holdplus');
+  await set('a', 'row');
   await page.screenshot({ path: path.join(OUT, '00-full.jpg'), type: 'jpeg', quality: 70, fullPage: true });
   await browser.close();
   if (errors.length) { console.error(errors.join('\n')); process.exit(1); }

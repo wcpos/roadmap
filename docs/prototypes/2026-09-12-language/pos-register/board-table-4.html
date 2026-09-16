@@ -55,13 +55,14 @@ svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:
 .td button.nm{display:block;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cat{display:inline-flex;align-items:center;height:24px;padding:0 9px;border-radius:999px;background:var(--muted);color:var(--muted-fg);font-size:12px;font-weight:500;border:var(--hair) solid transparent} .cat:hover{border-color:var(--border);color:var(--fg);background:var(--card)}
 .img{width:40px;height:40px;border-radius:6px;background:var(--muted);display:inline-block}
-.add{width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg)} .add:hover{background:var(--card);color:var(--fg);box-shadow:0 0 0 1px var(--border)} .add.in{background:var(--primary);color:var(--primary-fg);font-size:13px;font-weight:700;width:32px;height:32px;border-radius:999px;box-shadow:none} .add.in:hover{filter:brightness(1.1)} .add.in svg{display:none}
+.add{width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg)} .add:hover{background:var(--card);color:var(--fg);box-shadow:0 0 0 1px var(--border)} .add.has{background:var(--primary);color:var(--primary-fg);font-size:13px;font-weight:700;width:32px;height:32px;border-radius:999px;box-shadow:none} .add.has:hover{filter:brightness(1.1)} .add.has svg{display:none}
 /* add-to-cart idioms */
+.qbar{display:inline-flex;height:44px;border:var(--hair) solid var(--border);border-radius:var(--r);background:var(--card);overflow:hidden;flex:none} .qbar button{width:44px;display:inline-flex;align-items:center;justify-content:center;font-weight:600;color:var(--muted-fg)} .qbar button.on{background:var(--fg);color:var(--bg)}
 .tr.rowbtn{cursor:pointer} .tr.rowbtn:active{background:color-mix(in oklch,var(--primary) 10%,transparent)}
 .cnt{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 7px;border-radius:999px;background:var(--primary);color:var(--primary-fg);font-size:12px;font-weight:700}
-.pricebtn{display:inline-flex;align-items:center;justify-content:center;height:34px;min-width:84px;padding:0 12px;border-radius:8px;border:var(--hair) solid var(--border);background:var(--card);font-weight:600;white-space:nowrap} .pricebtn:hover{border-color:var(--fg)} .pricebtn:active{background:var(--fg);color:var(--bg)} .pricebtn.in{border-color:var(--primary);color:var(--primary)} .pricebtn .cnt{margin-left:8px;height:20px;min-width:20px;font-size:11px}
+.pricebtn{display:inline-flex;align-items:center;justify-content:center;height:34px;min-width:84px;padding:0 12px;border-radius:8px;border:var(--hair) solid var(--border);background:var(--card);font-weight:600;white-space:nowrap} .pricebtn:hover{border-color:var(--fg)} .pricebtn:active{background:var(--fg);color:var(--bg)} .pricebtn.has{border-color:var(--primary);color:var(--primary)} .pricebtn .cnt{margin-left:8px;height:20px;min-width:20px;font-size:11px}
 .step{display:inline-flex;align-items:center;height:34px;border:var(--hair) solid var(--border);border-radius:999px;background:var(--card);overflow:hidden} .step button{width:32px;height:34px;display:inline-flex;align-items:center;justify-content:center;color:var(--fg)} .step button:hover{background:var(--muted)} .step b{min-width:22px;text-align:center;font-size:13px}
-.word{display:inline-flex;align-items:center;justify-content:center;height:32px;padding:0 14px;border-radius:999px;border:var(--hair) solid var(--fg);font-weight:600;font-size:13px;white-space:nowrap} .word:hover{background:var(--fg);color:var(--bg)} .word.in{border-color:var(--primary);background:var(--primary);color:var(--primary-fg)}
+.word{display:inline-flex;align-items:center;justify-content:center;height:32px;padding:0 14px;border-radius:999px;border:var(--hair) solid var(--fg);font-weight:600;font-size:13px;white-space:nowrap} .word:hover{background:var(--fg);color:var(--bg)} .word.has{border-color:var(--primary);background:var(--primary);color:var(--primary-fg)}
 .qpop{position:absolute;right:52px;top:50%;transform:translateY(-50%);z-index:6;display:flex;align-items:center;gap:6px;background:var(--card);border:var(--hair) solid var(--border);border-radius:999px;box-shadow:0 8px 24px oklch(0.2 0.02 250 / .16);padding:4px 6px 4px 12px;animation:pop 140ms var(--ease)} .qpop .lbl{font-size:12px;color:var(--muted-fg);margin-right:4px} @keyframes pop{from{opacity:0;transform:translateY(-50%) scale(.9)}}
 .tr.holding{background:color-mix(in oklch,var(--primary) 8%,transparent)}
 /* swipe to add: drag the row right and let go to add; on a mouse, hovering slides the row to show the stepper */
@@ -91,7 +92,7 @@ svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:
 <body>
 <div class="strip">
   <div class="g"><span>Header</span><div class="seg" data-k="h"><button data-v="caps" class="on">Caps, hairline (today)</button><button data-v="sentence">Sentence case</button><button data-v="band">Tinted band</button><button data-v="strong">Bold, 2 px rule</button></div></div>
-  <div class="g"><span>Add to cart</span><div class="seg" data-k="a"><button data-v="holdplus" class="on">+ adds, hold + for quantity</button><button data-v="plus">+ (today)</button><button data-v="row">Row is the button</button><button data-v="price">Price is the button</button><button data-v="stepper">+ then stepper</button><button data-v="word">Add word</button><button data-v="hold">Tap adds, hold for quantity</button><button data-v="swipe">Swipe to add · hover reveals</button></div></div>
+  <div class="g"><span>Add to cart</span><div class="seg" data-k="a"><button data-v="row" class="on">Row is the button (every POS)</button><button data-v="qty">Quantity first, then the row (Clover)</button><button data-v="holdplus">+ adds, hold + for quantity</button><button data-v="plus">+ (today)</button><button data-v="price">Price is the button</button><button data-v="stepper">+ then stepper</button><button data-v="word">Add word</button><button data-v="hold">Tap adds, hold for quantity</button><button data-v="swipe">Swipe to add · hover reveals</button></div></div>
 </div>
 <h1>POS table — the filter bar, the slide, the header, the footer, and the add button</h1>
 <p class="lead">Three surfaces, all live: today's, the floating sheet, and all white with one seam. Under the search, the app's own <b>filter bar</b>. Press a category chip, the <kbd>Category</kbd> pill, or a variable product and the table <b>slides</b> left behind a breadcrumb. The header's column edges <b>drag to resize</b>. The <b>footer</b> carries what the app's does: the tax basis, <i>Showing n of m</i>, and sync. The strip above swaps the <b>header</b> treatment and the <b>add-to-cart</b> idiom on all three at once; the Mobbin screens for the add idioms are at the bottom.</p>
@@ -109,18 +110,19 @@ const P=[
  {n:'Tea tin',p:7.5,sku:'TT',c:'Retail',s:11,v:[['Earl Grey','','TT-EG',7.5,5],['Breakfast','','TT-BF',7.5,6],['Mint','','TT-MT',8,0]]},
  {n:'Gift card',p:20,sku:'GC',c:'Retail',s:null}];
 const CATS=['Coffee','Bakery','Merch','Retail'];
-const G={h:'caps',a:'holdplus'};   /* the strip's choices, shared by every frame */
+const G={h:'caps',a:'row'};   /* the strip's choices, shared by every frame */
 const stock=s=>s==null?'<span class="mut">—</span>':s===0?'<span class="st bad"><i></i>0</span>':s<5?`<span class="st warn"><i></i>${s}</span>`:String(s);
 const rail=`<div class="rail"><div class="logo"></div><div class="it on">${I.pos}</div><div class="it">${I.products}</div><div class="it">${I.orders}</div><div class="it">${I.customers}</div></div>`;
+const qbar=(q)=>`<span class="qbar">${[1,2,3,5,10].map(n=>`<button data-act="q" data-q="${n}" class="${q===n?'on':''}">×${n}</button>`).join('')}</span>`;
 const toolbar=`<div class="toolbar"><span class="in">${I.search}Search products</span><span class="ibtn">${I.scan}</span><span class="ibtn">${I.grid}</span><span class="ibtn">${I.sliders}</span></div>`;
 const foot=(txt)=>`<div class="foot"><span class="tax">Tax based on: <b>Shop base address</b>${I.chevd}</span><span class="grow"></span><span>${txt}</span><button class="sync" title="Sync">${I.sync}</button></div>`;
 
 function makeApp(frame){
-  const S={view:'products',cat:null,prod:null,lines:[[2,'Flat white','Oat milk',3.2],[1,'Sourdough loaf','',4.2]],menu:false,
+  const S={q:1,view:'products',cat:null,prod:null,lines:[[2,'Flat white','Oat milk',3.2],[1,'Sourdough loaf','',4.2]],menu:false,
     cols:{products:[56,'1.5fr',104,116,72,64],cat:[56,'1.5fr',104,116,72,64],var2:[56,'1.3fr','1fr',100,116,72,64],var1:[56,'1.5fr',104,116,72,64]}};
   /* column widths: the user's drags live in S.cols; the add idiom sets the last column and, for the price button, the price column */
   const colsFor=k=>{const c=S.cols[k].slice();const last=c.length-1;const pi=k==='var2'?4:3;
-    c[last]={stepper:112,price:40,word:104,row:56,hold:56,swipe:56}[G.a]||64; if(G.a==='price') c[pi]=Math.max(c[pi],136); return c;};
+    c[last]={stepper:112,price:40,word:104,row:56,hold:56,qty:56,swipe:56}[G.a]||64; if(G.a==='price') c[pi]=Math.max(c[pi],136); return c;};
   const grid=k=>colsFor(k).map(v=>typeof v==='number'?v+'px':v).join(' ');
   const inCart=(n,s='')=>S.lines.filter(l=>l[1]===n&&(l[2]||'')===s).reduce((a,l)=>a+l[0],0);
   const fbar=()=>`<div class="fwrap"><div class="fbar">
@@ -130,7 +132,7 @@ function makeApp(frame){
   const hd=(k,cols,r)=>`<div class="thead" data-k="${k}" style="grid-template-columns:${grid(k)}">${cols.map((c,i)=>`<div class="th ${r.includes(i)?'r':''}">${c}${c==='Name'||c==='Colour'||c==='Variety'?I.up:''}${i<cols.length-1?`<span class="rz" data-i="${i}"></span>`:''}</div>`).join('')}</div>`;
   /* the add control for one product row; the idiom comes from the strip */
   const priceCell=(p,i)=>{const from=p.v?'from '+fmt(Math.min(...p.v.map(x=>x[3]))):fmt(p.p);const n=p.v?0:inCart(p.n);
-    if(G.a==='price'&&!p.v) return `<div class="td r"><button class="pricebtn ${n?'in':''}" data-act="add" data-i="${i}">${fmt(p.p)}${n?`<span class="cnt">${n}</span>`:''}</button></div>`;
+    if(G.a==='price'&&!p.v) return `<div class="td r"><button class="pricebtn ${n?'has':''}" data-act="add" data-i="${i}">${fmt(p.p)}${n?`<span class="cnt">${n}</span>`:''}</button></div>`;
     return `<div class="td r money">${from}</div>`;};
   const endCell=(p,i)=>{const n=p.v?0:inCart(p.n);
     if(p.v) return `<div class="td c"><button class="add" data-act="var" data-i="${i}">${I.chevr}</button></div>`;
@@ -138,17 +140,17 @@ function makeApp(frame){
       case 'row': case 'hold': return `<div class="td c">${n?`<span class="cnt">${n}</span>`:''}</div>`;
       case 'price': return `<div class="td c"></div>`;
       case 'stepper': return `<div class="td c">${n?`<span class="step"><button data-act="dec" data-i="${i}">${I.minus}</button><b>${n}</b><button data-act="add" data-i="${i}">${I.plus}</button></span>`:`<button class="add" data-act="add" data-i="${i}">${I.plus}</button>`}</div>`;
-      case 'word': return `<div class="td c"><button class="word ${n?'in':''}" data-act="add" data-i="${i}">${n?`Added · ${n}`:'Add'}</button></div>`;
-      case 'holdplus': return `<div class="td c"><button class="add ${n?'in':''}" data-act="add" data-hold="1" data-i="${i}">${n||I.plus}</button></div>`;
+      case 'word': return `<div class="td c"><button class="word ${n?'has':''}" data-act="add" data-i="${i}">${n?`Added · ${n}`:'Add'}</button></div>`;
+      case 'holdplus': return `<div class="td c"><button class="add ${n?'has':''}" data-act="add" data-hold="1" data-i="${i}">${n||I.plus}</button></div>`;
       default: return `<div class="td c"><button class="add" data-act="add" data-i="${i}">${I.plus}</button></div>`;
     }};
-  const rowIsBtn=()=>G.a==='row'||G.a==='hold';
+  const rowIsBtn=()=>G.a==='row'||G.a==='hold'||G.a==='qty';
   const swRow=(cells,k,attrs,n,stepAttrs)=>`<div class="tr sw" ${attrs}><div class="un un-l">${I.plus}Add</div><div class="un un-r"><span class="step"><button data-act="${stepAttrs.dec}" ${stepAttrs.key}>${I.minus}</button><b>${n}</b><button data-act="${stepAttrs.inc}" ${stepAttrs.key}>${I.plus}</button></span></div><div class="lb" style="grid-template-columns:${grid(k)}">${cells}</div></div>`;
   const rowCells=(p,i)=>`<div class="td c"><span class="img"></span></div><div class="td">${p.v?`<button class="nm" data-act="var" data-i="${i}">${p.n}<span class="sub">${p.v.length} variations</span></button>`:`${p.n}<span class="sub">${p.sku}</span>`}</div><div class="td"><button class="cat" data-act="cat" data-c="${p.c}">${p.c}</button></div>${priceCell(p,i)}<div class="td r">${stock(p.s)}</div>${G.a==='swipe'&&!p.v?`<div class="td c">${inCart(p.n)?`<span class="cnt">${inCart(p.n)}</span>`:''}</div>`:endCell(p,i)}`;
   const row=(p,i,k)=>G.a==='swipe'&&!p.v?swRow(rowCells(p,i),k,`data-i="${i}" data-sw="1"`,inCart(p.n),{dec:'dec',inc:'add',key:`data-i="${i}"`}):`<div class="tr ${rowIsBtn()&&!p.v?'rowbtn':''}" data-i="${i}" ${rowIsBtn()&&!p.v?`data-act="rowadd"`:''} style="grid-template-columns:${grid(k)}">${rowCells(p,i)}</div>`;
   const vrow=(p,v,j,k,two)=>{const vs=[v[0],v[1]].filter(Boolean).join(' · ');const n=inCart(p.n,vs);
-    const end=G.a==='stepper'?(n?`<span class="step"><button data-act="decv" data-j="${j}">${I.minus}</button><b>${n}</b><button data-act="addv" data-j="${j}">${I.plus}</button></span>`:`<button class="add" data-act="addv" data-j="${j}">${I.plus}</button>`):G.a==='word'?`<button class="word ${n?'in':''}" data-act="addv" data-j="${j}">${n?`Added · ${n}`:'Add'}</button>`:G.a==='holdplus'?`<button class="add ${n?'in':''}" data-act="addv" data-hold="1" data-j="${j}">${n||I.plus}</button>`:(rowIsBtn()||G.a==='price')?(n?`<span class="cnt">${n}</span>`:''):`<button class="add" data-act="addv" data-j="${j}">${I.plus}</button>`;
-    const price=G.a==='price'?`<button class="pricebtn ${n?'in':''}" data-act="addv" data-j="${j}">${fmt(v[3])}${n?`<span class="cnt">${n}</span>`:''}</button>`:`<span class="money">${fmt(v[3])}</span>`;
+    const end=G.a==='stepper'?(n?`<span class="step"><button data-act="decv" data-j="${j}">${I.minus}</button><b>${n}</b><button data-act="addv" data-j="${j}">${I.plus}</button></span>`:`<button class="add" data-act="addv" data-j="${j}">${I.plus}</button>`):G.a==='word'?`<button class="word ${n?'has':''}" data-act="addv" data-j="${j}">${n?`Added · ${n}`:'Add'}</button>`:G.a==='holdplus'?`<button class="add ${n?'has':''}" data-act="addv" data-hold="1" data-j="${j}">${n||I.plus}</button>`:(rowIsBtn()||G.a==='price')?(n?`<span class="cnt">${n}</span>`:''):`<button class="add" data-act="addv" data-j="${j}">${I.plus}</button>`;
+    const price=G.a==='price'?`<button class="pricebtn ${n?'has':''}" data-act="addv" data-j="${j}">${fmt(v[3])}${n?`<span class="cnt">${n}</span>`:''}</button>`:`<span class="money">${fmt(v[3])}</span>`;
     const cells=`<div class="td c"><span class="img"></span></div><div class="td">${v[0]}</div>${two?`<div class="td">${v[1]}</div>`:''}<div class="td mut">${v[2]}</div><div class="td r">${price}</div><div class="td r">${stock(v[4])}</div><div class="td c">${G.a==='swipe'?(n?`<span class="cnt">${n}</span>`:''):end}</div>`;
     if(G.a==='swipe') return swRow(cells,k,`data-j="${j}" data-sw="1"`,n,{dec:'decv',inc:'addv',key:`data-j="${j}"`});
     return `<div class="tr ${rowIsBtn()?'rowbtn':''}" data-j="${j}" ${rowIsBtn()?`data-act="rowaddv"`:''} style="grid-template-columns:${grid(k)}">${cells}</div>`;};
@@ -163,7 +165,7 @@ function makeApp(frame){
     <div class="cth"><span>Qty</span><span>Item</span><span class="r">Price</span><span class="r">Total</span></div>
     ${S.lines.map(([q,n,s,p,nw])=>`<div class="line ${nw?'new':''}"><span class="q">${q}</span><span>${n}${s?`<span class="sub">${s}</span>`:''}</span><span class="r mut money">${fmt(p)}</span><span class="r b money">${fmt(q*p)}</span></div>`).join('')}
     ${(()=>{const sub=S.lines.reduce((a,[q,,,p])=>a+q*p,0);const vat=sub*0.2;return `<div class="totals"><div class="mut"><span>Subtotal</span><span>${fmt(sub)}</span></div><div class="mut"><span>VAT 20%</span><span>${fmt(vat)}</span></div><div class="big"><span>Total</span><span>${fmt(sub+vat)}</span></div></div><div class="cf"><span class="btn d">Void</span><span class="btn p">Checkout ${fmt(sub+vat)}</span></div>`;})()}</div>`;
-  const full=()=>{frame.dataset.h=G.h;frame.innerHTML=`${rail}<div class="prod">${toolbar}${fbar()}<div class="stage">${pane()}</div></div><div class="divider"></div>${cart()}`;};
+  const full=()=>{frame.dataset.h=G.h;frame.innerHTML=`${rail}<div class="prod">${G.a==='qty'?toolbar.replace('<span class="ibtn">'+I.scan,qbar(S.q)+'<span class="ibtn">'+I.scan):toolbar}${fbar()}<div class="stage">${pane()}</div></div><div class="divider"></div>${cart()}`;};
   const repaint=()=>{ /* same view, new contents (an add): swap the pane in place, no slide */
     const stage=frame.querySelector('.stage'); const cur=stage.querySelector('.pane:not(.exit-l):not(.exit-r)'); if(cur) cur.outerHTML=pane(); frame.querySelector('.cart').outerHTML=cart(); };
   const slide=(dir)=>{
@@ -187,12 +189,13 @@ function makeApp(frame){
     if(act==='cat'){const c=t.dataset.c;S.menu=false;if(S.view==='cat'&&S.cat===c){frame.querySelector('.fwrap').outerHTML=fbar();return;}S.view='cat';S.cat=c;S.prod=null;slide('push');return;}
     if(act==='var'){S.view='var';S.prod=+t.dataset.i;slide('push');return;}
     if(act==='pop'){S.menu=false;closePop();if(S.view==='var'&&S.cat){S.view='cat';S.prod=null;}else{S.view='products';S.cat=null;S.prod=null;}slide('pop');return;}
-    if(act==='add'||act==='rowadd'){ if(frame.querySelector('.qpop')){closePop();return;} const p=P[+t.dataset.i];flash(t);addLine(p.n,'',p.p,1);repaint();return;}
+    if(act==='q'){S.q=+t.dataset.q;frame.querySelector('.qbar').outerHTML=qbar(S.q);return;}
+    if(act==='add'||act==='rowadd'){ if(frame.querySelector('.qpop')){closePop();return;} const p=P[+t.dataset.i];flash(t);addLine(p.n,'',p.p,G.a==='qty'?S.q:1);if(G.a==='qty'){S.q=1;frame.querySelector('.qbar').outerHTML=qbar(1);}repaint();return;}
     if(act==='dec'){const p=P[+t.dataset.i];addLine(p.n,'',p.p,-1);repaint();return;}
-    if(act==='addv'||act==='rowaddv'){ if(frame.querySelector('.qpop')){closePop();return;} const p=P[S.prod];const v=p.v[+t.dataset.j];flash(t);addLine(p.n,[v[0],v[1]].filter(Boolean).join(' · '),v[3],1);repaint();return;}
+    if(act==='addv'||act==='rowaddv'){ if(frame.querySelector('.qpop')){closePop();return;} const p=P[S.prod];const v=p.v[+t.dataset.j];flash(t);addLine(p.n,[v[0],v[1]].filter(Boolean).join(' · '),v[3],G.a==='qty'?S.q:1);if(G.a==='qty'){S.q=1;frame.querySelector('.qbar').outerHTML=qbar(1);}repaint();return;}
     if(act==='decv'){const p=P[S.prod];const v=p.v[+t.dataset.j];addLine(p.n,[v[0],v[1]].filter(Boolean).join(' · '),v[3],-1);repaint();return;}
     if(act==='qinc'||act==='qdec'){e.stopPropagation();const pop=t.closest('.qpop');const i=+pop.dataset.i;const j=pop.dataset.j==null?null:+pop.dataset.j;const d=act==='qinc'?1:-1;const p=P[i];const v=j==null?null:p.v[j];const vs=v?[v[0],v[1]].filter(Boolean).join(' · '):'';addLine(p.n,vs,v?v[3]:p.p,d);const n=inCart(p.n,vs);pop.querySelector('b').textContent=n;
-      const row=pop.closest('.tr'); const cell=row.querySelector('.td:last-of-type'); if(G.a==='holdplus'){const b=cell.querySelector('.add'); if(b){b.classList.toggle('in',n>0); b.innerHTML=n||I.plus;}} else cell.innerHTML=n?`<span class="cnt">${n}</span>`:'';
+      const row=pop.closest('.tr'); const cell=row.querySelector('.td:last-of-type'); if(G.a==='holdplus'){const b=cell.querySelector('.add'); if(b){b.classList.toggle('has',n>0); b.innerHTML=n||I.plus;}} else cell.innerHTML=n?`<span class="cnt">${n}</span>`:'';
       frame.querySelector('.cart').outerHTML=cart();return;}
   });
   /* the qpop's own buttons must not bubble into the row's tap-adds */

@@ -339,6 +339,25 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     the count appears in the last column); with a mouse, hovering a row slides its body 152 px
     left to show a − n + stepper at the right, the cart-line hover actions mirrored. Open: swipe as
     a second gesture beside the hold, or instead of it.
+35. **How the tablet POS apps add an item (2026-09-17).** Paul: a native tablet app; swiping to
+    add is too many moves, the whole row as a button is more intuitive; research how the other POS
+    systems do it. Read from each vendor's own help pages (links in the hub log's sources):
+    **Square** tiles add on one tap; a second tap adds another (or a new line with consolidation
+    off); tap the cart line for quantity, modifiers, notes; long-press is grid editing. **Shopify
+    POS** smart-grid tiles add on tap; quantity is + − on the cart line; swipe turns tile pages;
+    long-press edits tiles. **Lightspeed X (Vend)** quick keys add on tap, again to add another;
+    expand the line to edit quantity. **Lightspeed R** list view has a + per row or thumbnail →
+    Add to Sale; + − on the line; … menu. **Loyverse** tap adds; tap the line for + −; swipe left
+    on the line deletes; long-press on the grid is layout mode. **Toast** tap adds; tap the check
+    line for quantity; long-press is manager Quick Edit. **Clover** tap adds, and a QTY bar (preset
+    numbers, tap before the item) sets quantity first. **Zettle** tap adds; long-press edits the
+    tile; quantity in the cart. Summary: the tile or row is the button, one tap adds, again adds
+    another, quantity lives on the cart line, nobody swipes to add, long-press belongs to editing.
+    Applied: board 4's default is now *Row is the button* with a count at the row end; Clover's
+    quantity-first (×1 ×2 ×3 ×5 ×10 beside the search, the next row tap adds that many, then it
+    resets) is a new idiom; the hold, the +, the price, the stepper, the word and the swipe stay
+    in the strip for comparison. Also fixed: `.in` on the count pill matched the search field's
+    class and inherited its padding; the state class is now `.has`.
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·
