@@ -33,9 +33,10 @@ const checks = {
     const errors = [];
     page.on('pageerror', e => errors.push('pageerror: ' + e.message));
     page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
-    await page.goto(pathToFileURL(path.join(__dirname, 'index.html')).href);
+    await page.goto(pathToFileURL(path.join(__dirname, '../pos-register/index.html')).href + '?screen=reports');
     fs.mkdirSync(OUT, { recursive: true });
     const set = (k, v) => page.click(`.strip [data-set="${k}"][data-v="${v}"]`);
+    await set('screen', 'reports');
     const scn = v => page.click(`.strip [data-scn="${v}"]`);
     let n = 0;
     for (const w of WIDTHS) for (const theme of THEMES) for (const scale of SCALES) {

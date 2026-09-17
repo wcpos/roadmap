@@ -73,6 +73,8 @@ Overdue · Register panel · Closure written (beat) · Offline · Products loadi
 Products settings (slide-out) · Tender keypad · Tender on the terminal · Paid (beat) · German
 strings. Plus the two workshop switches (*Tender close*, *Legacy*).
 
+The strip’s **Screen** switch swaps the page to Reports; its states and README are in `../reports/`.
+
 ## Inventory
 
 Rule 9: the real screen on `next` was sent to Codex read-only (`-m gpt-6-astra`, effort high) for

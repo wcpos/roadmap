@@ -26,6 +26,7 @@ const SCALES = QUICK ? ['regular'] : ['regular','compact'];
   await page.goto('file://' + path.join(DIR, 'index.html'));
 
   const set = (k, v) => page.click(`.strip button[data-set="${k}"][data-v="${v}"]`);
+  await set('screen', 'register');
   const scn = (v) => page.click(`.strip button[data-scn="${v}"]`);
   let n = 0;
   for (const w of WIDTHS) for (const theme of THEMES) for (const scale of SCALES) {

@@ -1,8 +1,8 @@
 # Reports in the 1.11.0 language
 
-Throwaway, self-contained HTML. Open `index.html`; no server or build. The dark control strip
-is not part of the design. Icons load from the shared register file; the optional web fonts
-use the same Google Fonts link as the register. Without those fonts, the token fallbacks apply.
+The drawing lives in `../pos-register/index.html`, under the strip’s **Screen → Reports** switch.
+Open `../pos-register/index.html?screen=reports` to go straight there; `index.html` redirects
+to it. No server or build is needed; the dark control strip is not part of the design.
 
 **Question it answers:** can the decided Sales glance and shipped Closures paperwork read as
 another room in the register's language, at phone, tablet and desktop widths?
