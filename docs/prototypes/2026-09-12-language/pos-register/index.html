@@ -460,6 +460,7 @@ body:has(#strip[hidden]) .notes{display:none}
 .frame[data-screen="register"] .pay .commit .btn{white-space:normal;height:auto;min-height:max(calc(var(--tile)*.875),var(--floor));padding:8px}
 .frame[data-screen="register"][data-scale="spacious"] .pay .keys{gap:8px;padding-top:12px}.frame[data-screen="register"][data-scale="spacious"] .pay .helpers{padding-top:12px}.frame[data-screen="register"][data-scale="spacious"] .pay .commit{padding-top:12px;padding-bottom:16px}
 .frame[data-screen="register"] .splitactions{display:flex;gap:calc(var(--u)*2)} .frame[data-screen="register"] .splitactions>.btn{flex:1;min-width:0}
+.frame[data-screen="register"] .splitactions>.addshare{font-weight:600;border-color:var(--fg);gap:calc(var(--u)*1.5)} .frame[data-screen="register"] .splitactions>.addshare svg{width:1.1em;height:1.1em;stroke:currentColor;stroke-width:2.2;fill:none;flex:none} .frame[data-screen="register"] .splitactions>.addshare:disabled{border-color:var(--border);color:var(--muted-fg)}
 .frame[data-screen="register"] .splitdraft{flex-wrap:nowrap;overflow-x:auto;justify-content:safe center;scrollbar-width:none} .frame[data-screen="register"] .splitdraft .ibtn{width:var(--ctl);height:100%}
 .frame[data-screen="register"] .splitpin .stp{display:grid;grid-template-columns:56px 1fr 56px;height:56px;border:var(--hair) solid var(--border);border-radius:var(--r);overflow:hidden}
 .frame[data-screen="register"] .splitpin .stp>*{display:inline-flex;align-items:center;justify-content:center;font-size:22px;font-weight:600}
@@ -622,9 +623,9 @@ body:has(#strip[hidden]) .notes{display:none}
 :where(.frame[data-screen="reports"]) .hbar{display:flex;height:12px;border-radius:6px;overflow:hidden;gap:2px;margin-top:var(--u)} :where(.frame[data-screen="reports"]) .hbar i{display:block;height:100%} :where(.frame[data-screen="reports"]) .leg{display:flex;flex-wrap:wrap;gap:var(--u) calc(var(--u)*4);font-size:calc(var(--fs)*.9)} :where(.frame[data-screen="reports"]) .leg span{display:inline-flex;align-items:center;gap:calc(var(--u)*1.5)} :where(.frame[data-screen="reports"]) .leg i{width:10px;height:10px;border-radius:3px;display:inline-block} :where(.frame[data-screen="reports"]) .leg b{font-weight:600}
 :where(.frame[data-screen="reports"]) .rp-panel .pf-more .st{font-size:calc(var(--fs)*.9)}
 :where(.frame[data-screen="reports"]) .till{display:grid;grid-template-columns:1fr auto auto;grid-template-areas:"tl eq tr";align-items:center;column-gap:calc(var(--u)*5);row-gap:calc(var(--u)*2.5);padding:calc(var(--u)*3) calc(var(--u)*4);margin-bottom:calc(var(--u)*3)} :where(.frame[data-screen="reports"]) .till .tl{grid-area:tl;display:flex;flex-direction:column;gap:2px;min-width:0} :where(.frame[data-screen="reports"]) .till .eq{grid-area:eq} :where(.frame[data-screen="reports"]) .till .tacts{grid-area:tr;display:flex;align-items:center;gap:calc(var(--u)*2);justify-self:end;align-self:center} :where(.frame[data-screen="reports"]) .till .who{display:flex;align-items:center;gap:calc(var(--u)*1.5);white-space:nowrap}
-.frame:where([data-screen="reports"])[data-w="tablet"] .till{grid-template-columns:1fr auto;grid-template-areas:"tl tr" "eq tr"} .frame:where([data-screen="reports"])[data-w="phone"] .till{grid-template-columns:1fr;grid-template-areas:"tl" "eq" "tr";row-gap:calc(var(--u)*2.5)} .frame:where([data-screen="reports"])[data-w="phone"] .till .tacts{justify-self:stretch;justify-content:space-between}
-:where(.frame[data-screen="reports"]) .eq{display:flex;align-items:center;gap:calc(var(--u)*2)} :where(.frame[data-screen="reports"]) .eq .term{display:flex;flex-direction:column;gap:1px;padding:var(--u) calc(var(--u)*2.5);border-radius:var(--r);background:var(--muted);flex:none}   /* Paul 2026-09-17: chips never stretch; the row reads as an equation, not a table of boxes */ :where(.frame[data-screen="reports"]) .eq .term .l{color:var(--muted-fg);font-size:calc(var(--fs)*.8);white-space:nowrap} :where(.frame[data-screen="reports"]) .eq .term .v{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap} :where(.frame[data-screen="reports"]) .eq .term.res{background:var(--primary);color:var(--primary-fg)} :where(.frame[data-screen="reports"]) .eq .term.res .l{color:var(--primary-fg);opacity:.85} :where(.frame[data-screen="reports"]) .eq .note{color:var(--muted-fg);font-size:calc(var(--fs)*.86);margin-left:var(--u)} :where(.frame[data-screen="reports"]) .eq{flex-wrap:wrap}
-:where(.frame[data-screen="reports"]) .till.busy{grid-template-columns:1fr auto;grid-template-areas:"tl tr" "eq tr"}
+.frame:where([data-screen="reports"])[data-w="tablet"] .till{grid-template-columns:1fr auto;grid-template-areas:"tl tr" "eq eq"}   /* Paul 2026-09-18: when the chips take their own row they get the whole width; X-report sits on the title row */ .frame:where([data-screen="reports"])[data-w="phone"] .till{grid-template-columns:1fr;grid-template-areas:"tl" "eq" "tr";row-gap:calc(var(--u)*2.5)} .frame:where([data-screen="reports"])[data-w="phone"] .till .tacts{justify-self:stretch;justify-content:space-between}
+:where(.frame[data-screen="reports"]) .eq{display:flex;align-items:center;gap:calc(var(--u)*2)} :where(.frame[data-screen="reports"]) .eq .keep{display:flex;align-items:center;gap:calc(var(--u)*2)}   /* "= Expected in drawer" never splits across a wrap */ :where(.frame[data-screen="reports"]) .eq .term{display:flex;flex-direction:column;gap:1px;padding:var(--u) calc(var(--u)*2.5);border-radius:var(--r);background:var(--muted);flex:none}   /* Paul 2026-09-17: chips never stretch; the row reads as an equation, not a table of boxes */ :where(.frame[data-screen="reports"]) .eq .term .l{color:var(--muted-fg);font-size:calc(var(--fs)*.8);white-space:nowrap} :where(.frame[data-screen="reports"]) .eq .term .v{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap} :where(.frame[data-screen="reports"]) .eq .term.res{background:var(--primary);color:var(--primary-fg)} :where(.frame[data-screen="reports"]) .eq .term.res .l{color:var(--primary-fg);opacity:.85} :where(.frame[data-screen="reports"]) .eq .note{color:var(--muted-fg);font-size:calc(var(--fs)*.86);margin-left:var(--u)} :where(.frame[data-screen="reports"]) .eq{flex-wrap:wrap}
+:where(.frame[data-screen="reports"]) .till.busy{grid-template-columns:1fr auto;grid-template-areas:"tl tr" "eq eq"}
 :where(.frame[data-screen="reports"]) .till svg.lvl{grid-area:eq;width:620px;max-width:100%;height:auto;display:block;overflow:visible;stroke:none} :where(.frame[data-screen="reports"]) .till svg.lvl text{font-family:var(--font)} .frame:where([data-screen="reports"])[data-w="tablet"] .till.level{grid-template-columns:1fr auto;grid-template-areas:"tl tr" "eq tr"} .frame:where([data-screen="reports"])[data-w="tablet"] .till.level svg.lvl{width:100%} .frame:where([data-screen="reports"])[data-w="phone"] .till.level svg.lvl{width:100%}
 :where(.frame[data-screen="reports"]) .eq.ledger{display:flex;flex-direction:column;gap:2px;width:100%} :where(.frame[data-screen="reports"]) .eq.ledger .lr{display:grid;grid-template-columns:16px 1fr auto;align-items:center;gap:calc(var(--u)*2);min-height:26px;padding:0 var(--u);border-radius:calc(var(--r) - 2px)} :where(.frame[data-screen="reports"]) .eq.ledger .lr .op{color:var(--muted-fg);font-weight:600;text-align:center} :where(.frame[data-screen="reports"]) .eq.ledger .lr .l{color:var(--muted-fg)} :where(.frame[data-screen="reports"]) .eq.ledger .lr .v{font-weight:600;font-variant-numeric:tabular-nums} :where(.frame[data-screen="reports"]) .eq.ledger .lr.res{background:var(--primary);color:var(--primary-fg);margin-top:var(--u);min-height:32px} :where(.frame[data-screen="reports"]) .eq.ledger .lr.res .l,:where(.frame[data-screen="reports"]) .eq.ledger .lr.res .op{color:var(--primary-fg);font-weight:600} :where(.frame[data-screen="reports"]) .eq .op{color:var(--muted-fg);font-weight:600;font-size:calc(var(--fs)*1.1)}
 :where(.frame[data-screen="reports"]) .till .btn{height:36px;padding:0 calc(var(--u)*3);flex:none} :where(.frame[data-screen="reports"]) .till .btn svg{width:16px;height:16px} :where(.frame[data-screen="reports"]) .till .ibtn{width:36px;height:36px}
@@ -908,8 +909,8 @@ if(S.screen==='reports'){S.scn='today';S.theme=Q.get('theme')==='dark'?'dark':'l
 if(S.screen==='orders')S.scn='default';
 const WHIMSY=['market','paper'];
 const STR=()=>S.long?{
-  splitMore:'Mehr…',addAnother:'Weitere Zahlung',nextPayer:'Nächster Zahler',theRest:'der Rest',noSplit:'Nicht teilen',splitWays:'Auf {n} aufteilen',ofAmount:'von {x}',removeShare:'Anteil entfernen',fewerWays:'Weniger Anteile',moreWays:'Mehr Anteile',cancelTerminal:'Am Terminal abbrechen',
-  first:'zuerst',thenLeft:'danach {x}',typeBelow:'Betrag unter {x} eingeben',typePctBelow:'Prozentsatz unter 100 eingeben',splitFirst:'Teilen · {x} zuerst',
+  splitMore:'Mehr…',addAnother:'Anteil hinzufügen',nextPayer:'Nächster Zahler',theRest:'der Rest',noSplit:'Nicht teilen',splitWays:'Auf {n} aufteilen',ofAmount:'von {x}',removeShare:'Anteil entfernen',fewerWays:'Weniger Anteile',moreWays:'Mehr Anteile',cancelTerminal:'Am Terminal abbrechen',
+  first:'zuerst',thenLeft:'danach {x}',typeBelow:'Betrag unter {x} eingeben',typePctBelow:'Prozentsatz unter 100 eingeben',
   ways:'Teile',each:'je',then:'danach',half:'Hälfte',typeFirst:'Erste Zahlung eingeben',typeRest:'Auf der Tastatur, der Rest folgt',tickItems:'Artikel für diese Zahlung markieren',changeSplit:'Aufteilung ändern',cancelPay:'Zahlung stornieren',paymentN:'Zahlung {n}',ofN:'von {n}',left:'offen',done:'Fertig',even:'Gleich',amount:'Betrag',percent:'Prozent',splitHint:'Jede Zahlungsart je Zahlung · Aufteilung jederzeit ändern',afterThis:'danach offen',forItems:'für',
   search:'Produkte suchen',scan:'Scannen',priceCheck:'Nur Preisprüfung, bis die Kasse geöffnet ist.',counting:'Keine Verkäufe, während die Kasse gezählt wird.',
   customer:'Kunde',guest:'Gast',details:'Bestelldetails',save:'Bestellung speichern',bill:'Rechnung drucken',void:'Stornieren',checkout:'Zur Kasse',subtotal:'Zwischensumme',fees:'Gebühren',tax:'MwSt. 19 %',total:'Gesamt',
@@ -920,8 +921,8 @@ const STR=()=>S.long?{
   noResults:'Nichts passt zu',clear:'Suche leeren',pickT:'Welche Kasse ist dieses Gerät?',toPay:'Zu zahlen',take:'Nehmen',in:'in',change:'Wechselgeld',exactAmt:'Genau',paid:'Bezahlt',printNew:'Beleg drucken · Neuer Verkauf',email:'Beleg per E-Mail',noRcpt:'Kein Beleg · Neuer Verkauf',notAvail:'nicht verfügbar',split:'Teilen',payments:'Zahlungen',legacy:'Klassisch',legacyLink:'Stattdessen den Shop-Checkout verwenden',items:'Artikel',
   qty:'Menge',item:'Artikel',price:'Preis',lineTotal:'Summe',edit:'Bearbeiten',remove:'Entfernen',more:'weitere',openOrders:'Offene Bestellungen',newOrder:'Neue Bestellung',backCart:'Zurück zum Warenkorb',otherWays:'Weitere Zahlungsarten',
 }:{
-  splitMore:'More…',addAnother:'Add another',nextPayer:'Next payer',theRest:'the rest',noSplit:'No split',splitWays:'Split {n} ways',ofAmount:'of {x}',removeShare:'Remove share',fewerWays:'Fewer ways',moreWays:'More ways',cancelTerminal:'Cancel on terminal',
-  first:'first',thenLeft:'then {x}',typeBelow:'Type an amount below {x}',typePctBelow:'Type a percentage below 100',splitFirst:'Split · {x} first',
+  splitMore:'More…',addAnother:'Add share',nextPayer:'Next payer',theRest:'the rest',noSplit:'No split',splitWays:'Split {n} ways',ofAmount:'of {x}',removeShare:'Remove share',fewerWays:'Fewer ways',moreWays:'More ways',cancelTerminal:'Cancel on terminal',
+  first:'first',thenLeft:'then {x}',typeBelow:'Type an amount below {x}',typePctBelow:'Type a percentage below 100',
   ways:'ways',each:'each',then:'then',half:'Half',typeFirst:'Type the first payment',typeRest:'on the keypad, the rest comes after',tickItems:'Tick the items this payment covers',changeSplit:'Change split',cancelPay:'Cancel payment',paymentN:'Payment {n}',ofN:'of {n}',left:'left',done:'Done',even:'Even',amount:'Amount',percent:'Percent',splitHint:'Any method for each payment · change the split at any time',afterThis:'left after this',forItems:'for',
   search:'Search products',scan:'Scan',priceCheck:'Price check only until the register is open.',counting:'No sales while the register is counting.',
   customer:'Customer',guest:'Guest',details:'Order details',save:'Save order',bill:'Print bill',void:'Void',checkout:'Checkout',subtotal:'Subtotal',fees:'Fees',tax:'VAT 20%',total:'Total',
@@ -1387,7 +1388,7 @@ function splitDrawingLegs(){
       name:['amount','percent'].includes(kind)&&i>=S.splitDetail.leg?(i===S.splitDetail.leg?'This payment':'The rest'):`Seat ${i+1}`};
   });
 }
-function splitAmountBlock(label,amount,line='',ghost=false){
+function splitAmountBlock(label,amount,line='',ghost=false,sub=''){
   const t=T(), look=S.splitLook, chooser=!!S.split, total=remaining();
   const changeSplit=`<button class="btn q splitlink" data-act="splitOpen">${t.changeSplit}</button>`;
   const legText=(a,i)=>`${S.pays[i]?`${I.check}${methodName(S.pays[i].m)} `:''}${fmt(a)}`;
@@ -1398,7 +1399,7 @@ function splitAmountBlock(label,amount,line='',ghost=false){
   const legs=splitDrawingLegs(), cls=l=>`${l.paid?'paid':''} ${l.current?'current':''}`;
   const style=l=>`--leg-color:${l.color};--share:${l.amount||.01}`;
   const left=`<div class="sl-left money">${fmt(total)} ${t.left}</div>`;
-  let hero=big, plan='';
+  let hero=big, plan='', ringDrawn=false;
   if(look==='bar'){
     hero+=`<div class="sl-track">${legs.length?legs.map((l,i)=>`<span class="sl-segment ${cls(l)}" style="${style(l)}"><i class="sl-fill" data-sl-leg="${i}"></i></span>`).join(''):'<span class="sl-segment" style="--share:1"></span>'}</div>`;
     plan=legs.length?`<div class="sl-labels" style="grid-template-columns:${legs.map(l=>(l.amount||.01)+'fr').join(' ')}">${legs.map(l=>`<span style="${style(l)}">${l.paid?l.method+' ':''}${fmt(l.amount)}</span>`).join('')}${chooser?'':changeSplit}</div>`:left;
@@ -1408,7 +1409,8 @@ function splitAmountBlock(label,amount,line='',ghost=false){
   if(look==='ring'){
     let start=0; const sum=legs.reduce((s,l)=>s+l.amount,0)||1;
     const arcs=legs.length?legs.map((l,i)=>{const sweep=l.amount/sum*360, arc=`<circle class="sl-arc" data-sl-leg="${i}" cx="100" cy="100" r="90" pathLength="360" style="${style(l)}" stroke-dasharray="${Math.max(0,sweep-3)} ${360-Math.max(0,sweep-3)}" transform="rotate(${start-88.5} 100 100)"/>`;start+=sweep;return arc;}).join(''):'<circle class="sl-arc" cx="100" cy="100" r="90" pathLength="360" stroke-dasharray="360 360" style="--leg-color:var(--muted)"/>';
-    hero=`<div class="sl-ring ${chooser?'':'planned'}"><svg viewBox="0 0 200 200" aria-hidden="true">${arcs}</svg><div>${big}${left}</div></div>`;
+    /* 2026-09-18: a fresh plan overflowed the tablet page by a line. The ring's small figure now says what the entry means (then £19.28, Change £3.15, else £24.10 left) and the plan view draws no separate line. */
+    ringDrawn=true; hero=`<div class="sl-ring ${chooser?'':'planned'}"><svg viewBox="0 0 200 200" aria-hidden="true">${arcs}</svg><div>${big}${sub?`<div class="sl-left money">${sub}</div>`:left}</div></div>`;
     if(!chooser) label=S.payPlan?`${paymentName(S.leg)} ${t.ofN.replace('{n}',S.payPlan.length)}`:S.pays.length?paymentName(S.leg):t.toPay;
     if(legs.length) plan=`<div class="legs">${legs.map((l,i)=>`<span class="chip ${cls(l)} ${l.current?'on':''}"><i class="sl-dot" style="${style(l)}"></i>${legText(l.amount,i)}</span>`).join('')}${chooser?'':changeSplit}</div>`;
   }
@@ -1423,7 +1425,7 @@ function splitAmountBlock(label,amount,line='',ghost=false){
     hero=`<div class="sl-seats">${seats.map(marker).join('')}</div>${big}`;
     if(legs.length) plan=`<div class="list sl-seat-list">${legs.map((l,i)=>`<div class="lr ${cls(l)}">${marker(l,i)}<span>${l.name} · ${l.items.length?l.items.length+' '+t.items+' · ':''}<span class="money">${fmt(l.amount)}</span>${l.method!=='—'?' · '+l.method:''}</span><i class="sl-dot" style="${style(l)}"></i></div>`).join('')}</div>${chooser?'':changeSplit}`;
   }
-  return `<div class="amtblock sl-block" data-sl-paid="${S.pays.length}" data-sl-layout="${look}-${legs.length}"><div class="lbl">${label}${controls}</div>${hero}${chooser?'':`<div class="line">${line}</div>`}${plan?`<div class="sl-plan">${plan}</div>`:''}</div>`;
+  return `<div class="amtblock sl-block" data-sl-paid="${S.pays.length}" data-sl-layout="${look}-${legs.length}"><div class="lbl">${label}${controls}</div>${hero}${chooser||ringDrawn?'':`<div class="line">${line}</div>`}${plan?`<div class="sl-plan">${plan}</div>`:''}</div>`;
 }
 let splitPaint=null; // Keep the last drawing through the terminal beat so settlement still animates.
 function animateSplitLook(frame,before){
@@ -1472,9 +1474,10 @@ function splitCommit(){
   const done=`<div class="splitactions">${!S.pays.length&&(S.payPlan||count)?`<button class="btn q" data-act="splitNone">${t.noSplit}</button>`:''}<button class="btn q" data-act="splitClose">${t.done}</button></div>`;
   if(['amount','percent'].includes(S.split.mode)){
     const {valid,label,ghost}=splitValue(), n=count+(ghost&&count?1:2);
-    return row(`<button class="btn xl p press" data-act="splitDone" ${valid||ghost&&count?'':'disabled'}>${count?t.splitWays.replace('{n}',n):t.splitFirst.replace('{x}',label)}</button>`,`<button class="btn q" data-act="splitAdd" ${valid?'':'disabled'}>${t.addAnother}</button>`)+done;
+    /* Paul 2026-09-18: he could not find the third share. The commit counts the ways (Split 2 ways, then 3) and the share button is a real outlined button with a plus, not quiet text beside Done. */
+    return row(`<button class="btn xl p press" data-act="splitDone" ${valid||ghost&&count?'':'disabled'}>${t.splitWays.replace('{n}',n)}</button>`,`<button class="btn xl press addshare" data-act="splitAdd" ${valid?'':'disabled'}>${I.plus}${t.addAnother}</button>`)+done;
   }
-  if(S.split.mode==='item') return row(`<button class="btn xl p press" data-act="splitDone" ${a>0||count?'':'disabled'}>${a>0?`${t.take} ${fmt(a)} ${t.forItems} ${S.split.items.length} ${t.items}`:count?t.splitWays.replace('{n}',count+1):t.tickItems}</button>`,`<button class="btn q" data-act="splitAdd" ${a>0&&a<splitLeft()?'':'disabled'}>${t.nextPayer}</button>`)+done;
+  if(S.split.mode==='item') return row(`<button class="btn xl p press" data-act="splitDone" ${a>0||count?'':'disabled'}>${a>0?`${t.take} ${fmt(a)} ${t.forItems} ${S.split.items.length} ${t.items}`:count?t.splitWays.replace('{n}',count+1):t.tickItems}</button>`,`<button class="btn xl press addshare" data-act="splitAdd" ${a>0&&a<splitLeft()?'':'disabled'}>${I.plus}${t.nextPayer}</button>`)+done;
   return (S.split.more?`<button class="btn xl p press" data-act="splitDone">${t.splitWays.replace('{n}',S.split.n)}</button>`:'')+done;
 }
 function paymentKeys(act='key'){
@@ -1529,10 +1532,12 @@ function renderTender(){
         <div class="steps">${steps.map((s,i)=>`<div class="s ${i<st?'done':i===st?'now':''}"><i></i>${s}</div>`).join('')}</div></div>
       <button class="btn press" data-act="cancelTerminal">${t.cancelTerminal}</button></div></div>`;
   }
-  const change=m.change&&entry>total?entry-total:0; const short=entry<total?total-entry:0;
-  let line=''; if(change>0) line=`<span class="chg">${t.change} ${fmt(change)}</span>`; else if(short>0) line=`${paymentName(S.pays.length)} · ${fmt(short)} ${t.afterThis}`;
+  /* the preview agrees with settle(): cash above a planned leg is change for that leg, so the figure and the commit say so before the tap */
+  const leg=S.payPlan&&S.leg<S.payPlan.length?S.payPlan[S.leg]:null, capAt=leg!=null&&m.change&&entry>leg?leg:total;
+  const change=m.change&&entry>capAt?cents(entry-capAt):0; const short=entry<total?total-entry:0;
+  let line='', ringSub=''; if(change>0){ line=`<span class="chg">${t.change} ${fmt(change)}</span>`; ringSub=line; } else if(short>0){ line=`${paymentName(S.pays.length)} · ${fmt(short)} ${t.afterThis}`; ringSub=t.thenLeft.replace('{x}',fmt(short)); }
   const helpers=m.change?[50,100].map(n=>`<button class="chip press ${entry===n?'on':''}" data-act="entry" data-v="${n}">${fmt(n)}</button>`).join('')+`<button class="chip press ${ghost?'on':''}" data-act="entry" data-v="">${t.exactAmt} ${fmt(S.split?.mode==='item'?itemAmount():S.payPlan?.[S.leg]??total)}</button>`:`<button class="chip press ${ghost?'on':''}" data-act="entry" data-v="">${t.exactAmt} ${fmt(S.split?.mode==='item'?itemAmount():S.payPlan?.[S.leg]??total)}</button>`;
-  const commit=`${t.take} ${fmt(Math.min(entry,total))} ${t.in} ${m.t}${S.payPlan?` · ${S.leg+1} ${t.ofN.replace('{n}',S.payPlan.length)}`:''}`;
+  const commit=`${t.take} ${fmt(Math.min(entry,capAt))} ${t.in} ${m.t}${S.payPlan?` · ${S.leg+1} ${t.ofN.replace('{n}',S.payPlan.length)}`:''}`;
   const tile=x=>`<button class="mt press ${x.id===S.method?'on':''} ${x.k==='globe'?'legacy':''}" data-act="method" data-m="${x.id}">${I[x.k]}<span class="ell">${x.t}</span>${x.dot?`<span class="dot"></span>`:''}</button>`;
   /* the legacy switch: a tile in the grid goes to the iframe view like a terminal tile goes to the terminal view */
   const legacyTile = S.legacy==='tile' ? `<button class="mt press legacy" data-act="mode" data-mode="legacy" title="The store's own checkout page">${I.globe}<span class="ell">${t.legacy}</span></button>` : '';
@@ -1541,7 +1546,7 @@ function renderTender(){
   const unav=`<div class="unav xs">${UNAVAIL.length} ${t.notAvail} · ${UNAVAIL.map(([n,w])=>`${n} (${w})`).join(', ')}</div>`;
   const bottomClose = (S.closePos==='bottom' ? `<button class="btn q press" data-act="closeTender">${I.back}${t.backCart}</button>` : '') + (S.legacy==='bottom' ? `<button class="btn q press" data-act="mode" data-mode="legacy" style="color:var(--muted-fg)">${I.globe}${t.legacyLink}</button>` : '');
   const label=S.pays.length||S.payPlan?`${paymentName(S.leg)} ${S.payPlan?t.ofN.replace('{n}',S.payPlan.length):''} · ${fmt(total)} ${t.left}`:`${t.toPay} ${fmt(total)}`;
-  const amount=splitAmountBlock(label,entry,line,ghost);
+  const amount=splitAmountBlock(label,entry,line,ghost,ringSub);
   return `<div class="pay">${tenderHead()}<div class="scroll">${amount}${methods}${unav}</div>
     <div class="helpers">${helpers}</div>
     ${paymentKeys()}
@@ -1787,7 +1792,7 @@ const RS = {
   cmp: ['lastweek','yesterday'].includes(Q.get('cmp')) ? Q.get('cmp') : 'yesterday',
   register:'front', store:'uk', cashier:'all',
   unticked: new Set(), detail: null, closure: null, xreport: false, tpl:'default', chart:'hour',   /* 'hour' | 'run' (Paul 2026-09-17: an easy toggle) */
-  pop: null, hint: null, tip: null, frameH: 780, calMonth: 0, pickStart: null, where: 'channels', busy: false, till: 'level',
+  pop: null, hint: null, tip: null, frameH: 780, calMonth: 0, pickStart: null, where: 'channels', busy: false, till: 'chips',   /* Paul 2026-09-18: the chips, decided; the cash-level line (C3) stays behind the switch */
   layout: 'panels',   /* Paul 2026-09-17 ("surely we can do better", Mobbin: Vercel, Framer, Lloyds, Revolut): the content of each report inline, a few rows deep, with share bars; 'list' and 'tiles' kept to compare. Closures is one more kind of information, not a different room; the tiles go, one list of reports under the chart */
 };
 
@@ -2152,7 +2157,7 @@ function tillStrip() {
     ? cashLevel(open, last)
     : phone()
     ? `<div class="eq ledger">${terms.map(([l, v, op], i) => `<div class="lr ${i === terms.length - 1 ? 'res' : ''}"><span class="op">${op || ' '}</span><span class="l">${l}</span><span class="v">${v}</span></div>`).join('')}${note ? `<div class="lr"><span class="op"></span><span class="l mut">${sess.quiet.join(', ')}</span></div>` : ''}</div>`
-    : `<div class="eq">${terms.map(([l, v, op], i) => `${op ? `<span class="op">${op}</span>` : ''}<span class="term ${i === terms.length - 1 ? 'res' : ''}"><span class="l">${l}</span><span class="v">${v}</span></span>`).join('')}${note}</div>`;
+    : `<div class="eq">${terms.map(([l, v, op], i) => { const chip = `${op ? `<span class="op">${op}</span>` : ''}<span class="term ${i === terms.length - 1 ? 'res' : ''}"><span class="l">${l}</span><span class="v">${v}</span></span>`; return i === terms.length - 1 ? `<span class="keep">${chip}</span>` : chip; }).join('')}${note}</div>`;
   const who = open ? `<b>${esc(OPEN_SESSION.reg)}</b> ${status('ok', 'Open')}<span class="mut"> · since ${OPEN_SESSION.open} · ${esc(OPEN_SESSION.by)}</span>` : `<b>${esc(REGISTERS[0].name)}</b> ${status('neutral', 'Closed')}<span class="mut"> · at ${last.close} · ${esc(last.by)}</span>`;
   const lastLine = RS.empty ? 'No closures yet' : last ? `Last closure ${last.num} · ${last.dayLabel} ${last.close} · ${last.variance ? fmt(Math.abs(last.variance)) + (last.variance < 0 ? ' short' : ' over') : 'exact'}` : '';
   return `<section class="card till ${RS.till !== 'chips' ? 'level' : open && terms.length > 4 ? 'busy' : ''}" data-k="closures"><div class="tl"><div class="who">${who}</div><div class="mut sm">${lastLine}</div></div>${eq}<div class="tacts">${open ? `<button class="btn press" data-act="xreport" data-testid="card-xreport">${I.print}X-report</button>` : `<button class="btn press" data-act="reprint" data-v="${last.id}">${I.print}Reprint</button>`}<button class="ibtn press" data-act="detail" data-v="closures" aria-label="Closures">${I.chev}</button></div></section>`;

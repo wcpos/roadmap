@@ -393,6 +393,13 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     names the remaining after a part payment; cash above a planned leg is change for that leg,
     card above it pays more. Odd pennies, rounding, cancel on terminal and cancel mid-plan are
     asserted.
+    **Paul (2026-09-18): "I still can't figure out how to split it into three different
+    percentages."** The path was there but the button was quiet text saying "Add another" beside
+    a commit that read "Split · 20 % first". Now the commit counts the ways (Split 2 ways, then
+    3) and the share button is an outlined **+ Add share** (Item: **+ Next payer**). Found on the
+    way: a fresh plan overflowed the tablet page by one line; the ring's small figure now carries
+    what the entry means (then £19.28 · Change £3.15 · £24.10 left) and the plan view has no
+    separate line. The fit check covers a fresh plan and cash above the leg.
 51. **The ledger's Payments block, six drawings (Paul, 2026-09-17).** Paul: do something with the
     payments listed under the line items; more information, more visual; research it, at least
     five. From Mobbin: Klarna's paid · left bar over a ticked plan, Stripe's and Wise's event

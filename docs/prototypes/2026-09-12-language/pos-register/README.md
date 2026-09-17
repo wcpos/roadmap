@@ -92,8 +92,12 @@ Amount and Percent are typed on the keypad with quick keys above; the commit rea
 Quick-amount helpers stay above the pinned keypad, and Cancel payment is in the pay head after
 a payment is taken.
 
-**Add another** in Amount and Percent builds several shares before the first payment; Item uses
-**Next payer** to assign another set of lines. Draft chips show the rest and have × to remove a
+**+ Add share** in Amount and Percent builds several shares before the first payment (the commit
+counts the ways: Split 2 ways, then 3); Item uses **+ Next payer** to assign another set of lines.
+Both are outlined buttons beside the commit, not quiet text: Paul could not find the third share
+when the button said only "Add another" (2026-09-18). In a plan the ring's small figure says what
+the entry means (then £19.28 · Change £3.15 · else £24.10 left); there is no separate line under
+the ring, which is what overflowed the tablet page by a line. Draft chips show the rest and have × to remove a
 share. **More…** in Even opens the 2–20-way stepper; **No split**, beside Done before anything
 is taken, returns to one payment. Percentages are of the balance being split, not of each shrinking
 remainder. The [split-flow audit](split-flows.md) records all twenty paths and the remaining

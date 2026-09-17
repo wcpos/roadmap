@@ -331,8 +331,13 @@ async function auditSplitFlows(page, w, shot) {
   // only the whole pane may scroll (no inner scroller ever overflows); nothing overflows sideways at any scale.
   for (const w of ['tablet', 'phone']) for (const scale of ['compact', 'regular', 'spacious']) {
     await set('w', w); await set('scale', scale);
-    for (const state of ['split', 'split-item', 'split-1of2', 'tender']) {
-      await scn(state);
+    for (const state of ['split', 'split-item', 'split-1of2', 'tender', 'split-fresh', 'split-fresh-change']) {   // 2026-09-18: a fresh plan and cash above the leg overflowed the tablet page by a line
+      if (state.startsWith('split-fresh')) { await scn('split'); await page.click('.pay [data-act="splitEven"][data-v="2"]'); await page.waitForTimeout(250); if (state.endsWith('change')) for (const k of ['5', '0', '0', '0']) await page.click(`.pay [data-act="key"][data-k="${k}"]`); }
+      else await scn(state);
+      if (state === 'split-fresh-change') {   // the preview agrees with settle(): £50 cash on the first leg is change for that leg, and the commit takes the leg
+        const preview = await page.evaluate(() => ({ leg: S.payPlan[0], sub: document.querySelector('.sl-ring .sl-left').innerText, commit: document.querySelector('.pay .commit [data-act="take"]').innerText, line: document.querySelector('.amtblock .line') }));
+        if (preview.line !== null || !preview.sub.includes(money(50 - preview.leg)) || !preview.commit.includes(money(preview.leg))) throw new Error(`cash above the leg preview: ${JSON.stringify(preview)}`);
+      }
       const fits = await page.locator('.pay').evaluate((el, scale) => {
         const wholeFits = el.scrollHeight <= el.clientHeight + 1;
         const noInner = [...el.querySelectorAll('.scroll')].every(sc => sc.scrollHeight <= sc.clientHeight + 1 && getComputedStyle(sc).overflowY !== 'auto');
