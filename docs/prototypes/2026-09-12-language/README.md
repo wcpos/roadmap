@@ -274,6 +274,9 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     the one card outside it: the till now, register · open since · cashier, X-report, the drawer
     ladder (float + cash sales − paid out = expected), the last closure as the footer; when closed,
     expected, counted, drawer result, Reprint. The Closures room keeps its own date.
+    **Paul (2026-09-17, later): the cards in two labelled sections**, "Right now · Front till" with
+    the Closures card and the period's own words ("Today · Mon 14 Sep", marked as following the
+    date above) with the seven that follow it.
 
 48. **Orders inside the register; the rail toggles the pages (Paul, 2026-09-17).** Paul: put
     the Orders mock-up into `pos-register/index.html` and toggle between the POS page, the
