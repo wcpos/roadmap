@@ -248,6 +248,9 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     **Sibling session (2026-09-17, later again): one list below the chart, to compare.** Closures
     is a row of it; the Sales | Closures tabs and tiles stay behind a `Below the chart` switch;
     Closures opens as a panel with a back arrow from a closure. Not decided.
+    **Sibling session (2026-09-17, later still): six panels below the chart, to compare.** Each
+    report's first rows with share bars, in the order of the jobs, the other five as a list
+    beneath; the sibling's pick, behind the same switch. Not decided.
 
 48. **Orders inside the register; the rail toggles the pages (Paul, 2026-09-17).** Paul: put
     the Orders mock-up into `pos-register/index.html` and toggle between the POS page, the
