@@ -361,6 +361,21 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     **Paul (2026-09-17, later): the ring. Decided** ("totally improves the understanding, visibility
     and comprehension of what's going on"). The switch is gone; the other four looks live on only
     in `board-split.html` as the record.
+51. **The ledger's Payments block, six drawings (Paul, 2026-09-17).** Paul: do something with the
+    payments listed under the line items; more information, more visual; research it, at least
+    five. From Mobbin: Klarna's paid · left bar over a ticked plan, Stripe's and Wise's event
+    timelines, Apple Wallet's and Starbucks's rows with a method tile, GoPay's status words. Every
+    drawing shows the same facts (method, amount, detail, time, status, the pending legs with
+    "next" on the first, Paid in full at the end, No payments yet when empty) and only the
+    block changes; the lines above and Total / Paid / Remaining below stay. A `Payments list`
+    switch: **rows** (as drawn) · **tiles** (Apple Wallet) · **bar** (Klarna; a paid · left line over
+    a two-tone track, then the legs as a ticked vertical timeline; the recommendation, since the
+    track is the ring's arcs laid flat) · **story** (Stripe / Wise; events, no amount column) ·
+    **receipt** (mono, dot leaders, a PAID stamp) · **cards** (Fresha). State `split-2of3` is
+    Paul's screenshot (cash £10.60, card £2.00, £11.50 pending on card); payments carry a fixture
+    time. `board-payments.html` shows the six ledgers side by side per State. `shoot-variants.js`
+    asserts two taken and one pending, the waiting terminal, Paid in full and the empty state on
+    every drawing. Captures `pos-register/screens/variants/paylist-*.jpg`. Not decided.
     (c) **chips** — pills, the current one filled; reads as a filter row rather than tabs;
     (d) **cards** — small cards with amount, customer and status, current with a primary top
     edge; the most information, the tallest;

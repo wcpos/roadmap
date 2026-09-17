@@ -298,6 +298,49 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
     if (await panel.locator('[data-act="splitMode"]').count() !== 4) throw new Error('board: wrong state');
   }
   await page.screenshot({ path: path.join(OUT, 'board-split.jpg'), type: 'jpeg', quality: 82, fullPage: true });
+  // Six payment-list drawings share the same ledger facts.
+  await page.setViewportSize({ width: 1500, height: 1400 });
+  await page.goto('file://' + path.join(DIR, 'index.html'));
+  const payLists = ['rows', 'tiles', 'bar', 'story', 'receipt', 'cards'];
+  for (const opt of payLists) {
+    await set('payList', opt); await set('w', 'tablet'); await scn('split-2of3');
+    if (await page.locator('.ledger [data-pay="taken"]').count() !== 2 || await page.locator('.ledger [data-pay="pending"]').count() !== 1) throw new Error(`${opt}: expected two taken and one pending`);
+    if (await balance() !== '£11.50') throw new Error(`${opt}: remaining £11.50`);
+    const text = await page.locator('.paylist').innerText();
+    for (const fact of ['14:02', '14:03', '10.60', '2.00', '11.50']) if (!text.includes(fact)) throw new Error(`${opt}: missing ${fact}`);
+    await shot(`paylist-${opt}-2of3`);
+    await scn('tender-card'); await page.waitForTimeout(1200);
+    if (await page.locator('.ledger [data-status="waiting"]').count() !== 1) throw new Error(`${opt}: expected one Waiting marker`);
+    await shot(`paylist-${opt}-waiting`);
+    await scn('paid');
+    if (!/Paid in full/i.test(await page.locator('.paylist').innerText())) throw new Error(`${opt}: missing Paid in full`);
+    await shot(`paylist-${opt}-paid`);
+    await scn('tender');
+    if (!/no payments yet/i.test(await page.locator('.paylist').innerText())) throw new Error(`${opt}: empty state`);   // the receipt drawing uppercases with CSS and innerText reports it
+  }
+  // Layout contract: payment content fits narrow/wide ledgers and totals stay outside the scroll area.
+  for (const opt of payLists) for (const theme of ['light', 'dark']) for (const scale of ['compact', 'regular', 'spacious']) {
+    await set('payList', opt); await set('theme', theme); await set('scale', scale); await scn('split-2of3');
+    for (const width of [340, 480]) {
+      const fits = await page.locator('.ledger').evaluate((el, width) => {
+        el.style.width = width + 'px'; el.style.flex = 'none';
+        const list = el.querySelector('.paylist'), totals = el.querySelector('.totals');
+        return list.scrollWidth <= list.clientWidth + 1 && [...list.querySelectorAll('.pay-copy, .pay-card, .pay-receipt-line')].every(row => row.scrollWidth <= row.clientWidth + 1)
+          && totals.parentElement === el && totals.getBoundingClientRect().bottom <= el.getBoundingClientRect().bottom + 1;
+      }, width);
+      if (!fits) throw new Error(`paylist layout: ${opt}-${theme}-${scale}-${width}`);
+    }
+  }
+  await page.setViewportSize({ width: 2700, height: 900 });
+  await page.goto('file://' + path.join(DIR, 'board-payments.html'));
+  if (await page.locator('iframe').count() !== 6) throw new Error('payments board: six iframes');
+  for (const opt of payLists) {
+    const panel = page.frameLocator(`iframe[data-look="${opt}"]`);
+    await panel.locator('.frame[data-screen="register"][data-w="tablet"]').waitFor();
+    if (await panel.locator('.ledger [data-pay="taken"]').count() !== 2) throw new Error(`payments board: ${opt} state`);
+    if (await panel.locator('#strip').isVisible()) throw new Error('payments board: strip visible');
+  }
+  await page.screenshot({ path: path.join(OUT, 'board-payments.jpg'), type: 'jpeg', quality: 82, fullPage: true });
   await browser.close();
   if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
   console.log('ok · variants in ' + OUT);

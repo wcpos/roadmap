@@ -12,7 +12,7 @@ const QUICK = process.argv.includes('--quick');
 fs.mkdirSync(OUT, { recursive: true });
 for (const f of fs.readdirSync(OUT)) if (f.endsWith('.jpg') || f.endsWith('.png')) fs.rmSync(path.join(OUT, f));
 
-const STATES = ['open','added','line-actions','line-edit','many-orders','cart-settings','empty','closed','pick','counting','overdue','panel','closure','offline','loading','noresults','table','settings','tender','tender-card','tender-legacy','split','split-1of2','split-item','paid','long'];
+const STATES = ['open','added','line-actions','line-edit','many-orders','cart-settings','empty','closed','pick','counting','overdue','panel','closure','offline','loading','noresults','table','settings','tender','tender-card','tender-legacy','split','split-1of2','split-2of3','split-item','paid','long'];
 const WIDTHS = QUICK ? ['tablet'] : ['phone','tablet','desktop'];
 const THEMES = QUICK ? ['light'] : ['light','dark'];
 const SCALES = QUICK ? ['regular'] : ['regular','compact'];

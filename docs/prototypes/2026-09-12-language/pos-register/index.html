@@ -467,6 +467,52 @@ body:has(#strip[hidden]) .notes{display:none}
 .ledger .pl{color:var(--muted-fg);font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-size:calc(var(--fs)*.8);padding:calc(var(--u)*3) calc(var(--u)*4) calc(var(--u)*1)}
 .payrow{animation:land 280ms cubic-bezier(.2,.9,.3,1.1)} @keyframes land{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 
+
+/* Register-only payment list studies. The parent .lines scrolls; totals are unchanged. */
+.frame[data-screen="register"][data-pay-board] .ledger{width:480px;flex:none}
+.frame[data-screen="register"] .paylist{min-width:0}
+.frame[data-screen="register"] .paylist .pay-list-body{padding:0 calc(var(--u)*4) calc(var(--u)*3)}
+.frame[data-screen="register"] .paylist[data-look="rows"] .pay-list-body{padding:0 0 calc(var(--u)*3)}
+.frame[data-screen="register"] .paylist .pay-copy{min-width:0;flex:1;overflow-wrap:anywhere}
+.frame[data-screen="register"] .paylist :is(.pay-tile-row,.pay-event){display:flex;align-items:flex-start;gap:10px;padding:calc(var(--u)*2) 0}
+.frame[data-screen="register"] .paylist :is(.pay-tile-row,.pay-event)>.money{flex:none;text-align:right}
+.frame[data-screen="register"] .paylist :is(.pay-tile,.pay-disc){display:flex;align-items:center;justify-content:center;flex:none;color:var(--pay-color);background:color-mix(in srgb,var(--pay-color) 10%,transparent)}
+.frame[data-screen="register"] .paylist .pay-tile{width:36px;height:36px;border-radius:8px}
+.frame[data-screen="register"] .paylist .is-pending{color:var(--muted-fg)}
+.frame[data-screen="register"] .paylist .is-pending .pay-tile{background:none;border:1px dashed var(--border);color:var(--muted-fg)}
+.frame[data-screen="register"] .paylist .st{font-size:calc(var(--fs)*.8);margin-left:3px}
+.frame[data-screen="register"] .paylist .st.bad{color:var(--destructive)}
+.frame[data-screen="register"] .paylist .pay-track{height:6px;display:flex;gap:2px;margin:10px 0 6px;overflow:hidden;border-radius:3px}
+.frame[data-screen="register"] .paylist .pay-track>span{background:var(--muted);min-width:0}
+.frame[data-screen="register"] .paylist .pay-track i{display:block;height:100%;width:100%;background:var(--pay-color);transition:width 300ms ease}
+.frame[data-screen="register"] .paylist .pay-timeline{position:relative}
+.frame[data-screen="register"] .paylist .pay-timeline:before{content:"";position:absolute;left:7px;top:18px;bottom:18px;width:2px;background:var(--border)}
+.frame[data-screen="register"] .paylist .pay-dot{width:16px;height:16px;display:flex;align-items:center;justify-content:center;flex:none;border:2px solid var(--muted-fg);background:var(--card);border-radius:50%;position:relative;margin-top:2px}
+.frame[data-screen="register"] .paylist .pay-dot.is-taken{background:var(--pay-color);border-color:var(--pay-color);color:white}
+.frame[data-screen="register"] .paylist .is-next .pay-dot{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 15%,transparent)}
+.frame[data-screen="register"] .paylist .pay-dot svg{width:12px;height:12px}
+.frame[data-screen="register"] .paylist .ringspin{width:12px;height:12px;border:2px solid var(--muted);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite}
+.frame[data-screen="register"] .paylist .pay-story-event{display:grid;grid-template-columns:44px 18px minmax(0,1fr);gap:8px;align-items:start;padding:calc(var(--u)*2) 0}
+.frame[data-screen="register"] .paylist .pay-story-event svg{width:16px;height:16px}
+.frame[data-screen="register"] .paylist .pay-story-icon{color:var(--pay-color)}
+.frame[data-screen="register"] .paylist .pay-time{font-variant-numeric:tabular-nums}
+.frame[data-screen="register"] .paylist[data-look="receipt"] .pay-list-body{font-family:var(--mono);text-transform:uppercase;border-block:1px dotted var(--border);margin:8px calc(var(--u)*4);padding:8px 0}
+.frame[data-screen="register"] .paylist .pay-receipt-entry{padding:6px 0}
+.frame[data-screen="register"] .paylist .pay-receipt-line{display:flex;align-items:baseline;gap:5px;min-width:0;font-size:calc(var(--fs)*.86)}
+.frame[data-screen="register"] .paylist .pay-receipt-line>span:first-child{white-space:pre-wrap;overflow-wrap:anywhere;min-width:0}
+.frame[data-screen="register"] .paylist .pay-leader{flex:1;min-width:8px;border-bottom:1px dotted var(--muted-fg)}
+.frame[data-screen="register"] .paylist .pay-receipt-paid{position:relative;padding:14px 72px 10px 0}
+.frame[data-screen="register"] .paylist .pay-receipt-paid .stamp{position:absolute;right:0;top:6px;transform:rotate(-8deg);font-size:16px;animation:none;color:var(--ok);border-color:var(--ok);mix-blend-mode:normal}
+.frame[data-screen="register"] .paylist .pay-card{border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:8px}
+.frame[data-screen="register"] .paylist .pay-card.is-pending{border-style:dashed}
+.frame[data-screen="register"] .paylist .pay-card-head{display:flex;align-items:center;gap:8px}
+.frame[data-screen="register"] .paylist .pay-disc{width:28px;height:28px;border-radius:50%;background:var(--pay-color);color:white}
+.frame[data-screen="register"] .paylist .pay-disc svg{width:16px;height:16px}
+.frame[data-screen="register"] .paylist .pay-card-amount{font-size:calc(var(--fs)*1.4);font-weight:600;margin:8px 0}
+.frame[data-screen="register"] .paylist .pay-finish{padding:12px 0;font-weight:600}
+.frame[data-screen="register"] .paylist[data-look="cards"] .pay-finish{padding:12px;border-radius:var(--r);background:color-mix(in srgb,var(--ok) 10%,transparent)}
+.frame[data-screen="register"] .paylist[data-look="rows"] :is(.pay-finish,.pay-empty){padding-inline:calc(var(--u)*4)}
+
 /* Only the surroundings fade; never the ledger/cart item rows or their ancestors. */
 .frame[data-screen="register"][data-xf] :is(.pay,.prodcol),
 .frame[data-screen="register"][data-xf] .cartcol > :is(.custrow,.cart-th,.totals,.cart-f,.tabs),
@@ -832,6 +878,7 @@ const OPEN=[
 const Q=new URLSearchParams(location.search);
 const S={ screen:['reports','orders'].includes(Q.get('screen'))?Q.get('screen'):'register', w:['tablet','phone','desktop'].includes(Q.get('w'))?Q.get('w'):'tablet', theme:'light', scale:'regular', scn:'open',
   splitLook:['chips','bar','ring','tear','seats'].includes(Q.get('splitLook'))?Q.get('splitLook'):'ring', splitDetail:null,   /* Paul 2026-09-17: the ring, decided; the other looks live on only for board-split.html (URL), the strip has no switch */
+  payList:['rows','tiles','bar','story','receipt','cards'].includes(Q.get('payList'))?Q.get('payList'):'bar', payClock:842,
   pays:[], payPlan:null, split:null, leg:0, legMethods:[], pending:null,
   phoneTab:'cart', panel:false, sheet:null, tender:false, view:'keypad', entry:null, method:'cash', settle:null, online:true, long:false,
   pop:null, tabsPos:'bottom', ledgerHead:'still', xf:false, customer:null, registers:1, counted:'', open:'200.00', reveal:null, edit:null, orders:2, ordlist:false, view2:'grid',
@@ -866,12 +913,12 @@ const STR=()=>S.long?{
 };
 const SCENES=[['open','Session open · focus on search'],['added','Line just added (beat)'],['line-actions','Line actions (swipe the total)'],['line-edit','Line · inline edit'],['many-orders','12 open orders'],['cart-settings','Cart settings (anchored)'],['empty','New empty cart'],
   ['closed','Register closed'],['pick','Choose register'],['counting','Counting'],['overdue','Overdue'],['panel','Register panel'],['closure','Closure written (beat)'],['offline','Offline'],
-  ['loading','Products loading'],['noresults','No results'],['table','Products · table view'],['settings','Products settings (slide-out)'],['tender','Tender · keypad'],['tender-card','Tender · on the terminal'],['tender-legacy','Tender · legacy (iframe)'],['split','Tender · split open'],['split-1of2','Tender · 1 of 2 taken'],['split-item','Tender · split by item'],['paid','Paid (beat)'],['long','German strings']];
+  ['loading','Products loading'],['noresults','No results'],['table','Products · table view'],['settings','Products settings (slide-out)'],['tender','Tender · keypad'],['tender-card','Tender · on the terminal'],['tender-legacy','Tender · legacy (iframe)'],['split','Tender · split open'],['split-1of2','Tender · 1 of 2 taken'],['split-2of3','Tender · 2 of 3 taken'],['split-item','Tender · split by item'],['paid','Paid (beat)'],['long','German strings']];
 
 let termTimer=null;
 function jump(scn){
   clearTimeout(termTimer);
-  Object.assign(S,{scn,splitDetail:null,pays:[],payPlan:null,split:null,leg:0,legMethods:[],pending:null,panel:false,sheet:null,tender:false,view:'keypad',entry:null,method:'cash',settle:null,online:true,long:false,pop:null,phoneTab:'cart',counted:'',open:'200.00',reveal:null,edit:null,orders:2,ordlist:false,termStep:1,view2:'grid',pview:'products',cats:[],tags:[],menu:false,slide:null,stock:null,feat:false,quick:false,nostrip:false});
+  Object.assign(S,{scn,payClock:842,splitDetail:null,pays:[],payPlan:null,split:null,leg:0,legMethods:[],pending:null,panel:false,sheet:null,tender:false,view:'keypad',entry:null,method:'cash',settle:null,online:true,long:false,pop:null,phoneTab:'cart',counted:'',open:'200.00',reveal:null,edit:null,orders:2,ordlist:false,termStep:1,view2:'grid',pview:'products',cats:[],tags:[],menu:false,slide:null,stock:null,feat:false,quick:false,nostrip:false});
   switch(scn){
     case 'added': S.settle='line'; break;
     case 'line-actions': S.reveal=0; break;
@@ -889,8 +936,9 @@ function jump(scn){
     case 'tender-legacy': S.tender=true; S.view='legacy'; S.phoneTab='products'; break;
     case 'split': S.tender=true; openSplit(); break;
     case 'split-1of2': S.tender=true; splitEven(2); settle(S.payPlan[0]); S.method='card'; S.legMethods[S.leg]='card'; break;
+    case 'split-2of3': S.tender=true; setPaymentPlan([10.60,2,cents(remaining()-12.60)]); settle(10.60); S.method='card'; settle(2); break;
     case 'split-item': S.tender=true; S.split={mode:'item',items:[0,1]}; break;
-    case 'paid': S.pays=[{m:'cash',amt:sub(),change:0}]; S.tender=true; S.view='paid'; S.phoneTab='products'; break;
+    case 'paid': settle(sub()); S.tender=true; S.view='paid'; S.phoneTab='products'; break;
     case 'long': S.long=true; break;
     case 'counting': S.counted='463.30'; break;
   }
@@ -914,6 +962,7 @@ function renderStrip(){
     <div class="g"><b>Update</b>${seg('upd',[['ready','ready · in the bell'],['none','none']])}</div>
     ${S.screen==='register'?`<div class="g"><b>Order note</b>${seg('note',[['row','row above the totals'],['line','last row of the cart'],['chip','chip by the customer'],['none','none']])}</div>`:''}
     ${S.screen==='register'?`<div class="g"><b>Ledger head</b>${seg('ledgerHead',[['still','Same head, stilled'],['customer','Customer stays live'],['progress','Payment progress'],['facts','Receipt facts']])}</div>`:''}
+    ${S.screen==='register'?`<div class="g"><b>Payments list</b>${seg('payList',[['rows','Rows (as drawn)'],['tiles','Rows with method tiles'],['bar','Paid · left bar and timeline'],['story','The story'],['receipt','Receipt tender lines'],['cards','Cards']])}</div>`:''}
     ${S.screen==='register'?`<div class="g"><b>Variations</b>${seg('vars',[['slide','Slide, breadcrumb'],['inline','Inline rows']])}</div>`:''}
     <div class="g"><b>Theme</b>${seg('theme',[['light','Default light'],['dark','Default dark'],['paper','Paper till'],['bold','Bold money'],['warm','Warm shop'],['market','Market stall'],['ocean','Ocean'],['sunset','Sunset'],['monochrome','Monochrome']])}</div>
     <div class="g"><b>Scale</b>${seg('scale',[['compact','Compact'],['regular','Regular'],['spacious','Spacious']])}</div>
@@ -1251,7 +1300,8 @@ function openSplit(){ S.entry=null; S.split={mode:'even',items:[]}; S.view='keyp
 function settle(amount){
   const due=remaining(), amt=cents(Math.min(amount,due)); if(amt<=0) return;
   const pending=S.payPlan?.map((amt,i)=>({amt,m:S.legMethods[i]})).filter((_,i)=>i>=S.pays.length&&i!==S.leg);
-  S.pays.push({m:S.method,amt,change:S.method==='cash'?cents(Math.max(0,amount-due)):0});
+  const t=`${Math.floor(S.payClock/60)}:${String(S.payClock++%60).padStart(2,'0')}`;
+  S.pays.push({m:S.method,amt,t,change:S.method==='cash'?cents(Math.max(0,amount-due)):0});
   S.entry=null; S.pending=null; S.split=null; S.leg=S.pays.length;
   if(pending){
     let left=remaining(); const rest=[], methods=[];
@@ -1413,12 +1463,46 @@ function renderTender(){
     <div class="commit"><button class="btn xl p press" data-act="take" ${entry<=0?'disabled':''}>${commit}</button>${bottomClose}</div></div>`;
 }
 
+// One set of ledger facts, six presentation-only drawings; no ledger controls.
+function renderPaymentsList(){
+  const look=S.payList, paid=cents(sub()-remaining()), done=S.view==='paid';
+  const entries=S.pays.map((p,i)=>({...p,state:'taken',status:p.status||'Captured',t:p.t||`14:${String(2+i).padStart(2,'0')}`}));
+  const waiting=S.view==='terminal';
+  if(S.payPlan) S.payPlan.slice(S.pays.length).forEach((amt,j)=>entries.push({amt,m:S.legMethods[S.pays.length+j]||'card',state:'pending',next:j===0}));
+  if(waiting){
+    const current={m:S.pending?.m||S.method,amt:S.pending?.amount??paymentAmount(),state:'pending',next:true,status:S.pending?.status||'Waiting',t:S.pending?.t||`${Math.floor(S.payClock/60)}:${String(S.payClock%60).padStart(2,'0')}`};
+    const i=entries.findIndex(p=>p.next); if(i<0) entries.push(current); else entries[i]=current;
+  }
+  const status=p=>p.status?`<span class="st ${p.status==='Captured'?'ok':p.status==='Declined'?'bad':'warn'}" data-status="${p.status.toLowerCase()}" title="${p.status==='Waiting'?'Waiting on the terminal':p.status}"><i></i>${p.status}</span>`:'';
+  const detail=p=>p.m==='cash'?`tendered ${fmt(p.amt+(p.change||0))} · change ${fmt(p.change||0)}`:METHODS.find(m=>m.id===p.m)?.k==='terminal'?'SumUp Solo · Counter 1':p.m==='card'?'contactless · •••• 4242':methodName(p.m);
+  const meta=p=>p.state==='taken'||p.status?`${p.t} · ${detail(p)}`:`${p.next?'next':'planned'} · ${fmt(p.amt)}`;
+  const icon=p=>I[METHODS.find(m=>m.id===p.m)?.k||'card']||I.card;
+  const attrs=p=>`data-pay="${p.state}" style="--pay-color:${splitColor(p.m)}"`;
+  const cls=p=>`${p.state==='taken'||p.status?'payrow ':''}${p.state==='pending'?'is-pending':''} ${p.next?'is-next':''}`;
+  const money=p=>`<span class="money">${fmt(p.amt)}</span>`;
+  const dot=p=>`<span class="pay-dot ${p.status==='Captured'?'is-taken':''}">${p.status==='Captured'?I.check:p.status==='Waiting'?'<i class="ringspin"></i>':''}</span>`;
+  const finish=done?'<div class="pay-finish up">Paid in full · 14:04</div>':'';
+  let body='';
+  if(look==='rows') body=entries.map(p=>`<div class="line ${cls(p)}" ${attrs(p)}><div class="lb" style="grid-template-columns:1fr auto"><span class="n">${methodName(p.m)}${p.status?' · '+status(p):''}<span class="sub">${meta(p)}</span></span><span class="money b">${fmt(p.amt)}</span></div></div>`).join('')+finish;
+  if(look==='tiles') body=entries.map(p=>`<div class="pay-tile-row ${cls(p)}" ${attrs(p)}><span class="pay-tile">${icon(p)}</span><div class="pay-copy"><b>${methodName(p.m)}</b><div class="xs mut">${meta(p)} ${status(p)}</div></div>${money(p)}</div>`).join('')+finish;
+  if(look==='bar'){
+    const segments=[...S.pays.map(p=>({amt:p.amt,m:p.m})),...(remaining()>0?[{amt:remaining()}]:[])];
+    body=`<div class="pay-progress"><div class="xs mut"><span class="money">${fmt(paid)}</span> paid · <span class="money">${fmt(remaining())}</span> left</div><div class="pay-track">${segments.map((p,i)=>`<span style="flex:${p.amt};--pay-color:${p.m?splitColor(p.m):'var(--muted)'}"><i ${p.m?`data-pay-fill="${i}"`:''}></i></span>`).join('')}</div></div><div class="pay-timeline">${entries.map(p=>`<div class="pay-event ${cls(p)}" ${attrs(p)}>${dot(p)}<div class="pay-copy"><b>${methodName(p.m)} · ${money(p)}</b><div class="xs mut">${meta(p)} ${status(p)}</div></div>${money(p)}</div>`).join('')}</div>${finish}`;
+  }
+  if(look==='story'){
+    const event=(time,glyph,text,attr='',classes='')=>`<div class="pay-story-event ${classes}" ${attr}><span class="xs mut pay-time">${time}</span>${glyph}<div class="pay-copy">${text}</div></div>`;
+    body=(S.payPlan?event('14:01',I.sliders,`Split ${S.payPlan.length} ways`):'')+entries.map(p=>event(p.status==='Waiting'?'Waiting':p.t||(p.next?'Next':'Later'),p.state==='taken'?`<span class="pay-story-icon">${icon(p)}</span>`:dot(p),`${methodName(p.m)} ${money(p)}${p.state==='taken'||p.status?` · <span class="xs mut">${detail(p)}</span> ${status(p)}`:' · planned'}`,attrs(p),cls(p))).join('')+(done?event('14:04',I.check,'Paid in full', '','up'):'');
+  }
+  if(look==='receipt'){
+    const line=(label,value,bold=false)=>`<div class="pay-receipt-line ${bold?'b':''}"><span>${label}</span><span class="pay-leader"></span><span class="money">${value}</span></div>`;
+    body=entries.map(p=>`<div class="pay-receipt-entry ${cls(p)}" ${attrs(p)}>${line(`${methodName(p.m)}${p.m==='card'&&p.state==='taken'?' ****4242':''}`,p.amt.toFixed(2))}${p.m==='cash'&&p.state==='taken'?line('  Tendered',(p.amt+(p.change||0)).toFixed(2))+line('  Change',(p.change||0).toFixed(2)):''}${p.state==='taken'||p.status?line(p.m==='card'?'  Contactless':p.m==='cash'?'  Cash':detail(p),p.t):line(p.next?'  Next':'  Planned','')}${status(p)}</div>`).join('')+line('Due',remaining().toFixed(2),true)+(done?`<div class="pay-receipt-paid up">${line('Paid in full','14:04',true)}<span class="stamp">PAID</span></div>`:'');
+  }
+  if(look==='cards') body=entries.map(p=>p.state==='pending'&&!p.status?`<div class="pay-card ${cls(p)}" ${attrs(p)}>${p.next?'Next':'Planned'} · ${methodName(p.m)} · ${money(p)}</div>`:`<div class="pay-card ${cls(p)}" ${attrs(p)}><div class="pay-card-head"><span class="pay-disc">${icon(p)}</span><b class="pay-copy">${methodName(p.m)}</b>${status(p)}</div><div class="pay-card-amount money">${fmt(p.amt)}</div><div class="xs mut">${meta(p)}</div></div>`).join('')+finish;
+  if(!entries.length) body='<div class="pay-empty mut">No payments yet</div>';
+  return `<section class="paylist" data-look="${look}" data-paid="${S.pays.length}" aria-label="Payments"><div class="pl">${T().payments}</div><div class="pay-list-body">${body}</div></section>`;
+}
 function renderLedger(){
   const t=T(); const items=lines(); const s=sub(); const paid=cents(s-remaining());
-  const payRow=S.pays.map(p=>`<div class="line payrow"><div class="lb" style="grid-template-columns:1fr auto"><span class="n">${methodName(p.m)} · <span class="st ok">Captured</span><span class="sub">${p.m==='cash'?`Tendered ${fmt(p.amt+p.change)} · change ${fmt(p.change)}`:'Contactless'}</span></span><span class="money b">${fmt(p.amt)}</span></div></div>`).join('')
-    +(S.view==='terminal'?`<div class="line payrow"><div class="lb" style="grid-template-columns:1fr auto"><span class="n">${methodName(S.pending?.m||S.method)}<span class="sub st warn">Waiting on the terminal</span></span><span class="money">${fmt(S.pending?.amount??paymentAmount())}</span></div></div>`:'')
-    +(!S.pays.length&&S.view!=='terminal'?`<div class="mut" style="padding:0 calc(var(--u)*4) calc(var(--u)*3)">No payments yet</div>`:'');
-
   const customer=S.customer||t.guest; const live=S.ledgerHead==='customer';
   const head=['still','customer'].includes(S.ledgerHead)
     ? `<div class="custrow"><span class="chip"><b>#102476</b></span>${live?`<button class="chip press">${customer}${I.chevd}</button>`:`<span class="chip">${customer}</span>`}<span class="grow"></span>${live&&S.customer?'<span class="mut xs ell">Receipt goes to the customer</span>':''}</div>`
@@ -1429,7 +1513,7 @@ function renderLedger(){
     ? `<div class="cart-th facts"><span class="ell">${items.length} ${t.items} · ${S.registers>1?'Front counter':'UK Store'} · Demo Cashier · 12:04</span></div>`
     : `<div class="cart-th"><span>${t.qty}</span><span>${t.item}</span><span class="r">${t.price}</span><span class="r">${t.lineTotal}</span></div>`;
   return `<div class="cartcol ledger">${renderBar()}${S.tabsPos==='top'?renderTabs('top'):''}${head}${th}
-    <div class="lines">${items.map(([n,q,p,detail,k])=>`<div class="line ${k}"><div class="lb"><span class="q">${q}</span><span class="n"><span class="t ell">${n}</span>${detail?`<span class="sub">${detail}</span>`:''}</span><span class="pr money">${fmt(p)}</span><span class="tot money" style="font-weight:400">${fmt(q*p)}</span></div></div>`).join('')}<div class="pl">${t.payments}</div>${payRow}</div>
+    <div class="lines">${items.map(([n,q,p,detail,k])=>`<div class="line ${k}"><div class="lb"><span class="q">${q}</span><span class="n"><span class="t ell">${n}</span>${detail?`<span class="sub">${detail}</span>`:''}</span><span class="pr money">${fmt(p)}</span><span class="tot money" style="font-weight:400">${fmt(q*p)}</span></div></div>`).join('')}${renderPaymentsList()}</div>
     <div class="totals"><div class="r2 mut"><span>${t.total}</span><span class="money">${fmt(s)}</span></div><div class="r2 mut"><span>${t.paid}</span><span class="money">${fmt(paid)}</span></div><div class="r2 big"><span>${paid>=s?t.paid:'Remaining'}</span><span class="money">${fmt(s-paid)}</span></div></div>${S.tabsPos==='bottom'?renderTabs('bottom'):''}</div>`;
 }
 function renderPOS(){
@@ -1459,6 +1543,7 @@ function render(){
   if(S.screen!=='orders')delete f.dataset.list;
   if(S.screen==='reports'){RP.render();return;}
   if(S.screen==='orders'){OP.render();return;}
+  f.toggleAttribute('data-pay-board',Q.get('board')==='1'&&Q.has('payList'));
   f.toggleAttribute('data-xf',S.xf);
   if(S.xf){
     // Consume the transition now: a keypad render before cleanup must not replay it.
@@ -1467,10 +1552,15 @@ function render(){
   }
   const oldPane=S.slide&&f.querySelector('.pane:not(.exit-l):not(.exit-r)'); const oldHtml=oldPane?oldPane.outerHTML:null;
 
+  const oldPayCount=+(f.querySelector('.paylist')?.dataset.paid||0);
   const oldSplit=f.querySelector('.amtblock[data-sl-paid]');
   const splitBefore=oldSplit?{paid:+oldSplit.dataset.slPaid,layout:oldSplit.dataset.slLayout}:null;
   f.innerHTML=`${S.plan==='top'&&!S.nostrip?renderUpgradeStrip('top'):''}<div class="body">${S.w==='phone'?'':renderRail()}<div class="main">${renderPOS()}${renderSide()}${renderPanel()}${renderSheet()}</div></div>`;
   animateSplitLook(f,splitBefore);
+  if(S.pays.length>oldPayCount) f.querySelectorAll('.paylist [data-pay-fill]').forEach(el=>{
+    if(+el.dataset.payFill<oldPayCount) return;
+    el.style.width='0%'; el.getBoundingClientRect(); el.style.width='100%';
+  });
   renderNotes();
   { const bar=f.querySelector('.fbar'); const show=(pl)=>{ if(!pl||!bar) return; const over=pl.offsetLeft+pl.offsetWidth-(bar.scrollLeft+bar.clientWidth)+24; if(over>0) bar.scrollLeft+=over; else if(pl.offsetLeft<bar.scrollLeft+16) bar.scrollLeft=Math.max(0,pl.offsetLeft-16); };
     const mn=f.querySelector('.fwrap .menu'); const pl=mn&&f.querySelector(`.pill[data-menu="${S.menu}"]`); if(pl) show(pl); else if(S.quick) show(f.querySelector('.pill.q.on'));

@@ -100,6 +100,28 @@ with `remaining()` and `settle()` shared by cash and terminal payments and halve
 current cart total. Typing a first amount below the balance takes a partial payment, Cancel
 payment removes the last taken payment, and `S.plan` remains the unrelated Free/Pro switch.
 
+### Payments list (2026-09-17)
+
+**Payments list** (register only, beside *Ledger head*): Rows (as drawn) (`rows`) · Rows with
+method tiles (`tiles`) · **Paid · left bar and timeline** (`bar`, default) · The story (`story`) ·
+Receipt tender lines (`receipt`) · Cards (`cards`). The URL also accepts `payList=<option>`.
+State **Tender · 2 of 3 taken** (`split-2of3`) has Cash £10.60 at 14:02, Card £2.00 at 14:03,
+and a planned Card £11.50 next. The fixture clock starts at 14:02 and advances per payment.
+
+Every drawing shows each taken payment’s method, amount, time, status, and method detail
+(cash tendered/change, card contactless/masked number, or terminal device), plus planned legs
+with their amounts and methods and the first marked next. Waiting terminal payments and fixture
+Declined statuses are distinct from Captured. With no plan or payments it says “No payments yet”;
+the Paid view ends with “Paid in full · 14:04”. Rows keeps the original row treatment with these
+additional facts. Only the payments block changes: line items, pinned totals, and Cancel payment
+in the pay pane stay in their existing places. These are prototype facts, not live payment data.
+
+Open `board-payments.html` for six side-by-side right-column crops at half scale. Its State
+switch compares 2 of 3 taken, 1 of 2 taken, terminal in progress, and Paid. Captions link to
+information-pattern references; the drawings are interpretations, not verified product replicas.
+`node shoot-variants.js` includes payment-list assertions and `paylist-<option>-{2of3,waiting,paid}`
+captures plus `board-payments.jpg`, all under `screens/variants/`.
+
 ### Cart → checkout (2026-09-17)
 
 The line items do not move between the cart and the ledger. The head is the same height by
