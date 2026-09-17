@@ -237,8 +237,11 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     delta chip reads "+1.3% vs yesterday" and opens the comparison menu (Yesterday the default,
     Same day last week the one alternative, last year gone); the scope row starts with Today |
     This week | This month (week and month locked on Free), the dates on the stepper; the
-    companions carry signed differences in their own unit. Open from that pass: the phone scope
-    row wraps to three lines.
+    companions carry signed differences in their own unit.
+    **Paul (2026-09-17, later again): the scope row is folded away.** The date is the hero card's
+    title and opens a picker (six quick ranges beside a calendar, 1.10's shape); register and
+    store sit in the bar, the filter is a sliders icon there, the bordered chips are gone;
+    Closures keeps a slim row with the date button and its menu. That resolves the phone wrap.
 
 48. **Orders inside the register; the rail toggles the pages (Paul, 2026-09-17).** Paul: put
     the Orders mock-up into `pos-register/index.html` and toggle between the POS page, the
