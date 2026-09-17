@@ -128,7 +128,15 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     first; the gallery's Quote / Estimate template (category `purchase-order`) is the bill.
     Wiring: Print bill opens the receipt stage for the open order, defaults to the
     purchase-order template, falls back to the active receipt; an UNPAID band under
-    `needs_payment` in the stock receipts; fiscal submission only when paid. Not decided.
+    `needs_payment` in the stock receipts; fiscal submission only when paid. **Drawn (Paul,
+    2026-09-17): Print bill is the third button beside Order details and Save order on tablet and
+    desktop, no glyph; the same item in the ⋯ menu on the phone.**
+
+42. **The cashier at the top of the rail; the bell above the cart (ruled by Paul, 2026-09-17).**
+    The cashier avatar moves from the cart bar to the top of the left rail, where the logo was,
+    and opens the cashier sheet. The notifications bell moves from the rail's bottom group to the
+    cart bar, beside the cash-drawer icon, where the avatar was. The phone has no rail, so its
+    cart bar keeps the avatar beside the bell.
     (c) **chips** — pills, the current one filled; reads as a filter row rather than tabs;
     (d) **cards** — small cards with amount, customer and status, current with a primary top
     edge; the most information, the tallest;
