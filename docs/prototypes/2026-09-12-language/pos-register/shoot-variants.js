@@ -264,6 +264,41 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   if (await balance() !== money(splitTotal - 20)) throw new Error('typed partial remaining');
   await page.click('.pay .hd [data-act="cancelPay"]');
   if (await page.locator('.ledger .payrow').count()) throw new Error('cancel did not remove payment');
+  // Five drawings, one payment flow.
+  const looks = ['chips', 'bar', 'ring', 'tear', 'seats'];
+  if (await page.locator('.strip [data-set="splitLook"]').count() !== 5) throw new Error('expected five split looks');
+  for (const look of looks) {
+    await set('splitLook', look);
+    for (const w of ['tablet', 'phone']) {
+      await set('w', w); await scn('split'); await shot(`split-look-${look}-${w}`);
+      await scn('split-1of2');
+      if (w === 'tablet') {
+        const total = await page.evaluate(() => sub());
+        if (await page.locator('.ledger .payrow').count() !== 1 || !/Cash/.test(await page.locator('.ledger .payrow').innerText())) throw new Error(`${look}: cash leg`);
+        if (await balance() !== money(total - Math.ceil(total * 100 / 2) / 100)) throw new Error(`${look}: remaining half`);
+      }
+      await shot(`split-look-${look}-1of2-${w}`);
+      await page.click('.pay .commit [data-act="take"]'); await page.locator('.paidwrap').waitFor();
+      await scn('split-item'); await shot(`split-look-${look}-item-${w}`);
+    }
+    await set('w', 'tablet'); await scn('tender');
+    for (const k of ['2', '0', '0', '0']) await page.click(`.pay [data-act="key"][data-k="${k}"]`);
+    if (!/left after this/.test(await page.locator('.amtblock .line').innerText())) throw new Error(`${look}: partial hint`);
+    await page.click('.pay .commit [data-act="take"]');
+    if (await page.locator('.ledger .payrow').count() !== 1 || await page.locator('.paidwrap').count()) throw new Error(`${look}: partial settlement`);
+    await page.click('.pay .hd [data-act="cancelPay"]');
+    if (await page.locator('.ledger .payrow').count()) throw new Error(`${look}: cancel payment`);
+  }
+  await page.setViewportSize({ width: 2700, height: 800 });
+  await page.goto('file://' + path.join(DIR, 'board-split.html') + '?w=tablet');
+  if (await page.locator('iframe').count() !== 5) throw new Error('board: five iframes');
+  for (const look of looks) {
+    const panel = page.frameLocator(`iframe[data-look="${look}"]`);
+    await panel.locator('.frame[data-screen="register"][data-w="tablet"]').waitFor();
+    if (await panel.locator('#strip').isVisible()) throw new Error('board: strip visible');
+    if (await panel.locator('[data-act="splitMode"]').count() !== 4) throw new Error('board: wrong state');
+  }
+  await page.screenshot({ path: path.join(OUT, 'board-split.jpg'), type: 'jpeg', quality: 82, fullPage: true });
   await browser.close();
   if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
   console.log('ok · variants in ' + OUT);

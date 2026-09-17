@@ -81,9 +81,13 @@ is set; Guest has no hint. The customer picker remains a no-op in this prototype
 
 ### Split payments (2026-09-17)
 
-**Split** has one drawing: dev-next's signed-off pane flow, polished in the register's
-language, with no drawing switch. The Split chip opens Even, Amount, Percent and Item in the
-pay pane; Done or × returns to the keypad, with the leg chips and Change split below the amount.
+**Split look** (register only, beside *Ledger head*): **As drawn (chips)** · **The bar that
+fills** · **The ring** (default) · **Tear the receipt** · **Seats**.
+
+The flow is unchanged: the looks change only how the amount, the plan and the tiles are drawn.
+`board-split.html` shows the five looks side by side, with State and tablet/phone switches.
+The Split chip opens Even, Amount, Percent and Item in the pay pane; Done or × returns to the
+keypad, with the plan and Change split below the amount.
 Quick-amount helpers stay above the pinned keypad, and Cancel payment is in the pay head after
 a payment is taken.
 
