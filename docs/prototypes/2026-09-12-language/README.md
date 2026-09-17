@@ -137,6 +137,25 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     and opens the cashier sheet. The notifications bell moves from the rail's bottom group to the
     cart bar, beside the cash-drawer icon, where the avatar was. The phone has no rail, so its
     cart bar keeps the avatar beside the bell.
+
+43. **Banners: the upgrade nudge and the update notice (2026-09-17).** Paul: the free version has
+    an upgrade strip under the header; each platform also needs an update-available banner; check
+    Mobbin. Mobbin: the SaaS tools keep the plan in the sidebar as a quiet pill or card (Linear,
+    Notion, Slack, Suno, Campsite) and save the modal for the feature gate (Figma, Mixpanel,
+    Square); Mobbin itself uses a one-line strip above the grid; updates arrive as a floating
+    notice (SchoolAI), a bar button with a panel (n8n), or a modal (Coda, Sora); iOS updates are
+    sheets with Update / Not now (Fitbit, Rivian). `pos-register/board-banners.html` draws six
+    homes live in the new layout, switchable between the two messages: strip, rail pill, toolbar
+    pill, floating notice, the bell, snackbar. **Recommendation:** a standing `Free` pill at the
+    foot of the rail for the plan (never dismissed, never in the way, the modal only at a Pro
+    feature), and a floating notice under the toolbar for the update that stays until acted on
+    (web: reload; desktop: restart; iOS/Android: the store). Not decided.
+
+44. **The order note (2026-09-17).** Paul: today a note sits under the totals with a bubble
+    glyph; how do we show it? Three homes on the register's `Order note` switch: a row above the
+    totals (today's place, a hairline quieter), the last row of the cart, or a chip beside the
+    customer; a tap on any opens the details slide-out where it is edited. Recommendation: the
+    row. Not decided.
     (c) **chips** — pills, the current one filled; reads as a filter row rather than tabs;
     (d) **cards** — small cards with amount, customer and status, current with a primary top
     edge; the most information, the tallest;

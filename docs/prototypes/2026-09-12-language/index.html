@@ -38,6 +38,7 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
   <a href="#personality">Personality — 6 directions</a>
   <a href="#void">Void | Checkout — round five</a>
   <a href="#cartline">Cart line — quantity, edit, remove (live)</a>
+  <a href="#banners">POS banners — upgrade nudge and update notice, six homes (live)</a>
   <a href="#grid">POS grid — the drill-in transition, six ways (live)</a>
   <a href="#table4">POS table — bar, slide, header, footer, add (live)</a>
   <a href="#table3">POS table — the surface, 10 ways</a>
@@ -54,6 +55,7 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
   <h2>What changed</h2>
   <div class="meta">Newest first. Every push adds a line here; the date is the day it landed.</div>
   <div class="log">
+    <div><time>2026-09-17 · later 18</time><span><b>Banners, and the order note.</b> Paul: the free version has an upgrade strip, and each platform needs an update-available banner; check Mobbin. A new <a href="#banners">banners board</a> draws six homes for the two messages in the new layout, with the Mobbin screens behind each; recommendation: a standing <i>Free</i> pill at the foot of the rail for the plan (Linear, Notion, Slack keep the plan in the sidebar), and a floating notice under the toolbar for the update that stays until acted on (SchoolAI), never a strip that taxes every sale. And the order note, which today sits under the totals: an <kbd>Order note</kbd> switch on the register draws it as a row above the totals (today's, quieter), the last row of the cart, or a chip beside the customer; a tap on any of them opens the details slide-out.</span></div>
     <div><time>2026-09-17 · later 17</time><span><b>Ruled: the cashier at the top of the rail, the bell above the cart.</b> Paul: remove the printer icon; move the cashier avatar to the top of the left sidebar and the notifications bell to where the avatar was. Done: the avatar sits where the logo was and opens the cashier sheet; the bell sits beside the cash-drawer icon above the cart and is out of the rail's bottom group. The phone has no rail, so its cart bar keeps the avatar beside the bell. Print bill is three words, no glyph.</span></div>
     <div><time>2026-09-17 · later 16</time><span><b>Print bill drawn.</b> Paul: show it on a larger screen, next to Order details. It is the third button in that row on tablet and desktop, printer glyph and the words <i>Print bill</i>; on the phone it is the same item in the ⋯ menu, renamed from Print pro-forma. Captures: <code>pos-register/screens/variants/bill-tablet.jpg</code>, <code>bill-desktop.jpg</code>, <code>bill-phone-menu.jpg</code>.</span></div>
     <div><time>2026-09-17 · later 15</time><span><b>Tabs decided by width.</b> Paul: amount over status on large screens, amount + dot on the phone. A rule now, not a switch: the strip toggle and the settings radios are gone. The pro-forma question is answered in the list below with a recommendation.</span></div>
@@ -104,6 +106,8 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
 <section id="ask">
   <h2>Waiting on Paul</h2>
   <div class="ask"><ol>
+    <li><b>Banners:</b> where the plan nudge and the update notice live; six on the board, rail pill and floating notice recommended.</li>
+    <li><b>Order note:</b> row above the totals, last row of the cart, or a chip by the customer; all three under <kbd>Order note</kbd> on the register. Row is the recommendation (today's place, a hairline quieter).</li>
     <li><b>Add to cart:</b> ruled: the row is the button; the last column keeps the + (chevron for variable) which becomes the count. Quantity lives on the cart line.</li>
     <li><b>Cart line:</b> decided and live (quick edit · expanding quantity at touch size · swipe the total). One detail to confirm: a click on the total opening the strip on desktop, beside the hover nudge.</li>
         <li><b>Touches:</b> ruled 2026-09-16; the settle replaces the count-up. Doodle still open.</li>
@@ -176,6 +180,11 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
   <iframe src="pos-register/board-cart.html" style="height:900px" loading="lazy" title="Cart line board"></iframe>
 </section>
 
+<section id="banners">
+  <h2>POS banners — the upgrade nudge and the update notice, six homes <a class="open" href="pos-register/board-banners.html">open on its own ↗</a></h2>
+  <div class="what">Live. Today's yellow strip has no header to hang from in the new register. Six homes for the two messages, switchable between the upgrade nudge, the update notice, or both at once: the strip, a rail pill, a toolbar pill, a floating notice, the bell, a snackbar. The Mobbin screens behind each are at the bottom. Recommendation: the rail pill for the plan, the floating notice for the update.</div>
+  <iframe src="pos-register/board-banners.html" style="height:2600px" loading="lazy" title="POS banners board"></iframe>
+</section>
 <section id="grid">
   <h2>POS grid — the drill-in transition, six ways <a class="open" href="pos-register/board-grid.html">open on its own ↗</a></h2>
   <div class="what">Live. The grid's breadcrumb with six motions from the Mobbin sweep: push (the table's, recommended), fade, zoom, hero, stagger, back tile. Tap Tote bag, or Category and a pick; the crumb or the back tile returns. The Mobbin screens behind each idiom are at the bottom.</div>
