@@ -287,6 +287,8 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     and zebra are the two ways to keep a grey page without a box. **Pick: 02 the white sheet,
     runner-up 04 the header band.** Waiting on Paul.
     **Paul (2026-09-16): leaning to today's surface or the floating sheet, not sure.**
+    **Paul (2026-09-17): a toggle on the main mockup for today's, the floating sheet, and all white.**
+    Done: the register's `Surface` switch (`data-surface` on the frame), on tiles and the table.
 32. **Filter bar, and the slide (2026-09-16).** Paul: the filter bar from the existing app comes
     back under the search, and grows (users will add their own filter buttons); variations should
     not expand the table down but slide it left, with a breadcrumb at the top so the whole table
@@ -326,6 +328,7 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     IKEA (filled basket), Walmart, Shopee, Kiwi (a stepper on every row), CAVA (count with a
     picker). **Picks: sentence case on all white, caps elsewhere; tap adds + hold for quantity
     with the count badge, price-as-button the strongest alternative.** Waiting on Paul.
+    **Header decided (Paul, 2026-09-17): caps over a hairline, as it is.**
     **Paul (2026-09-17): likes the + that becomes a stepper, but the column it needs is a waste
     of space; likes the press-and-hold. Ruled: an add button, press-and-hold for quantity, the
     stepper as a popover.** Drawn as the board's default: the + as today (a 64 px column), a tap

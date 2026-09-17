@@ -39,6 +39,9 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   // the icon sets, session open
   for (const k of ['hugeicons','lucide']) { await set('icons', k); await scn('open'); await shot(`icons-${k}`); }
   await set('icons', 'tabler-15');
+  // surfaces: the sheet and all white, tiles and table, tablet and desktop
+  for (const k of ['float','allwhite']) { await set('surface', k); await scn('open'); await shot(`surface-${k}-tiles`); await page.click('[data-act="toggleView"]'); await shot(`surface-${k}-table`); await set('w','desktop'); await shot(`surface-${k}-desktop-table`); await page.click('[data-act="toggleView"]'); await set('w','tablet'); }
+  await set('surface', 'today');
   // phone: the dots
   await set('w', 'phone'); await scn('open'); await shot('phone-dots'); await page.click('[data-act="vmenu"]'); await shot('phone-dots-open'); await set('w', 'tablet');
   await browser.close();

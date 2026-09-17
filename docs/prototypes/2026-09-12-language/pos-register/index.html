@@ -120,6 +120,11 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .frame[data-w="phone"] .toolbar{padding:calc(var(--u)*2.5) calc(var(--u)*3)}
 .search{position:relative;flex:1} .search svg{position:absolute;left:calc(var(--u)*3);top:50%;transform:translateY(-50%);color:var(--muted-fg);pointer-events:none} .search .in{padding-left:calc(var(--u)*3 + var(--fs)*1.35 + var(--u)*2)}
 .tiles{display:grid;gap:calc(var(--u)*3);padding:0 0 calc(var(--u)*4) calc(var(--u)*4);overflow:auto;grid-template-columns:repeat(auto-fill,minmax(calc(var(--tile) * 2.5),1fr))}
+/* the surface the products sit on (Paul 2026-09-17, from board 3): today's page grey · a floating white sheet with a shadow and no stroke · all white with one seam */
+.frame[data-surface="float"] .ptable,.frame[data-surface="float"] .tiles{margin:0 0 calc(var(--u)*4) calc(var(--u)*4);border-radius:12px;background:var(--card);box-shadow:0 1px 2px oklch(0.2 0.02 250 / .06),0 6px 16px oklch(0.2 0.02 250 / .07);overflow:hidden}
+.frame[data-surface="float"] .ptable{padding:0 calc(var(--u)*2)} .frame[data-surface="float"] .tiles{padding:calc(var(--u)*3)} .frame[data-surface="float"] .tr:hover{background:var(--bg)}
+.frame[data-surface="float"][data-w="phone"] .ptable,.frame[data-surface="float"][data-w="phone"] .tiles{margin-right:calc(var(--u)*4)}
+.frame[data-surface="allwhite"]{background:var(--card)} .frame[data-surface="allwhite"] .rail{background:var(--card)} .frame[data-surface="allwhite"] .divider{background:var(--card)} .frame[data-surface="allwhite"] .tr:hover{background:var(--bg)} .frame[data-surface="allwhite"] .tile{background:var(--bg)}
 /* product table view — the same table components as the orders screen (thead / tr / td), no frame */
 .ptable{flex:1;min-height:0;display:flex;flex-direction:column;margin-left:calc(var(--u)*4)}
 .thead{display:grid;align-items:center;height:max(calc(var(--row) - 8px),32px);border-bottom:var(--hair) solid var(--border);color:var(--muted-fg);font-size:calc(var(--fs)*.8);font-weight:600;letter-spacing:.05em;text-transform:uppercase;flex:none}
@@ -460,7 +465,7 @@ const S={ w:'tablet', theme:'light', scale:'regular', scn:'open',
   closePos:'tr', legacy:'header-text',   /* Paul 2026-09-16: decided, switches removed. Void = outlined red, matched (voidStyle 'red'). */ termStep:1, sortCart:'newest-last', tabStyle:'line1',   /* Paul 2026-09-14: amount + dot, with a format setting */
   voidStyle:'red', vmenu:false, toast:null,
   /* personality touches (research: personality/ideas on the hub). Each is one small behaviour, not a skin. */
-  tx:{roll:1,stamp:1,pence:1,badge:1,tear:1,doodle:1}, icons:'tabler-15' };   /* Paul 2026-09-16: Tabler at 1.5 px, for a while; Hugeicons the standing alternative */
+  tx:{roll:1,stamp:1,pence:1,badge:1,tear:1,doodle:1}, icons:'tabler-15', surface:'today' };   /* Paul 2026-09-17: a switch for today's, the floating sheet, all white; the header stays caps over a hairline */   /* Paul 2026-09-16: Tabler at 1.5 px, for a while; Hugeicons the standing alternative */
 /* Paul 2026-09-16: the voice is out (translations); pence and the tear-off belong to the whimsical themes only; the badge is kept for a property chosen in POS Products settings, stock for now. */
 const WHIMSY=['market','paper'];
 const STR=()=>S.long?{
@@ -524,6 +529,7 @@ function renderStrip(){
   const seg=(k,opts)=>`<span class="seg">${opts.map(([v,l])=>`<button class="${S[k]===v?'on':''}" data-set="${k}" data-v="${v}">${l}</button>`).join('')}</span>`;
   document.getElementById('strip').innerHTML=`
     <div class="g"><b>Width</b>${seg('w',[['phone','Phone 390'],['tablet','Tablet 1024'],['desktop','Desktop 1440']])}</div>
+    <div class="g"><b>Surface</b>${seg('surface',[['today','Today'],['float','Floating sheet'],['allwhite','All white']])}</div>
     <div class="g"><b>Theme</b>${seg('theme',[['light','Default light'],['dark','Default dark'],['paper','Paper till'],['bold','Bold money'],['warm','Warm shop'],['market','Market stall'],['stage','Dark stage'],['ocean','Ocean'],['sunset','Sunset'],['monochrome','Monochrome']])}</div>
     <div class="g"><b>Scale</b>${seg('scale',[['compact','Compact'],['regular','Regular'],['spacious','Spacious']])}</div>
     <div class="g"><b>Tabs</b>${seg('tabsPos',[['bottom','bottom'],['top','top']])}</div>
@@ -864,7 +870,7 @@ function rollMoney(from,to){
 function render(){
   Object.assign(I, I0, S.icons==='lucide'?{}:(ICONSETS[S.icons]||{}));
   renderStrip();
-  const f=document.getElementById('frame'); f.className='frame'; f.dataset.w=S.w; f.dataset.theme=S.theme; f.dataset.scale=S.scale;
+  const f=document.getElementById('frame'); f.className='frame'; f.dataset.w=S.w; f.dataset.theme=S.theme; f.dataset.scale=S.scale; f.dataset.surface=S.surface;
   f.innerHTML=`<div class="body">${S.w==='phone'?'':renderRail()}<div class="main">${renderPOS()}${renderSide()}${renderPanel()}${renderSheet()}</div></div>`;
   renderNotes();
 }
