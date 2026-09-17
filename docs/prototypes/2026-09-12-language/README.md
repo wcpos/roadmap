@@ -377,6 +377,15 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     (£5 · £10 · £20 · £50 · Half; 10 · 25 · 50 · 75 %); the commit reads "Split · £20.00 first" and
     is disabled with a warning when the value is zero or not below the remaining. The ring stays
     out of these two modes. Even and Item unchanged.
+    **Paul (2026-09-17, later): no half-page scrolling.** The tender pane has no inner scroll: the
+    keypad gives way first (full height with room, a floor without), and only if the pane still
+    cannot fit does the whole pane scroll as one. The ring is smaller once a plan exists, five
+    methods sit in one row on tablet and desktop, the unavailable note is one line, the plan chips
+    scroll sideways on the phone. Fits at compact and regular everywhere; spacious plan views
+    scroll as a whole.
+    **Paul (2026-09-17, later), two small ones:** the ledger's lines are inert (no quantity box, no
+    hover on the name or the price), and the cart's Total row above the checkout button is gone;
+    the button carries the total.
 51. **The ledger's Payments block, six drawings (Paul, 2026-09-17).** Paul: do something with the
     payments listed under the line items; more information, more visual; research it, at least
     five. From Mobbin: Klarna's paid · left bar over a ticked plan, Stripe's and Wise's event

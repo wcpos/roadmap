@@ -225,6 +225,9 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 :where(.frame[data-screen="register"]) .line .n{line-height:1.3;min-width:0} :where(.frame[data-screen="register"]) .line .n .t{display:block} .line .n .sub{display:block;color:var(--muted-fg);font-size:calc(var(--fs)*.86)}
 :where(.frame[data-screen="register"]) .line .pr{text-align:right;color:var(--muted-fg)} :where(.frame[data-screen="register"]) .line .tot{text-align:right;font-weight:600;cursor:grab;touch-action:pan-y;user-select:none;padding:calc(var(--u)*2) 0 calc(var(--u)*2) calc(var(--u)*3);margin:calc(var(--u)*-2) 0 calc(var(--u)*-2) calc(var(--u)*-3)}
 :where(.frame[data-screen="register"]) .line .q{cursor:pointer} :where(.frame[data-screen="register"]) .line .q:hover{border-color:var(--muted-fg)}
+/* Paul 2026-09-17: on the payment page the cart is not editable, so the quantity loses its button box and the name and price lose their hover */
+.frame[data-screen="register"] .ledger .line .q,.frame[data-screen="register"] .ledger .line .q:hover{border-color:transparent;background:none;cursor:default;box-shadow:none}
+.frame[data-screen="register"] .ledger .line .n .t,.frame[data-screen="register"] .ledger .line .pr{cursor:default} .frame[data-screen="register"] .ledger .line .n .t:hover,.frame[data-screen="register"] .ledger .line .pr:hover{background:none}
 :where(.frame[data-screen="register"]) .line .n .t,:where(.frame[data-screen="register"]) .line .pr{cursor:text;border-radius:4px} :where(.frame[data-screen="register"]) .line .n .t:hover,:where(.frame[data-screen="register"]) .line .pr:hover{background:var(--muted)}   /* one click edits name or price */
 .line .lb .ed{height:calc(var(--ctl) - 8px);border:var(--hair) solid var(--ring);box-shadow:0 0 0 1px var(--ring);border-radius:calc(var(--r) - 2px);padding:0 calc(var(--u)*2);width:100%;background:var(--card);outline:none;min-width:0}
 :where(.frame[data-screen="register"]) .line .acts{position:absolute;right:0;top:0;bottom:0;display:flex;z-index:0}
@@ -354,11 +357,13 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .pay .amtblock{text-align:center;padding:calc(var(--u)*4) calc(var(--u)*4) 0;flex:none}
 .pay .lbl{color:var(--muted-fg);font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-size:calc(var(--fs)*.86);display:inline-flex;align-items:center;gap:calc(var(--u)*2)}
 .pay .big{font-size:calc(var(--amt)*1.9);font-weight:700;line-height:1.1;letter-spacing:-.02em;margin-top:calc(var(--u)*1)}
-.pay .scroll{flex:1;min-height:0;overflow:auto}   /* the amount and the method grid scroll if a store has many gateways; keypad and commit stay pinned */
+.pay .scroll{flex:0 0 auto;min-height:auto;overflow:visible}   /* Paul 2026-09-17: no half-page scrolling. The pane fits the page; the keypad gives way first (rows shrink to a floor); only if it still cannot fit does the WHOLE pane scroll (.pay overflow:auto below), never a pinned foot with a scrolling middle */
+.pay{overflow:auto}
 .pay .amtblock{padding-top:calc(var(--u)*2)} .pay .line:empty{min-height:0;margin:0} .mgroup{padding-top:calc(var(--u)*1.5)} .frame[data-w="phone"] .pay .big{font-size:calc(var(--amt)*1.7)} .pay .big.ghost{color:var(--muted-fg)}
 .pay .line{display:block;min-height:calc(var(--fs)*1.6);color:var(--muted-fg);border:0;padding:0;margin-top:calc(var(--u)*1);overflow:visible;background:none} .pay .line .chg{color:var(--ok);font-weight:600;animation:risel 180ms var(--ease)}
 @keyframes risel{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
 .methods{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(var(--u)*2);padding:calc(var(--u)*4) calc(var(--u)*4) 0;flex:none;max-width:520px;width:100%;margin:0 auto}
+.methods.row{grid-template-columns:repeat(auto-fit,minmax(88px,1fr))} .methods.row .mt{padding:0 var(--u);flex-direction:column;gap:2px;font-size:calc(var(--fs)*.9);line-height:1.1} .methods.row .mt svg{width:18px;height:18px} .methods.row .mt .ell{max-width:100%}   /* icon over label so five fit in a row without truncating */
 .mt{height:max(calc(var(--ctl) + 8px),var(--floor));border:var(--hair) solid var(--border);border-radius:var(--r);background:var(--card);display:flex;align-items:center;justify-content:center;gap:calc(var(--u)*2);font-weight:500;padding:0 calc(var(--u)*2);min-width:0}
 .mt .ell{min-width:0} .mt.on{border-color:var(--primary);color:var(--primary);font-weight:600;box-shadow:inset 0 0 0 1px var(--primary)} .mt:active{background:var(--muted)} .mt .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);flex:none}
 .mt.legacy{border-style:dashed;color:var(--muted-fg);height:max(var(--ctl),var(--floor))}   /* rarely hit, so the control height, not the tile height */
@@ -367,8 +372,8 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .unav{padding:calc(var(--u)*2) calc(var(--u)*4) 0;text-align:center;color:var(--muted-fg)}
 .pay .sp{flex:1;min-height:calc(var(--u)*2)}
 .helpers{display:flex;justify-content:center;gap:calc(var(--u)*2);padding:calc(var(--u)*3) calc(var(--u)*4) 0;flex:none;flex-wrap:wrap}
-.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(var(--u)*2);padding:calc(var(--u)*3) calc(var(--u)*4) 0;flex:none;max-width:520px;width:100%;margin:0 auto}
-.k{height:max(calc(var(--tile)*.875),var(--floor));border-radius:var(--r);border:var(--hair) solid var(--border);background:var(--card);font-size:calc(var(--fs)*1.6);font-weight:500;display:flex;align-items:center;justify-content:center} .k:active{background:var(--muted)} .k.sub{color:var(--muted-fg)}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(4,minmax(0,1fr));gap:calc(var(--u)*2);padding:calc(var(--u)*3) calc(var(--u)*4) 0;flex:0 1 auto;height:calc(4 * max(calc(var(--tile)*.875),var(--floor)) + 3 * var(--u)*2 + var(--u)*3);min-height:calc(4 * max(36px,calc(var(--floor)*.82)) + 3 * var(--u)*2 + var(--u)*3);max-width:520px;width:100%;margin:0 auto}   /* the keys are the part that gives way: full height when there is room, down to the floor when there is not */
+.k{height:auto;min-height:max(36px,calc(var(--floor)*.82));border-radius:var(--r);border:var(--hair) solid var(--border);background:var(--card);font-size:calc(var(--fs)*1.6);font-weight:500;display:flex;align-items:center;justify-content:center} .k:active{background:var(--muted)} .k.sub{color:var(--muted-fg)}
 .commit{padding:calc(var(--u)*3) calc(var(--u)*4) calc(var(--u)*4);flex:none;max-width:520px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:calc(var(--u)*2)} .commit .btn{width:100%}
 /* Split looks: only the register amount, plan and chooser tiles change. */
 .strip[hidden]{display:none}
@@ -393,7 +398,10 @@ body:has(#strip[hidden]) .notes{display:none}
 .frame[data-screen="register"] .sl-ring.sl-draw .sl-arc{animation:sl-draw 400ms var(--ease) both}
 .frame[data-screen="register"] .sl-ring .big{font-size:calc(var(--amt)*1.15);margin:0}
 .frame[data-screen="register"] .sl-ring .sl-left{text-align:center;margin-top:6px}
-.frame[data-screen="register"][data-w="phone"] .sl-ring{width:160px;height:160px}
+.frame[data-screen="register"] .sl-ring.planned{width:146px;height:146px;margin:0 auto} .frame[data-screen="register"] .sl-ring.planned .big{font-size:calc(var(--amt)*.95)}   /* Paul 2026-09-17: the pane must fit the page; with the plan, the methods and the keypad below, the ring gives up some size */
+.frame[data-screen="register"][data-w="phone"] .sl-ring{width:160px;height:160px} .frame[data-screen="register"][data-w="phone"] .sl-ring.planned{width:120px;height:120px} .frame[data-screen="register"][data-w="phone"] .sl-ring.planned .big{font-size:calc(var(--amt)*.72)} .frame[data-screen="register"][data-w="phone"] .sl-ring.planned .sl-left{font-size:calc(var(--fs)*.8);margin-top:2px}
+.frame[data-screen="register"] .pay .unav{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* one line: the pane must fit the page */
+.frame[data-screen="register"][data-w="phone"] .legs{flex-wrap:nowrap;overflow-x:auto;justify-content:safe center;scrollbar-width:none;gap:var(--u)} .frame[data-screen="register"][data-w="phone"] .legs .chip{padding:0 calc(var(--u)*2)} .frame[data-screen="register"][data-w="phone"] .legs .splitlink{padding:0 var(--u)}   /* the plan chips scroll sideways on the phone rather than wrap into a second row */
 .frame[data-screen="register"][data-w="phone"] .sl-ring .big{font-size:calc(var(--amt)*.95)}
 .frame[data-screen="register"] .sl-paper{--mono:'JetBrains Mono',monospace;font-family:var(--mono);background:#fffdf8;border-top:1px dotted var(--muted-fg);border-bottom:1px dotted var(--muted-fg);padding:14px 10px;position:relative}
 .frame[data-screen="register"] .sl-paper::after{content:"";position:absolute;left:0;right:0;bottom:-5px;border-bottom:2px dashed var(--border)}
@@ -450,7 +458,7 @@ body:has(#strip[hidden]) .notes{display:none}
 .frame[data-screen="register"] .legs .splitlink{color:var(--muted-fg);height:max(calc(var(--ctl) - 8px),var(--floor));border:0;padding:0 calc(var(--u)*3)}
 .frame[data-screen="register"] .legs .chip{flex:none}
 .frame[data-screen="register"] .pay .commit .btn{white-space:normal;height:auto;min-height:max(calc(var(--tile)*.875),var(--floor));padding:8px}
-.frame[data-screen="register"][data-scale="spacious"] .pay .keys{gap:8px;padding-top:12px}.frame[data-screen="register"][data-scale="spacious"] .pay .k{height:56px}.frame[data-screen="register"][data-scale="spacious"] .pay .helpers{padding-top:12px}.frame[data-screen="register"][data-scale="spacious"] .pay .commit{padding-top:12px;padding-bottom:16px}
+.frame[data-screen="register"][data-scale="spacious"] .pay .keys{gap:8px;padding-top:12px}.frame[data-screen="register"][data-scale="spacious"] .pay .helpers{padding-top:12px}.frame[data-screen="register"][data-scale="spacious"] .pay .commit{padding-top:12px;padding-bottom:16px}
 .paidwrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*3);padding:calc(var(--u)*6);text-align:center;animation:pop 400ms cubic-bezier(.2,.9,.3,1.15) both}
 @keyframes pop{0%{opacity:0;transform:scale(.94)}100%{opacity:1;transform:none}}
 .paidwrap .disc{width:80px;height:80px;animation:none} .paidwrap .disc svg{width:38px;height:38px} .paidwrap .disc svg path{stroke-dasharray:30;stroke-dashoffset:30;animation:draw 450ms 150ms ease-out forwards}
@@ -1194,7 +1202,7 @@ function renderCart(){
   const undo=S.undoLine?`<div class="undo" data-stop="1">${I.trash}${S.undoLine.l[0]} ${t.remove.toLowerCase()}d<button class="press" data-act="undoLine">Undo</button></div>`:'';
   const body=(items.length?items.map(renderLine).join(''):`<div class="empty">${S.tx.doodle?DOODLE:I.cart}<div class="t">${t.emptyT}</div><div class="xs">${t.emptyS}</div></div>`)+undo;
   const NOTE='Gift for Sam · no prices on the receipt'; const noteRow=items.length&&S.note==='row'?`<button class="onote press" data-act="togglePop" data-pop="details" title="Order note · tap to edit">${I.note}<span><b>Note</b> · ${NOTE}</span></button>`:''; const noteLine=items.length&&S.note==='line'?`<button class="nline press" data-act="togglePop" data-pop="details" title="Order note · tap to edit">${I.note}<span><b>Note</b> · ${NOTE}</span></button>`:'';
-  const totals=items.length?`<div class="totals"><div class="r2 mut"><span>${t.subtotal}</span><span class="money">${fmt(goods-tax)}</span></div>${fees?`<div class="r2 mut"><span>${t.fees}</span><span class="money">${fmt(fees)}</span></div>`:''}<div class="r2 mut"><span>${t.tax}</span><span class="money">${fmt(tax)}</span></div><div class="r2 big"><span>${t.total}</span><span class="money">${fmt(s)}</span></div></div>`:'';
+  const totals=items.length?`<div class="totals"><div class="r2 mut"><span>${t.subtotal}</span><span class="money">${fmt(goods-tax)}</span></div>${fees?`<div class="r2 mut"><span>${t.fees}</span><span class="money">${fmt(fees)}</span></div>`:''}<div class="r2 mut"><span>${t.tax}</span><span class="money">${fmt(tax)}</span></div></div>`:'';   /* Paul 2026-09-17: no Total row; the Take button carries the total */
   /* Void style (strip): where the one destructive action lives — the void board, live */
   const dis=items.length?'':'disabled'; const vs=S.voidStyle;
   /* Paul 2026-09-17: the Order details | Save order | Print bill row is gone; those three live at the foot of the order sheet */
@@ -1366,7 +1374,7 @@ function splitAmountBlock(label,amount,line='',ghost=false){
   if(look==='ring'){
     let start=0; const sum=legs.reduce((s,l)=>s+l.amount,0)||1;
     const arcs=legs.length?legs.map((l,i)=>{const sweep=l.amount/sum*360, arc=`<circle class="sl-arc" data-sl-leg="${i}" cx="100" cy="100" r="90" pathLength="360" style="${style(l)}" stroke-dasharray="${Math.max(0,sweep-3)} ${360-Math.max(0,sweep-3)}" transform="rotate(${start-88.5} 100 100)"/>`;start+=sweep;return arc;}).join(''):'<circle class="sl-arc" cx="100" cy="100" r="90" pathLength="360" stroke-dasharray="360 360" style="--leg-color:var(--muted)"/>';
-    hero=`<div class="sl-ring"><svg viewBox="0 0 200 200" aria-hidden="true">${arcs}</svg><div>${big}${left}</div></div>`;
+    hero=`<div class="sl-ring ${chooser?'':'planned'}"><svg viewBox="0 0 200 200" aria-hidden="true">${arcs}</svg><div>${big}${left}</div></div>`;
     if(!chooser) label=S.payPlan?`${paymentName(S.leg)} ${t.ofN.replace('{n}',S.payPlan.length)}`:S.pays.length?paymentName(S.leg):t.toPay;
     if(legs.length) plan=`<div class="legs">${legs.map((l,i)=>`<span class="chip ${cls(l)} ${l.current?'on':''}"><i class="sl-dot" style="${style(l)}"></i>${legText(l.amount,i)}</span>`).join('')}${chooser?'':changeSplit}</div>`;
   }
@@ -1452,7 +1460,7 @@ function tenderHead(){
 function renderTender(){
   const t=T(); const total=remaining(); const entry=paymentAmount(); const ghost=S.entry===null; const m=METHODS.find(x=>x.id===S.method)||METHODS[0];
   /* Amount and Percent (Paul 2026-09-17: a keypad with quick keys): the typed value is the figure, so the ring stays out; the mode switch is all that scrolls */
-  if (S.split&&['amount','percent'].includes(S.split.mode)) return `<div class="pay">${tenderHead()}<div class="scroll"><div class="amtblock"><div class="lbl">${t.split} <span class="money">${fmt(total)}</span></div></div>${renderSplit()}</div>${splitTypedBody()}${paymentKeys('splitKey')}<div class="commit">${splitCommit()}<button class="btn q" data-act="splitClose">${t.done}</button></div></div>`;
+  if (S.split&&S.split.mode!=='even'){ const typed=['amount','percent'].includes(S.split.mode); return `<div class="pay">${tenderHead()}<div class="scroll"><div class="amtblock"><div class="lbl">${t.split} <span class="money">${fmt(total)}</span></div></div>${renderSplit()}</div>${typed?splitTypedBody()+paymentKeys('splitKey'):''}<div class="commit">${splitCommit()}<button class="btn q" data-act="splitClose">${t.done}</button></div></div>`; }
   if (S.split) return `<div class="pay">${tenderHead()}<div class="scroll">${splitAmountBlock(t.split,total)}${renderSplit()}</div><div class="commit">${splitCommit()}<button class="btn q" data-act="splitClose">${t.done}</button></div></div>`;
   if (S.view==='paid'){
     const last=S.pays.at(-1), change=last?.change||0;
@@ -1489,7 +1497,8 @@ function renderTender(){
   const tile=x=>`<button class="mt press ${x.id===S.method?'on':''} ${x.k==='globe'?'legacy':''}" data-act="method" data-m="${x.id}">${I[x.k]}<span class="ell">${x.t}</span>${x.dot?`<span class="dot"></span>`:''}</button>`;
   /* the legacy switch: a tile in the grid goes to the iframe view like a terminal tile goes to the terminal view */
   const legacyTile = S.legacy==='tile' ? `<button class="mt press legacy" data-act="mode" data-mode="legacy" title="The store's own checkout page">${I.globe}<span class="ell">${t.legacy}</span></button>` : '';
-  let methods=`<div class="methods">${METHODS.map(tile).join('')}${legacyTile}</div>`;
+  const nTiles=METHODS.length+(legacyTile?1:0);
+  let methods=`<div class="methods ${nTiles>=5&&nTiles<=6&&S.w!=='phone'?'row':''}">${METHODS.map(tile).join('')}${legacyTile}</div>`;   /* five or six methods sit in one row on tablet and desktop: the pane must fit the page */
   const unav=`<div class="unav xs">${UNAVAIL.length} ${t.notAvail} · ${UNAVAIL.map(([n,w])=>`${n} (${w})`).join(', ')}</div>`;
   const bottomClose = (S.closePos==='bottom' ? `<button class="btn q press" data-act="closeTender">${I.back}${t.backCart}</button>` : '') + (S.legacy==='bottom' ? `<button class="btn q press" data-act="mode" data-mode="legacy" style="color:var(--muted-fg)">${I.globe}${t.legacyLink}</button>` : '');
   const label=S.pays.length||S.payPlan?`${paymentName(S.leg)} ${S.payPlan?t.ofN.replace('{n}',S.payPlan.length):''} · ${fmt(total)} ${t.left}`:`${t.toPay} ${fmt(total)}`;

@@ -238,20 +238,19 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
     await page.locator('.paidwrap').waitFor();
     await scn('split-item'); await shot(`split-item-${w}`);
   }
-  // The pinned controls must fit at every scale; the area above them may scroll.
+  // Paul 2026-09-17: no half-page scrolling. At compact and regular the whole pane fits the page; at spacious nothing is pinned and
+  // only the whole pane may scroll (no inner scroller ever overflows); nothing overflows sideways at any scale.
   for (const w of ['tablet', 'phone']) for (const scale of ['compact', 'regular', 'spacious']) {
     await set('w', w); await set('scale', scale);
-    for (const state of ['split', 'split-item', 'split-1of2']) {
+    for (const state of ['split', 'split-item', 'split-1of2', 'tender']) {
       await scn(state);
-      const fits = await page.locator('.pay').evaluate(el => {
-        const pane = el.getBoundingClientRect();
-        return [...el.querySelectorAll('.keys, .commit')].every(control => {
-          const r = control.getBoundingClientRect();
-          return r.top >= pane.top && r.bottom <= pane.bottom + 1 && r.left >= pane.left && r.right <= pane.right + 1;
-        }) && el.scrollWidth <= el.clientWidth + 1
-          && [...el.querySelectorAll('.scroll, .splitbody, .splitgrid, .legs')].every(control => control.scrollWidth <= control.clientWidth + 1);
-      });
-      if (!fits) throw new Error(`split pinned controls overflow: ${w}-${scale}-${state}`);
+      const fits = await page.locator('.pay').evaluate((el, scale) => {
+        const wholeFits = el.scrollHeight <= el.clientHeight + 1;
+        const noInner = [...el.querySelectorAll('.scroll')].every(sc => sc.scrollHeight <= sc.clientHeight + 1 && getComputedStyle(sc).overflowY !== 'auto');
+        const noSideways = el.scrollWidth <= el.clientWidth + 1 && [...el.querySelectorAll('.scroll, .splitbody, .splitgrid, .legs')].every(control => getComputedStyle(control).overflowX === 'auto' || control.scrollWidth <= control.clientWidth + 1);   // the phone's plan chips scroll sideways on purpose
+        return noInner && noSideways && (scale === 'spacious' || wholeFits);
+      }, scale);
+      if (!fits) throw new Error(`tender pane does not fit the page: ${w}-${scale}-${state}`);
     }
   }
   await set('scale', 'regular');
