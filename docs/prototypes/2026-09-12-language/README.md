@@ -233,6 +233,12 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     toggle in the chart head, busiest bucket labelled, comparison as a dashed line, tax off the
     chart; the eight drawings in `reports/chart-variants.html` (H the result), the notes in
     `reports/README.md`. The rest of the page is still under review.
+    **Paul (2026-09-17, later again): hero and period, second pass.** The "by now" line is gone; the
+    delta chip reads "+1.3% vs yesterday" and opens the comparison menu (Yesterday the default,
+    Same day last week the one alternative, last year gone); the scope row starts with Today |
+    This week | This month (week and month locked on Free), the dates on the stepper; the
+    companions carry signed differences in their own unit. Open from that pass: the phone scope
+    row wraps to three lines.
 
 48. **Orders inside the register; the rail toggles the pages (Paul, 2026-09-17).** Paul: put
     the Orders mock-up into `pos-register/index.html` and toggle between the POS page, the
