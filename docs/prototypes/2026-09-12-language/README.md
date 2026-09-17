@@ -290,6 +290,10 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     "Till busy" State.
     **Sibling session (2026-09-17, later): `reports/till-widths.html`**, five ways the equation chips
     meet a narrower screen, each at three widths, ordinary and busy. To react to; nothing decided.
+    **Paul (2026-09-17, later): scrap everything.** The chip variations are rejected;
+    `reports/till-concepts.html` draws ten different pictures of the till (receipt, cash tray, cash
+    level, to bank tonight, limit gauge, sentence, before and after, handovers, cash book,
+    scoreboard). To react to; nothing decided.
 
 48. **Orders inside the register; the rail toggles the pages (Paul, 2026-09-17).** Paul: put
     the Orders mock-up into `pos-register/index.html` and toggle between the POS page, the
