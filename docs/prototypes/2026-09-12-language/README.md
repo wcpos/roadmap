@@ -118,6 +118,17 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     (b) **amount + dot** — one line, densest, status by colour only (needs the list for the word);
     **Decided (Paul, 2026-09-17): (a) amount over status on tablet and desktop, (b) amount + dot on
     the phone. A rule of the width, not a setting; the switch is out of the register.**
+
+41. **Print bill (2026-09-17).** Paul: the phone cart offers Print pro-forma; do other tills? Yes,
+    all of them, always tied to an open or saved order and never a final document: Loyverse,
+    Square and Clover call it Print bill, Toast print check, Lightspeed a quote. Recommendation:
+    keep it, call it Print bill, offer it at every width from the ⋯ menu, print "Not a receipt".
+    Templates: nothing new. The plugin's receipt data already has `order.needs_payment`,
+    `order.wc_status`, `order.paid`; the Invoice template guards its How-to-pay panel with the
+    first; the gallery's Quote / Estimate template (category `purchase-order`) is the bill.
+    Wiring: Print bill opens the receipt stage for the open order, defaults to the
+    purchase-order template, falls back to the active receipt; an UNPAID band under
+    `needs_payment` in the stock receipts; fiscal submission only when paid. Not decided.
     (c) **chips** — pills, the current one filled; reads as a filter row rather than tabs;
     (d) **cards** — small cards with amount, customer and status, current with a primary top
     edge; the most information, the tallest;
