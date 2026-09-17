@@ -450,7 +450,9 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 :where(.frame[data-screen="reports"]) .pad{padding:calc(var(--u)*4);overflow:auto;min-height:0;flex:1} :where(.frame[data-screen="reports"]) .card{background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r)}
 :where(.frame[data-screen="reports"]) .hero{padding:calc(var(--u)*5);position:relative} :where(.frame[data-screen="reports"]) .hero-top{display:flex;justify-content:space-between;gap:calc(var(--u)*6)}
 :where(.frame[data-screen="reports"]) .lbl,:where(.frame[data-screen="reports"]) .kpi .l{color:var(--muted-fg)} :where(.frame[data-screen="reports"]) .big{font-size:var(--amt);font-family:var(--display);font-weight:700;letter-spacing:-.03em}
-:where(.frame[data-screen="reports"]) .prev{display:flex;flex-wrap:wrap;align-items:center;gap:calc(var(--u)*2);color:var(--muted-fg)} :where(.frame[data-screen="reports"]) .delta{border:var(--hair) solid var(--border);border-radius:var(--r);padding:var(--u) calc(var(--u)*2);color:var(--muted-fg)} :where(.frame[data-screen="reports"]) .delta.up{color:var(--ok)} :where(.frame[data-screen="reports"]) .delta.down{color:var(--bad)}
+:where(.frame[data-screen="reports"]) .prev{display:flex;flex-wrap:wrap;align-items:center;gap:calc(var(--u)*2);color:var(--muted-fg)} :where(.frame[data-screen="reports"]) .delta{display:inline-flex;align-items:center;gap:var(--u);border:var(--hair) solid var(--border);border-radius:var(--r);padding:var(--u) calc(var(--u)*2);color:var(--muted-fg)} :where(.frame[data-screen="reports"]) button.delta{min-height:max(32px,var(--floor));padding:0 calc(var(--u)*2) 0 calc(var(--u)*2.5)} :where(.frame[data-screen="reports"]) .delta .car svg{width:14px;height:14px;color:var(--muted-fg)} :where(.frame[data-screen="reports"]) .delta.sm{font-size:calc(var(--fs)*.86);padding:1px calc(var(--u)*1.5);margin-top:var(--u)}
+:where(.frame[data-screen="reports"]) .segt.period button.lock{color:var(--muted-fg)} :where(.frame[data-screen="reports"]) .segt.period .lk svg{width:12px;height:12px}
+:where(.frame[data-screen="reports"]) .datebtn{font-weight:500;font-size:var(--fs)} :where(.frame[data-screen="reports"]) .delta.up{color:var(--ok)} :where(.frame[data-screen="reports"]) .delta.down{color:var(--bad)}
 :where(.frame[data-screen="reports"]) .cmpbtn{display:inline-flex;align-items:center;gap:var(--u);min-height:max(var(--ctl),var(--floor));color:var(--muted-fg)}
 :where(.frame[data-screen="reports"]) .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(var(--u)*6);align-content:center;margin-right:calc(var(--ctl))} :where(.frame[data-screen="reports"]) .kpi .n{font-size:calc(var(--fs)*1.7);font-weight:600} :where(.frame[data-screen="reports"]) .kpi .p{color:var(--muted-fg);font-size:calc(var(--fs)*.9)}
 :where(.frame[data-screen="reports"]) .printb{position:absolute;right:calc(var(--u)*2);top:calc(var(--u)*2)} .frame:where([data-screen="reports"]) svg.bars{width:100%;height:auto;stroke:none;display:block;margin-top:calc(var(--u)*2);overflow:visible}
@@ -1310,7 +1312,7 @@ const RS = {
   online: true, regOpen: true, stores: 1,
   view: Q.get('view') === 'closures' ? 'closures' : 'sales',
   gran: ['day','week','month'].includes(Q.get('gran')) ? Q.get('gran') : 'day', off: 0, cFrom: 13, cTo: 0, status: 'done',
-  cmp: ['lastweek','yesterday','lastyear'].includes(Q.get('cmp')) ? Q.get('cmp') : 'lastweek',
+  cmp: ['lastweek','yesterday'].includes(Q.get('cmp')) ? Q.get('cmp') : 'yesterday',
   register:'front', store:'uk', cashier:'all',
   unticked: new Set(), detail: null, closure: null, xreport: false, tpl:'default', chart:'hour',   /* 'hour' | 'run' (Paul 2026-09-17: an easy toggle) */
   pop: null, hint: null, tip: null, frameH: 780,
@@ -1418,10 +1420,10 @@ function periodTitle(gran, off) {
   const b = buckets('custom', off), a = dateOf(b[0].off), z = dateOf(b[b.length - 1].off);
   return a.getMonth() === z.getMonth() ? `${a.getDate()}–${z.getDate()} ${m3(z)}` : `${a.getDate()} ${m3(a)} – ${z.getDate()} ${m3(z)}`;
 }
-const CMP_OFF = { lastweek: 7, yesterday: 1, lastyear: 364 };
-const CMP_LABEL = { lastweek: 'same day last week', yesterday: 'the day before', lastyear: 'same day last year' };
+const CMP_OFF = { lastweek: 7, yesterday: 1 };   /* Paul 2026-09-17: yesterday by default; same day last week is the one alternative */
+const CMP_LABEL = { lastweek: 'same day last week', yesterday: 'the day before' };
 function refLabel() {
-  if (RS.gran === 'day') return RS.off === 0 ? { lastweek: `last ${WDL[0]}`, yesterday: 'yesterday', lastyear: 'a year ago' }[RS.cmp] : CMP_LABEL[RS.cmp];
+  if (RS.gran === 'day') return RS.off === 0 ? { lastweek: `last ${WDL[0]}`, yesterday: 'yesterday' }[RS.cmp] : CMP_LABEL[RS.cmp];
   if (RS.gran === 'week') return 'the week before';
   if (RS.gran === 'month') return `${MON[(TODAY.getMonth() - RS.off - 1 + 12) % 12]}`;
   return `the ${RS.cFrom - RS.cTo + 1} days before`;
@@ -1529,30 +1531,40 @@ function sales() {
   const m = model();
   return `<div class="pad">${hero(m)}${tiles(m)}</div>`;
 }
+function periodDates(gran, off) {
+  const m3 = d => MON[d.getMonth()].slice(0, 3);
+  if (gran === 'day') return dstr(off);
+  if (gran === 'month') { const d = new Date(TODAY.getFullYear(), TODAY.getMonth() - off, 1); return d.getFullYear() === TODAY.getFullYear() ? MON[d.getMonth()] : `${MON[d.getMonth()]} ${d.getFullYear()}`; }
+  const b = buckets(gran, off), a = dateOf(b[0].off), z = dateOf(b[b.length - 1].off);
+  return a.getMonth() === z.getMonth() ? `${a.getDate()}–${z.getDate()} ${m3(z)}` : `${a.getDate()} ${m3(a)} – ${z.getDate()} ${m3(z)}`;
+}
+function periodSeg() {   /* Paul 2026-09-17: Today, This week, This month as options in view, not in a menu */
+  return `<span class="segt period" role="tablist" aria-label="Period">${[['day','Today'],['week','This week'],['month','This month']].map(([g, l]) => { const on = RS.gran === g && RS.off === 0, lk = !RS.pro && g !== 'day'; return `<button role="tab" aria-selected="${on}" class="press ${on ? 'on' : ''} ${lk ? 'lock' : ''}" data-act="${lk ? 'hint' : 'preset'}" data-v="${lk ? 'periods' : g + ':0'}">${l}${lk ? `<span class="lk">${I.lock}</span>` : ''}</button>`; }).join('')}</span>`;
+}
 function periodBar() {
-  return `<div class="pbar"><button class="ibtn press" data-act="step" data-v="1" title="Earlier">${I.chevl}</button><button class="datebtn" data-act="pop" data-p="date">${esc(periodTitle(RS.gran, RS.off))}${!RS.pro ? `<span class="lk">${I.lock}</span>` : ''}<span class="car">${I.chevd}</span></button><button class="ibtn press" data-act="step" data-v="-1" ${RS.off === 0 ? 'disabled' : ''} title="Later">${I.chev}</button>${RS.gran === 'custom' ? `<span class="mut sm">${RS.cFrom - RS.cTo + 1} days</span>` : ''}</div>`;
+  return `${periodSeg()}<div class="pbar"><button class="ibtn press" data-act="step" data-v="1" title="Earlier">${I.chevl}</button><button class="datebtn" data-act="pop" data-p="date">${esc(periodDates(RS.gran, RS.off))}${!RS.pro ? `<span class="lk">${I.lock}</span>` : ''}<span class="car">${I.chevd}</span></button><button class="ibtn press" data-act="step" data-v="-1" ${RS.off === 0 ? 'disabled' : ''} title="Later">${I.chev}</button>${RS.gran === 'custom' ? `<span class="mut sm">${RS.cFrom - RS.cTo + 1} days</span>` : ''}</div>`;
 }
-function deltaChip(cur, prev) {
-  if (!prev) return '';
-  const d = (cur - prev) / prev, a = Math.abs(d) * 100;
-  const cls = a < 0.5 ? 'flat' : d > 0 ? 'up' : 'down';
-  return `<span class="delta ${cls}">${cls === 'flat' ? '0' : (cls === 'up' ? '+' : '−') + (a < 10 ? a.toFixed(1) : Math.round(a))}%</span>`;
-}
+const deltaCls = (cur, prev) => { if (!prev) return 'flat'; const d = (cur - prev) / prev; return Math.abs(d) * 100 < 0.5 ? 'flat' : d > 0 ? 'up' : 'down'; };
+const deltaText = (cur, prev) => { if (!prev) return '—'; const d = (cur - prev) / prev, a = Math.abs(d) * 100; return deltaCls(cur, prev) === 'flat' ? '0%' : (d > 0 ? '+' : '−') + (a < 10 ? a.toFixed(1) : Math.round(a)) + '%'; };
+/* a companion's difference in its own unit: +3 orders, −£0.05, +9 items */
+const deltaAbs = (cur, prev, money = false) => { const d = cur - prev, cls = deltaCls(cur, prev); return `<span class="delta sm ${cls}">${money ? fmt(r2(d), true) : (d > 0 ? '+' : d < 0 ? '−' : '') + Math.abs(d)}</span>`; };
 function hero(m) {
-  const prevLine = RS.gran === 'day' && RS.off === 0 ? `${fmt(m.prevRef)} by now ${refLabel()}` : RS.gran !== 'day' && RS.off === 0 ? `${fmt(m.prevRef)} at this point ${refLabel()}` : `${fmt(m.prevRef)} ${refLabel()}`;
-  const cmpBtn = RS.gran === 'day' ? `<button class="cmpbtn" data-act="pop" data-p="cmp">vs ${esc(CMP_LABEL[RS.cmp])}<span class="car">${I.chevd}</span></button>` : `<span class="mut sm" style="height:30px;display:inline-flex;align-items:center">vs ${esc(refLabel())}</span>`;
-  const kp = (l, n, p) => `<div class="kpi"><div class="l">${l}</div><div class="n">${n}</div><div class="p">${p}</div></div>`;
+  /* Paul 2026-09-17: "£975.23 by now last Monday" goes, the chart shows it; the chip says what it compares with and opens the choice;
+     the companions' second line was "11 by now" (unclear), now a signed difference against the same comparison */
   const avg = m.orders ? m.total / m.orders : 0, pavg = m.prevOrders ? m.prevRef / m.prevOrders : 0;
+  const kp = (l, n, d) => `<div class="kpi"><div class="l">${l}</div><div class="n">${n}</div><div class="p">${d}</div></div>`;
+  const chip = RS.gran === 'day'
+    ? `<button class="delta press ${deltaCls(m.total, m.prevRef)}" data-act="pop" data-p="cmp" title="Compared at the same time of day">${deltaText(m.total, m.prevRef)} vs ${esc(refLabel())}<span class="car">${I.chevd}</span></button>`
+    : `<span class="delta ${deltaCls(m.total, m.prevRef)}">${deltaText(m.total, m.prevRef)} vs ${esc(refLabel())}</span>`;
   return `<div class="card hero">
     <button class="ibtn press printb" data-act="detail" data-v="summary" title="Sales summary">${I.print}</button>
     <div class="hero-top">
       <div>
         <div class="lbl">Sales</div>
         <div class="big">${fmt(m.total)}</div>
-        <div class="prev">${deltaChip(m.total, m.prevRef)}<span>${prevLine}</span>${m.excluded ? `<button class="chip press" data-act="resetTicks" title="Put them back">${m.excluded} order${m.excluded > 1 ? 's' : ''} left out${I.x}</button>` : ''}</div>
-        <div style="margin-top:4px">${cmpBtn}</div>
+        <div class="prev">${chip}${m.excluded ? `<button class="chip press" data-act="resetTicks" title="Put them back">${m.excluded} order${m.excluded > 1 ? 's' : ''} left out${I.x}</button>` : ''}</div>
       </div>
-      <div class="kpis">${kp('Orders', m.orders, m.prevOrders + ' ' + (RS.off === 0 ? 'by now' : 'before'))}${kp('Average order', fmt(avg), fmt(pavg))}${kp('Items', m.items, m.prevItems)}</div>
+      <div class="kpis">${kp('Orders', m.orders, deltaAbs(m.orders, m.prevOrders))}${kp('Average order', fmt(avg), deltaAbs(avg, pavg, true))}${kp('Items', m.items, deltaAbs(m.items, m.prevItems))}</div>
     </div>
     ${chart(m)}
   </div>`;
@@ -1736,7 +1748,7 @@ function popover() {
     inner += `<div class="ph div">Custom range</div>`;
     inner += RS.pro ? `<div class="crange"><input aria-label="Start date" type="date" id="cFrom" value="${isoOf(RS.gran === 'custom' ? RS.cFrom : 13)}" max="${isoOf(0)}"><span class="mut">to</span><input aria-label="End date" type="date" id="cTo" value="${isoOf(RS.gran === 'custom' ? RS.cTo : 0)}" max="${isoOf(0)}"><button class="btn sm p" data-act="applyRange">Apply</button></div><div class="rp-note" id="rangeNote">${RS.rangeErr || 'As far back as your history goes.'}</div>` : row('Pick dates…', false, 'hint', 'earlier', '', true, 'earlier');
   } else if (p.kind === 'cmp') {
-    inner = `<div class="ph">Compare with</div>${row('Same day last week', RS.cmp === 'lastweek', 'cmp', 'lastweek', 'Mon 7 Sep')}${row('The day before', RS.cmp === 'yesterday', 'cmp', 'yesterday', 'Sun 13 Sep')}${row('Same day last year', RS.cmp === 'lastyear', 'cmp', 'lastyear', 'Mon 15 Sep 2025', !RS.pro, 'lastyear')}`;
+    inner = `<div class="ph">Compare with</div>${row('Yesterday', RS.cmp === 'yesterday', 'cmp', 'yesterday', dstr(RS.off + 1))}${row('Same day last week', RS.cmp === 'lastweek', 'cmp', 'lastweek', dstr(RS.off + 7))}<div class="rp-note">${RS.off === 0 ? 'Compared at the same time of day.' : 'Whole days.'}</div>`;
   } else if (p.kind === 'tpl') {
     const type = p.v;
     inner = `<div class="ph">Template · ${type}</div>${TEMPLATES[type].map(t => row(t.name, RS.tpl === t.id, 'tpl', t.id, t.s)).join('')}<div class="rp-note">Managed in WP Admin › POS › Templates. A template formats the report; it cannot add data.</div>`;
@@ -1749,7 +1761,7 @@ function popover() {
 }
 
 function hintText(k) {
-  return { registers: 'Other registers are in WCPOS Pro', stores: 'Other stores are in WCPOS Pro', earlier: 'Earlier days are in WCPOS Pro', closures: 'Earlier closures are in WCPOS Pro', lastyear: 'Last year is in WCPOS Pro' }[k] || 'This is in WCPOS Pro';
+  return { registers: 'Other registers are in WCPOS Pro', stores: 'Other stores are in WCPOS Pro', earlier: 'Earlier days are in WCPOS Pro', periods: 'Weeks and months are in WCPOS Pro', closures: 'Earlier closures are in WCPOS Pro', lastyear: 'Last year is in WCPOS Pro' }[k] || 'This is in WCPOS Pro';
 }
 
 /* ============================ events ============================ */
@@ -1797,7 +1809,7 @@ function click(e) {
     case 'store': RS.store = v; RS.pop = null; break;
     case 'cashier': RS.cashier = v; RS.pop = null; Object.keys(ORD_CACHE).forEach(k => delete ORD_CACHE[k]); break;
     case 'status': RS.status = v; RS.pop = null; break;
-    case 'cmp': if (!RS.pro && v === 'lastyear') { RS.hint = 'lastyear'; break; } RS.cmp = v; RS.pop = null; break;
+    case 'cmp': RS.cmp = v; RS.pop = null; break;
     case 'detail': RS.detail = v; RS.tpl = 'default'; RS.pop = null; break;
     case 'closePanel': RS.detail = null; RS.closure = null; RS.xreport = false; RS.pop = null; break;
     case 'closure': RS.closure = v; RS.xreport = false; RS.tpl = 'default'; RS.pop = null; break;

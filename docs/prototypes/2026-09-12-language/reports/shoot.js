@@ -51,7 +51,9 @@ const checks = {
           assert(await page.locator('.bars rect:not(.hit)').evaluateAll(bars => bars.every(b => b.getBoundingClientRect().width <= 40.1)), 'bar exceeds 40 px');
           assert.equal(await page.locator('.peak-label').count(), 1, 'busiest hour not labelled on the chart');
           assert.equal(await page.locator('.chart-mode button.on').textContent(), s === 'today' ? 'By hour' : 'By day');
-          assert.equal(await page.locator('.delta svg').count(), 0, 'delta has a glyph');
+          assert(/ vs /.test(await page.locator('.hero .prev .delta').textContent()), 'delta chip must name the comparison');
+          assert.equal(await page.locator('.hero .kpi .delta').count(), 3, 'companions carry deltas');
+          assert.equal(await page.locator('.segt.period button.on').count(), s === 'today' ? 1 : 0, 'period segment');
         }
         if (s === 'session') {
           assert.equal(await page.locator('.scope-row [data-p="filter"] + [data-p="overflow"][aria-label="More"]').count(), 1);

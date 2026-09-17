@@ -22,6 +22,18 @@ whole-period figure labelled. Tax is not on the chart: the 1.10.x chart stacked 
 every bar, and that answers no hour-by-hour question; tax has the Taxes tile and the summary.
 The toggle is remembered until the next State preset (`RS.chart`).
 
+**Hero and period (second pass, same day).** Paul: the "£975.23 by now last Monday" line makes
+no sense once the chart shows it; he wants Today, This week and This month as visible options
+with the comparison following automatically (yesterday, the week before, the month before),
+same day last week as the one alternative for a day; and the companions' "11 by now" line was
+unclear. Done: the line is gone; the delta chip reads "+1.3% vs yesterday" and opens the
+comparison menu (Yesterday, Same day last week, with a note that a live day is compared at the
+same time of day); the scope row starts with a Today | This week | This month segment (week and
+month locked on Free), then the stepper with the dates ("Mon 14 Sep", "14–20 Sep",
+"September") and the earlier/custom menu; each companion carries a signed difference in its
+own unit (+3, −£0.05, +9). The 2026-09-14 default of "same day last week" is superseded by
+yesterday. Same day last year is gone. Open: the phone scope row wraps to three lines.
+
 ## What changed from 2026-09-14
 
 - Copied the register's tokens, controls, rail, page bar, notification panel, side-panel and
