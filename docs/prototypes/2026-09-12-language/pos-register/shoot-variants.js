@@ -127,6 +127,88 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   await set('w', 'tablet'); await scn('open'); await page.click('.cart-f .btn.dots'); await page.waitForTimeout(200); await page.click('.sidepanel .osfoot [data-act="void"]'); await page.waitForTimeout(200);
   if (await page.locator('.sidepanel').count()) throw new Error('sheet still open after void'); if (!(await page.locator('.toast').count())) throw new Error('no voided toast'); await shot('osheet-voided');
   await page.click('[data-act="undoVoid"]'); await set('w', 'tablet');
+  // Cart → ledger: removing a head row, shrinking the customer row or moving tabs must fail these checks.
+  const ledgerPosition = async (option, w, scale, tabs = 'bottom') => {
+    await set('w', w); await set('scale', scale); await set('ledgerHead', option); await scn('open');
+    await page.evaluate(() => window.scrollTo(0, 0));
+    const head = async () => page.locator('.cartcol').evaluate(el => {
+      const y = selector => el.querySelector(selector).getBoundingClientRect().y;
+      return { line: y('.lines .line'), customer: y('.custrow'), header: y('.cart-th') };
+    });
+    const cart = await head();
+    await page.click('[data-act="checkout"]'); await page.waitForTimeout(400);
+    const ledger = await head();
+    const label = `${option}-${w}-${scale}-${tabs}`;
+    for (const part of ['line', 'customer', 'header']) {
+      if (Math.abs(cart[part] - ledger[part]) > .5) throw new Error(`${label}: ${part} cart=${cart[part]}, ledger=${ledger[part]}`);
+    }
+    if (scale === 'regular' && tabs === 'bottom') await shot(`ledger-${option}-${w}-${scale}`);
+    await page.click('[data-act="closeTender"]'); await page.waitForTimeout(400);
+    const back = await head();
+    if (Math.abs(cart.line - back.line) > .5) throw new Error(`${label}: return cart=${cart.line}, back=${back.line}`);
+    console.log('ledger geometry', label, JSON.stringify({ cart, ledger, back }));
+  };
+  await set('tabsPos', 'bottom');
+  for (const option of ['still', 'customer', 'progress', 'facts']) {
+    for (const scale of ['regular', 'compact', 'spacious']) await ledgerPosition(option, 'tablet', scale);
+    await ledgerPosition(option, 'desktop', 'regular');
+  }
+  if (await page.locator('.strip [data-set="tabsPos"][data-v="top"]').count()) {
+    await set('tabsPos', 'top'); await ledgerPosition('still', 'tablet', 'regular', 'top'); await set('tabsPos', 'bottom');
+  } // No top-tabs assertion on a prototype without a Tab position switch.
+
+  // Real motion in a separate context. Freeze each sampled frame only while writing its screenshot.
+  const motion = await browser.newContext({ viewport: { width: 1500, height: 1400 } });
+  const fadePage = await motion.newPage();
+  fadePage.on('pageerror', e => errors.push('fade pageerror: ' + e.message));
+  await fadePage.goto('file://' + path.join(DIR, 'index.html'));
+  await fadePage.click('.strip [data-set="w"][data-v="tablet"]');
+  await fadePage.click('.strip [data-set="ledgerHead"][data-v="still"]');
+  await fadePage.click('.strip [data-scn="open"]');
+  await fadePage.evaluate(() => window.scrollTo(0, 0));
+  const timing = await fadePage.evaluate(async () => {
+    document.querySelector('[data-act="checkout"]').click();
+    const start = performance.now();
+    const read = () => ({ elapsed: performance.now() - start, pay: +getComputedStyle(document.querySelector('.pay')).opacity,
+      line: +getComputedStyle(document.querySelector('.ledger .lines .line')).opacity });
+    const initial = read(); await new Promise(resolve => setTimeout(resolve, 400));
+    return { initial, end: read() };
+  });
+  if (timing.initial.elapsed > 20 || timing.initial.pay >= 1 || timing.initial.line !== 1 || timing.end.pay !== 1 || timing.end.line !== 1)
+    throw new Error('live fade at 0/400 ms: ' + JSON.stringify(timing));
+  console.log('ledger live fade', JSON.stringify(timing));
+  await fadePage.click('[data-act="closeTender"]'); await fadePage.waitForTimeout(400);
+  for (const ms of [0, 100, 220]) {
+    const sample = await fadePage.evaluate(async ms => {
+      document.querySelector('[data-act="checkout"]').click();
+      const start = performance.now();
+      // Force the initial animation style before waiting for the next sample.
+      getComputedStyle(document.querySelector('.pay')).opacity;
+      if (ms) await new Promise(resolve => setTimeout(resolve, ms));
+      const sample = { elapsed: performance.now() - start, pay: +getComputedStyle(document.querySelector('.pay')).opacity,
+        line: +getComputedStyle(document.querySelector('.ledger .lines .line')).opacity };
+      // Keep the sampled pixels even if the 320 ms cleanup runs while the screenshot is written.
+      document.querySelector('#frame').getAnimations({ subtree: true }).forEach(a => {
+        if (a.animationName !== 'xfade') return;
+        const el = a.effect.target, opacity = getComputedStyle(el).opacity;
+        el.style.animation = 'none'; el.style.opacity = opacity;
+      });
+      return sample;
+    }, ms);
+    if (ms === 0 && (sample.elapsed > 20 || sample.pay >= 1)) throw new Error('fade initial sample: ' + JSON.stringify(sample));
+    if (sample.line !== 1) throw new Error(`line faded at ${ms}: ${sample.line}`);
+    await fadePage.locator('#frame').screenshot({ path: path.join(OUT, `ledger-fade-t${String(ms).padStart(3, '0')}.jpg`), type: 'jpeg', quality: 82, animations: 'allow' });
+    console.log('ledger fade frame', ms, JSON.stringify(sample));
+    await fadePage.click('[data-act="closeTender"]'); await fadePage.waitForTimeout(400);
+  }
+  // A keypad re-render inside the cleanup window must not replay the transition.
+  const keypadOpacity = await fadePage.evaluate(() => {
+    document.querySelector('[data-act="checkout"]').click();
+    document.querySelector('.pay [data-act="key"]').click();
+    return +getComputedStyle(document.querySelector('.pay')).opacity;
+  });
+  if (keypadOpacity !== 1) throw new Error('keypad replayed the fade: ' + keypadOpacity);
+  await motion.close();
   await browser.close();
   if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
   console.log('ok · variants in ' + OUT);

@@ -73,6 +73,19 @@ Overdue · Register panel · Closure written (beat) · Offline · Products loadi
 Products settings (slide-out) · Tender keypad · Tender on the terminal · Paid (beat) · German
 strings. Plus the two workshop switches (*Tender close*, *Legacy*).
 
+**Ledger head** (register only, beside *Order note*): **Same head, stilled** (`still`, default) ·
+*Customer stays live* (`customer`) · *Payment progress* (`progress`) · *Receipt facts* (`facts`).
+The first two keep the column labels; the others use that row for the payment amounts or receipt
+facts. Customer stays live keeps the customer chip tappable, with a receipt hint when a customer
+is set; Guest has no hint. The customer picker remains a no-op in this prototype.
+
+### Cart → checkout (2026-09-17)
+
+The line items do not move between the cart and the ledger. The head is the same height by
+construction: the control height, padding and border, then the same column-header-height row.
+Tabs keep their chosen position. The panes and the surrounding cart/ledger furniture fade over
+200 ms; the line items do not fade. Reduced motion turns the fade off.
+
 Reports is a page of the app, reached from the rail (the menu sheet on the phone), not a strip
 switch (Paul 2026-09-17: link it into the sidebar so the app can be felt as a whole). Each page
 keeps its own State while you move between them. Its states and README are in `../reports/`.

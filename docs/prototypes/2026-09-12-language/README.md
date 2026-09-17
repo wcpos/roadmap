@@ -245,6 +245,9 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     **Paul (2026-09-17, later again): the hero is decluttered.** The busiest-hour sentence and the
     legend under the chart are gone; the view toggle and print share the title row with the date;
     the plot is a third taller; the busiest bar carries its amount and order count.
+    **Sibling session (2026-09-17, later again): one list below the chart, to compare.** Closures
+    is a row of it; the Sales | Closures tabs and tiles stay behind a `Below the chart` switch;
+    Closures opens as a panel with a back arrow from a closure. Not decided.
 
 48. **Orders inside the register; the rail toggles the pages (Paul, 2026-09-17).** Paul: put
     the Orders mock-up into `pos-register/index.html` and toggle between the POS page, the
@@ -259,6 +262,25 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     unscoped (`pane`, `toast`, `search`, `chip`, `k`) were renamed `op-*` on the Orders page so
     the register's personality themes cannot leak into it. The Orders design itself is
     unchanged; its open decisions stay where they were.
+49. **Checkout: the line items stay put; the panes fade (Paul, 2026-09-17).** Paul: the layout
+    must not jump on the way to checkout, the cart lines should stay in place; is there anything
+    worth putting at the top that also matches the height of the customer row and the column
+    headers? Measured: the ledger had dropped the headers and shrunk the customer row to text,
+    so the first line jumped about 45 px (the live app on dev-next jumps about 37 px for the same
+    reason, and cross-fades the products pane into the pay pane over about 200 ms). Now the
+    register's `.custrow` has one height by construction (control height plus padding plus the
+    hairline) whatever it holds, the ledger draws a header-height row under it, and a
+    `Ledger head` switch offers four fillings: **Same head, stilled** (order and customer chips,
+    the QTY ITEM PRICE TOTAL row; the recommendation) · Customer stays live (the chip keeps its
+    chevron, a receipt hint when a customer is set) · Payment progress (TOTAL · PAID · TO PAY in
+    the header row) · Receipt facts (items · register · cashier · time). `shoot-variants.js`
+    asserts the first line's y is identical in the cart, the ledger and back for every head at
+    three scales and two widths, tabs top or bottom, and samples the fade: the pay pane goes 0 → 1
+    over 200 ms, the lines never leave 1; keypad renders inside the tender do not replay it.
+    Captures `pos-register/screens/variants/ledger-*.jpg`. Recommendation: the stilled head; the
+    headers are the information worth the room, progress repeats the totals block, facts are
+    not acted on, and a live customer needs an app change (payment locks the customer today).
+    Not decided.
     (c) **chips** — pills, the current one filled; reads as a filter row rather than tabs;
     (d) **cards** — small cards with amount, customer and status, current with a primary top
     edge; the most information, the tallest;
