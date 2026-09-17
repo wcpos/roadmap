@@ -46,6 +46,21 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   await scn('open'); await page.click('[data-act="toggleView"]'); await shot('table-bar-footer');
   await page.click('.tr.rowbtn[data-n="Cold brew"]'); await page.waitForTimeout(200); await page.click('.tr.rowbtn[data-n="Cold brew"]'); await page.waitForTimeout(200); await shot('table-row-tapped-twice');
   { const c = await page.locator('.tr.rowbtn[data-n="Cold brew"] .cnt').innerText(); if (c.trim() !== '2') throw new Error('row tap did not count to 2: ' + c); const l = await page.locator('.line[data-i="0"] .q').innerText(); if (l.trim() !== '2') throw new Error('cart line did not take 2: ' + l); }
+  // the slide: a variable product, then a category, each behind a breadcrumb; inline rows as the other style
+  await page.click('.tr.rowbtn[data-act="openVar"]'); await page.waitForTimeout(400); await shot('table-var-slide');
+  { const h = await page.locator('.crumb .here').innerText(); if (h.trim() !== 'Tote bag') throw new Error('variation pane crumb: ' + h); if (await page.locator('.pane').count() !== 1) throw new Error('old pane not removed'); }
+  await page.click('.tr.rowbtn[data-s="Natural · S"]'); await page.waitForTimeout(200); await shot('table-var-slide-tapped');
+  { const c = await page.locator('.tr.rowbtn[data-s="Natural · S"] .cnt').innerText(); if (c.trim() !== '1') throw new Error('variation tap did not count: ' + c); }
+  await page.click('.crumb [data-act="popView"]'); await page.waitForTimeout(400);
+  if (await page.locator('.crumb').count()) throw new Error('crumb still there after Products');
+  await page.click('[data-act="catMenu"]'); await page.waitForTimeout(100); await shot('table-cat-menu');
+  await page.click('.menu [data-c="Drinks"]'); await page.waitForTimeout(400); await shot('table-cat-slide');
+  { const n = await page.locator('.pane .tr').count(); if (n !== 3) throw new Error('Drinks should show 3 rows: ' + n); const pill = await page.locator('.pill.on').innerText(); if (!/Drinks/.test(pill)) throw new Error('Category pill not filled: ' + pill); }
+  await page.click('.pill.on[data-act="clearCat"]'); await page.waitForTimeout(400);
+  if (await page.locator('.pane .tr').count() < 12) throw new Error('clearing the category did not restore the rows');
+  await set('vars', 'inline'); await shot('table-var-inline');
+  if (await page.locator('.tr.vh').count() !== 3) throw new Error('inline style should show 3 indented rows');
+  await set('vars', 'slide');
   await page.click('[data-act="toggleView"]');
   // the cart line: the quantity expands, the swipe on the total, the desktop nudge, the phone sheet
   await scn('open'); await page.click('.line[data-i="1"] .q'); await page.waitForTimeout(250); await shot('cart-qty-open');

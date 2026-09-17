@@ -415,6 +415,14 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     condensed to "Shop base" (the full name in the tooltip and in the select).** Board 4's default.
     In the register too (2026-09-17, Paul: "the footer is still the old footer"), with the filter
     bar, the row as the button, the count in the last column, and adds that change the sale.
+
+38. **Variations slide, or inline rows: a setting (2026-09-17).** Paul: bring the table breadcrumbs
+    and the slide across, rather than the popovers; users will get a POS panel setting to choose
+    the style. In the register a variable product slides the table left behind a breadcrumb
+    (`‹ Products › Tote bag · 3 variations`, the SKU and from-price on the right); the Category
+    pill opens a menu and a pick slides the same way, the pill filling with the name and its ×
+    the way back. The strip's **Variations** switch and a row in the products settings swap
+    between the slide and the inline indented rows (decision 22). Default in the mock-up: slide.
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·

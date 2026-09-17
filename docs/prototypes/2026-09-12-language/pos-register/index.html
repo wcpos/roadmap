@@ -122,7 +122,7 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .tiles{display:grid;gap:calc(var(--u)*3);padding:0 0 calc(var(--u)*4) calc(var(--u)*4);overflow:auto;grid-template-columns:repeat(auto-fill,minmax(calc(var(--tile) * 2.5),1fr))}
 /* the surface the products sit on (Paul 2026-09-17, from board 3): today's page grey · a floating white sheet with a shadow and no stroke · all white with one seam */
 .frame[data-surface="float"] .ptable,.frame[data-surface="float"] .tiles{margin:0 0 calc(var(--u)*4) calc(var(--u)*4);border-radius:12px;background:var(--card);box-shadow:0 1px 2px oklch(0.2 0.02 250 / .06),0 6px 16px oklch(0.2 0.02 250 / .07);overflow:hidden}
-.frame[data-surface="float"] .ptable{padding:0 calc(var(--u)*2)} .frame[data-surface="float"] .tiles{padding:calc(var(--u)*3)} .frame[data-surface="float"] .tr:hover{background:var(--bg)}
+.frame[data-surface="float"] .ptable{padding:0} .frame[data-surface="float"] .tiles{padding:calc(var(--u)*3)} .frame[data-surface="float"] .tr:hover{background:var(--bg)}
 .frame[data-surface="float"][data-w="phone"] .ptable,.frame[data-surface="float"][data-w="phone"] .tiles{margin-right:calc(var(--u)*4)}
 .frame[data-surface="allwhite"]{background:var(--card)} .frame[data-surface="allwhite"] .rail{background:var(--card)} .frame[data-surface="allwhite"] .divider{background:var(--card)} .frame[data-surface="allwhite"] .tr:hover{background:var(--bg)} .frame[data-surface="allwhite"] .tile{background:var(--bg)}
 /* the filter bar (the app's pills, with their icons; users add their own) */
@@ -133,6 +133,15 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .cnt{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:32px;padding:0 calc(var(--u)*2);border-radius:999px;background:var(--primary);color:var(--primary-fg);font-size:calc(var(--fs)*.93);font-weight:700}
 /* the footer: icons and values (decided 2026-09-17): % Shop base ▾ · n of m · sync */
 .tfoot{display:flex;align-items:center;gap:calc(var(--u)*3);height:max(var(--ctl),var(--floor));border-top:var(--hair) solid var(--border);color:var(--muted-fg);padding:0 var(--u) 0 calc(var(--u)*3);flex:none;font-size:calc(var(--fs)*.9)} .tfoot .tax{display:inline-flex;align-items:center;gap:calc(var(--u)*1);white-space:nowrap;cursor:pointer} .tfoot .tax b{color:var(--fg);font-weight:500} .tfoot .tax svg{width:14px;height:14px} .tfoot .fi{width:22px;height:22px;border-radius:5px;background:var(--muted);display:inline-flex;align-items:center;justify-content:center;margin-right:2px} .tfoot .fi svg{width:13px;height:13px}
+/* the stage: the table slides on it (Paul 2026-09-17, board 4); the exiting pane dims and moves a quarter left, the entering one comes from the right */
+.ptable{position:relative;overflow:hidden}
+.pane{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg);transition:transform 280ms var(--ease),opacity 280ms var(--ease);will-change:transform}
+.frame[data-surface="float"] .pane,.frame[data-surface="allwhite"] .pane{background:var(--card)} .frame[data-surface="float"] .pane{padding:0 calc(var(--u)*2)}
+.pane.enter-r{transform:translateX(100%)} .pane.exit-l{transform:translateX(-24%);opacity:.35} .pane.enter-l{transform:translateX(-24%);opacity:.35} .pane.exit-r{transform:translateX(100%)} .pane.under{z-index:0} .pane.over{z-index:1}
+.crumb{display:flex;align-items:center;gap:calc(var(--u)*1);height:max(var(--ctl),40px);flex:none;color:var(--muted-fg);font-size:calc(var(--fs)*.93);padding-right:calc(var(--u)*2)} .crumb button{display:inline-flex;align-items:center;gap:calc(var(--u)*1);height:36px;padding:0 calc(var(--u)*2) 0 calc(var(--u)*1);border-radius:var(--r);color:var(--fg);font-weight:500} .crumb button:hover{background:var(--muted)} .crumb button svg{width:16px;height:16px} .crumb .sep{color:var(--border);font-size:calc(var(--fs)*1.2)} .crumb .here{color:var(--fg);font-weight:600;padding:0 calc(var(--u)*1)} .crumb .num{margin-left:calc(var(--u)*1)}
+.crumb .pv{display:inline-flex;align-items:center;gap:calc(var(--u)*2);margin-left:auto;color:var(--muted-fg)} .crumb .pv .img{width:28px;height:28px;border-radius:6px;background:var(--muted)}
+.fwrap{position:relative;flex:none} .fwrap .menu{position:absolute;left:calc(var(--u)*4);top:calc(100% - var(--u)*1.5);z-index:5;background:var(--card);border:var(--hair) solid var(--border);border-radius:10px;box-shadow:0 8px 24px oklch(0.2 0.02 250 / .14);padding:6px;min-width:200px} .fwrap .menu button{display:flex;align-items:center;gap:8px;width:100%;height:max(calc(var(--ctl) - 8px),40px);padding:0 10px;border-radius:6px;white-space:nowrap;color:var(--fg)} .fwrap .menu button:hover{background:var(--muted)} .fwrap .menu button .n{margin-left:auto;color:var(--muted-fg);font-size:calc(var(--fs)*.86)}
+.pill.on{background:var(--fg);color:var(--bg);border-color:var(--fg);font-weight:600} .pill.on svg{color:inherit} .pill.on .x{display:inline-flex;margin-left:2px} .pill.on:active{background:var(--fg);filter:brightness(1.3)}
 /* product table view — the same table components as the orders screen (thead / tr / td), no frame */
 .ptable{flex:1;min-height:0;display:flex;flex-direction:column;margin-left:calc(var(--u)*4)}
 .thead{display:grid;align-items:center;height:max(calc(var(--row) - 8px),32px);border-bottom:var(--hair) solid var(--border);color:var(--muted-fg);font-size:calc(var(--fs)*.8);font-weight:600;letter-spacing:.05em;text-transform:uppercase;flex:none}
@@ -429,7 +438,7 @@ const I = { minus:'<svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>', folder:
   coupons:'<svg viewBox="0 0 24 24"><path d="M3 9V6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v3a2 2 0 0 0 0 6v3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-3a2 2 0 0 0 0-6zM9 9l6 6"/></svg>',
   reports:'<svg viewBox="0 0 24 24"><path d="M4 20h16M6 16V10M11 16V5M16 16v-7"/></svg>',
   x:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
-  chev:'<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>', chevd:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>', chevu:'<svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>',
+  chev:'<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>', chevl:'<svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>', chevd:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>', chevu:'<svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>',
   check:'<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
   print:'<svg viewBox="0 0 24 24"><path d="M7 8V4h10v4M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v6H7z"/></svg>',
   cloudoff:'<svg viewBox="0 0 24 24"><path d="M4 4l16 16M7 18a4 4 0 0 1-.6-8 6 6 0 0 1 1.3-2.6M11 6.1A6 6 0 0 1 18 11h1a3.5 3.5 0 0 1 1.6 6.6M9 18h8"/></svg>',
@@ -482,7 +491,7 @@ const S={ w:'tablet', theme:'light', scale:'regular', scn:'open',
   closePos:'tr', legacy:'header-text',   /* Paul 2026-09-16: decided, switches removed. Void = outlined red, matched (voidStyle 'red'). */ termStep:1, sortCart:'newest-last', tabStyle:'line1',   /* Paul 2026-09-14: amount + dot, with a format setting */
   voidStyle:'red', vmenu:false, toast:null,
   /* personality touches (research: personality/ideas on the hub). Each is one small behaviour, not a skin. */
-  tx:{roll:1,stamp:1,pence:1,badge:1,tear:1,doodle:1}, icons:'tabler-15', surface:'today', qx:null, qbuf:'', undoLine:null };   /* Paul 2026-09-17: the quantity expands in place; edit and delete by swiping the total */   /* Paul 2026-09-17: a switch for today's, the floating sheet, all white; the header stays caps over a hairline */   /* Paul 2026-09-16: Tabler at 1.5 px, for a while; Hugeicons the standing alternative */
+  tx:{roll:1,stamp:1,pence:1,badge:1,tear:1,doodle:1}, icons:'tabler-15', surface:'today', qx:null, qbuf:'', undoLine:null, vars:'slide', pview:'products', cat:null, menu:false, slide:null };   /* Paul 2026-09-17: variations slide the table left behind a breadcrumb (board 4); inline rows stay as the other style, a POS panel setting */   /* Paul 2026-09-17: the quantity expands in place; edit and delete by swiping the total */   /* Paul 2026-09-17: a switch for today's, the floating sheet, all white; the header stays caps over a hairline */   /* Paul 2026-09-16: Tabler at 1.5 px, for a while; Hugeicons the standing alternative */
 /* Paul 2026-09-16: the voice is out (translations); pence and the tear-off belong to the whimsical themes only; the badge is kept for a property chosen in POS Products settings, stock for now. */
 const WHIMSY=['market','paper'];
 const STR=()=>S.long?{
@@ -511,7 +520,7 @@ const SCENES=[['open','Session open · focus on search'],['added','Line just add
 let termTimer=null;
 function jump(scn){
   clearTimeout(termTimer);
-  Object.assign(S,{scn,panel:false,sheet:null,tender:false,view:'keypad',entry:null,method:'cash',settle:null,online:true,long:false,pop:null,phoneTab:'cart',counted:'',open:'200.00',reveal:null,edit:null,orders:2,ordlist:false,termStep:1,view2:'grid'});
+  Object.assign(S,{scn,panel:false,sheet:null,tender:false,view:'keypad',entry:null,method:'cash',settle:null,online:true,long:false,pop:null,phoneTab:'cart',counted:'',open:'200.00',reveal:null,edit:null,orders:2,ordlist:false,termStep:1,view2:'grid',pview:'products',cat:null,menu:false,slide:null});
   switch(scn){
     case 'added': S.settle='line'; break;
     case 'line-actions': S.reveal=0; break;
@@ -547,6 +556,7 @@ function renderStrip(){
   document.getElementById('strip').innerHTML=`
     <div class="g"><b>Width</b>${seg('w',[['phone','Phone 390'],['tablet','Tablet 1024'],['desktop','Desktop 1440']])}</div>
     <div class="g"><b>Surface</b>${seg('surface',[['today','Today'],['float','Floating sheet'],['allwhite','All white']])}</div>
+    <div class="g"><b>Variations</b>${seg('vars',[['slide','Slide, breadcrumb'],['inline','Inline rows']])}</div>
     <div class="g"><b>Theme</b>${seg('theme',[['light','Default light'],['dark','Default dark'],['paper','Paper till'],['bold','Bold money'],['warm','Warm shop'],['market','Market stall'],['stage','Dark stage'],['ocean','Ocean'],['sunset','Sunset'],['monochrome','Monochrome']])}</div>
     <div class="g"><b>Scale</b>${seg('scale',[['compact','Compact'],['regular','Regular'],['spacious','Spacious']])}</div>
     <div class="g"><b>Tabs</b>${seg('tabsPos',[['bottom','bottom'],['top','top']])}</div>
@@ -562,6 +572,7 @@ function renderRail(){
   return `<nav class="rail"><div class="logo"></div>${items.map(([k,l],i)=>`<button class="it press ${i===0?'on':''}" aria-label="${l}">${I[k]}</button>`).join('')}<div class="sp"></div>${bottom.map(([k,l])=>`<button class="it press" aria-label="${l}">${I[k]}</button>`).join('')}</nav>`;
 }
 const EMO={'Flat white':'☕','Sourdough loaf':'🍞','Tote bag':'👜','Oat latte':'🥛','Croissant':'🥐','Beans 250g':'🫘','Cinnamon bun':'🥯','Gift card':'🎁','Cold brew':'🧊','Granola jar':'🥣','Espresso cup':'☕','Tea tin':'🍵'};
+const CATS=['Drinks','Bakery','Merch','Drinks','Bakery','Coffee','Bakery','Merch','Drinks','Pantry','Merch','Pantry']; const CATLIST=['Drinks','Bakery','Coffee','Merch','Pantry'];
 const STOCK={'Tote bag':8,'Beans 250g':14,'Gift card':52,'Granola jar':3,'Espresso cup':6,'Tea tin':11};
 const inCart=(n,v='')=>lines().filter(l=>l[0]===n&&(v?l[3]===v:true)).reduce((a,l)=>a+l[1],0);
 function renderProducts(){
@@ -576,18 +587,24 @@ function renderProducts(){
   else if (S.view2==='list' && !phone){
     const grid='56px 1.6fr 110px 96px 96px 56px';
     const stock=[12,4,0,30,8,15,6,null,20,3,9,11]; const sku=['FW-12','SD-800','TB-NAT','OL-16','CR-01','BN-250','CB-02','GC','CB-330','GR-500','EC-01','TT-01'];
-    const row=([n,p],i)=>`<div class="tr press ${i===2?'':'rowbtn'}" ${i===2?'':`data-act="addLine" data-n="${n}" data-p="${p}"`} style="grid-template-columns:${grid}"><div class="td c"><span class="img"></span></div><div class="td">${n}<span class="sub">${sku[i]}${i===2?' · 3 variations':''}</span></div><div class="td mut">${sku[i]}</div><div class="td r money">${fmt(p)}</div><div class="td r">${stock[i]==null?'<span class="mut">—</span>':stock[i]===0?'<span class="st bad"><i></i>0</span>':stock[i]<5?`<span class="st warn"><i></i>${stock[i]}</span>`:stock[i]}</div><div class="td c">${i===2?`<button class="ibtn press" style="width:36px;height:36px" aria-label="Choose variation">${I.chevd}</button>`:inCart(n)?`<span class="cnt">${inCart(n)}</span>`:`<span class="ibtn" style="width:36px;height:36px">${I.plus}</span>`}</div></div>`;
+    const slide=S.vars==='slide';
+    const row=([n,p],i)=>`<div class="tr press ${i===2&&!slide?'':'rowbtn'}" ${i===2?(slide?`data-act="openVar"`:''):`data-act="addLine" data-n="${n}" data-p="${p}"`} style="grid-template-columns:${grid}"><div class="td c"><span class="img"></span></div><div class="td">${n}<span class="sub">${sku[i]}${i===2?' · 3 variations':''}</span></div><div class="td mut">${sku[i]}</div><div class="td r money">${fmt(p)}</div><div class="td r">${stock[i]==null?'<span class="mut">—</span>':stock[i]===0?'<span class="st bad"><i></i>0</span>':stock[i]<5?`<span class="st warn"><i></i>${stock[i]}</span>`:stock[i]}</div><div class="td c">${i===2?(slide?`<span class="ibtn" style="width:36px;height:36px" aria-label="Open variations">${I.chev}</span>`:`<button class="ibtn press" style="width:36px;height:36px" aria-label="Choose variation">${I.chevd}</button>`):inCart(n)?`<span class="cnt">${inCart(n)}</span>`:`<span class="ibtn" style="width:36px;height:36px">${I.plus}</span>`}</div></div>`;
     /* decided 2026-09-14: frameless rows, and a variable product opens its variations as indented rows (board 01 + 07) */
-    const vrows=[['Natural · S','TB-NAT-S',12,6],['Natural · L','TB-NAT-L',12,0],['Black · L','TB-BLK-L',14,2]].map(([n,sk,p,s])=>`<div class="tr vh press rowbtn" data-act="addLine" data-n="Tote bag" data-s="${n}" data-p="${p}" style="grid-template-columns:${grid}"><div class="td"></div><div class="td">${n}</div><div class="td mut">${sk}</div><div class="td r money">${fmt(p)}</div><div class="td r">${s===0?'<span class="st bad"><i></i>0</span>':s<5?`<span class="st warn"><i></i>${s}</span>`:s}</div><div class="td c">${inCart('Tote bag',n)?`<span class="cnt">${inCart('Tote bag',n)}</span>`:`<span class="ibtn" style="width:36px;height:36px">${I.plus}</span>`}</div></div>`).join('');
-    const rowsHtml=prods.map((x,i)=>row(x,i)+(i===2?vrows:'')).join('').replace('aria-label="Choose variation">'+I.chevd,'aria-label="Collapse variations">'+I.chevu);
-    body=`<div class="ptable"><div class="thead" style="grid-template-columns:${grid}"><div class="th c"></div><div class="th">Name<span class="rz"></span></div><div class="th">SKU<span class="rz"></span></div><div class="th r">Price<span class="rz"></span></div><div class="th r">Stock<span class="rz"></span></div><div class="th c"></div></div>
-      <div class="tbody">${rowsHtml}</div>
-      <div class="tfoot"><span class="tax" title="Tax based on: Shop base address"><span class="fi">${I.percent}</span><b>Shop base</b>${I.chevd}</span><span class="grow"></span><span title="Showing 12 of 1,204">12 of 1,204</span><button class="ibtn press" style="width:36px;height:36px" aria-label="Sync">${I.sync}</button></div></div>`;
+    const vrows=[['Natural · S','TB-NAT-S',12,6],['Natural · L','TB-NAT-L',12,0],['Black · L','TB-BLK-L',14,2]].map(([n,sk,p,s])=>`<div class="tr ${slide?'':'vh'} press rowbtn" data-act="addLine" data-n="Tote bag" data-s="${n}" data-p="${p}" style="grid-template-columns:${grid}"><div class="td"></div><div class="td">${n}</div><div class="td mut">${sk}</div><div class="td r money">${fmt(p)}</div><div class="td r">${s===0?'<span class="st bad"><i></i>0</span>':s<5?`<span class="st warn"><i></i>${s}</span>`:s}</div><div class="td c">${inCart('Tote bag',n)?`<span class="cnt">${inCart('Tote bag',n)}</span>`:`<span class="ibtn" style="width:36px;height:36px">${I.plus}</span>`}</div></div>`).join('');
+    /* the panes: products, a category (the table slides left behind a breadcrumb), the variations of one product (slide style) */
+    const thead=(name)=>`<div class="thead" style="grid-template-columns:${grid}"><div class="th c"></div><div class="th">${name}<span class="rz"></span></div><div class="th">SKU<span class="rz"></span></div><div class="th r">Price<span class="rz"></span></div><div class="th r">Stock<span class="rz"></span></div><div class="th c"></div></div>`;
+    const tfoot=(count)=>`<div class="tfoot"><span class="tax" title="Tax based on: Shop base address"><span class="fi">${I.percent}</span><b>Shop base</b>${I.chevd}</span><span class="grow"></span><span>${count}</span><button class="ibtn press" style="width:36px;height:36px" aria-label="Sync">${I.sync}</button></div>`;
+    const crumb=(here,count,extra='')=>`<div class="crumb"><button class="press" data-act="popView">${I.chevl}${S.pview==='var'&&S.cat?S.cat:'Products'}</button><span class="sep">›</span><span class="here">${here}</span><span class="num">· ${count}</span>${extra}</div>`;
+    let pane;
+    if (S.pview==='var') pane=`<div class="pane" data-pv="var">${crumb(prods[2][0],'3 variations',`<span class="pv"><span class="img"></span>${sku[2]} · from ${fmt(12)}</span>`)}${thead('Variation')}<div class="tbody">${vrows}</div>${tfoot('3 variations')}</div>`;
+    else { const idx=prods.map((x,i)=>i).filter(i=>!S.cat||CATS[i]===S.cat); const rowsHtml=idx.map(i=>row(prods[i],i)+(i===2&&!slide?vrows:'')).join('').replace('aria-label="Choose variation">'+I.chevd,'aria-label="Collapse variations">'+I.chevu);
+      pane=`<div class="pane" data-pv="${S.pview}">${S.cat?crumb(S.cat,`${idx.length} products`):''}${thead('Name')}<div class="tbody">${rowsHtml}</div>${tfoot(S.cat?`${idx.length} of ${idx.length}`:'12 of 1,204')}</div>`; }
+    body=`<div class="ptable">${pane}</div>`;
   }
-  else body=`<div class="tiles">${prods.map(([n,p])=>`<button class="tile press" data-act="addLine" data-n="${n}" data-p="${p}"><div class="img" data-i="${n[0]}" data-e="${EMO[n]||'🛍️'}">${S.tx.badge&&STOCK[n]!==undefined?`<span class="sold ${STOCK[n]<5?'low':''}">${STOCK[n]} left</span>`:''}</div><div class="n">${n}</div><div class="p money">${fmt(p)}</div></button>`).join('')}</div>`;
+  else body=`<div class="tiles">${prods.filter((x,i)=>!S.cat||CATS[i]===S.cat).map(([n,p])=>`<button class="tile press" data-act="addLine" data-n="${n}" data-p="${p}"><div class="img" data-i="${n[0]}" data-e="${EMO[n]||'🛍️'}">${S.tx.badge&&STOCK[n]!==undefined?`<span class="sold ${STOCK[n]<5?'low':''}">${STOCK[n]} left</span>`:''}</div><div class="n">${n}</div><div class="p money">${fmt(p)}</div></button>`).join('')}</div>`;
   const focus=['open','empty','offline','long'].includes(S.scn)?'ring':'';
   const side = '';
-  const fbar=S.scn==='loading'?'':`<div class="fbar"><button class="pill press">${I.folder}Category ${I.chevd}</button><button class="pill press">${I.products}Stock ${I.chevd}</button><button class="pill press">${I.tag}On sale</button><button class="pill press">${I.star}Featured</button><button class="pill press">${I.folder}Tag ${I.chevd}</button><button class="pill press">${I.folder}Brand ${I.chevd}</button><button class="pill q press">Morning menu</button><button class="pill add press" aria-label="Add a quick filter">${I.plus}</button></div>`;
+  const fbar=S.scn==='loading'?'':`<div class="fwrap"><div class="fbar">${S.cat?`<button class="pill on press" data-act="clearCat">Category · ${S.cat}<span class="x">${I.x}</span></button>`:`<button class="pill press ${S.menu?'on':''}" data-act="catMenu">${I.folder}Category ${I.chevd}</button>`}<button class="pill press">${I.products}Stock ${I.chevd}</button><button class="pill press">${I.tag}On sale</button><button class="pill press">${I.star}Featured</button><button class="pill press">${I.folder}Tag ${I.chevd}</button><button class="pill press">${I.folder}Brand ${I.chevd}</button><button class="pill q press">Morning menu</button><button class="pill add press" aria-label="Add a quick filter">${I.plus}</button></div>${S.menu?`<div class="menu" data-stop="1">${CATLIST.map(c=>`<button class="press" data-act="cat" data-c="${c}">${I.folder}${c}<span class="n">${CATS.filter(x=>x===c).length}</span></button>`).join('')}</div>`:''}</div>`;
   return `<div class="prodcol">
     <div class="toolbar">${phone?`<button class="ibtn press" aria-label="Menu">${I.menu}</button>`:''}
       <div class="search">${I.search}<input class="in ${focus}" placeholder="${t.search}" value="${S.scn==='noresults'?'latte oat':''}" aria-label="${t.search}"></div>
@@ -605,6 +622,7 @@ function renderSide(){
         <div class="opt h2">Layout</div>
         <div class="opt"><span>Products on the</span><span class="grow"></span><span class="segt" style="height:36px"><button class="on">Left</button><button>Right</button></span></div>
         <div class="opt"><span>Grid columns</span><span class="grow"></span><span class="chip">4</span></div>
+        <div class="opt"><span>Variations open</span><span class="grow"></span><span class="segt" style="height:36px"><button class="${S.vars==='slide'?'on':''}" data-set="vars" data-v="slide">Slide</button><button class="${S.vars==='inline'?'on':''}" data-set="vars" data-v="inline">Inline</button></span></div>
         <div class="opt h2">Tile shows</div>
         ${[['Name',1],['Price',1],['Tax',0],['On sale',0],['Category',0],['SKU',0],['Barcode',0],['Stock',0]].map(([l,on])=>`<div class="opt"><span class="cb ${on?'on':''}">${I.check}</span>${l}</div>`).join('')}
         <div class="opt h2">Sort</div>
@@ -894,15 +912,19 @@ function render(){
   Object.assign(I, I0, S.icons==='lucide'?{}:(ICONSETS[S.icons]||{}));
   renderStrip();
   const f=document.getElementById('frame'); f.className='frame'; f.dataset.w=S.w; f.dataset.theme=S.theme; f.dataset.scale=S.scale; f.dataset.surface=S.surface;
+  const oldPane=S.slide&&f.querySelector('.pane:not(.exit-l):not(.exit-r)'); const oldHtml=oldPane?oldPane.outerHTML:null;
   f.innerHTML=`<div class="body">${S.w==='phone'?'':renderRail()}<div class="main">${renderPOS()}${renderSide()}${renderPanel()}${renderSheet()}</div></div>`;
   renderNotes();
+  { const dir=S.slide; S.slide=null; const stage=f.querySelector('.ptable'); const nw=stage&&stage.querySelector('.pane');
+    if(dir&&oldHtml&&nw){ nw.classList.add(dir==='push'?'enter-r':'enter-l',dir==='push'?'over':'under'); stage.insertAdjacentHTML('beforeend',oldHtml); const op=stage.lastElementChild; op.classList.remove('enter-r','enter-l','over','under'); op.classList.add(dir==='push'?'under':'over');
+      void nw.offsetWidth; requestAnimationFrame(()=>{ nw.classList.remove('enter-r','enter-l'); op.classList.add(dir==='push'?'exit-l':'exit-r'); }); setTimeout(()=>{ op.remove(); nw.classList.remove('over','under'); },320); } }
   const x=f.querySelector('.qx'); if(x){ const q=f.querySelector(`.line[data-i="${S.qx}"] .q`); const col=f.querySelector('.cartcol'); if(q&&col){ const a=q.getBoundingClientRect(), c=col.getBoundingClientRect(); const dy=(48-a.height)/2; x.style.left=(a.left-c.left-48-(48-a.width)/2)+'px'; x.style.top=(a.top-c.top-dy)+'px'; x.style.setProperty('--qdy',dy+'px'); } else { S.qx=null; x.remove(); } }
 }
 function stepTerminal(){ clearTimeout(termTimer); if(S.view!=='terminal') return; if(S.termStep<3){ termTimer=setTimeout(()=>{ S.termStep++; render(); stepTerminal(); }, S.termStep===1?2600:900); } else termTimer=setTimeout(()=>{ S.view='paid'; render(); },500); }
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-set],[data-scn],[data-act],[data-tx],[data-txall]');
   if(S.dragged){ S.dragged=false; return; }   /* the click that follows a swipe must not close what the swipe opened */
-  if(!b){ if(!e.target.closest('[data-stop]') && (S.pop||S.ordlist||S.reveal!=null||S.edit!=null||S.qx!=null)){ S.pop=null; S.ordlist=false; S.reveal=null; S.edit=null; S.qx=null; S.qbuf=''; render(); } return; }
+  if(!b){ if(!e.target.closest('[data-stop]') && (S.pop||S.ordlist||S.reveal!=null||S.edit!=null||S.qx!=null||S.menu)){ S.pop=null; S.menu=false; S.ordlist=false; S.reveal=null; S.edit=null; S.qx=null; S.qbuf=''; render(); } return; }
   if(b.dataset.set){ const v=b.dataset.v; S[b.dataset.set]=(v==='1'||v==='3')?+v:v; render(); return; }
   if(b.dataset.tx){ S.tx[b.dataset.tx]=S.tx[b.dataset.tx]?0:1; render(); return; }
   if(b.dataset.txall!==undefined){ const v=+b.dataset.txall; Object.keys(S.tx).forEach(k=>S.tx[k]=v); render(); return; }
@@ -933,7 +955,12 @@ document.addEventListener('click',e=>{
     case 'startCount': S.panel=false; S.scn='counting'; S.counted=''; break;
     case 'doOpen': S.scn='open'; break;
     case 'togglePop': if(b.classList.contains('sidewrap') && e.target.closest('[data-stop]')) return; S.pop=S.pop===b.dataset.pop?null:b.dataset.pop; break;
-    case 'toggleView': S.view2=S.view2==='grid'?'list':'grid'; break;
+    case 'toggleView': S.view2=S.view2==='grid'?'list':'grid'; if(S.pview==='var') S.pview=S.cat?'cat':'products'; break;
+    case 'catMenu': S.menu=!S.menu; break;
+    case 'cat': S.menu=false; S.cat=b.dataset.c; S.pview='cat'; S.slide='push'; break;
+    case 'clearCat': S.cat=null; S.pview='products'; S.slide='pop'; break;
+    case 'openVar': S.pview='var'; S.slide='push'; break;
+    case 'popView': if(S.pview==='var'&&S.cat) S.pview='cat'; else { S.pview='products'; S.cat=null; } S.slide='pop'; break;
     case 'checkout': S.tender=true; S.view='keypad'; S.entry=null; S.method='cash'; break;
     case 'closeTender': clearTimeout(termTimer); S.tender=false; S.view='keypad'; break;
     case 'method': S.method=b.dataset.m; S.entry=null; break;
