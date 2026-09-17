@@ -543,6 +543,8 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     Price-tag pence: whimsical themes only (Market Stall, Paper till). Sold-today: out, but the
     tile badge is kept for a property chosen in POS Products settings (stock for now, amber when
     low). Receipt tear-off: whimsical themes only. Doodle: still open.
+    **Paul (2026-09-18): the doodle is out; the icons have personality now.** Switch, state and
+    drawing removed; the empty cart shows the cart icon.
 30. **Icon set.** Paul: *"a custom icon set could be very, very interesting… I would be willing to
     pay for a nice icon set if it adds some personality."* `icons/board.html` (captures
     `icons/screens/board/`): the register's 26 icons (rail, cart, tender) drawn from twelve
