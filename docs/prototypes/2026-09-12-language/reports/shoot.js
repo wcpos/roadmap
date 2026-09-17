@@ -53,21 +53,24 @@ const checks = {
           assert.equal(await page.locator('.chart-mode button.on').textContent(), s === 'today' ? 'By hour' : 'By day');
           assert(/ vs /.test(await page.locator('.hero .prev .delta').textContent()), 'delta chip must name the comparison');
           assert.equal(await page.locator('.hero .kpi .delta').count(), 3, 'companions carry deltas');
-          assert((await page.locator('.hero .datebtn').textContent()).startsWith(s === 'today' ? 'Today' : 'Last week'), 'the date is the chart title');
+          assert((await page.locator('.hero .datebtn:not(.scope)').textContent()).startsWith(s === 'today' ? 'Today' : 'Last week'), 'the date is the chart title');
           assert.equal(await page.locator('.scope-row').count(), 0, 'Sales has no scope row');
-          assert.equal(await page.locator('.rp-panel').count(), 6, 'six panels under the chart');
-          assert.equal(await page.locator('.rlist.more .rrow[data-v="deposits"], .rlist.more .rrow[data-v="cash"]').count(), 0, 'deposits and cash movements have no row (audit 2026-09-17)');
+          assert.equal(await page.locator('.rp-panel').count(), 8, 'eight cards under the chart');
+          assert.equal(await page.locator('.rp-panel[data-k="deposits"], .rp-panel[data-k="cash"]').count(), 0, 'deposits and cash movements have no card (audit 2026-09-17)');
           assert.equal(await page.locator('.rp-panel[data-k="closures"] .or').count() >= 3, true, 'cash movements live in the Closures panel');
           assert.equal(await page.locator('.rp-panel[data-k="closures"]').count(), 1, 'Closures is a panel like the others');
-          assert(await page.locator('.rp-panel .br .sh b').count() >= 10, 'bars on the ranked panels');
-          assert.equal(await page.locator('.rp-panel[data-k="orders"] .br').count(), 4, 'orders as four size bands');
-          assert(await page.locator('.rp-panel svg.donut').count() >= 2, 'donuts on the parts-of-a-whole panels (Payments, Where sold)');
-          assert.equal(await page.locator('.rlist.more .rrow[data-v="taxes"]').count(), 1, 'taxes are a row of figures, not a chart');
+          assert(await page.locator('.rp-panel .br .sh b').count() >= 4, 'bars on the ranked panel (Top products)');
+          assert.equal(await page.locator('.rp-panel[data-k="orders"] .stats .n').count(), 6, 'orders as six figures');
+          assert.equal(await page.locator('.rp-panel[data-k="orders"] .hbar').count(), 1, 'orders status bar');
+          assert.equal(await page.locator('.rp-panel[data-k="cashiers"] svg.donut').count(), 1, 'cashiers as a donut');
+          assert(await page.locator('.rp-panel svg.donut').count() >= 3, 'donuts on the parts-of-a-whole panels (Payments, Cashiers, Where sold)');
+          assert.equal(await page.locator('.rp-panel[data-k="taxes"] .hbar, .rp-panel[data-k="refunds"] .hbar').count(), 2, 'taxes and refunds are cards with a proportional bar');
+          assert.equal(await page.locator('.rlist.more').count(), 0, 'no rows under the cards');
         }
         if (s === 'session') {
           assert.equal(await page.locator('[data-p="overflow"][aria-label="More"]').count(), 1);
           assert.equal(await page.locator('.detail .rrow, .segt[aria-label="Report room"]').count(), 0, 'Closures is a panel, not a room');
-          assert.equal(await page.locator('.bar [data-p="filter"]').count(), 1, 'the filter lives in the bar');
+          assert.equal(await page.locator('.hero .hero-head [data-p="filter"]').count(), 1, 'the filter sits with the date in the hero');
           assert.equal(await page.locator('.bar [data-p="scope"]').count(), 1, 'register and store are the bar title');
           assert.equal(await page.locator('.pad [data-p="overflow"]').count(), 0);
         }
@@ -140,7 +143,7 @@ const checks = {
     await set('plan','pro'); await page.click('.hero [data-p="date"]');   // the picker: quick ranges beside a calendar (Paul 2026-09-17)
     assert.equal(await page.locator('.pop .quick .pr').count(), 6); assert.equal(await page.locator('.pop .cal .d').count(), 30, 'September has 30 days');
     await page.click('.pop .cal .d[data-v="6"]'); await page.click('.pop .cal .d[data-v="1"]');
-    assert((await page.locator('.hero .datebtn').textContent()).startsWith('8–13 Sep'), 'two taps make a range');
+    assert((await page.locator('.hero .datebtn:not(.scope)').textContent()).startsWith('8–13 Sep'), 'two taps make a range');
     await page.click('.pop [data-act="preset"][data-v="day:0"]'); assert.equal(await page.locator('.pop').count(), 1, 'a quick range keeps the picker open');
     await page.click('.pop [data-act="closePop"]'); assert.equal(await page.locator('.pop').count(), 0);
     await scn('free-closures'); await page.click('.popwrap', { position: { x: 1, y: 1 } });

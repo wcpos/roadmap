@@ -110,6 +110,33 @@ many orders fell under £25, £25 to £50, £50 to £100 and over £100, what ea
 and its share of sales, the largest order named in the footer with the discounts. The head
 still opens the full list with the tick boxes.
 
+**Options and picks (tenth pass, same day).** Paul: the Orders box still sucks; Cashiers is a
+share so it should be a pie; the donut is ugly; do research, think outside the box, ten
+options. `panel-variants.html` holds ten Orders panels (size bands, strip plot, timeline,
+summary block, status bar, basket size, Pareto, footfall, bullet graph, needs attention) and
+eight share-chart styles (thin single-hue donut, thick distinct-hue donut, thick one-colour
+donut, 100% bar, half donut, waffle, proportional tiles, big number with a hairline), each on
+the fixture, with the research behind them in the file's head (Few's graph selection matrix,
+Carbon, UNHCR, Observable; Glassdoor, Commons, Starling, Rivian, Obvious, Higgsfield,
+Monarch on Mobbin). **Decided:** Orders is the summary block (average, median, largest,
+items, items per order, discounts) with the status bar under it (completed, processing, on
+hold, refunded) and a "Nothing needs you" line; the share panels (Payments, Cashiers,
+Categories, Where sold) use the thick donut with distinct hues and the total in the middle,
+which adds a five-colour categorical set to the reports scope (the primary, hues turned away
+from it, a neutral). The proportional tiles and the 100% bar are acceptable alternatives if
+four donuts read as repetition. Cashiers is a donut now, not bars.
+
+**Cards and the filter (eleventh pass, same day).** Paul: two random rows at the end of the
+page is stupid, put them in cards too, Taxes is a chance for a proportional bar to vary the
+page; and the filter icon in the bar makes no sense, if it scopes the figures it belongs with
+them. Done: Taxes is a card with one proportional bar (VAT 20% against VAT 5%, each "on
+£net") and Net · Tax · Gross figures; Refunds is a card with Refunded · Orders · Kept figures
+and a kept-against-refunded bar; the list under the panels is gone, so it is eight cards.
+The filter left the bar and sits in the hero's title row after the date as "· Everyone ⌄"
+(a cashier's name when filtered, "· every status" when widened), because it is the scope of
+every figure below. The bar is now the register and store, the bell, and on the phone the
+menu and the avatar.
+
 ## What changed from 2026-09-14
 
 - Copied the register's tokens, controls, rail, page bar, notification panel, side-panel and
