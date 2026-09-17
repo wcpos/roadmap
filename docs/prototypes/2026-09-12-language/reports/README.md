@@ -183,7 +183,8 @@ at open to now, up with every cash sale, down where cash left, the paid-in, paid
 refunds marked and named, the float as a dashed line, "£293.70 now" at the end; when the till
 is closed the line ends at the count with the drawer result. Desktop keeps it in the middle of
 the strip; tablet and phone give it its own row; the phone drops the event labels. The chips
-remain behind the strip's *Till* switch as the backup.
+remain behind the strip's *Till* switch as the backup (reversed in the sixteenth pass: the
+chips are the default, the line is the backup).
 Spacing pass (Paul): the button group was named `tr` and inherited the register's table-row
 hairline, which drew a stray line under X-report on tablet; renamed. On tablet, and on a busy
 day at any width, X-report and the chevron now span both rows and sit centred beside the line
@@ -199,6 +200,14 @@ register, gone for the session, back on the next launch. Paul reported the till 
 to an old version"; on disk it is the cash-level strip from the spacing pass at every path
 (direct URL, the rail, the hub's frame) and the captures match, so the likely cause is a stale
 tab; not reproduced.
+
+**Back to the chips (sixteenth pass, same day).** Paul: the strip with the graph is the older
+version; "we're going back to the chips version, just needed to adjust the layout a little
+bit." The equation chips are the default till strip again; the cash-level line (C3) stays
+behind the strip's *Till* switch. The layout tweak: when the chips take their own row (tablet,
+or a busy day at any width) they get the whole width and X-report sits on the title row at the
+right, so the equation never wraps around the buttons; "= Expected in drawer" is one piece
+that never splits across a wrap; the phone ledger is unchanged.
 
 ## What changed from 2026-09-14
 
