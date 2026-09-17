@@ -53,10 +53,13 @@ const checks = {
           assert.equal(await page.locator('.chart-mode button.on').textContent(), s === 'today' ? 'By hour' : 'By day');
           assert(/ vs /.test(await page.locator('.hero .prev .delta').textContent()), 'delta chip must name the comparison');
           assert.equal(await page.locator('.hero .kpi .delta').count(), 3, 'companions carry deltas');
-          assert.equal(await page.locator('.segt.period button.on').count(), s === 'today' ? 1 : 0, 'period segment');
+          assert((await page.locator('.hero .datebtn').textContent()).startsWith(s === 'today' ? 'Today' : 'Last week'), 'the date is the chart title');
+          assert.equal(await page.locator('.scope-row').count(), 0, 'Sales has no scope row');
         }
         if (s === 'session') {
-          assert.equal(await page.locator('.scope-row [data-p="filter"] + [data-p="overflow"][aria-label="More"]').count(), 1);
+          assert.equal(await page.locator('.scope-row [data-p="overflow"][aria-label="More"]').count(), 1);
+          assert.equal(await page.locator('.bar [data-p="filter"]').count(), 1, 'the filter lives in the bar');
+          assert.equal(await page.locator('.bar [data-p="scope"]').count(), 1, 'register and store are the bar title');
           assert.equal(await page.locator('.pad [data-p="overflow"]').count(), 0);
         }
         if (s === 'today') assert.equal(await page.locator('.scope-row [data-p="overflow"]').count(), 0);
@@ -115,6 +118,12 @@ const checks = {
     assert.equal(await page.locator('.chart-mode button.on').textContent(), 'Running total');
     await page.click('[data-act="chart"][data-v="hour"]');
     assert.equal(await page.locator('.cur-bar').count(), 9, 'hour bars did not come back');
+    await set('plan','pro'); await page.click('.hero [data-p="date"]');   // the picker: quick ranges beside a calendar (Paul 2026-09-17)
+    assert.equal(await page.locator('.pop .quick .pr').count(), 6); assert.equal(await page.locator('.pop .cal .d').count(), 30, 'September has 30 days');
+    await page.click('.pop .cal .d[data-v="6"]'); await page.click('.pop .cal .d[data-v="1"]');
+    assert((await page.locator('.hero .datebtn').textContent()).startsWith('8–13 Sep'), 'two taps make a range');
+    await page.click('.pop [data-act="preset"][data-v="day:0"]'); assert.equal(await page.locator('.pop').count(), 1, 'a quick range keeps the picker open');
+    await page.click('.pop [data-act="closePop"]'); assert.equal(await page.locator('.pop').count(), 0);
     await scn('free-closures'); await page.click('.popwrap', { position: { x: 1, y: 1 } });
     const locked = page.locator('[data-act="hint"][data-v="closures"]').nth(1);
     await locked.scrollIntoViewIfNeeded();
@@ -127,7 +136,7 @@ const checks = {
     await set('plan','pro');
     assert.equal(await page.locator('[data-testid="reports-lock-hint"]').count(), 0, 'Pro left an obsolete gate');
     await scn('date'); await set('plan','pro');
-    await page.fill('#cFrom','2026-09-01'); await page.fill('#cTo','2026-09-14'); await page.click('[data-act="applyRange"]');
+    await page.click('.pop .cal .d[data-v="13"]'); await page.click('.pop .cal .d[data-v="0"]');   // 1–14 Sep on the calendar
     assert.equal(await page.locator('.chart').getAttribute('data-unit'), 'custom');
     await scn('scope'); await set('plan','pro'); await page.click('[data-act="register"][data-v="all"]');
     assert(await page.locator('.tile[data-v="registers"]').count());

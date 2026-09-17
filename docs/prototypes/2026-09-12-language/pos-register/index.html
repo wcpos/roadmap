@@ -450,9 +450,14 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 :where(.frame[data-screen="reports"]) .pad{padding:calc(var(--u)*4);overflow:auto;min-height:0;flex:1} :where(.frame[data-screen="reports"]) .card{background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r)}
 :where(.frame[data-screen="reports"]) .hero{padding:calc(var(--u)*5);position:relative} :where(.frame[data-screen="reports"]) .hero-top{display:flex;justify-content:space-between;gap:calc(var(--u)*6)}
 :where(.frame[data-screen="reports"]) .lbl,:where(.frame[data-screen="reports"]) .kpi .l{color:var(--muted-fg)} :where(.frame[data-screen="reports"]) .big{font-size:var(--amt);font-family:var(--display);font-weight:700;letter-spacing:-.03em}
-:where(.frame[data-screen="reports"]) .prev{display:flex;flex-wrap:wrap;align-items:center;gap:calc(var(--u)*2);color:var(--muted-fg)} :where(.frame[data-screen="reports"]) .delta{display:inline-flex;align-items:center;gap:var(--u);border:var(--hair) solid var(--border);border-radius:var(--r);padding:var(--u) calc(var(--u)*2);color:var(--muted-fg)} :where(.frame[data-screen="reports"]) button.delta{min-height:max(32px,var(--floor));padding:0 calc(var(--u)*2) 0 calc(var(--u)*2.5)} :where(.frame[data-screen="reports"]) .delta .car svg{width:14px;height:14px;color:var(--muted-fg)} :where(.frame[data-screen="reports"]) .delta.sm{font-size:calc(var(--fs)*.86);padding:1px calc(var(--u)*1.5);margin-top:var(--u)}
+:where(.frame[data-screen="reports"]) .prev{display:flex;flex-wrap:wrap;align-items:center;gap:calc(var(--u)*2);color:var(--muted-fg)} :where(.frame[data-screen="reports"]) .delta{display:inline-flex;align-items:center;gap:var(--u);color:var(--muted-fg);font-weight:600} :where(.frame[data-screen="reports"]) button.delta{min-height:max(32px,var(--floor));margin-left:calc(var(--u)*-1);padding:0 var(--u)} :where(.frame[data-screen="reports"]) .delta .car svg{width:14px;height:14px;color:var(--muted-fg)} :where(.frame[data-screen="reports"]) .delta.sm{font-size:calc(var(--fs)*.9);margin-top:2px}
 :where(.frame[data-screen="reports"]) .segt.period button.lock{color:var(--muted-fg)} :where(.frame[data-screen="reports"]) .segt.period .lk svg{width:12px;height:12px}
-:where(.frame[data-screen="reports"]) .datebtn{font-weight:500;font-size:var(--fs)} :where(.frame[data-screen="reports"]) .delta.up{color:var(--ok)} :where(.frame[data-screen="reports"]) .delta.down{color:var(--bad)}
+:where(.frame[data-screen="reports"]) .datebtn{font-weight:600;font-size:calc(var(--fs)*1.07);margin-left:calc(var(--u)*-1);padding:0 var(--u);border-radius:var(--r)} :where(.frame[data-screen="reports"]) .datebtn:hover{background:var(--muted)} :where(.frame[data-screen="reports"]) .datebtn .mut{font-weight:400} :where(.frame[data-screen="reports"]) .datebtn .lk svg,:where(.frame[data-screen="reports"]) .place .lk svg{width:13px;height:13px;color:var(--muted-fg)}
+:where(.frame[data-screen="reports"]) .bar button.place{min-height:max(calc(var(--ctl) - 8px),var(--floor));padding:0 var(--u);margin-left:calc(var(--u)*-1);border-radius:var(--r);min-width:0} :where(.frame[data-screen="reports"]) .bar .place .car svg{width:14px;height:14px;color:var(--muted-fg)} :where(.frame[data-screen="reports"]) .ibtn.on{color:var(--primary)}
+:where(.frame[data-screen="reports"]) .datepick{display:flex;gap:calc(var(--u)*3)} :where(.frame[data-screen="reports"]) .quick{display:flex;flex-direction:column;min-width:150px;flex:none} :where(.frame[data-screen="reports"]) .cal{flex:1;min-width:0;padding:calc(var(--u)*2)} :where(.frame[data-screen="reports"]) .cal .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--u)} :where(.frame[data-screen="reports"]) .cal .hd .ibtn{width:36px;height:36px}
+:where(.frame[data-screen="reports"]) .cal .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center} :where(.frame[data-screen="reports"]) .cal .wd{color:var(--muted-fg);font-size:calc(var(--fs)*.86);padding:var(--u) 0} :where(.frame[data-screen="reports"]) .cal .d{height:max(36px,calc(var(--floor) - 6px));border-radius:var(--r);font-variant-numeric:tabular-nums} :where(.frame[data-screen="reports"]) .cal .d:hover{background:var(--muted)} :where(.frame[data-screen="reports"]) .cal .d.in{background:var(--muted);border-radius:0} :where(.frame[data-screen="reports"]) .cal .d.on,:where(.frame[data-screen="reports"]) .cal .d.pick{background:var(--primary);color:var(--primary-fg)} :where(.frame[data-screen="reports"]) .cal .d.today{font-weight:700} :where(.frame[data-screen="reports"]) .cal .d:disabled{color:var(--border)} :where(.frame[data-screen="reports"]) .cal .d[data-act="hint"]{color:var(--muted-fg)}
+:where(.frame[data-screen="reports"]) .pf-r{display:flex;align-items:center;gap:calc(var(--u)*3);justify-content:flex-end;border-top:var(--hair) solid var(--border);margin-top:calc(var(--u)*2);padding:calc(var(--u)*2) calc(var(--u)*2) 0} :where(.frame[data-screen="reports"]) .pf-r .rp-note-text{flex:1;padding:0}
+.frame:where([data-screen="reports"])[data-w="phone"] .datepick{flex-direction:column} .frame:where([data-screen="reports"])[data-w="phone"] .quick{flex-direction:row;flex-wrap:wrap;gap:var(--u)} .frame:where([data-screen="reports"])[data-w="phone"] .quick .pr{width:auto;flex:1 1 30%} :where(.frame[data-screen="reports"]) .delta.up{color:var(--ok)} :where(.frame[data-screen="reports"]) .delta.down{color:var(--bad)}
 :where(.frame[data-screen="reports"]) .cmpbtn{display:inline-flex;align-items:center;gap:var(--u);min-height:max(var(--ctl),var(--floor));color:var(--muted-fg)}
 :where(.frame[data-screen="reports"]) .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(var(--u)*6);align-content:center;margin-right:calc(var(--ctl))} :where(.frame[data-screen="reports"]) .kpi .n{font-size:calc(var(--fs)*1.7);font-weight:600} :where(.frame[data-screen="reports"]) .kpi .p{color:var(--muted-fg);font-size:calc(var(--fs)*.9)}
 :where(.frame[data-screen="reports"]) .printb{position:absolute;right:calc(var(--u)*2);top:calc(var(--u)*2)} .frame:where([data-screen="reports"]) svg.bars{width:100%;height:auto;stroke:none;display:block;margin-top:calc(var(--u)*2);overflow:visible}
@@ -1315,7 +1320,7 @@ const RS = {
   cmp: ['lastweek','yesterday'].includes(Q.get('cmp')) ? Q.get('cmp') : 'yesterday',
   register:'front', store:'uk', cashier:'all',
   unticked: new Set(), detail: null, closure: null, xreport: false, tpl:'default', chart:'hour',   /* 'hour' | 'run' (Paul 2026-09-17: an easy toggle) */
-  pop: null, hint: null, tip: null, frameH: 780,
+  pop: null, hint: null, tip: null, frameH: 780, calMonth: 0, pickStart: null,
 };
 
 const RP=(()=>{
@@ -1502,7 +1507,7 @@ function renderReports() {
     const anchor=F.querySelector(RS.pop.anchor), pop=F.querySelector('.pop');
     const fr=F.querySelector('.main').getBoundingClientRect(), r=anchor.getBoundingClientRect();
     const row=RS.pop.kind==='hint'&&anchor.matches('.closure-row,tr');
-    const width=row?r.width:Math.min(360,fr.width-16), y=r.bottom-fr.top+6;
+    const width=row?r.width:Math.min(RS.pop.kind==='date'?520:360,fr.width-16), y=r.bottom-fr.top+6;
     const x=row?r.left-fr.left:Math.max(8,Math.min(r.left-fr.left,fr.width-width-8));
     Object.assign(pop.style,{left:x+'px',top:y+'px',width:phone()&&RS.pop.kind!=='hint'?'100%':width+'px',maxHeight:Math.max(0,fr.height-y-14)+'px'});
   }
@@ -1513,11 +1518,15 @@ function renderReports() {
 }
 
 function pagebar() {
+  /* Paul 2026-09-17: "Front till · UK Store" is a title, so it is the bar's place, as UK Store is above the cart; the filter is an icon there too */
   const phone=S.w==='phone';
   const tabs=`<span class="segt" role="tablist" aria-label="Report room">${['sales','closures'].map(v=>`<button role="tab" aria-selected="${RS.view===v}" class="${RS.view===v?'on':''}" data-act="view" data-v="${v}">${v==='sales'?'Sales':'Closures'}</button>`).join('')}</span>`;
-  return `<div class="bar">${phone?`<button class="ibtn press" data-act="openSheet" data-sheet="menu" aria-label="Menu" style="margin-left:calc(var(--u)*-3)">${I.menu}</button>`:''}<span class="place">Reports</span>${phone?'':tabs}${RS.online?'':status('warn','Offline')}<span class="grow"></span>${renderBell()}${phone?`<button class="avbtn press" data-act="openSheet" data-sheet="user" aria-label="Demo Cashier"><span class="av">DC</span></button>`:''}</div>${phone?`<div class="phone-tabs">${tabs}</div>`:''}`;
+  const place=`<button class="place press ell" data-act="pop" data-p="scope" title="Register and store"><span class="ell">${esc(regName())} · ${esc(STORES.find(x=>x.id===RS.store).name)}</span>${RS.pro?'':`<span class="lk">${I.lock}</span>`}<span class="car">${I.chevd}</span></button>`;
+  const filtered=RS.cashier!=='all'||RS.status!=='done';
+  const filter=`<button class="ibtn press ${filtered?'on':''}" data-act="pop" data-p="filter" aria-label="Filter" title="${filtered?`Filtered: ${RS.cashier==='all'?'':esc(RS.cashier)}${RS.status==='all'?' · every status':''}`:'Filter'}">${I.sliders}${filtered?'<span class="ndot"></span>':''}</button>`;
+  return `<div class="bar">${phone?`<button class="ibtn press" data-act="openSheet" data-sheet="menu" aria-label="Menu" style="margin-left:calc(var(--u)*-3)">${I.menu}</button>`:''}${place}${phone?'':tabs}${RS.online?'':status('warn','Offline')}<span class="grow"></span>${filter}${renderBell()}${phone?`<button class="avbtn press" data-act="openSheet" data-sheet="user" aria-label="Demo Cashier"><span class="av">DC</span></button>`:''}</div>${phone?`<div class="phone-tabs">${tabs}</div>`:''}`;
 }
-function scopeRow(){return `<div class="scope-row">${periodBar()}<span class="grow"></span><button class="chip press" data-act="pop" data-p="scope">${esc(regName())} · ${esc(STORES.find(x=>x.id===RS.store).name)}${RS.pro?'':I.lock}${I.chevd}</button><button class="chip press ${RS.cashier!=='all'||RS.status!=='done'?'on':''}" data-act="pop" data-p="filter">${I.sliders}${RS.cashier==='all'?'Filter':esc(RS.cashier)}${RS.status==='all'?' · Every status':''}${I.chevd}</button>${RS.view==='closures'?`<button class="ibtn press" aria-label="More" data-act="pop" data-p="overflow">${I.dots}</button>`:''}</div>`;}
+function scopeRow(){ return RS.view==='sales' ? '' : `<div class="scope-row">${dateBtn()}<span class="grow"></span><button class="ibtn press" aria-label="More" data-act="pop" data-p="overflow">${I.dots}</button></div>`; }
 const status=(kind,label)=>`<span class="st ${kind}"><i></i>${label}</span>`;
 
 function panelTitle() {
@@ -1538,16 +1547,15 @@ function periodDates(gran, off) {
   const b = buckets(gran, off), a = dateOf(b[0].off), z = dateOf(b[b.length - 1].off);
   return a.getMonth() === z.getMonth() ? `${a.getDate()}–${z.getDate()} ${m3(z)}` : `${a.getDate()} ${m3(a)} – ${z.getDate()} ${m3(z)}`;
 }
-function periodSeg() {   /* Paul 2026-09-17: Today, This week, This month as options in view, not in a menu */
-  return `<span class="segt period" role="tablist" aria-label="Period">${[['day','Today'],['week','This week'],['month','This month']].map(([g, l]) => { const on = RS.gran === g && RS.off === 0, lk = !RS.pro && g !== 'day'; return `<button role="tab" aria-selected="${on}" class="press ${on ? 'on' : ''} ${lk ? 'lock' : ''}" data-act="${lk ? 'hint' : 'preset'}" data-v="${lk ? 'periods' : g + ':0'}">${l}${lk ? `<span class="lk">${I.lock}</span>` : ''}</button>`; }).join('')}</span>`;
+function dateBtn() {   /* Paul 2026-09-17: the date and the chart are linked and should show it; quick ranges live inside the picker, as in 1.10 */
+  const t = periodTitle(RS.gran, RS.off), d = periodDates(RS.gran, RS.off);
+  return `<button class="datebtn press" data-act="pop" data-p="date" aria-label="Dates">${esc(t)}${RS.gran !== 'custom' && d !== t ? `<span class="mut"> · ${esc(d)}</span>` : ''}${RS.pro ? '' : `<span class="lk">${I.lock}</span>`}<span class="car">${I.chevd}</span></button>`;
 }
-function periodBar() {
-  return `${periodSeg()}<div class="pbar"><button class="ibtn press" data-act="step" data-v="1" title="Earlier">${I.chevl}</button><button class="datebtn" data-act="pop" data-p="date">${esc(periodDates(RS.gran, RS.off))}${!RS.pro ? `<span class="lk">${I.lock}</span>` : ''}<span class="car">${I.chevd}</span></button><button class="ibtn press" data-act="step" data-v="-1" ${RS.off === 0 ? 'disabled' : ''} title="Later">${I.chev}</button>${RS.gran === 'custom' ? `<span class="mut sm">${RS.cFrom - RS.cTo + 1} days</span>` : ''}</div>`;
-}
+
 const deltaCls = (cur, prev) => { if (!prev) return 'flat'; const d = (cur - prev) / prev; return Math.abs(d) * 100 < 0.5 ? 'flat' : d > 0 ? 'up' : 'down'; };
 const deltaText = (cur, prev) => { if (!prev) return '—'; const d = (cur - prev) / prev, a = Math.abs(d) * 100; return deltaCls(cur, prev) === 'flat' ? '0%' : (d > 0 ? '+' : '−') + (a < 10 ? a.toFixed(1) : Math.round(a)) + '%'; };
 /* a companion's difference in its own unit: +3 orders, −£0.05, +9 items */
-const deltaAbs = (cur, prev, money = false) => { const d = cur - prev, cls = deltaCls(cur, prev); return `<span class="delta sm ${cls}">${money ? fmt(r2(d), true) : (d > 0 ? '+' : d < 0 ? '−' : '') + Math.abs(d)}</span>`; };
+const deltaAbs = (cur, prev, money = false) => { const d = cur - prev, cls = deltaCls(cur, prev); return `<span class="delta sm ${cls}">${money ? fmt(r2(d), true) : (d > 0 ? '+' : d < 0 ? '−' : '±') + Math.abs(d)}</span>`; };
 function hero(m) {
   /* Paul 2026-09-17: "£975.23 by now last Monday" goes, the chart shows it; the chip says what it compares with and opens the choice;
      the companions' second line was "11 by now" (unclear), now a signed difference against the same comparison */
@@ -1560,7 +1568,7 @@ function hero(m) {
     <button class="ibtn press printb" data-act="detail" data-v="summary" title="Sales summary">${I.print}</button>
     <div class="hero-top">
       <div>
-        <div class="lbl">Sales</div>
+        ${dateBtn()}
         <div class="big">${fmt(m.total)}</div>
         <div class="prev">${chip}${m.excluded ? `<button class="chip press" data-act="resetTicks" title="Put them back">${m.excluded} order${m.excluded > 1 ? 's' : ''} left out${I.x}</button>` : ''}</div>
       </div>
@@ -1744,9 +1752,8 @@ function popover() {
     inner = `<div class="ph">Cashier</div>${row('Everyone', RS.cashier === 'all', 'cashier', 'all')}${CASHIERS.map(c => row(c, RS.cashier === c, 'cashier', c)).join('')}<div class="ph div">Orders</div>${row('Completed and processing', RS.status === 'done', 'status', 'done')}${row('Every status', RS.status === 'all', 'status', 'all', 'incl. pending, on hold')}<div class="rp-note">Refunds count on the day they were made.</div>`;
   } else if (p.kind === 'date') {
     const pre = [['Today', 'day', 0], ['Yesterday', 'day', 1], ['This week', 'week', 0], ['Last week', 'week', 1], ['This month', 'month', 0], ['Last month', 'month', 1]];
-    inner = `<div class="ph">Dates</div>` + pre.map(([l, g, o]) => { const lk = !RS.pro && !(g === 'day' && o === 0); return row(l, RS.gran === g && RS.off === o, 'preset', g + ':' + o, '', lk, 'earlier'); }).join('');
-    inner += `<div class="ph div">Custom range</div>`;
-    inner += RS.pro ? `<div class="crange"><input aria-label="Start date" type="date" id="cFrom" value="${isoOf(RS.gran === 'custom' ? RS.cFrom : 13)}" max="${isoOf(0)}"><span class="mut">to</span><input aria-label="End date" type="date" id="cTo" value="${isoOf(RS.gran === 'custom' ? RS.cTo : 0)}" max="${isoOf(0)}"><button class="btn sm p" data-act="applyRange">Apply</button></div><div class="rp-note" id="rangeNote">${RS.rangeErr || 'As far back as your history goes.'}</div>` : row('Pick dates…', false, 'hint', 'earlier', '', true, 'earlier');
+    const quick = pre.map(([l, g, o]) => { const lk = !RS.pro && !(g === 'day' && o === 0); return row(l, RS.gran === g && RS.off === o, 'preset', g + ':' + o, '', lk, 'earlier'); }).join('');
+    inner = `<div class="datepick"><div class="quick">${quick}</div>${calendar()}</div><div class="pf-r"><span class="rp-note-text">${RS.pickStart != null ? 'Tap the last day of the range.' : RS.pro ? 'Tap a day, or two days for a range.' : 'Earlier days are in WCPOS Pro.'}</span><button class="btn p press" data-act="closePop">Done</button></div>`;
   } else if (p.kind === 'cmp') {
     inner = `<div class="ph">Compare with</div>${row('Yesterday', RS.cmp === 'yesterday', 'cmp', 'yesterday', dstr(RS.off + 1))}${row('Same day last week', RS.cmp === 'lastweek', 'cmp', 'lastweek', dstr(RS.off + 7))}<div class="rp-note">${RS.off === 0 ? 'Compared at the same time of day.' : 'Whole days.'}</div>`;
   } else if (p.kind === 'tpl') {
@@ -1760,12 +1767,32 @@ function popover() {
   return `<div class="popwrap" data-act="closePop"><div class="pop" data-menu="${p.kind}" data-stop="1">${inner}</div></div>`;
 }
 
+/* the calendar: one month, Monday first; the selected period is filled; future days are out; on Free every day but today is locked */
+function selectedOffs() {
+  if (RS.gran === 'day') return [RS.off];
+  if (RS.gran === 'custom') { const a = []; for (let o = RS.cTo; o <= RS.cFrom; o++) a.push(o); return a; }
+  return buckets(RS.gran, RS.off).map(b => b.off);
+}
+function calendar() {
+  const first = new Date(TODAY.getFullYear(), TODAY.getMonth() - RS.calMonth, 1), n = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+  const lead = (first.getDay() + 6) % 7, sel = new Set(selectedOffs());
+  const cells = [];
+  for (let i = 0; i < lead; i++) cells.push('<span></span>');
+  for (let d = 1; d <= n; d++) {
+    const off = Math.round((TODAY - new Date(first.getFullYear(), first.getMonth(), d)) / 86400000), future = off < 0, lk = !RS.pro && off !== 0;
+    const on = sel.has(off), edge = on && (!sel.has(off + 1) || !sel.has(off - 1));
+    cells.push(`<button class="d ${on ? (edge ? 'on' : 'in') : ''} ${off === 0 ? 'today' : ''} ${RS.pickStart === off ? 'pick' : ''}" ${future ? 'disabled' : `data-act="${lk ? 'hint' : 'calDay'}" data-v="${lk ? 'earlier' : off}"`} aria-label="${d} ${MON[first.getMonth()]}">${d}</button>`);
+  }
+  return `<div class="cal"><div class="hd"><button class="ibtn press" data-act="calMonth" data-v="1" aria-label="Earlier month">${I.chevl}</button><b>${MON[first.getMonth()]} ${first.getFullYear()}</b><button class="ibtn press" data-act="calMonth" data-v="-1" aria-label="Later month" ${RS.calMonth === 0 ? 'disabled' : ''}>${I.chev}</button></div><div class="grid">${WD.map(w => `<span class="wd">${w}</span>`).join('')}${cells.join('')}</div></div>`;
+}
+function monthOffsetOf(off) { const d = dateOf(off); return (TODAY.getFullYear() * 12 + TODAY.getMonth()) - (d.getFullYear() * 12 + d.getMonth()); }
 function hintText(k) {
   return { registers: 'Other registers are in WCPOS Pro', stores: 'Other stores are in WCPOS Pro', earlier: 'Earlier days are in WCPOS Pro', periods: 'Weeks and months are in WCPOS Pro', closures: 'Earlier closures are in WCPOS Pro', lastyear: 'Last year is in WCPOS Pro' }[k] || 'This is in WCPOS Pro';
 }
 
 /* ============================ events ============================ */
 function openPop(kind, el, v) {
+  if (kind === 'date') { RS.calMonth = monthOffsetOf(selectedOffs()[0]); RS.pickStart = null; }
   const anchor = `${el.closest('.detail')?'.detail ':''}[data-act="${el.dataset.act}"]${el.dataset.id?'[data-id="'+el.dataset.id+'"]':''}${el.dataset.p?'[data-p="'+el.dataset.p+'"]':''}${el.dataset.v?'[data-v="'+el.dataset.v+'"]':''}`;
   RS.pop = { kind, anchor, v }; RS.hint = null;
 }
@@ -1790,7 +1817,12 @@ function click(e) {
     case 'export': exportReport(); RS.pop=null; break;
 
     case 'view': RS.sheet=null; RS.detail=null; RS.closure=null; RS.xreport=false; RS.empty=false; RS.loading=false; RS.view = v; RS.pop = null; RS.tip = null; break;
-    case 'preset': { const [g, o] = v.split(':'); RS.gran = g; RS.off = +o; RS.tip = null; RS.pop = null; RS.rangeErr = null; break; }
+    case 'preset': { const [g, o] = v.split(':'); RS.gran = g; RS.off = +o; RS.tip = null; RS.rangeErr = null; RS.pickStart = null; RS.calMonth = monthOffsetOf(selectedOffs()[0]); break; }
+    case 'calMonth': RS.calMonth = Math.max(0, RS.calMonth + +v); break;
+    case 'calDay': { const o = +v;
+      if (RS.pickStart != null && RS.pickStart !== o) { RS.gran = 'custom'; RS.cFrom = Math.max(RS.pickStart, o); RS.cTo = Math.min(RS.pickStart, o); RS.off = 0; RS.pickStart = null; }
+      else { RS.gran = 'day'; RS.off = o; RS.pickStart = o; }
+      RS.tip = null; RS.rangeErr = null; break; }
     case 'applyRange': {
       const f = F.querySelector('#cFrom').value, t = F.querySelector('#cTo').value;
       const toOff = d => Math.round((TODAY - new Date(d + 'T00:00:00')) / 86400000);
@@ -1803,7 +1835,7 @@ function click(e) {
       if (!RS.pro && +v > 0) { openPop('hint', anchor, 'earlier'); break; }
       RS.off = Math.max(0, RS.off + +v); RS.tip = null; RS.pop = null; break;
     case 'pop': RS.pop && RS.pop.kind === el.dataset.p ? (RS.pop = null) : openPop(el.dataset.p, anchor, v); break;
-    case 'closePop': RS.pop = null; RS.hint = null; break;
+    case 'closePop': RS.pop = null; RS.hint = null; RS.pickStart = null; break;
     case 'hint': if (!RS.pop) openPop('hint', anchor, v); else RS.hint=v; break;
     case 'register': RS.register = v; RS.pop = null; break;
     case 'store': RS.store = v; RS.pop = null; break;
@@ -1829,7 +1861,7 @@ function toast(msg){RS.sheet='result';RS.result=msg;}
 const SCENES=[['today','Sales · today'],['last-week','Sales · last week'],['excluded','Sales · orders left out'],['date','Sales · date menu open'],['scope','Sales · scope chip open'],['payments','Sales · Payments panel'],['orders','Sales · Orders panel'],['session','Closures · session open'],['closed','Closures · register closed'],['closure','Closures · closure open'],['recount','Closures · recount sheet'],['empty','Closures · empty'],['loading','Loading'],['offline','Offline'],['offline-recount','Offline · recount'],['free-sales','Free · Sales'],['free-closures','Free · Closures'],['bell','Bell panel'],['error','Closures · error']];
 function jump(scn){
   S.scn=scn;
-  Object.assign(RS,{view:'sales',online:true,regOpen:true,gran:'day',off:0,register:'front',store:'uk',cashier:'all',status:'done',unticked:new Set(),detail:null,closure:null,xreport:false,tpl:'default',chart:'hour',pop:null,hint:null,tip:null,sheet:null,loading:false,empty:false,error:false,reason:'',counted:'',pieces:{},denominations:false});
+  Object.assign(RS,{view:'sales',online:true,regOpen:true,gran:'day',off:0,register:'front',store:'uk',cashier:'all',status:'done',unticked:new Set(),detail:null,closure:null,xreport:false,tpl:'default',chart:'hour',calMonth:0,pickStart:null,pop:null,hint:null,tip:null,sheet:null,loading:false,empty:false,error:false,reason:'',counted:'',pieces:{},denominations:false});
   Object.keys(ORD_CACHE).forEach(k=>delete ORD_CACHE[k]);
   if(['last-week','closure','recount','offline-recount','error'].includes(scn))S.plan='pro';
   if(['session','closed','closure','recount','empty','free-closures','offline-recount','error'].includes(scn))RS.view='closures';

@@ -32,7 +32,20 @@ same time of day); the scope row starts with a Today | This week | This month se
 month locked on Free), then the stepper with the dates ("Mon 14 Sep", "14–20 Sep",
 "September") and the earlier/custom menu; each companion carries a signed difference in its
 own unit (+3, −£0.05, +9). The 2026-09-14 default of "same day last week" is superseded by
-yesterday. Same day last year is gone. Open: the phone scope row wraps to three lines.
+yesterday. Same day last year is gone.
+
+**Scope row (third pass, same day).** Paul did not notice the date picker sitting above the
+chart in its own row ("bad UI"); the date and the chart are linked and should show it; the
+bordered chips separating everything go; "Front till · UK Store" is a title and belongs in the
+bar the way "UK Store" sits above the cart; the picker should carry the quick ranges the way
+the 1.10 picker does. Done: the Sales room has no scope row. The date is the hero card's title,
+"Today · Mon 14 Sep ⌄", and opens a picker with Today / Yesterday / This week / Last week /
+This month / Last month beside a calendar (tap a day, or two days for a range; Done closes;
+week, month and earlier days locked on Free). The bar's place is the register and store and
+opens that menu; the filter is a sliders icon beside the bell with a dot when active. The delta
+chip and the companions' differences are plain coloured text, no borders. Closures keeps a
+slim scope row with the same date button and its ⋮. The stepper and the two date inputs are
+gone; the segment from the second pass is gone.
 
 ## What changed from 2026-09-14
 
