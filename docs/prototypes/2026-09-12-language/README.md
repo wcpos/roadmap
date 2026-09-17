@@ -381,9 +381,11 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     **Decided (Paul, 2026-09-17):** the one-tap quick edit of name and price stays (from cut 2).
     **Quantity is the button**, but not a popover below: the box expands in place, the number
     exactly where it was, − to its left, + to its right, the keypad beneath, the border appearing
-    to grow (drawn with a 180 ms clip-path from the box's rectangle; the panel is 3 × 36 px cells,
-    so it overhangs the cart's left edge by 20 px, and the board draws a sliver of the products
-    column to show that honestly). Typing on the keypad replaces the number, − at 1 is a trash. On
+    to grow (drawn with a 180 ms clip-path from the box's rectangle). **Paul: the overhang is
+    fine; make the keypad bigger, to touch best practice.** Cells are 48 px (Material's minimum,
+    over Apple's 44 pt), so the panel is 144 px wide and overhangs the cart's left edge by 38 px;
+    the board draws a sliver of the products column to show that honestly. The phone sheet's keys
+    are 56 px with 8 px gaps. Typing on the keypad replaces the number, − at 1 is a trash. On
     phones the same opens the app's bottom sheet (stepper and keypad, Done). **Edit and delete
     live under the line**: press and swipe the *total column* left; under 80 px it springs back,
     past 80 it snaps to Edit / Delete, past 240 it deletes (with Undo). On a mouse, hovering the
