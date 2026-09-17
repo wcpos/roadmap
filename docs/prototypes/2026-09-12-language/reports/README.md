@@ -233,9 +233,11 @@ fixed), and, only when some orders are unticked, "N orders left out", which open
 and whose × puts them back. A chip at its default shows the default in muted text with a
 chevron; a set chip is outlined in the foreground with an × that returns it to the default; each
 chip opens its own menu. The chips are the Orders page's filter chips copied into the reports
-block (`.fchip` = `.op-chip`), to be lifted into one shared chip when the language settles; the
-1.10 app fills them in the primary colour, the prototype's chips are outlined, so the fill is
-the theme's call, not this page's. The comparison is no longer chosen on the delta line; the
+block (`.fchip` = `.op-chip`), to be lifted into one shared chip when the language settles.
+Later the same day the Orders page redrew its chips as the register's pills (32 px, a 14 px
+muted icon, a set chip filled in the foreground and split: the value reopens, the × clears) and
+the Reports chips followed, so the two pages still agree; the 1.10 app's primary fill is the
+theme's call, not this page's. The comparison is no longer chosen on the delta line; the
 delta only states it. Register and store stay in the bar (they scope the whole page, not the
 chart). On the phone the row scrolls sideways under a fade, as the register's plan chips do.
 
