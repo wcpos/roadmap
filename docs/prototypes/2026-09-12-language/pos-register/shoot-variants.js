@@ -22,7 +22,7 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   for (const n of ['row', 'line', 'chip']) { await set('note', n); await scn('open'); await shot(`note-${n}`); if (!(await page.locator('.onote, .nline, .chip.notechip').count())) throw new Error('note not drawn: ' + n); }
   await set('note', 'row');
   // the personality themes, session open
-  for (const th of ['paper', 'bold', 'warm', 'market']) { await set('theme', th); await scn('open'); await page.waitForTimeout(300); await shot(`theme-${th}`); }
+  for (const th of ['paper', 'bold', 'warm', 'market', 'ocean', 'sunset', 'monochrome']) { await set('theme', th); await scn('open'); await page.waitForTimeout(300); await shot(`theme-${th}`); }
   await set('theme', 'light');
   // the touches: after (all on) and before (all off), in three states; the whimsical ones under Market Stall too
   const flip = (v) => page.click(`.strip button[data-txall="${v}"]`);

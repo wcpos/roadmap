@@ -940,8 +940,8 @@ function rollMoney(from,to){
   els.forEach(e=>{ e.classList.remove('settled'); void e.offsetWidth; e.classList.add('settled'); setTimeout(()=>e.classList.remove('settled'),300); });
 }
 function render(){
-  /* Paul 2026-09-17: the icon set follows the theme; Tabler 1.5 px on the default themes, Hugeicons on Market stall and Warm shop */
-  Object.assign(I, I0, ICONSETS[['market','warm'].includes(S.theme)?'hugeicons':'tabler-15']||{});
+  /* Paul 2026-09-17: the icon set follows the theme; Tabler 1.5 px on the default themes, Hugeicons on Market stall and Warm shop, Phosphor on Paper till, Bold money, Ocean and Sunset */
+  Object.assign(I, I0, ICONSETS[['market','warm'].includes(S.theme)?'hugeicons':['paper','bold','ocean','sunset'].includes(S.theme)?'ph':'tabler-15']||{});
   renderStrip();
   const f=document.getElementById('frame'); f.className='frame'; f.dataset.w=S.w; f.dataset.theme=S.theme; f.dataset.scale=S.scale;
   const oldPane=S.slide&&f.querySelector('.pane:not(.exit-l):not(.exit-r)'); const oldHtml=oldPane?oldPane.outerHTML:null;

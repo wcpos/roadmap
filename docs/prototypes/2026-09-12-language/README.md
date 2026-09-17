@@ -164,6 +164,11 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     the app): Tabler 131 direct and the other two under other names; Hugeicons 132; Phosphor 126
     (no cart-plus / cart-check pair); Solar 114; Iconoir 115; Streamline Plump 91 of its free
     subset. Only Tabler and Hugeicons cover the app.
+    **Paul (2026-09-17): include Phosphor anyway, the cart-plus / cart-check pair is not important.**
+    The rule by theme: Tabler 1.5 px on Default light, Default dark and Monochrome (the strict
+    ones); Hugeicons on Market stall and Warm shop (rounded, friendly); Phosphor on Paper till,
+    Bold money, Ocean and Sunset (soft geometry that sits with the quirky and the colourful).
+    The two missing cart glyphs fall back to the base drawing.
     (c) **chips** — pills, the current one filled; reads as a filter row rather than tabs;
     (d) **cards** — small cards with amount, customer and status, current with a primary top
     edge; the most information, the tallest;
