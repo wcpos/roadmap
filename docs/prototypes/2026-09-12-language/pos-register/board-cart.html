@@ -49,7 +49,7 @@ svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:
 .frame.dec .qx{position:absolute;left:-20px;width:108px;z-index:7;background:var(--card);border:var(--hair) solid var(--border);border-radius:6px;box-shadow:0 10px 28px oklch(0.2 0.02 250 / .18);display:grid;grid-template-columns:repeat(3,36px);grid-auto-rows:36px;animation:grow 180ms var(--ease);clip-path:inset(0 0 0 0 round 6px);overflow:hidden}
 @keyframes grow{from{clip-path:inset(0 36px calc(100% - 36px) 36px round 6px);box-shadow:none}}
 .frame.dec .qx button,.frame.dec .qx b{display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:14px} .frame.dec .qx button:hover{background:var(--muted)} .frame.dec .qx b{font-size:15px;border-bottom:var(--hair) solid var(--border)} .frame.dec .qx .top{border-bottom:var(--hair) solid var(--border)} .frame.dec .qx .del{color:var(--destructive)} .frame.dec .qx .ok{color:var(--primary)}
-.frame.dec .line.qopen{z-index:8}
+
 /* swipe the total: drag left on the total column; full swipe deletes, a short one snaps to Edit / Delete; on a mouse the total nudges on hover to show there is something under the line */
 .frame.dec .tot{cursor:grab;position:relative;display:inline-block;padding:6px 0 6px 12px;margin:-6px 0 -6px -12px;border-radius:4px}
 .frame[data-pt="mouse"].dec .line:not(.open):not(.drag):has(.tot:hover) .lb{transform:translateX(-14px)} .frame[data-pt="mouse"].dec .line:not(.open):not(.drag):has(.tot:hover) .un{opacity:1}
