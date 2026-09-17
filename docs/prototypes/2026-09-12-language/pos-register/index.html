@@ -460,7 +460,7 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .frame:where([data-screen="reports"])[data-w="phone"] .datepick{flex-direction:column} .frame:where([data-screen="reports"])[data-w="phone"] .quick{flex-direction:row;flex-wrap:wrap;gap:var(--u)} .frame:where([data-screen="reports"])[data-w="phone"] .quick .pr{width:auto;flex:1 1 30%} :where(.frame[data-screen="reports"]) .delta.up{color:var(--ok)} :where(.frame[data-screen="reports"]) .delta.down{color:var(--bad)}
 :where(.frame[data-screen="reports"]) .cmpbtn{display:inline-flex;align-items:center;gap:var(--u);min-height:max(var(--ctl),var(--floor));color:var(--muted-fg)}
 :where(.frame[data-screen="reports"]) .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(var(--u)*6);align-content:center;margin-right:calc(var(--ctl))} :where(.frame[data-screen="reports"]) .kpi .n{font-size:calc(var(--fs)*1.7);font-weight:600} :where(.frame[data-screen="reports"]) .kpi .p{color:var(--muted-fg);font-size:calc(var(--fs)*.9)}
-:where(.frame[data-screen="reports"]) .printb{position:absolute;right:calc(var(--u)*2);top:calc(var(--u)*2)} .frame:where([data-screen="reports"]) svg.bars{width:100%;height:auto;stroke:none;display:block;margin-top:calc(var(--u)*2);overflow:visible}
+:where(.frame[data-screen="reports"]) .hero-head{display:flex;flex-wrap:wrap;align-items:center;gap:var(--u) calc(var(--u)*2);margin:calc(var(--u)*-2) calc(var(--u)*-2) calc(var(--u)*1) 0} :where(.frame[data-screen="reports"]) .printb{width:36px;height:36px} .frame:where([data-screen="reports"]) svg.bars{width:100%;height:auto;stroke:none;display:block;margin-top:calc(var(--u)*5);overflow:visible}
 :where(.frame[data-screen="reports"]) .chart-head{display:flex;flex-wrap:wrap;align-items:center;gap:var(--u) calc(var(--u)*3);margin-top:calc(var(--u)*5);color:var(--muted-fg);font-size:calc(var(--fs)*.93)} :where(.frame[data-screen="reports"]) .chart-head b{color:var(--fg);font-weight:600} :where(.frame[data-screen="reports"]) .chart-plot{position:relative}
 :where(.frame[data-screen="reports"]) .chart-mode{height:max(36px,var(--floor))} :where(.frame[data-screen="reports"]) .chart-mode button{font-size:calc(var(--fs)*.93);padding:0 calc(var(--u)*2.5)}
 :where(.frame[data-screen="reports"]) .lg i.dash{width:14px;height:0;border-top:2px dashed var(--muted-fg);border-radius:0} :where(.frame[data-screen="reports"]) .lg i.line{width:14px;height:0;border-top:2px solid var(--primary);border-radius:0}
@@ -1564,11 +1564,11 @@ function hero(m) {
   const chip = RS.gran === 'day'
     ? `<button class="delta press ${deltaCls(m.total, m.prevRef)}" data-act="pop" data-p="cmp" title="Compared at the same time of day">${deltaText(m.total, m.prevRef)} vs ${esc(refLabel())}<span class="car">${I.chevd}</span></button>`
     : `<span class="delta ${deltaCls(m.total, m.prevRef)}">${deltaText(m.total, m.prevRef)} vs ${esc(refLabel())}</span>`;
+  /* Paul 2026-09-17: less text, more graph. The busiest-hour sentence and the legend line are gone (the chart shows them); the view toggle sits in the title row */
   return `<div class="card hero">
-    <button class="ibtn press printb" data-act="detail" data-v="summary" title="Sales summary">${I.print}</button>
+    <div class="hero-head">${dateBtn()}<span class="grow"></span>${chartSeg()}<button class="ibtn press printb" data-act="detail" data-v="summary" title="Sales summary">${I.print}</button></div>
     <div class="hero-top">
       <div>
-        ${dateBtn()}
         <div class="big">${fmt(m.total)}</div>
         <div class="prev">${chip}${m.excluded ? `<button class="chip press" data-act="resetTicks" title="Put them back">${m.excluded} order${m.excluded > 1 ? 's' : ''} left out${I.x}</button>` : ''}</div>
       </div>
@@ -1581,7 +1581,7 @@ function chart(m) {
   /* Paul 2026-09-17: two views of the same figures behind one toggle. By hour: today's bars, the busiest hour full-colour with its amount,
      the comparison as a dashed line, hours still to come as faint bars of the comparison. Running total: the cumulative line against the
      comparison's, the busiest hour as the thick segment. Tax is not on the chart (it has the Taxes tile and the summary). */
-  const W = phone() ? 340 : 1090, H = phone() ? 150 : 160, padB = 20, top = 26;
+  const W = phone() ? 340 : 1090, H = phone() ? 170 : 210, padB = 20, top = 26;
   const n = m.bk.length, gap = n > 14 ? 3 : 8, step = W / n, bw = Math.min(40, step - gap), xc = i => (i + .5) * step;
   const every = RS.gran === 'month' || RS.gran === 'custom' ? (n > 14 ? 7 : phone() ? 2 : 1) : (phone() && RS.gran === 'day' ? 2 : 1);
   const lastPast = m.bk.reduce((a, b, i) => b.past ? i : a, -1);
@@ -1600,7 +1600,7 @@ function chart(m) {
       if (cv > 0) s += `<rect class="cur-bar" x="${x}" y="${y(cv)}" width="${bw}" height="${H - padB - y(cv)}" rx="2" fill="var(--primary)" fill-opacity="${i === bi ? 1 : .5}"/>`;
     });
     s += `<polyline class="ref-line" points="${m.bk.map((b, i) => `${xc(i)},${y(m.prev[i])}`).join(' ')}" fill="none" stroke="var(--muted-fg)" stroke-width="1.5" stroke-dasharray="4 4" stroke-linejoin="round"/>`;
-    if (bi >= 0) s += `<text class="peak-label" x="${xc(bi)}" y="${y(m.cur[bi]) - 7}" text-anchor="middle" font-size="12" font-weight="600" fill="var(--fg)">${fmt(m.cur[bi])}</text>`;
+    if (bi >= 0) s += `<text class="peak-label" x="${xc(bi)}" y="${y(m.cur[bi]) - 7}" text-anchor="middle" font-size="12" font-weight="600" fill="var(--fg)">${fmt(m.cur[bi])}${RS.gran === 'day' && m.busiest && m.busiest.n ? ` <tspan font-weight="400" fill="var(--muted-fg)">· ${m.busiest.n} order${m.busiest.n === 1 ? '' : 's'}</tspan>` : ''}</text>`;
   } else {
     const cum = a => a.map((_, i) => sum(a.slice(0, i + 1)));
     const cc = cum(m.cur), cp = cum(m.prev), last = Math.max(0, lastPast);
@@ -1619,12 +1619,11 @@ function chart(m) {
   }
   s += axis() + hits() + `</svg>`;
   const tip = RS.tip != null ? (() => { const i = RS.tip, cum = a => sum(a.slice(0, i + 1)); return `<div class="tip" style="left:${xc(i) / W * 100}%;top:0">${run ? `<b>${fmt(cum(m.cur))}</b> so far · ${fmt(cum(m.prev))} ${esc(refLabel())}` : `<b>${fmt(m.cur[i])}</b> · ${fmt(m.prev[i])} ${esc(refLabel())}`}</div>`; })() : '';
-  const busy = m.busiest ? (RS.gran === 'day' ? `Busiest hour <b>${esc(m.busiest.label)}</b>, ${fmt(m.busiest.val)} from ${m.busiest.n} order${m.busiest.n === 1 ? '' : 's'}` : `Best day <b>${esc(m.busiest.label)}</b>, ${fmt(m.busiest.val)}`) : 'Nothing sold yet';
-  const seg = `<span class="segt chart-mode" role="tablist" aria-label="Chart"><button role="tab" aria-selected="${!run}" class="press ${run ? '' : 'on'}" data-act="chart" data-v="hour">By ${unit}</button><button role="tab" aria-selected="${run}" class="press ${run ? 'on' : ''}" data-act="chart" data-v="run">Running total</button></span>`;
-  const legend = run
-    ? `<span class="lg"><i class="line"></i>${esc(periodTitle(RS.gran, RS.off))}</span><span class="lg"><i class="dash"></i>${esc(refLabel())}${phone() && live ? `, ${fmt(sum(m.prev))} all ${unit === 'hour' ? 'day' : RS.gran}` : ''}</span>`
-    : `<span class="lg"><i style="background:var(--primary)"></i>${esc(periodTitle(RS.gran, RS.off))}</span><span class="lg"><i class="dash"></i>${esc(refLabel())}</span>${live ? `<span class="lg"><i style="background:var(--muted)"></i>still to come</span>` : ''}`;
-  return `<div class="chart" data-unit="${RS.gran}" data-mode="${RS.chart}"><div class="chart-head"><span>${busy}</span><span class="grow"></span>${seg}</div><div class="chart-plot">${tip}${s}</div><div class="cap"><span class="grow"></span>${legend}</div></div>`;
+  return `<div class="chart" data-unit="${RS.gran}" data-mode="${RS.chart}"><div class="chart-plot">${tip}${s}</div></div>`;
+}
+function chartSeg() {
+  const run = RS.chart === 'run', unit = RS.gran === 'day' ? 'hour' : 'day';
+  return `<span class="segt chart-mode" role="tablist" aria-label="Chart"><button role="tab" aria-selected="${!run}" class="press ${run ? '' : 'on'}" data-act="chart" data-v="hour">By ${unit}</button><button role="tab" aria-selected="${run}" class="press ${run ? 'on' : ''}" data-act="chart" data-v="run">Running total</button></span>`;
 }
 function tiles(m) {
   const T=m.total, top=Object.entries(m.byCashier).sort((a,b)=>b[1]-a[1])[0];

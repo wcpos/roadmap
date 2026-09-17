@@ -47,6 +47,13 @@ chip and the companions' differences are plain coloured text, no borders. Closur
 slim scope row with the same date button and its ⋮. The stepper and the two date inputs are
 gone; the segment from the second pass is gone.
 
+**Declutter (fourth pass, same day).** Paul: the "Busiest hour 12 pm, £212.40 from 2 orders"
+sentence is obvious from the graph; more graph, less text. Done: the sentence and the legend
+line under the chart are gone; the view toggle and the print button share the title row with
+the date; the plot is a third taller; the busiest bar's label reads "£212.40 · 2 orders". The
+comparison is named once, in the chip; the dashed line and the faint bars still to come carry
+no legend.
+
 ## What changed from 2026-09-14
 
 - Copied the register's tokens, controls, rail, page bar, notification panel, side-panel and
