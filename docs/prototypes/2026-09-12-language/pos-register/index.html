@@ -333,7 +333,7 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .panel-b{flex:1;overflow:auto;padding:calc(var(--u)*4);display:flex;flex-direction:column;gap:calc(var(--u)*4)} .panel-f{padding:calc(var(--u)*3) calc(var(--u)*4) calc(var(--u)*4);border-top:var(--hair) solid var(--border)} .panel-f .btn{width:100%}
 .tiles3{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(var(--u)*2)} .tiles3 .btn{height:max(calc(var(--tile)*.875),var(--floor))}
 .list{border:var(--hair) solid var(--border);border-radius:var(--r);overflow:hidden}
-.lr{display:flex;align-items:center;gap:calc(var(--u)*2);min-height:max(var(--row),var(--floor));padding:0 calc(var(--u)*3);border-top:var(--hair) solid var(--border);width:100%;text-align:left} .lr:first-child{border-top:0} .lr .v{margin-left:auto;font-weight:600} .lr.click:active{background:var(--muted)}
+.lr{display:flex;align-items:center;gap:calc(var(--u)*2);min-height:max(var(--row),var(--floor));padding:0 calc(var(--u)*3);border-top:var(--hair) solid var(--border);width:100%;text-align:left} .lr:first-child{border-top:0} .lr .v{margin-left:auto;font-weight:600} .lr.click:active{background:var(--muted)} .menu-list .lr .ic{width:20px;height:20px;display:inline-flex;color:var(--muted-fg)} .menu-list .lr .ic svg{width:20px;height:20px} .menu-list .lr[aria-current]{font-weight:600} .menu-list .lr[aria-current] .ic{color:var(--primary)}
 
 /* ---- sheets ---- */
 .sheet-wrap{position:absolute;inset:0;z-index:30;background:var(--scrim);display:flex;align-items:center;justify-content:center;padding:calc(var(--u)*6)} .frame[data-w="phone"] .sheet-wrap{align-items:flex-end;padding:0}
@@ -646,7 +646,6 @@ const sub=()=>lines().reduce((a,[,q,p])=>a+q*p,0);
 function renderStrip(){
   const seg=(k,opts,state=S)=>`<span class="seg">${opts.map(([v,l])=>`<button class="${state[k]===v?'on':''}" data-set="${k}" data-v="${v}">${l}</button>`).join('')}</span>`;
   document.getElementById('strip').innerHTML=`
-    <div class="g"><b>Screen</b>${seg('screen',[['register','Register'],['reports','Reports']])}</div>
     <div class="g"><b>Width</b>${seg('w',[['phone','Phone 390'],['tablet','Tablet 1024'],['desktop','Desktop 1440']])}</div>
     <div class="g"><b>Plan</b>${seg('plan',[['top','Free · strip at the top'],['bottom','Free · strip at the bottom'],['pro','Pro · no strip']])}</div>
     <div class="g"><b>Update</b>${seg('upd',[['ready','ready · in the bell'],['none','none']])}</div>
@@ -660,10 +659,22 @@ function renderStrip(){
     ${S.screen==='reports'?`<div class="g"><b>Stores</b>${seg('stores',[[1,'1'],[2,'2']],RS)}</div>`:''}
     <div class="g"><b>State</b><span class="seg">${(S.screen==='reports'?RP.SCENES:SCENES).map(([v,l])=>`<button class="${S.scn===v?'on':''}" data-scn="${v}">${l}</button>`).join('')}</span></div>`;
 }
+/* Paul 2026-09-17: Reports is a page in the app, reached from the rail (the phone's menu sheet), not a switch in the strip */
+const NAV=[['pos','POS','register'],['products','Products'],['orders','Orders'],['customers','Customers'],['coupons','Coupons'],['reports','Reports','reports']];
+const NAV_BOTTOM=[['health','Store health'],['gear','Settings'],['support','Support']];   /* Paul 2026-09-17: the bell moved to the cart bar */
+const navOn=(k)=>k===(S.screen==='reports'?'reports':'pos');
+const SCN_OF={register:'open',reports:'today'};   /* each page keeps its own State while you move between them */
+function nav(screen){
+  if(screen===S.screen){ S.sheet=null; RS.sheet=null; render(); return; }
+  clearTimeout(termTimer); SCN_OF[S.screen]=S.scn; S.screen=screen; S.scn=SCN_OF[screen]; S.sheet=null; RS.sheet=null; render();
+}
 function renderRail(){
-  const items=[['pos',S.screen==='reports'?'Till':'POS'],['products','Products'],['orders','Orders'],['customers','Customers'],['coupons','Coupons'],['reports','Reports']];
-  const bottom=[['health','Store health'],['gear','Settings'],['support','Support']];   /* Paul 2026-09-17: the bell moved to the cart bar */
-  return `<nav class="rail"><button class="avr press" data-act="openSheet" data-sheet="user" aria-label="Demo Cashier" title="Demo Cashier"><span class="av">DC</span></button>${items.map(([k,l],i)=>`<button class="it press ${k===(S.screen==='reports'?'reports':'pos')?'on':''}" aria-label="${l}">${I[k]}</button>`).join('')}<div class="sp"></div>${bottom.map(([k,l])=>`<button class="it press" aria-label="${l}">${I[k]}</button>`).join('')}</nav>`;
+  const it=([k,l,screen])=>`<button class="it press ${navOn(k)?'on':''}" aria-label="${l}" title="${l}"${navOn(k)?' aria-current="page"':''}${screen?` data-nav="${screen}"`:''}>${I[k]}</button>`;
+  return `<nav class="rail"><button class="avr press" data-act="openSheet" data-sheet="user" aria-label="Demo Cashier" title="Demo Cashier"><span class="av">DC</span></button>${NAV.map(it).join('')}<div class="sp"></div>${NAV_BOTTOM.map(it).join('')}</nav>`;
+}
+function menuList(){
+  const row=([k,l,screen])=>`<button class="lr click press ${navOn(k)?'b':''}" ${screen?`data-nav="${screen}"`:''}${navOn(k)?' aria-current="page"':''}><span class="ic">${I[k]}</span><span>${l}</span></button>`;
+  return `<div class="list menu-list">${NAV.map(row).join('')}</div><div class="list menu-list" style="margin-top:calc(var(--u)*3)">${NAV_BOTTOM.map(row).join('')}</div>`;
 }
 const EMO={'Flat white':'☕','Sourdough loaf':'🍞','Tote bag':'👜','Oat latte':'🥛','Croissant':'🥐','Beans 250g':'🫘','Cinnamon bun':'🥯','Gift card':'🎁','Cold brew':'🧊','Granola jar':'🥣','Espresso cup':'☕','Tea tin':'🍵'};
 const CATS=['Drinks','Bakery','Merch','Drinks','Bakery','Coffee','Bakery','Merch','Drinks','Pantry','Merch','Pantry']; const CATLIST=['Drinks','Bakery','Coffee','Merch','Pantry']; const TAGS=[['Local'],[],['Acme','Gift'],['Local'],[],['Acme'],[],['Gift'],['Local'],['Acme'],['Acme','Gift'],[]]; const TAGLIST=['Acme','Gift','Local'];
@@ -810,7 +821,7 @@ function renderBar(){
   const drawer=sessionOpen()?`<button class="ibtn press" data-act="openPanel" aria-label="${t.register}" style="${S.scn==='overdue'?'color:var(--warn)':''}">${I.drawer}</button>`:'';
   const discard=S.voidStyle==='discard'&&sessionOpen()&&lines().length&&!S.tender?`<button class="btn q press" style="height:36px;padding:0 calc(var(--u)*2.5);color:var(--muted-fg)" data-act="void">Discard</button>`:'';
   pill+=discard;
-  return `<div class="bar">${phone?`<button class="ibtn press" aria-label="Menu" style="margin-left:calc(var(--u)*-3)">${I.menu}</button>`:''}<span class="place ell"><span class="ell">${name}</span>${S.registers>1?`<span class="mut" style="font-weight:400">· UK Store</span>`:''}</span>${pill}${off}<span class="grow"></span>${drawer}${renderBell()}${phone?`<button class="avbtn press" data-act="openSheet" data-sheet="user" aria-label="Demo Cashier"><span class="av">DC</span></button>`:''}</div>`;
+  return `<div class="bar">${phone?`<button class="ibtn press" data-act="openSheet" data-sheet="menu" aria-label="Menu" style="margin-left:calc(var(--u)*-3)">${I.menu}</button>`:''}<span class="place ell"><span class="ell">${name}</span>${S.registers>1?`<span class="mut" style="font-weight:400">· UK Store</span>`:''}</span>${pill}${off}<span class="grow"></span>${drawer}${renderBell()}${phone?`<button class="avbtn press" data-act="openSheet" data-sheet="user" aria-label="Demo Cashier"><span class="av">DC</span></button>`:''}</div>`;
 }
 /* the open-order tabs */
 /* one strip, six styles (strip → Tab style). Always: scrolls horizontally with a fade at the end, the overview
@@ -948,6 +959,7 @@ function renderSheet(){
   if(!S.sheet) return ''; const t=T();
   const wrap=(title,sub,body,foot)=>`<div class="sheet-wrap" data-act="closeSheet"><div class="sheet" data-stop="1"><div class="sheet-h"><div class="grow"><div class="t">${title}</div>${sub?`<div class="mut">${sub}</div>`:''}</div><button class="ibtn press" data-act="closeSheet" aria-label="Close">${I.x}</button></div><div class="sheet-b">${body}</div>${foot?`<div class="sheet-f">${foot}</div>`:''}</div></div>`;
   if (S.sheet==='qty' && S.qx!=null && lines()[S.qx]){ const i=S.qx, l=lines()[i]; return wrap(l[0], l[3]||`${fmt(l[2])} each`, `<div class="qsheet"><div class="stp"><button class="press ${l[1]<=1?'del':''}" data-act="qdec" data-i="${i}">${l[1]<=1?I.trash:I.minus}</button><b>${S.qbuf||l[1]}</b><button class="press" data-act="qinc" data-i="${i}">${I.plus}</button></div><div class="kb" style="margin-top:8px">${qKeys(i)}<button class="ok press" data-act="qclose">Done</button></div></div>`); }
+  if (S.sheet==='menu') return wrap('UK Store','Front counter',menuList());
   if (S.sheet==='user') return wrap('Demo Cashier','Cashier · UK Store',`<div class="list"><div class="lr"><span>Your sales today</span><span class="mut xs">9 sales</span><span class="v money">${fmt(412.30)}</span></div></div><div class="mut xs b" style="text-transform:uppercase;letter-spacing:.04em">Switch user</div><div class="list"><button class="lr click press"><span class="av" style="width:28px;height:28px">AO</span><span>Amy Okafor</span><span class="mut xs" style="margin-left:auto">on this device</span>${I.chev}</button><button class="lr click press"><span class="av" style="width:28px;height:28px">SR</span><span>Sam Reilly</span><span class="mut xs" style="margin-left:auto">on this device</span>${I.chev}</button><button class="lr click press"><span>Another account…</span><span class="mut xs" style="margin-left:auto">WordPress login</span></button></div>${S.w==='desktop'?`<div class="mut xs b" style="text-transform:uppercase;letter-spacing:.04em">This site</div><div class="list"><button class="lr click press"><span class="row">${I.globe}WordPress admin</span><span class="mut xs" style="margin-left:auto">opens in a new tab</span></button><button class="lr click press"><span class="row">${I.pos}Desktop app</span><span class="mut xs" style="margin-left:auto">download</span></button></div>`:''}`,`<button class="btn d press">Sign out</button><span class="grow"></span><button class="btn press" data-act="closeSheet">Close</button>`);
   if (S.sheet==='closure') return wrap(`<span class="row"><span class="disc">${I.check}</span>Closure 13 written</span>`,'UK Store · Sun 14 Sep 18:04',`<div class="kpis"><div class="kpi"><div class="l">Counted</div><div class="v money">${fmt(463.30)}</div></div><div class="kpi"><div class="l">Expected</div><div class="v money">${fmt(480.80)}</div></div><div class="kpi"><div class="l">Variance</div><div class="v money neg">${fmt(-17.50,true)}</div></div></div><div class="fold"><button class="press">${I.chev}<span>Z-report</span><span class="mut">preview</span></button></div>`,`<button class="btn q press" data-act="closeSheet">Print later</button><span class="grow"></span><button class="btn p press" data-act="closeSheet">${I.print}Print Z-report</button>`);
   if (S.sheet==='edit-centred') return wrap('Edit Flat white','Line 1 · 2 × £3.20',`<div class="fld"><label>Name</label><input class="in" value="Flat white"></div><div class="row"><div class="fld grow"><label>Quantity</label><input class="in" value="2"></div><div class="fld grow"><label>Price</label><input class="in" value="3.20"></div></div><div class="fld"><label>Tax class</label><button class="btn press" style="width:100%;justify-content:space-between">Standard${I.chevd}</button></div><div class="fold"><button class="press">${I.chev}<span>Metadata</span><span class="mut">Oat milk</span></button></div><div class="fold"><button class="press">${I.chev}<span>Split</span><span class="mut">into 2 lines</span></button></div>`,`<button class="btn d press" data-act="closeSheet">${t.remove}</button><span class="grow"></span><button class="btn press" data-act="closeSheet">Cancel</button><button class="btn p press" data-act="closeSheet">Save</button>`);
@@ -1060,12 +1072,12 @@ function render(){
 }
 function stepTerminal(){ clearTimeout(termTimer); if(S.view!=='terminal') return; if(S.termStep<3){ termTimer=setTimeout(()=>{ S.termStep++; render(); stepTerminal(); }, S.termStep===1?2600:900); } else termTimer=setTimeout(()=>{ S.view='paid'; render(); },500); }
 document.addEventListener('click',e=>{
-  const control=e.target.closest('[data-set],[data-scn],[data-tx],[data-txall]');
+  const control=e.target.closest('[data-set],[data-scn],[data-tx],[data-txall],[data-nav]');
   if(S.screen==='reports'&&!control){RP.click(e);return;}
-  const b=e.target.closest('[data-set],[data-scn],[data-act],[data-tx],[data-txall]');
+  const b=e.target.closest('[data-set],[data-scn],[data-act],[data-tx],[data-txall],[data-nav]');
   if(S.dragged){ S.dragged=false; return; }   /* the click that follows a swipe must not close what the swipe opened */
   if(!b){ if(!e.target.closest('[data-stop]') && (S.pop||S.ordlist||S.reveal!=null||S.edit!=null||S.qx!=null||S.menu)){ S.pop=null; S.menu=false; S.ordlist=false; S.reveal=null; S.edit=null; S.qx=null; S.qbuf=''; render(); } return; }
-  if(b.dataset.set==='screen'){ clearTimeout(termTimer); S.screen=b.dataset.v; if(S.screen==='reports')RP.jump(RP.SCENES[0][0]);else jump(SCENES[0][0]); return; }
+  if(b.dataset.nav){ nav(b.dataset.nav); return; }
   if(b.dataset.set==='stores'){RS.stores=+b.dataset.v;render();return;}
   if(b.dataset.set){ const v=b.dataset.v; S[b.dataset.set]=(v==='1'||v==='3')?+v:v; if(b.dataset.set==='plan') S.nostrip=false; render(); return; }
   if(b.dataset.tx){ S.tx[b.dataset.tx]=S.tx[b.dataset.tx]?0:1; render(); return; }
@@ -1662,7 +1674,7 @@ function renderSheet(){
   const wrap=(title,body,foot='',context='')=>`<div class="sheet-wrap" data-act="closeSheet"><section class="sheet" data-stop="1" role="dialog" aria-label="${title}"><div class="sheet-h"><div class="grow"><div class="t">${title}</div>${context?`<div class="sheet-context">${context}</div>`:''}</div><button class="ibtn press" data-act="closeSheet" aria-label="Close">${I.x}</button></div><div class="sheet-b">${body}</div>${foot?`<div class="sheet-f">${foot}</div>`:''}</section></div>`;
   if(RS.sheet==='recount'){const c=CLOSURES.find(c=>c.id===RS.closure);return wrap('Recount',`${!RS.online?'<div data-testid="recount-offline">Connect to recount</div>':''}<label class="fld" for="recount-total">Counted total · cash<input id="recount-total" class="in" type="number" min="0" step="0.01" value="${RS.counted}" inputmode="decimal"></label><div class="fold"><button data-act="denominations" aria-expanded="${RS.denominations}"><span class="grow">Count by denominations</span>${RS.denominations?I.chevu:I.chevd}</button>${RS.denominations?`<div class="denominations">${[50,20,10,5,2,1,.5,.2,.1,.05,.02,.01].map(n=>`<button class="btn press" data-act="denomination" data-v="${n}">${fmt(n)} · ${RS.pieces[n]||0}</button>`).join('')}</div>`:''}</div><label class="fld" for="recount-reason">Reason (required)<input id="recount-reason" class="in" maxlength="500" value="${esc(RS.reason)}" required></label><span class="mut">Up to 500 characters</span><div class="row">${status('ok','Manager approval')}<span class="mut">Paul</span></div>`,`<button class="btn press" data-act="closeSheet">Cancel</button><button id="save-recount" class="btn p press" data-act="saveRecount" ${!RS.online||!RS.reason.trim()||RS.counted===''||!Number.isFinite(+RS.counted)||+RS.counted<0?'disabled':''}>${RS.online?'Save recount':'Connect to recount'}</button>`,`Recorded ${fmt(c.counted)} · expected ${fmt(c.float+c.cash-c.cashOut)}`);}
   if(RS.sheet==='user')return wrap('Demo Cashier','<span class="mut">Cashier · UK Store</span>', '<button class="btn press" data-act="closeSheet">Close</button>');
-  if(RS.sheet==='menu')return wrap('Reports',`<button class="pr" data-act="view" data-v="sales">Sales</button><button class="pr" data-act="view" data-v="closures">Closures</button>`);
+  if(RS.sheet==='menu')return wrap('UK Store',menuList(),'','Front counter');
   return wrap('Prototype',esc(RS.result||''),'<button class="btn press" data-act="closeSheet">Close</button>');
 }
 function exportReport(){

@@ -1,8 +1,9 @@
 # Reports in the 1.11.0 language
 
-The drawing lives in `../pos-register/index.html`, under the strip’s **Screen → Reports** switch.
-Open `../pos-register/index.html?screen=reports` to go straight there; `index.html` redirects
-to it. No server or build is needed; the dark control strip is not part of the design.
+The drawing lives in `../pos-register/index.html`: tap **Reports** in the rail (the menu sheet on
+the phone), the way the app is used; there is no switch in the strip (Paul 2026-09-17). Open
+`../pos-register/index.html?screen=reports` to land on it directly; `index.html` redirects to it.
+No server or build is needed; the dark control strip is not part of the design.
 
 **Question it answers:** can the decided Sales glance and shipped Closures paperwork read as
 another room in the register's language, at phone, tablet and desktop widths?

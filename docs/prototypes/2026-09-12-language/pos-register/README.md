@@ -73,7 +73,9 @@ Overdue · Register panel · Closure written (beat) · Offline · Products loadi
 Products settings (slide-out) · Tender keypad · Tender on the terminal · Paid (beat) · German
 strings. Plus the two workshop switches (*Tender close*, *Legacy*).
 
-The strip’s **Screen** switch swaps the page to Reports; its states and README are in `../reports/`.
+Reports is a page of the app, reached from the rail (the menu sheet on the phone), not a strip
+switch (Paul 2026-09-17: link it into the sidebar so the app can be felt as a whole). Each page
+keeps its own State while you move between them. Its states and README are in `../reports/`.
 
 ## Inventory
 

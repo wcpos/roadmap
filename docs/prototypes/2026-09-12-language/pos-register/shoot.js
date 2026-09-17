@@ -26,7 +26,6 @@ const SCALES = QUICK ? ['regular'] : ['regular','compact'];
   await page.goto('file://' + path.join(DIR, 'index.html'));
 
   const set = (k, v) => page.click(`.strip button[data-set="${k}"][data-v="${v}"]`);
-  await set('screen', 'register');
   const scn = (v) => page.click(`.strip button[data-scn="${v}"]`);
   let n = 0;
   for (const w of WIDTHS) for (const theme of THEMES) for (const scale of SCALES) {
@@ -53,6 +52,19 @@ const SCALES = QUICK ? ['regular'] : ['regular','compact'];
   if (!/50\.?00/.test(big)) throw new Error('keypad did not type: ' + big);
   await page.keyboard.press('Enter');
   if (!(await page.locator('.paidwrap').count())) throw new Error('Enter did not take cash');
+  // the rail links the pages: Reports and back, and the phone's menu sheet does the same
+  await scn('open');
+  await page.click('.rail [data-nav="reports"]');
+  if (!(await page.locator('.frame[data-screen="reports"] .rail [data-nav="reports"][aria-current="page"]').count())) throw new Error('rail did not open Reports');
+  await page.click('.rail [data-nav="register"]');
+  if (!(await page.locator('.frame[data-screen="register"] .cartcol').count())) throw new Error('rail did not return to the register');
+  await set('w','phone');
+  await page.click('.bar [data-sheet="menu"]');
+  await page.click('.sheet .menu-list [data-nav="reports"]');
+  if (!(await page.locator('.frame[data-screen="reports"] .phone-tabs').count()) || await page.locator('.sheet').count()) throw new Error('phone menu did not open Reports');
+  await page.click('.bar [data-sheet="menu"]');
+  await page.click('.sheet .menu-list [data-nav="register"]');
+  if (!(await page.locator('.frame[data-screen="register"]').count())) throw new Error('phone menu did not return to the register');
   await browser.close();
   if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
   console.log(`ok · ${n} captures in ${OUT}`);

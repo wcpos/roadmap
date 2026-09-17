@@ -33,10 +33,11 @@ const checks = {
     const errors = [];
     page.on('pageerror', e => errors.push('pageerror: ' + e.message));
     page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
-    await page.goto(pathToFileURL(path.join(__dirname, '../pos-register/index.html')).href + '?screen=reports');
+    await page.goto(pathToFileURL(path.join(__dirname, '../pos-register/index.html')).href);
     fs.mkdirSync(OUT, { recursive: true });
     const set = (k, v) => page.click(`.strip [data-set="${k}"][data-v="${v}"]`);
-    await set('screen', 'reports');
+    await page.click('.rail [data-nav="reports"]');   // Reports is reached from the rail, as in the app
+    assert(await page.locator('.frame[data-screen="reports"]').count(), 'the rail did not open Reports');
     const scn = v => page.click(`.strip [data-scn="${v}"]`);
     let n = 0;
     for (const w of WIDTHS) for (const theme of THEMES) for (const scale of SCALES) {
