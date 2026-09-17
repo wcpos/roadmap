@@ -92,6 +92,13 @@ Amount and Percent are typed on the keypad with quick keys above; the commit rea
 Quick-amount helpers stay above the pinned keypad, and Cancel payment is in the pay head after
 a payment is taken.
 
+**Add another** in Amount and Percent builds several shares before the first payment; Item uses
+**Next payer** to assign another set of lines. Draft chips show the rest and have × to remove a
+share. **More…** in Even opens the 2–20-way stepper; **No split**, beside Done before anything
+is taken, returns to one payment. Percentages are of the balance being split, not of each shrinking
+remainder. The [split-flow audit](split-flows.md) records all twenty paths and the remaining
+cash-change limitation.
+
 State **Tender · split open** (`split`) opens the chooser; **Tender · 1 of 2 taken**
 (`split-1of2`) has the first half taken in Cash and the second ready on Card; **Tender · split
 by item** (`split-item`) opens Item mode with the first two lines ticked.

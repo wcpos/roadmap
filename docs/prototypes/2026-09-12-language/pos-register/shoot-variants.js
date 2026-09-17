@@ -5,6 +5,95 @@ const path = require('path');
 const fs = require('fs');
 const DIR = __dirname; const OUT = path.join(DIR, 'screens', 'variants');
 fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive: true });
+// Split-flow audit: exercise real controls; penny expectations use a £93.70 cart.
+async function auditSplitFlows(page, w, shot) {
+  const saved = await page.evaluate(() => {
+    const saved = LINES.map(l => [...l]);
+    LINES.splice(0, LINES.length, ['A',1,20,'','p'], ['B',1,30,'','p'], ['C',1,40,'','p'], ['D',1,3.70,'','p']);
+    jump('split');
+    const click = selector => { const el=document.querySelector(selector); if(!el || el.disabled) throw new Error('Unavailable: '+selector); el.click(); };
+    click('[data-act="splitMode"][data-v="percent"]');
+    for (const value of ['20','30']) {
+      for (const k of value) click(`[data-act="splitKey"][data-k="${k}"]`);
+      click('[data-act="splitAdd"]');
+    }
+    const chips=[...document.querySelectorAll('.splitdraft .chip')];
+    if(chips.length!==3 || !chips[0].textContent.includes('20 %') || !chips[1].textContent.includes('30 %') || !chips[2].textContent.includes('the rest')) throw new Error('20/30/rest chips');
+    const amounts=chips.map(c=>Math.round(Number(c.textContent.match(/£([\d.]+)/)[1])*100));
+    if(JSON.stringify(amounts)!=='[1874,2811,4685]' || amounts.reduce((a,b)=>a+b,0)!==9370) throw new Error('percent pennies');
+    return saved;
+  });
+  await shot(`split-three-percent-${w}`);
+  await page.evaluate(() => {
+    const check = (ok, msg) => { if(!ok) throw new Error(msg); };
+    const click = selector => { const el=document.querySelector(selector); check(el&&!el.disabled, 'Unavailable: '+selector); el.click(); };
+    const act = a => click(`[data-act="${a}"]`);
+    const mode = v => click(`[data-act="splitMode"][data-v="${v}"]`);
+    const type = (value, key='splitKey') => { for(const k of value) click(`[data-act="${key}"][data-k="${k}"]`); };
+    const plan = want => check(JSON.stringify(S.payPlan)===JSON.stringify(want), 'plan '+JSON.stringify(S.payPlan)+' expected '+JSON.stringify(want));
+    const sum = () => check(S.payPlan.reduce((n,a)=>n+Math.round(a*100),0)===9370,'plan sum');
+    const even = () => { jump('split'); click('[data-act="splitEven"][data-v="2"]'); };
+    act('splitDone'); plan([18.74,28.11,46.85]);
+    click('[data-act="method"][data-m="cash"]'); act('take');
+    click('[data-act="method"][data-m="card"]'); act('take');
+    check(remaining()===46.85,'third leg remaining'); act('take');
+    check(document.querySelector('.paidwrap'),'paid view');
+    if(S.w!=='phone') check(document.querySelector('.paylist').textContent.includes('Paid in full'),'paid ledger');
+    jump('split'); mode('amount'); type('2000'); act('splitAdd'); type('3000'); act('splitDone'); plan([20,30,43.7]);
+    even(); act('splitOpen'); mode('even'); act('splitMore');
+    while(S.split.n<8) click('[data-act="splitCount"][data-v="1"]');
+    act('splitDone'); plan([11.72,11.72,11.71,11.71,11.71,11.71,11.71,11.71]); sum();
+    act('splitOpen'); act('splitMore');
+    while(S.split.n<20) click('[data-act="splitCount"][data-v="1"]');
+    check(document.querySelector('[data-act="splitCount"][data-v="1"]').disabled,'20-way upper bound');
+    act('splitDone'); check(S.payPlan.length===20,'20 ways'); sum();
+    act('splitOpen'); act('splitMore');
+    while(S.split.n>2) click('[data-act="splitCount"][data-v="-1"]');
+    check(document.querySelector('[data-act="splitCount"][data-v="-1"]').disabled,'2-way lower bound');
+    jump('split'); mode('item');
+    for(const i of [0,1]) click(`[data-act="splitItem"][data-i="${i}"]`);
+    act('splitAdd');
+    for(const i of [0,1]) { const el=document.querySelector(`[data-act="splitItem"][data-i="${i}"]`); check(el.disabled && el.querySelector('.cb').textContent==='1','locked payer number'); }
+    click('[data-act="splitItem"][data-i="2"]'); act('splitDone'); plan([50,40,3.7]);
+    even(); act('splitOpen'); act('splitNone');
+    check(S.payPlan===null && S.split===null && document.querySelector('.pay .keys'),'No split');
+    for(const [value,want] of [['7028',[70.28,23.42]],['2343',[23.43,70.27]]]) {   // flows 13 and 14 on Card: above the leg pays more, below it leaves a shortfall; the pending legs re-flow
+      even(); click('[data-act="method"][data-m="card"]'); type(value,'key'); act('take'); plan(want); sum();
+      act('cancelPay'); check(S.pays.length===0 && S.leg===0,'cancel last payment'); sum();
+    }
+    // flow 12: cash tendered above a planned leg is change for that leg, and the plan holds
+    even(); click('[data-act="method"][data-m="cash"]'); type('5000','key'); act('take');
+    check(S.pays[0].amt===46.85 && S.pays[0].change===3.15,'cash change on a leg'); plan([46.85,46.85]); sum();
+    act('cancelPay'); check(S.pays.length===0,'cancel the cash leg'); sum();
+    even(); click('[data-act="method"][data-m="sumup"]'); act('take');
+    const cancel=[...document.querySelectorAll('.term button')].find(b=>b.textContent==='Cancel on terminal');
+    check(cancel,'terminal cancel'); cancel.click();
+    check(S.tender && S.view==='keypad' && S.pays.length===0 && S.pending===null && document.querySelector('.pay .keys'),'terminal returns to keypad'); plan([46.85,46.85]);
+    jump('tender'); type('2000','key'); act('take'); act('splitOpen');
+    check(document.querySelector('.pay .lbl').textContent.toUpperCase().includes('£73.70 LEFT'),'remaining label');
+    check(document.querySelector('[data-act="splitEven"][data-v="2"]').textContent.includes('£36.85'),'remaining tiles');
+    check(JSON.stringify(splitDrawingLegs().map(l=>l.amount))==='[20,73.7]','ring includes the unpaid balance');
+    check(document.querySelectorAll('.pay .legs .taken, .pay .legs .paid').length===1 && !document.querySelector('.taken [data-act="splitRemove"], .paid [data-act="splitRemove"]'),'taken chips immutable');
+    click('[data-act="splitEven"][data-v="2"]'); plan([20,36.85,36.85]);
+    act('splitOpen'); mode('percent'); type('33'); act('splitDone'); plan([20,24.32,49.38]); sum();
+    jump('split'); mode('percent'); type('33'); act('splitDone'); plan([30.92,62.78]); sum();
+    // Item removal unlocks the rows; assigned items cannot be paid twice within the draft.
+    jump('split'); mode('item'); click('[data-act="splitItem"][data-i="0"]'); act('splitAdd');
+    act('splitRemove'); check(!document.querySelector('[data-act="splitItem"][data-i="0"]').disabled,'item unlocked');
+    // Removing a draft returns its allocation; the empty buffer commits only the rest.
+    jump('split'); mode('percent'); type('20'); act('splitAdd'); type('30'); act('splitAdd');
+    click('[data-act="splitRemove"][data-i="0"]'); act('splitDone'); plan([28.11,65.59]);
+    jump('split'); mode('percent'); type('75'); act('splitAdd'); type('50');
+    check(document.querySelector('[data-act="splitDone"]').disabled && document.querySelector('[data-act="splitAdd"]').disabled,'overallocated percentage');
+    // Cash change on the final leg; all-card and unequal settlement use the same plan.
+    even(); click('[data-act="method"][data-m="card"]'); act('take');
+    click('[data-act="method"][data-m="cash"]'); type('5000','key'); act('take');
+    check(S.pays[1].change===3.15 && remaining()===0,'cash change'); sum();
+    even(); for(let i=0;i<2;i++){ click('[data-act="method"][data-m="card"]'); act('take'); }
+    check(S.pays.every(p=>p.m==='card') && document.querySelector('.paidwrap'),'two cards');
+  });
+  await page.evaluate(saved => { LINES.splice(0, LINES.length, ...saved); jump('split'); }, saved);
+}
 (async () => {
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 1500, height: 1400 } /* tall enough that the 844 px phone frame never scrolls under the sticky control strip */, reducedMotion: 'reduce' });
@@ -295,7 +384,7 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
     for (const k of ['9', '9', '9', '9', '9']) await key(k);
     if (!(await commit.isDisabled()) || !(await line()).includes('below')) throw new Error(`${w}: invalid amount accepted`);
     await mode('even');
-    if (await page.locator('.splitgrid .mt').count() !== 5) throw new Error(`${w}: Even tiles changed`);
+    if (await page.locator('.splitgrid [data-act="splitEven"]').count() !== 5) throw new Error(`${w}: Even tiles changed`);
     await mode('item');
     if (!(await page.locator('.splitbody [data-act="splitItem"]').count())) throw new Error(`${w}: Item list missing`);
     await mode('amount');
@@ -333,6 +422,29 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
     if (await page.evaluate(() => JSON.stringify(S.payPlan)) !== '[0.15,0.14]') throw new Error(`${w}: odd-penny plan`);
     await page.evaluate(saved => LINES.splice(0, LINES.length, ...saved), savedLines);
   }
+  // Every split flow, on both widths; existing capture blocks stay above and below.
+  for (const w of ['tablet', 'phone']) {
+    await set('w', w); await set('scale', 'regular');
+    await auditSplitFlows(page, w, shot);
+    for (const scale of ['compact', 'regular']) {
+      await set('scale', scale);
+      for (const mode of ['percent', 'amount', 'item', 'even']) {
+        await scn('split');
+        await page.click(`[data-act="splitMode"][data-v="${mode}"]`);
+        await page.evaluate(mode => {
+          if(mode==='even') document.querySelector('[data-act="splitMore"]').click();
+          else if(mode==='item') { document.querySelector('[data-act="splitItem"]').click(); document.querySelector('[data-act="splitAdd"]').click(); }
+          else for(const value of ['20','30']) {
+            for(const k of mode==='amount'?value+'0':value) document.querySelector(`[data-act="splitKey"][data-k="${k}"]`).click();
+            document.querySelector('[data-act="splitAdd"]').click();
+          }
+        }, mode);
+        const fits=await page.locator('.pay').evaluate(el => el.scrollHeight<=el.clientHeight+1 && el.scrollWidth<=el.clientWidth+1 && [...el.querySelectorAll('.scroll, .splitbody, .keys, .commit')].every(c=>c.scrollWidth<=c.clientWidth+1));
+        if(!fits) throw new Error(`multi-leg pane overflow: ${w}-${scale}-${mode}`);
+      }
+    }
+  }
+  await set('scale', 'regular');
   // The ring, decided (Paul 2026-09-17); the other four looks live on only for board-split.html, the record of the choice.
   const looks = ['chips', 'bar', 'ring', 'tear', 'seats'];
   if (await page.locator('.strip [data-set="splitLook"]').count()) throw new Error('the Split look switch is still in the strip');

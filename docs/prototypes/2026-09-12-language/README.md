@@ -386,6 +386,13 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     **Paul (2026-09-17, later), two small ones:** the ledger's lines are inert (no quantity box, no
     hover on the name or the price), and the cart's Total row above the checkout button is gone;
     the button carries the total.
+    **Paul (2026-09-17, later): 20 / 30 / 50 was not possible; audit every split flow.** Twenty
+    flows in `pos-register/split-flows.md`. Added: Add another (Amount, Percent: shares accumulate
+    as removable chips, the last is the rest), Next payer (Item: items lock to a payer number),
+    More… (Even: a stepper to 20), No split (undo a plan while nothing is taken); the chooser
+    names the remaining after a part payment; cash above a planned leg is change for that leg,
+    card above it pays more. Odd pennies, rounding, cancel on terminal and cancel mid-plan are
+    asserted.
 51. **The ledger's Payments block, six drawings (Paul, 2026-09-17).** Paul: do something with the
     payments listed under the line items; more information, more visual; research it, at least
     five. From Mobbin: Klarna's paid · left bar over a ticked plan, Stripe's and Wise's event
