@@ -150,6 +150,8 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     foot of the rail for the plan (never dismissed, never in the way, the modal only at a Pro
     feature), and a floating notice under the toolbar for the update that stays until acted on
     (web: reload; desktop: restart; iOS/Android: the store). Not decided.
+    **Paul (2026-09-17, later): the strip is at the top. Decided; the bottom option and its captures
+    are gone, and every page of the register draws the one strip.**
     **Paul (2026-09-17): the update notice goes in the bell, and the bell opens a side panel; the
     free banner is meant to be slightly annoying and stays a strip, top or bottom.** Register:
     the bell above the cart carries a dot while an update waits and opens a slide-out from the
@@ -170,6 +172,7 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     totals (today's place, a hairline quieter), the last row of the cart, or a chip beside the
     customer; a tap on any opens the details slide-out where it is edited. Recommendation: the
     row. Not decided.
+    **Paul (2026-09-17, later): the row is fine for the moment. Parked, not closed; the switch stays.**
 
 45. **Dark Stage out; icons follow the theme (Paul, 2026-09-17).** Dark Stage is gone from the
     register, too close to the default dark. The icon set is a rule of the theme now, not a

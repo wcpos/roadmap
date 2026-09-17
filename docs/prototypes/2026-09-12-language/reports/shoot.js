@@ -89,7 +89,7 @@ const checks = {
         await page.locator('#frame').screenshot({ path: path.join(OUT, `${w}-${theme}-${scale}-${s}.jpg`), type: 'jpeg', quality: 82, animations: 'disabled' });
         n++;
       }
-      for (const plan of ['top','bottom','pro']) {
+      for (const plan of ['top','pro']) {   // Paul 2026-09-17: the strip is at the top, decided; the bottom option is gone from the register
         await scn('today'); await set('plan', plan);
         assert.equal(await page.locator('.upstrip').count(), plan === 'pro' ? 0 : 1);
         if (plan !== 'pro') assert(await page.locator(`#frame > .upstrip.${plan}`).count(), 'strip must be outside body');

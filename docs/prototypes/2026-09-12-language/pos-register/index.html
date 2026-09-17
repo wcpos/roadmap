@@ -194,7 +194,7 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .frame[data-w="desktop"] .cartcol{width:480px}
 .frame[data-w="phone"] .cartcol{width:100%;min-width:0;border-left:0;flex:1;min-height:0}
 /* Paul 2026-09-17: the free version keeps a strip, slightly annoying on purpose; top or bottom is the open question */
-.upstrip{display:flex;align-items:center;gap:calc(var(--u)*2.5);padding:0 calc(var(--u)*2) 0 calc(var(--u)*4);min-height:40px;background:var(--warn-bg);color:var(--fg);border-bottom:var(--hair) solid color-mix(in oklch,var(--warn) 45%,transparent);flex:none;font-size:calc(var(--fs)*.93)} .upstrip.bottom{border-bottom:0;border-top:var(--hair) solid color-mix(in oklch,var(--warn) 45%,transparent)}
+.upstrip{display:flex;align-items:center;gap:calc(var(--u)*2.5);padding:0 calc(var(--u)*2) 0 calc(var(--u)*4);min-height:40px;background:var(--warn-bg);color:var(--fg);border-bottom:var(--hair) solid color-mix(in oklch,var(--warn) 45%,transparent);flex:none;font-size:calc(var(--fs)*.93)} 
 .upstrip>svg{width:16px;height:16px;flex:none;color:var(--warn)} .upstrip .msg{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .upstrip .msg b{font-weight:600} .upstrip .act{height:28px;padding:0 calc(var(--u)*2.5);border-radius:var(--r);background:var(--primary);color:var(--primary-fg);font-weight:600;font-size:calc(var(--fs)*.9);white-space:nowrap} .upstrip .more{color:var(--muted-fg);white-space:nowrap;text-decoration:underline;text-underline-offset:2px}
 .frame[data-w="phone"] .upstrip .more{display:none}
 .upstrip .x{width:32px;height:32px;border-radius:var(--r);display:grid;place-items:center;color:var(--muted-fg);flex:none;margin-left:calc(var(--u)*-1)} .upstrip .x svg{width:16px;height:16px} .upstrip .x:active{background:color-mix(in oklch,var(--warn) 20%,transparent)}
@@ -777,7 +777,7 @@ function renderStrip(){
   const seg=(k,opts,state=S)=>`<span class="seg">${opts.map(([v,l])=>`<button class="${state[k]===v?'on':''}" data-set="${k}" data-v="${v}">${l}</button>`).join('')}</span>`;
   document.getElementById('strip').innerHTML=`
     <div class="g"><b>Width</b>${seg('w',[['phone','Phone 390'],['tablet','Tablet 1024'],['desktop','Desktop 1440']])}</div>
-    <div class="g"><b>Plan</b>${seg('plan',[['top','Free · strip at the top'],['bottom','Free · strip at the bottom'],['pro','Pro · no strip']])}</div>
+    <div class="g"><b>Plan</b>${seg('plan',[['top','Free · strip at the top'],['pro','Pro · no strip']])}</div>   <!-- Paul 2026-09-17: the strip is at the top, decided; the bottom option went -->
     <div class="g"><b>Update</b>${seg('upd',[['ready','ready · in the bell'],['none','none']])}</div>
     ${S.screen==='register'?`<div class="g"><b>Order note</b>${seg('note',[['row','row above the totals'],['line','last row of the cart'],['chip','chip by the customer'],['none','none']])}</div>`:''}
     ${S.screen==='register'?`<div class="g"><b>Variations</b>${seg('vars',[['slide','Slide, breadcrumb'],['inline','Inline rows']])}</div>`:''}
@@ -1191,7 +1191,7 @@ function render(){
   if(S.screen==='orders'){OP.render();return;}
   const oldPane=S.slide&&f.querySelector('.pane:not(.exit-l):not(.exit-r)'); const oldHtml=oldPane?oldPane.outerHTML:null;
 
-  f.innerHTML=`${S.plan==='top'&&!S.nostrip?renderUpgradeStrip('top'):''}<div class="body">${S.w==='phone'?'':renderRail()}<div class="main">${renderPOS()}${renderSide()}${renderPanel()}${renderSheet()}</div></div>${S.plan==='bottom'&&!S.nostrip?renderUpgradeStrip('bottom'):''}`;
+  f.innerHTML=`${S.plan==='top'&&!S.nostrip?renderUpgradeStrip('top'):''}<div class="body">${S.w==='phone'?'':renderRail()}<div class="main">${renderPOS()}${renderSide()}${renderPanel()}${renderSheet()}</div></div>`;
   renderNotes();
   { const bar=f.querySelector('.fbar'); const show=(pl)=>{ if(!pl||!bar) return; const over=pl.offsetLeft+pl.offsetWidth-(bar.scrollLeft+bar.clientWidth)+24; if(over>0) bar.scrollLeft+=over; else if(pl.offsetLeft<bar.scrollLeft+16) bar.scrollLeft=Math.max(0,pl.offsetLeft-16); };
     const mn=f.querySelector('.fwrap .menu'); const pl=mn&&f.querySelector(`.pill[data-menu="${S.menu}"]`); if(pl) show(pl); else if(S.quick) show(f.querySelector('.pill.q.on'));
@@ -2027,7 +2027,7 @@ function renderOrders(){
   const t=T(); const phone=S.w==='phone';
   const list = S.w==='desktop' ? renderTable() : renderRows();
   const page=`<div class="page">${renderBar()}${renderFilters()}<div class="listwrap">${phone&&OS.open?'':list}${renderPane()}</div></div>`;
-  f.innerHTML=`${S.plan==='top'&&!S.nostrip?renderUpgradeStrip('top'):''}<div class="body">${phone?'':renderRail()}<div class="main">${page}${renderPop()}${renderSheet()}${OS.toast?`<div class="op-toast"><span class="ck">${I.check}</span>${OS.toast}</div>`:''}</div></div>${S.plan==='bottom'&&!S.nostrip?renderUpgradeStrip('bottom'):''}`;
+  f.innerHTML=`${S.plan==='top'&&!S.nostrip?renderUpgradeStrip('top'):''}<div class="body">${phone?'':renderRail()}<div class="main">${page}${renderPop()}${renderSheet()}${OS.toast?`<div class="op-toast"><span class="ck">${I.check}</span>${OS.toast}</div>`:''}</div></div>`;
   /* 2026-09-17: the row menu stays under the ellipsis that opened it. */
   const anchor=f.querySelector('[data-act="menu"].on'), pop=OS.menu&&f.querySelector('.pop');
   if (anchor && pop && !phone){ const m=f.querySelector('.main').getBoundingClientRect(), a=anchor.getBoundingClientRect(); pop.style.top=(a.bottom-m.top+4)+'px'; pop.style.right=(m.right-a.right)+'px'; }
