@@ -114,8 +114,23 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
     if (!(await page.locator('.line[data-i="1"]').evaluate(el => el.classList.contains('reveal')))) throw new Error('desktop click on the total did not open the strip');
     await shot('cart-desktop-click-open'); }
   await set('w', 'phone'); await scn('open'); await page.click('.line[data-i="1"] .q'); await page.waitForTimeout(300); await shot('cart-phone-sheet'); await page.click('[data-act="qclose"]'); await set('w', 'tablet'); await scn('open');
-  // phone: the dots
-  await set('w', 'phone'); await scn('open'); await shot('phone-dots'); await page.click('[data-act="vmenu"]'); await shot('phone-dots-open'); await set('w', 'tablet');
+  // the order sheet (Paul 2026-09-17): the row is gone, ⋯ | Checkout on every width, the ⋯ opens the sheet; side panel or cart takeover
+  await set('w', 'tablet'); await scn('open'); await set('osheet', 'side');
+  if (await page.locator('.cart-f2').count()) throw new Error('the details | save | print row is still drawn');
+  if (!(await page.locator('.cart-f .btn.dots').count())) throw new Error('no ⋯ in the cart foot');
+  if (await page.locator('.cart-f [data-act="void"]').count()) throw new Error('a Void button is still in the cart foot');
+  await shot('osheet-foot-tablet');
+  for (const w of ['tablet', 'desktop', 'phone']) { await set('w', w); await scn('open'); await page.click('.cart-f .btn.dots'); await page.waitForTimeout(300);
+    if (!(await page.locator('.sidepanel .osfoot [data-act="void"]').count())) throw new Error('side sheet has no Void: ' + w);
+    await shot('osheet-side-' + w); await page.click('.sidepanel .osfoot [data-act="togglePop"][data-pop="details"]'); await page.waitForTimeout(100); }
+  await set('osheet', 'cart');
+  for (const w of ['tablet', 'phone']) { await set('w', w); await scn('open'); await page.click('.cart-f .btn.dots'); await page.waitForTimeout(300);
+    if (!(await page.locator('.cartcol .osheet .osfoot [data-act="void"]').count())) throw new Error('cart takeover has no Void: ' + w);
+    if (await page.locator('.sidepanel').count()) throw new Error('side panel drawn in cart mode: ' + w);
+    await shot('osheet-cart-' + w); await page.click('.osheet .hh [data-act="togglePop"]'); await page.waitForTimeout(100); }
+  await set('w', 'tablet'); await scn('open'); await page.click('.cart-f .btn.dots'); await page.waitForTimeout(200); await page.click('.osheet .osfoot [data-act="void"]'); await page.waitForTimeout(200);
+  if (await page.locator('.osheet').count()) throw new Error('sheet still open after void'); if (!(await page.locator('.toast').count())) throw new Error('no voided toast'); await shot('osheet-voided');
+  await page.click('[data-act="undoVoid"]'); await set('osheet', 'side'); await set('w', 'tablet');
   await browser.close();
   if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
   console.log('ok · variants in ' + OUT);

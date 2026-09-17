@@ -183,6 +183,22 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     ones); Hugeicons on Market stall and Warm shop (rounded, friendly); Phosphor on Paper till,
     Bold money, Ocean and Sunset (soft geometry that sits with the quirky and the colourful).
     The two missing cart glyphs fall back to the base drawing.
+
+46. **No row, no Void button: the ⋯ opens the order sheet (Paul, 2026-09-17).** Paul: the Order
+    details | Save order | Print bill row should be removed; change the Void button to a
+    three-dot icon like the phone app; pressed, it opens a modal, a side slide or one that takes
+    over the cart like the open orders list, with the order details and Void | Save | Print at
+    the bottom. Register: the row is gone on tablet and desktop; the cart foot is ⋯ | Checkout on
+    every width (the phone's ⋯ no longer drops a menu); the ⋯ opens the order sheet: status,
+    cashier, customer note, currency, transaction ID, metadata, JSON, and at the foot Void (red
+    outline, left) · Print bill · Save order (primary, right). Void from the sheet closes it and
+    shows the voided toast with Undo. The order note (row, line or chip) opens the same sheet.
+    Two homes on the `Order sheet` switch: *slides in from the right* (the slide-out edit line,
+    cart settings and the bell already use; a bottom sheet on the phone) or *takes over the cart*
+    (the open orders list's frame, header and ×). Recommendation: the slide, because it is the one
+    surface language the register already has and the cart stays visible behind it while the
+    cashier decides to void; the takeover hides the very order being voided. Supersedes the Void
+    ruling in 23 (outlined red matched) and the row from 41. Not decided: slide or takeover.
     (c) **chips** — pills, the current one filled; reads as a filter row rather than tabs;
     (d) **cards** — small cards with amount, customer and status, current with a primary top
     edge; the most information, the tallest;

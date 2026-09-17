@@ -296,6 +296,10 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .ordlist .hh{height:max(var(--ctl),var(--floor));border-bottom:var(--hair) solid var(--border);padding:0 calc(var(--u)*2) 0 calc(var(--u)*4);flex:none;font-size:calc(var(--fs)*1.1)}
 .ordlist .orow{min-height:max(calc(var(--row) + 12px),56px)}
 .ordlist .hh{padding:calc(var(--u)*3) calc(var(--u)*4) calc(var(--u)*1);font-weight:600;display:flex;align-items:center;gap:calc(var(--u)*2)}
+/* the order sheet as a cart takeover (Paul 2026-09-17): the open-orders list's frame, the details form inside, Void | Save | Print at the foot */
+.osheet .bd.form{flex:1;overflow:auto;padding:calc(var(--u)*4);display:flex;flex-direction:column;gap:calc(var(--u)*3)} .osheet .ft{margin-top:auto;display:flex;gap:calc(var(--u)*2);padding:calc(var(--u)*3) calc(var(--u)*4) calc(var(--u)*4);border-top:var(--hair) solid var(--border)} .osheet .hh{border-bottom:var(--hair) solid var(--border);padding-bottom:calc(var(--u)*2)}
+.osfoot .btn svg{width:16px;height:16px;margin-right:calc(var(--u)*1.5)} .osfoot .btn.d{color:var(--destructive);border-color:color-mix(in oklch,var(--destructive) 45%,transparent)}
+.btn.dots.on{background:var(--muted);color:var(--fg)}
 .orow{display:grid;grid-template-columns:1fr auto;align-items:center;gap:calc(var(--u)*3);min-height:max(calc(var(--row) + 8px),52px);padding:calc(var(--u)*1.5) calc(var(--u)*4);border-top:var(--hair) solid var(--border);width:100%;text-align:left}
 .orow:active,.orow:hover{background:var(--muted)} .orow.on{background:color-mix(in oklch,var(--primary) 8%,transparent)}
 .orow .l1{display:flex;align-items:center;gap:calc(var(--u)*2)} .orow .l2{color:var(--muted-fg);font-size:calc(var(--fs)*.86);display:flex;align-items:center;gap:calc(var(--u)*1.5)}
@@ -510,7 +514,7 @@ const S={ w:'tablet', theme:'light', scale:'regular', scn:'open',
   phoneTab:'cart', panel:false, sheet:null, tender:false, view:'keypad', entry:null, method:'cash', settle:null, online:true, long:false,
   pop:null, tabsPos:'bottom', registers:1, counted:'', open:'200.00', reveal:null, edit:null, orders:2, ordlist:false, view2:'grid',
   closePos:'tr', legacy:'header-text',   /* Paul 2026-09-16: decided, switches removed. Void = outlined red, matched (voidStyle 'red'). */ termStep:1, sortCart:'newest-last', tabStyle:'line1',   /* Paul 2026-09-14: amount + dot, with a format setting */
-  voidStyle:'red', vmenu:false, toast:null,
+  voidStyle:'red', vmenu:false, toast:null, osheet:'side',   /* Paul 2026-09-17: the row goes, Void becomes ⋯, the ⋯ opens the order sheet; side panel or cart takeover */
   /* personality touches (research: personality/ideas on the hub). Each is one small behaviour, not a skin. */
   tx:{roll:1,stamp:1,pence:1,badge:1,tear:1,doodle:1}, qx:null, qbuf:'', undoLine:null, plan:'top', upd:'ready', note:'row', vars:'slide', pview:'products', cats:[], tags:[], menu:false, slide:null, stock:null, feat:false, quick:false };   /* Paul 2026-09-17: today's POS lets you pick many categories and a tag on top; a category is a chip, not a crumb */   /* 2026-09-17: filters are chips in the bar, the breadcrumb is the place; the footer says the count */   /* Paul 2026-09-17: variations slide the table left behind a breadcrumb (board 4); inline rows stay as the other style, a POS panel setting */   /* Paul 2026-09-17: the quantity expands in place; edit and delete by swiping the total */   /* Paul 2026-09-17: surface decided, today's; the header stays caps over a hairline */   /* Paul 2026-09-16: Tabler at 1.5 px, for a while; Hugeicons the standing alternative */
 /* Paul 2026-09-16: the voice is out (translations); pence and the tear-off belong to the whimsical themes only; the badge is kept for a property chosen in POS Products settings, stock for now. */
@@ -578,6 +582,7 @@ function renderStrip(){
     <div class="g"><b>Width</b>${seg('w',[['phone','Phone 390'],['tablet','Tablet 1024'],['desktop','Desktop 1440']])}</div>
     <div class="g"><b>Plan</b>${seg('plan',[['top','Free · strip at the top'],['bottom','Free · strip at the bottom'],['pro','Pro · no strip']])}</div>
     <div class="g"><b>Update</b>${seg('upd',[['ready','ready · in the bell'],['none','none']])}</div>
+    <div class="g"><b>Order sheet</b>${seg('osheet',[['side','slides in from the right'],['cart','takes over the cart']])}</div>
     <div class="g"><b>Order note</b>${seg('note',[['row','row above the totals'],['line','last row of the cart'],['chip','chip by the customer'],['none','none']])}</div>
     <div class="g"><b>Variations</b>${seg('vars',[['slide','Slide, breadcrumb'],['inline','Inline rows']])}</div>
     <div class="g"><b>Theme</b>${seg('theme',[['light','Default light'],['dark','Default dark'],['paper','Paper till'],['bold','Bold money'],['warm','Warm shop'],['market','Market stall'],['ocean','Ocean'],['sunset','Sunset'],['monochrome','Monochrome']])}</div>
@@ -693,18 +698,10 @@ function renderSide(){
         <div class="opt"><span>Quick discounts</span><span class="grow"></span><span class="mut">5 · 10 · 15 · 20 %</span></div>
         <div class="opt" style="margin-top:calc(var(--u)*3)"><button class="btn q press xs" style="height:36px;padding:0 8px;color:var(--muted-fg)">Restore defaults</button></div>
       </div></div></div>`;
-  if (S.pop==='details') return `<div class="sidewrap" data-act="togglePop" data-pop="details"><div class="sidepanel" data-stop="1">
+  if (S.pop==='details' && S.osheet==='side') return `<div class="sidewrap right" data-act="togglePop" data-pop="details"><div class="sidepanel" data-stop="1">
       <div class="h"><span class="grow">${t.details}<span class="mut" style="font-weight:400;margin-left:8px">#102476 · ${lines().length} ${t.items} · ${t.guest}</span></span><button class="ibtn press" data-act="togglePop" data-pop="details" aria-label="Close">${I.x}</button></div>
-      <div class="bd form">
-        <div class="fld"><label>Status</label><button class="btn press" style="width:100%;justify-content:space-between">POS open${I.chevd}</button></div>
-        <div class="fld"><label>Cashier</label><button class="btn press" style="width:100%;justify-content:space-between">Demo Cashier${I.chevd}</button></div>
-        <div class="fld"><label>Customer note</label><input class="in" placeholder="Nothing yet"></div>
-        <div class="row" style="gap:calc(var(--u)*3)"><div class="fld grow"><label>Currency</label><input class="in" value="GBP"></div><div class="fld grow"><label>Transaction ID</label><input class="in" value=""></div></div>
-        <div class="fold"><button class="press">${I.chev}<span>Metadata</span><span class="mut">2 keys</span></button></div>
-        <div class="fold"><button class="press">${I.chev}<span>JSON</span></button></div>
-        ${S.voidStyle==='details'?`<div class="fold"><button class="press" style="color:var(--destructive)" data-act="void">${I.trash}<span>${t.void} this order</span></button></div>`:''}
-      </div>
-      <div class="ft"><span class="grow"></span><button class="btn press" data-act="togglePop" data-pop="details">Cancel</button><button class="btn p press" data-act="togglePop" data-pop="details">Save</button></div></div></div>`;
+      ${orderBody()}
+      ${orderFoot()}</div></div>`;
   if (S.sheet==='notif') { const item=(ic,cls,t,sub,when,unread)=>`<button class="nitem press"><span class="ic ${cls}">${ic}</span><span class="tx"><div class="t">${t}</div><div class="s">${sub}</div></span><span class="when">${when}</span>${unread?'<span class="udot"></span>':''}</button>`;
     const how=S.w==='desktop'?'Restart the app to finish; your open orders are kept.':'Opens the App Store; your open orders are kept.';
     return `<div class="sidewrap right" data-act="closeSheet"><div class="sidepanel" data-stop="1">
@@ -797,23 +794,14 @@ function renderCart(){
   const totals=items.length?`<div class="totals"><div class="r2 mut"><span>${t.subtotal}</span><span class="money">${fmt(goods-tax)}</span></div>${fees?`<div class="r2 mut"><span>${t.fees}</span><span class="money">${fmt(fees)}</span></div>`:''}<div class="r2 mut"><span>${t.tax}</span><span class="money">${fmt(tax)}</span></div><div class="r2 big"><span>${t.total}</span><span class="money">${fmt(s)}</span></div></div>`:'';
   /* Void style (strip): where the one destructive action lives — the void board, live */
   const dis=items.length?'':'disabled'; const vs=S.voidStyle;
-  const detailsBtn=`<button class="btn press" data-act="togglePop" data-pop="details">${t.details}</button>`;
-  const f2=items.length && !['menu','chip'].includes(vs) && S.w!=='phone' ? `<div class="cart-f2">${detailsBtn}<button class="btn press">${t.save}</button><button class="btn press" data-act="noop" title="Print the open sale as a bill (not a receipt)">${t.bill}</button></div>` : '';
+  /* Paul 2026-09-17: the Order details | Save order | Print bill row is gone; those three live at the foot of the order sheet */
+  const f2='';
   const checkout=`<button class="btn xl p press" ${dis} data-act="checkout">${t.checkout} <span class="money">${fmt(s)}</span></button>`;
   const timed=S.scn==='overdue'&&!items.length;
   let foot;
   if (timed) foot=`<div class="cart-f"><button class="btn xl p press" data-act="startCount">${t.closeReg}</button></div>`;
-  else if (S.w==='phone'||vs==='menu') foot=`<div class="cart-f" style="position:relative"><button class="btn dots press ${S.vmenu?'on':''}" data-act="vmenu" aria-label="More" ${dis}>${I.dots}</button>${checkout}${S.vmenu?`<div class="vmenu" data-stop="1"><button class="press" data-act="togglePop" data-pop="details">${t.details}</button><button class="press" data-act="vmenu">${t.save}</button><button class="press" data-act="vmenu">Print pro-forma</button><div class="sep"></div><button class="press d" data-act="void">${I.trash}${t.void} order</button></div>`:''}</div>`;
-  else if (vs==='hold') foot=`<div class="cart-f"><button class="btn press hold" data-hold="1" ${dis} aria-label="Hold to void"><span class="fill"></span><span style="position:relative">Hold to void</span></button>${checkout}</div>`;
-  else if (vs==='text') foot=`<div class="cart-f" style="flex-direction:column;gap:0">${checkout}<button class="btn q press" style="color:var(--destructive);height:40px" data-act="void" ${dis}>${t.void} order</button></div>`;
-  else if (vs==='outline') foot=`<div class="cart-f"><button class="btn d press" ${dis} data-act="void">${t.void}</button>${checkout}</div>`;
-  /* round five: the pair, Void | Checkout, tried again for tablet and desktop. Phone is handled above (⋮). */
-  else if (vs==='red') foot=`<div class="cart-f"><button class="btn xl vd red press" ${dis} data-act="void">${t.void}</button>${checkout}</div>`;
-  else if (vs==='tonal') foot=`<div class="cart-f"><button class="btn xl vd tonal press" ${dis} data-act="void">${t.void}</button>${checkout}</div>`;
-  else if (vs==='joined') foot=`<div class="cart-f"><div class="pair"><button class="btn xl vd press" ${dis} data-act="void">${t.void}</button>${checkout}</div></div>`;
-  else if (vs==='pills') foot=`<div class="cart-f pills"><button class="btn xl vd press" ${dis} data-act="void">${t.void}</button>${checkout}</div>`;
-  else if (vs==='fill') foot=`<div class="cart-f"><button class="btn xl vd fill press" ${dis} data-act="void">${t.void}</button>${checkout}</div>`;
-  else foot=`<div class="cart-f">${checkout}</div>`;   /* chip · tab · none · discard · trash · details put Void elsewhere */
+  /* Paul 2026-09-17: Void becomes the ⋯ on every width (the phone already had it); it opens the order sheet, whose foot carries Void | Save | Print */
+  else foot=`<div class="cart-f"><button class="btn dots press ${S.pop==='details'?'on':''}" data-act="togglePop" data-pop="details" aria-label="Order" title="Order details, save, print, void" ${dis}>${I.dots}</button>${checkout}</div>`;
   const pop=false?`<div class="pop" style="right:calc(var(--u)*3);top:calc(max(var(--ctl),var(--floor)) * 2 + var(--u)*4)" data-stop="1">
       <div class="hh">Cart</div>
       <div class="opt h2">Sort items</div>
@@ -852,10 +840,22 @@ function renderCount(){
     <div class="fold"><button class="press">${I.chev}<span>Card counted</span><span class="mut">optional · ${fmt(642.10)} reported</span></button></div>
     <button class="btn xl p press" ${has?'':'disabled'} data-act="openSheet" data-sheet="closure">${has&&Math.abs(v)>5?'Approve & close':t.closePrint}</button></div>`;
 }
+/* the order sheet (Paul 2026-09-17): the order's details, and at the foot what you do to the order: Void | Save | Print */
+function orderBody(){ const t=T(); return `      <div class="bd form">
+        <div class="fld"><label>Status</label><button class="btn press" style="width:100%;justify-content:space-between">POS open${I.chevd}</button></div>
+        <div class="fld"><label>Cashier</label><button class="btn press" style="width:100%;justify-content:space-between">Demo Cashier${I.chevd}</button></div>
+        <div class="fld"><label>Customer note</label><input class="in" placeholder="Nothing yet"></div>
+        <div class="row" style="gap:calc(var(--u)*3)"><div class="fld grow"><label>Currency</label><input class="in" value="GBP"></div><div class="fld grow"><label>Transaction ID</label><input class="in" value=""></div></div>
+        <div class="fold"><button class="press">${I.chev}<span>Metadata</span><span class="mut">2 keys</span></button></div>
+        <div class="fold"><button class="press">${I.chev}<span>JSON</span></button></div>
+      </div>
+`; }
+function orderFoot(){ const t=T(); return `<div class="ft osfoot"><button class="btn d press" data-act="void">${t.void}</button><span class="grow"></span><button class="btn press" data-act="togglePop" data-pop="details" title="Print the open sale as a bill (not a receipt)">${I.print}${t.bill}</button><button class="btn p press" data-act="togglePop" data-pop="details">${t.save}</button></div>`; }
+function orderSheet(){ const t=T(); return `<div class="ordlist osheet" data-stop="1"><div class="hh">${t.details}<span class="mut" style="font-weight:400">· #102476 · ${lines().length} ${t.items}</span><span class="grow"></span><button class="ibtn press" data-act="togglePop" data-pop="details" aria-label="Close" style="width:36px;height:36px">${I.x}</button></div>${orderBody()}${orderFoot()}</div>`; }
 function renderCartColumn(){
   let body; if (S.scn==='pick') body=renderPick(); else if (S.scn==='closed') body=renderOpenCard(); else if (S.scn==='counting') body=renderCount(); else body=renderCart();
   const toast=S.toast==='voided'?`<div class="toast" role="status"><span>Order voided</span><button class="undo press" data-act="undoVoid">Undo</button></div>`:'';
-  return `<div class="cartcol">${renderBar()}${toast}${body}</div>`;
+  return `<div class="cartcol">${renderBar()}${toast}${body}${S.pop==='details'&&S.osheet==='cart'&&S.scn!=='pick'&&S.scn!=='closed'&&S.scn!=='counting'?orderSheet():''}</div>`;
 }
 let toastTimer=null;
 /* hold to void: 600 ms of pressure is the confirmation */
