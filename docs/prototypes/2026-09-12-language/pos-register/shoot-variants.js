@@ -42,6 +42,11 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   // surfaces: the sheet and all white, tiles and table, tablet and desktop
   for (const k of ['float','allwhite']) { await set('surface', k); await scn('open'); await shot(`surface-${k}-tiles`); await page.click('[data-act="toggleView"]'); await shot(`surface-${k}-table`); await set('w','desktop'); await shot(`surface-${k}-desktop-table`); await page.click('[data-act="toggleView"]'); await set('w','tablet'); }
   await set('surface', 'today');
+  // the table: filter bar, the row as the button, the count, the footer
+  await scn('open'); await page.click('[data-act="toggleView"]'); await shot('table-bar-footer');
+  await page.click('.tr.rowbtn[data-n="Cold brew"]'); await page.waitForTimeout(200); await page.click('.tr.rowbtn[data-n="Cold brew"]'); await page.waitForTimeout(200); await shot('table-row-tapped-twice');
+  { const c = await page.locator('.tr.rowbtn[data-n="Cold brew"] .cnt').innerText(); if (c.trim() !== '2') throw new Error('row tap did not count to 2: ' + c); const l = await page.locator('.line[data-i="0"] .q').innerText(); if (l.trim() !== '2') throw new Error('cart line did not take 2: ' + l); }
+  await page.click('[data-act="toggleView"]');
   // the cart line: the quantity expands, the swipe on the total, the desktop nudge, the phone sheet
   await scn('open'); await page.click('.line[data-i="1"] .q'); await page.waitForTimeout(250); await shot('cart-qty-open');
   await page.click('.qx [data-k="1"]'); await page.click('.qx [data-k="2"]'); await page.waitForTimeout(80); await shot('cart-qty-typed-12');

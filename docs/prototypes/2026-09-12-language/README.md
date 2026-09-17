@@ -413,6 +413,8 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     The filter pills now carry the app's icons (box, tag, star, folder), as in the screenshot.
     **Decided (Paul, 2026-09-17): icons and values; no icon before the count; "Shop base address"
     condensed to "Shop base" (the full name in the tooltip and in the select).** Board 4's default.
+    In the register too (2026-09-17, Paul: "the footer is still the old footer"), with the filter
+    bar, the row as the button, the count in the last column, and adds that change the sale.
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·

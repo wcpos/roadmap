@@ -125,6 +125,14 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .frame[data-surface="float"] .ptable{padding:0 calc(var(--u)*2)} .frame[data-surface="float"] .tiles{padding:calc(var(--u)*3)} .frame[data-surface="float"] .tr:hover{background:var(--bg)}
 .frame[data-surface="float"][data-w="phone"] .ptable,.frame[data-surface="float"][data-w="phone"] .tiles{margin-right:calc(var(--u)*4)}
 .frame[data-surface="allwhite"]{background:var(--card)} .frame[data-surface="allwhite"] .rail{background:var(--card)} .frame[data-surface="allwhite"] .divider{background:var(--card)} .frame[data-surface="allwhite"] .tr:hover{background:var(--bg)} .frame[data-surface="allwhite"] .tile{background:var(--bg)}
+/* the filter bar (the app's pills, with their icons; users add their own) */
+.fbar{display:flex;align-items:center;gap:calc(var(--u)*1.5);padding:0 0 calc(var(--u)*2.5) calc(var(--u)*4);flex:none;overflow:hidden;mask-image:linear-gradient(90deg,#000 calc(100% - 40px),transparent)}
+.pill{display:inline-flex;align-items:center;gap:calc(var(--u)*1.25);height:max(calc(var(--ctl) - 12px),32px);padding:0 calc(var(--u)*2.5) 0 calc(var(--u)*3);border-radius:999px;border:var(--hair) solid var(--border);background:var(--card);color:var(--fg);white-space:nowrap;font-size:calc(var(--fs)*.93)} .pill svg{width:14px;height:14px;color:var(--muted-fg)} .pill.q{border-style:dashed} .pill.add{padding:0 calc(var(--u)*2.5);color:var(--muted-fg)} .pill:active{background:var(--muted)}
+/* the row is the button (Paul 2026-09-17, every tablet POS): a tap anywhere adds; the last column's + becomes the in-cart count */
+.tr.rowbtn{cursor:pointer} .tr.rowbtn:active{background:color-mix(in oklch,var(--primary) 10%,transparent)}
+.cnt{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:32px;padding:0 calc(var(--u)*2);border-radius:999px;background:var(--primary);color:var(--primary-fg);font-size:calc(var(--fs)*.93);font-weight:700}
+/* the footer: icons and values (decided 2026-09-17): % Shop base ▾ · n of m · sync */
+.tfoot{display:flex;align-items:center;gap:calc(var(--u)*3);height:max(var(--ctl),var(--floor));border-top:var(--hair) solid var(--border);color:var(--muted-fg);padding:0 var(--u) 0 calc(var(--u)*3);flex:none;font-size:calc(var(--fs)*.9)} .tfoot .tax{display:inline-flex;align-items:center;gap:calc(var(--u)*1);white-space:nowrap;cursor:pointer} .tfoot .tax b{color:var(--fg);font-weight:500} .tfoot .tax svg{width:14px;height:14px} .tfoot .fi{width:22px;height:22px;border-radius:5px;background:var(--muted);display:inline-flex;align-items:center;justify-content:center;margin-right:2px} .tfoot .fi svg{width:13px;height:13px}
 /* product table view — the same table components as the orders screen (thead / tr / td), no frame */
 .ptable{flex:1;min-height:0;display:flex;flex-direction:column;margin-left:calc(var(--u)*4)}
 .thead{display:grid;align-items:center;height:max(calc(var(--row) - 8px),32px);border-bottom:var(--hair) solid var(--border);color:var(--muted-fg);font-size:calc(var(--fs)*.8);font-weight:600;letter-spacing:.05em;text-transform:uppercase;flex:none}
@@ -402,7 +410,7 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 <div class="strip" id="strip"></div>
 <div class="stage"><div id="frame"></div><div class="notes" id="notes"></div></div>
 <script>
-const I = { minus:'<svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>',
+const I = { minus:'<svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>', folder:'<svg viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>', tag:'<svg viewBox="0 0 24 24"><path d="M3 12V4h8l9 9-8 8zM7.5 7.5h.01"/></svg>', star:'<svg viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg>', percent:'<svg viewBox="0 0 24 24"><path d="M5 19L19 5"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/></svg>', sync:'<svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.5-4.5L4 8M4 4v4h4M4 13a8 8 0 0 0 14.5 4.5L20 16M20 20v-4h-4"/></svg>',
   search:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',
   scan:'<svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 9v6M11 9v6M14 9v6M17 9v6"/></svg>',
   grid:'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>',
@@ -555,6 +563,7 @@ function renderRail(){
 }
 const EMO={'Flat white':'☕','Sourdough loaf':'🍞','Tote bag':'👜','Oat latte':'🥛','Croissant':'🥐','Beans 250g':'🫘','Cinnamon bun':'🥯','Gift card':'🎁','Cold brew':'🧊','Granola jar':'🥣','Espresso cup':'☕','Tea tin':'🍵'};
 const STOCK={'Tote bag':8,'Beans 250g':14,'Gift card':52,'Granola jar':3,'Espresso cup':6,'Tea tin':11};
+const inCart=(n,v='')=>lines().filter(l=>l[0]===n&&(v?l[3]===v:true)).reduce((a,l)=>a+l[1],0);
 function renderProducts(){
   const t=T(); const phone=S.w==='phone'; const prods=S.long?PRODUCTS_DE:PRODUCTS_EN;
   let notice='',body='',gate='';
@@ -567,24 +576,25 @@ function renderProducts(){
   else if (S.view2==='list' && !phone){
     const grid='56px 1.6fr 110px 96px 96px 56px';
     const stock=[12,4,0,30,8,15,6,null,20,3,9,11]; const sku=['FW-12','SD-800','TB-NAT','OL-16','CR-01','BN-250','CB-02','GC','CB-330','GR-500','EC-01','TT-01'];
-    const row=([n,p],i)=>`<div class="tr press" style="grid-template-columns:${grid}"><div class="td c"><span class="img"></span></div><div class="td">${n}<span class="sub">${sku[i]}${i===2?' · 3 variations':''}</span></div><div class="td mut">${sku[i]}</div><div class="td r money">${fmt(p)}</div><div class="td r">${stock[i]==null?'<span class="mut">—</span>':stock[i]===0?'<span class="st bad"><i></i>0</span>':stock[i]<5?`<span class="st warn"><i></i>${stock[i]}</span>`:stock[i]}</div><div class="td c">${i===2?`<button class="ibtn press" style="width:36px;height:36px" aria-label="Choose variation">${I.chevd}</button>`:`<button class="ibtn press" style="width:36px;height:36px" data-act="addLine" aria-label="Add">${I.plus}</button>`}</div></div>`;
+    const row=([n,p],i)=>`<div class="tr press ${i===2?'':'rowbtn'}" ${i===2?'':`data-act="addLine" data-n="${n}" data-p="${p}"`} style="grid-template-columns:${grid}"><div class="td c"><span class="img"></span></div><div class="td">${n}<span class="sub">${sku[i]}${i===2?' · 3 variations':''}</span></div><div class="td mut">${sku[i]}</div><div class="td r money">${fmt(p)}</div><div class="td r">${stock[i]==null?'<span class="mut">—</span>':stock[i]===0?'<span class="st bad"><i></i>0</span>':stock[i]<5?`<span class="st warn"><i></i>${stock[i]}</span>`:stock[i]}</div><div class="td c">${i===2?`<button class="ibtn press" style="width:36px;height:36px" aria-label="Choose variation">${I.chevd}</button>`:inCart(n)?`<span class="cnt">${inCart(n)}</span>`:`<span class="ibtn" style="width:36px;height:36px">${I.plus}</span>`}</div></div>`;
     /* decided 2026-09-14: frameless rows, and a variable product opens its variations as indented rows (board 01 + 07) */
-    const vrows=[['Natural · S','TB-NAT-S',12,6],['Natural · L','TB-NAT-L',12,0],['Black · L','TB-BLK-L',14,2]].map(([n,sk,p,s])=>`<div class="tr vh" style="grid-template-columns:${grid}"><div class="td"></div><div class="td">${n}</div><div class="td mut">${sk}</div><div class="td r money">${fmt(p)}</div><div class="td r">${s===0?'<span class="st bad"><i></i>0</span>':s<5?`<span class="st warn"><i></i>${s}</span>`:s}</div><div class="td c"><button class="ibtn press" style="width:36px;height:36px" data-act="addLine" aria-label="Add">${I.plus}</button></div></div>`).join('');
+    const vrows=[['Natural · S','TB-NAT-S',12,6],['Natural · L','TB-NAT-L',12,0],['Black · L','TB-BLK-L',14,2]].map(([n,sk,p,s])=>`<div class="tr vh press rowbtn" data-act="addLine" data-n="Tote bag" data-s="${n}" data-p="${p}" style="grid-template-columns:${grid}"><div class="td"></div><div class="td">${n}</div><div class="td mut">${sk}</div><div class="td r money">${fmt(p)}</div><div class="td r">${s===0?'<span class="st bad"><i></i>0</span>':s<5?`<span class="st warn"><i></i>${s}</span>`:s}</div><div class="td c">${inCart('Tote bag',n)?`<span class="cnt">${inCart('Tote bag',n)}</span>`:`<span class="ibtn" style="width:36px;height:36px">${I.plus}</span>`}</div></div>`).join('');
     const rowsHtml=prods.map((x,i)=>row(x,i)+(i===2?vrows:'')).join('').replace('aria-label="Choose variation">'+I.chevd,'aria-label="Collapse variations">'+I.chevu);
     body=`<div class="ptable"><div class="thead" style="grid-template-columns:${grid}"><div class="th c"></div><div class="th">Name<span class="rz"></span></div><div class="th">SKU<span class="rz"></span></div><div class="th r">Price<span class="rz"></span></div><div class="th r">Stock<span class="rz"></span></div><div class="th c"></div></div>
       <div class="tbody">${rowsHtml}</div>
-      <div class="tfoot" style="display:flex;align-items:center;height:max(var(--ctl),var(--floor));border-top:var(--hair) solid var(--border);color:var(--muted-fg);padding:0 calc(var(--u)*3)">Showing 12 of 1,204</div></div>`;
+      <div class="tfoot"><span class="tax" title="Tax based on: Shop base address"><span class="fi">${I.percent}</span><b>Shop base</b>${I.chevd}</span><span class="grow"></span><span title="Showing 12 of 1,204">12 of 1,204</span><button class="ibtn press" style="width:36px;height:36px" aria-label="Sync">${I.sync}</button></div></div>`;
   }
-  else body=`<div class="tiles">${prods.map(([n,p])=>`<button class="tile press" data-act="addLine"><div class="img" data-i="${n[0]}" data-e="${EMO[n]||'🛍️'}">${S.tx.badge&&STOCK[n]!==undefined?`<span class="sold ${STOCK[n]<5?'low':''}">${STOCK[n]} left</span>`:''}</div><div class="n">${n}</div><div class="p money">${fmt(p)}</div></button>`).join('')}</div>`;
+  else body=`<div class="tiles">${prods.map(([n,p])=>`<button class="tile press" data-act="addLine" data-n="${n}" data-p="${p}"><div class="img" data-i="${n[0]}" data-e="${EMO[n]||'🛍️'}">${S.tx.badge&&STOCK[n]!==undefined?`<span class="sold ${STOCK[n]<5?'low':''}">${STOCK[n]} left</span>`:''}</div><div class="n">${n}</div><div class="p money">${fmt(p)}</div></button>`).join('')}</div>`;
   const focus=['open','empty','offline','long'].includes(S.scn)?'ring':'';
   const side = '';
+  const fbar=S.scn==='loading'?'':`<div class="fbar"><button class="pill press">${I.folder}Category ${I.chevd}</button><button class="pill press">${I.products}Stock ${I.chevd}</button><button class="pill press">${I.tag}On sale</button><button class="pill press">${I.star}Featured</button><button class="pill press">${I.folder}Tag ${I.chevd}</button><button class="pill press">${I.folder}Brand ${I.chevd}</button><button class="pill q press">Morning menu</button><button class="pill add press" aria-label="Add a quick filter">${I.plus}</button></div>`;
   return `<div class="prodcol">
     <div class="toolbar">${phone?`<button class="ibtn press" aria-label="Menu">${I.menu}</button>`:''}
       <div class="search">${I.search}<input class="in ${focus}" placeholder="${t.search}" value="${S.scn==='noresults'?'latte oat':''}" aria-label="${t.search}"></div>
       <button class="ibtn press" aria-label="${t.scan}">${I.scan}</button>
       ${phone?'':`<button class="ibtn press" data-act="toggleView" aria-label="${S.view2==='grid'?'Show as a table':'Show as tiles'}" title="${S.view2==='grid'?'Show as a table':'Show as tiles'}">${S.view2==='grid'?I.list:I.grid}</button>`}
       <button class="ibtn press ${S.pop==='products'?'on':''}" data-act="togglePop" data-pop="products" aria-label="Product settings">${I.sliders}</button>
-    </div>${notice}${body}${gate}</div>`;
+    </div>${fbar}${notice}${body}${gate}</div>`;
 }
 /* the slide-outs, rendered over the whole main area */
 function renderSide(){
@@ -692,8 +702,8 @@ function qxHtml(i){ const l=lines()[i]; const q=S.qbuf||l[1]; return `<div class
 function renderLine([n,q,p,s,kind],i){
   const t=T(); const lb = S.edit===i
     ? `<div class="lb"><span class="q">${q}</span><input class="ed ring" value="${n}" aria-label="${t.item}"><input class="ed" value="${p.toFixed(2)}" style="text-align:right" aria-label="${t.price}"><span class="tot money" data-tot="1" data-i="${i}">${fmt(q*p)}</span></div>`
-    : `<div class="lb"><button class="q press ${S.settle==='line'&&i===0?'ring':''}" data-act="qopen" data-i="${i}" aria-label="Quantity ${q}">${q}</button><span class="n"><span class="t ell" data-act="editLine" data-i="${i}">${n}</span>${s?`<span class="sub">${s}</span>`:''}</span><span class="pr money" data-act="editLine" data-i="${i}">${fmt(p)}</span><span class="tot money" data-tot="1" data-i="${i}">${fmt(q*p)}</span></div>`;
-  return `<div class="line ${kind} ${S.settle==='line'&&i===0?'settle':''} ${S.reveal===i?'reveal':''}" data-i="${i}">${lb}
+    : `<div class="lb"><button class="q press ${S.settle==='line'&&i===(S.settleIdx==null?0:S.settleIdx)?'ring':''}" data-act="qopen" data-i="${i}" aria-label="Quantity ${q}">${q}</button><span class="n"><span class="t ell" data-act="editLine" data-i="${i}">${n}</span>${s?`<span class="sub">${s}</span>`:''}</span><span class="pr money" data-act="editLine" data-i="${i}">${fmt(p)}</span><span class="tot money" data-tot="1" data-i="${i}">${fmt(q*p)}</span></div>`;
+  return `<div class="line ${kind} ${S.settle==='line'&&i===(S.settleIdx==null?0:S.settleIdx)?'settle':''} ${S.reveal===i?'reveal':''}" data-i="${i}">${lb}
     <div class="acts"><button class="press" data-act="openSheet" data-sheet="edit">${I.pen}${t.edit}</button><button class="del press" data-act="removeLine" data-i="${i}">${I.trash}${t.remove}</button></div></div>`;
 }
 /* one line, drawn by hand: a till with a curl of receipt. The only illustration in the app, reused for closed / offline / nothing found. */
@@ -901,7 +911,7 @@ document.addEventListener('click',e=>{
   switch(a){
     case 'noop': break;
     case 'jumpTo': jump(b.dataset.scn); return;
-    case 'addLine': { if(!sessionOpen()) break; const before=sub(); S.scn='added'; S.settle='line'; S.phoneTab='cart'; render(); if(S.tx.roll) rollMoney(before, sub()); setTimeout(()=>{ if(S.settle==='line'){ S.settle=null; document.querySelectorAll('.line.settle').forEach(n=>n.classList.remove('settle')); } },900); return; }
+    case 'addLine': { if(!sessionOpen()) break; const before=sub(); if(b.dataset.n){ if(S.scn==='empty') S.scn='open'; const arr=lines(); const v=b.dataset.s||''; const ex=arr.find(l=>l[0]===b.dataset.n&&(l[3]||'')===v); if(ex){ ex[1]++; S.settleIdx=arr.indexOf(ex); } else { arr.unshift([b.dataset.n,1,+b.dataset.p,v,'p']); S.settleIdx=0; } } else S.settleIdx=0; S.scn='added'; S.settle='line'; S.phoneTab='cart'; render(); if(S.tx.roll) rollMoney(before, sub()); setTimeout(()=>{ if(S.settle==='line'){ S.settle=null; document.querySelectorAll('.line.settle').forEach(n=>n.classList.remove('settle')); } },900); return; }
     case 'editLine': S.edit=+b.dataset.i; S.reveal=null; break;
     case 'removeLine': { const i=+b.dataset.i; const arr=lines(); if(!arr[i]) break; const [l]=arr.splice(i,1); S.reveal=null; S.qx=null; S.qbuf=''; S.undoLine={l,at:i,arr}; clearTimeout(S.undoT); S.undoT=setTimeout(()=>{ S.undoLine=null; render(); },3000); break; }
     case 'undoLine': if(S.undoLine){ S.undoLine.arr.splice(S.undoLine.at,0,S.undoLine.l); S.undoLine=null; clearTimeout(S.undoT); } break;
