@@ -213,16 +213,19 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     come from the right.
 
 47. **Reports in the language (2026-09-17, sibling session).** `pos-register/index.html?screen=reports`
-    (Paul: put it inside the register page and swap the toggles at the top; a `Screen` switch
-    heads the strip, Register | Reports; `reports/index.html` redirects there): the Sales
+    (Paul: put it inside the register page; first behind a `Screen` switch at the head of the
+    strip, then, the same day, moved to the rail: the POS and Reports items swap the page, the
+    phone's Menu button lists the same items, each page keeps its own State; the URL above
+    still lands on Reports; `reports/index.html` redirects there): the Sales
     glance (hero, signed delta chip, ghost bars capped at 40 px, tiles) and the shipped Closures
     room (session card, closures by day, closure as recorded with corrections, Recount sheet,
     Reprint) redrawn as a sibling of the register, with the register's rail, bar, bell panel and
     Free strip; nine themes, three scales, 19 states, 228 captures in `reports/screens/`. Its own
     notes are in `reports/README.md`. Two picks made while drawing, open for Paul: detail panels
     open from the right (there is no cart to return to), and the Free strip at the top, matching
-    the register. The Reports design is not signed off (Paul, the same day); this prototype is
-    what he reacts to next.
+    the register. The Reports design is not signed off (Paul, the same day: it "sucks"); it is
+    being reworked component by component in the sibling session, so this entry names the
+    page, not its current state.
     (c) **chips** — pills, the current one filled; reads as a filter row rather than tabs;
     (d) **cards** — small cards with amount, customer and status, current with a primary top
     edge; the most information, the tallest;
