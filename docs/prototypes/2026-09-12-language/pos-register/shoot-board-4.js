@@ -55,7 +55,7 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
     await page.evaluate(() => { const app = window.APPS[2]; app.S.lines = app.S.lines.filter(l => l[1] !== 'Cold brew' && l[1] !== 'Sourdough loaf').concat([[1,'Sourdough loaf','',4.2]]); app.full(); });
   }
   for (const fo of ['today', 'icons', 'compact', 'cart', 'none']) { await set('f', fo); await f.screenshot({ path: path.join(OUT, `${name}-footer-${fo}.jpg`), type: 'jpeg', quality: 84 }); }
-  await set('f', 'today');
+  await set('f', 'icons');
   await set('a', 'row');
   await page.screenshot({ path: path.join(OUT, '00-full.jpg'), type: 'jpeg', quality: 70, fullPage: true });
   await browser.close();

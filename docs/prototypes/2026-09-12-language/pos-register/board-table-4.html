@@ -97,7 +97,7 @@ svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:
 <body>
 <div class="strip">
   <div class="g"><span>Header</span><div class="seg" data-k="h"><button data-v="caps" class="on">Caps, hairline (today)</button><button data-v="sentence">Sentence case</button><button data-v="band">Tinted band</button><button data-v="strong">Bold, 2 px rule</button></div></div>
-  <div class="g"><span>Footer</span><div class="seg" data-k="f"><button data-v="today" class="on">Today's text</button><button data-v="icons">Icons + values</button><button data-v="compact">Compact, one line</button><button data-v="cart">Tax basis moves to the cart</button><button data-v="none">No footer</button></div></div>
+  <div class="g"><span>Footer</span><div class="seg" data-k="f"><button data-v="icons" class="on">Icons + values (decided)</button><button data-v="today">Today's text</button><button data-v="compact">Compact, one line</button><button data-v="cart">Tax basis moves to the cart</button><button data-v="none">No footer</button></div></div>
   <div class="g"><span>Add to cart</span><div class="seg" data-k="a"><button data-v="row" class="on">Row is the button (every POS)</button><button data-v="qty">Quantity first, then the row (Clover)</button><button data-v="holdplus">+ adds, hold + for quantity</button><button data-v="plus">+ (today)</button><button data-v="price">Price is the button</button><button data-v="stepper">+ then stepper</button><button data-v="word">Add word</button><button data-v="hold">Tap adds, hold for quantity</button><button data-v="swipe">Swipe to add · hover reveals</button></div></div>
 </div>
 <h1>POS table — the filter bar, the slide, the header, the footer, and the add button</h1>
@@ -116,14 +116,14 @@ const P=[
  {n:'Tea tin',p:7.5,sku:'TT',c:'Retail',s:11,v:[['Earl Grey','','TT-EG',7.5,5],['Breakfast','','TT-BF',7.5,6],['Mint','','TT-MT',8,0]]},
  {n:'Gift card',p:20,sku:'GC',c:'Retail',s:null}];
 const CATS=['Coffee','Bakery','Merch','Retail'];
-const G={h:'caps',a:'row',f:'today'};   /* the strip's choices, shared by every frame */
+const G={h:'caps',a:'row',f:'icons'};   /* the strip's choices, shared by every frame */
 const stock=s=>s==null?'<span class="mut">—</span>':s===0?'<span class="st bad"><i></i>0</span>':s<5?`<span class="st warn"><i></i>${s}</span>`:String(s);
 const rail=`<div class="rail"><div class="logo"></div><div class="it on">${I.pos}</div><div class="it">${I.products}</div><div class="it">${I.orders}</div><div class="it">${I.customers}</div></div>`;
 const qbar=(q)=>`<span class="qbar">${[1,2,3,5,10].map(n=>`<button data-act="q" data-q="${n}" class="${q===n?'on':''}">×${n}</button>`).join('')}</span>`;
 const toolbar=`<div class="toolbar"><span class="in">${I.search}Search products</span><span class="ibtn">${I.scan}</span><span class="ibtn">${I.grid}</span><span class="ibtn">${I.sliders}</span></div>`;
 const foot=(txt)=>{const short=txt.replace('Showing ','').replace(' variations of ',' of ');
   switch(G.f){
-    case 'icons': return `<div class="foot"><span class="tax" title="Tax based on"><span class="fi">${I.percent}</span><b>Shop base address</b>${I.chevd}</span><span class="grow"></span><span class="tax" title="${txt}"><span class="fi">${I.list}</span>${short}</span><button class="sync" title="Sync">${I.sync}</button></div>`;
+    case 'icons': return `<div class="foot"><span class="tax" title="Tax based on: Shop base address"><span class="fi">${I.percent}</span><b>Shop base</b>${I.chevd}</span><span class="grow"></span><span title="${txt}">${short}</span><button class="sync" title="Sync">${I.sync}</button></div>`;
     case 'compact': return `<div class="foot compact"><span class="tax" title="Tax based on: Shop base address">${I.percent}<b>Shop base</b></span><span class="dot">·</span><span title="${txt}">${short}</span><span class="dot">·</span><button class="sync" title="Sync">${I.sync}</button><span class="grow"></span></div>`;
     case 'cart': return `<div class="foot"><span class="grow"></span><span>${txt}</span><button class="sync" title="Sync">${I.sync}</button></div>`;
     case 'none': return '';

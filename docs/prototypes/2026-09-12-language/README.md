@@ -387,6 +387,8 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     count and sync · no footer (count inside the search field's right end, sync in the toolbar,
     tax chip in the cart). **Pick: tax basis to the cart, count and sync as the compact line.**
     The filter pills now carry the app's icons (box, tag, star, folder), as in the screenshot.
+    **Decided (Paul, 2026-09-17): icons and values; no icon before the count; "Shop base address"
+    condensed to "Shop base" (the full name in the tooltip and in the select).** Board 4's default.
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·
