@@ -242,6 +242,9 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     title and opens a picker (six quick ranges beside a calendar, 1.10's shape); register and
     store sit in the bar, the filter is a sliders icon there, the bordered chips are gone;
     Closures keeps a slim row with the date button and its menu. That resolves the phone wrap.
+    **Paul (2026-09-17, later again): the hero is decluttered.** The busiest-hour sentence and the
+    legend under the chart are gone; the view toggle and print share the title row with the date;
+    the plot is a third taller; the busiest bar carries its amount and order count.
 
 48. **Orders inside the register; the rail toggles the pages (Paul, 2026-09-17).** Paul: put
     the Orders mock-up into `pos-register/index.html` and toggle between the POS page, the
