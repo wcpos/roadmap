@@ -181,18 +181,27 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .line.settle .lb{background:color-mix(in oklch,var(--primary) 10%,transparent);transition:transform 200ms var(--ease)}
 .line .q{min-width:var(--qty);height:calc(var(--ctl) - 8px);border:var(--hair) solid var(--border);border-radius:calc(var(--r) - 2px);display:inline-flex;align-items:center;justify-content:center;font-weight:600;padding:0 calc(var(--u)*2)} .line .q.ring{border-color:var(--ring)}
 .line .n{line-height:1.3;min-width:0} .line .n .t{display:block} .line .n .sub{display:block;color:var(--muted-fg);font-size:calc(var(--fs)*.86)}
-.line .pr{text-align:right;color:var(--muted-fg)} .line .tot{text-align:right;font-weight:600}
+.line .pr{text-align:right;color:var(--muted-fg)} .line .tot{text-align:right;font-weight:600;cursor:grab;touch-action:pan-y;user-select:none;padding:calc(var(--u)*2) 0 calc(var(--u)*2) calc(var(--u)*3);margin:calc(var(--u)*-2) 0 calc(var(--u)*-2) calc(var(--u)*-3)}
+.line .q{cursor:pointer} .line .q:hover{border-color:var(--muted-fg)}
 .line .n .t,.line .pr{cursor:text;border-radius:4px} .line .n .t:hover,.line .pr:hover{background:var(--muted)}   /* one click edits name or price */
 .line .lb .ed{height:calc(var(--ctl) - 8px);border:var(--hair) solid var(--ring);box-shadow:0 0 0 1px var(--ring);border-radius:calc(var(--r) - 2px);padding:0 calc(var(--u)*2);width:100%;background:var(--card);outline:none;min-width:0}
 .line .acts{position:absolute;right:0;top:0;bottom:0;display:flex;z-index:0}
 .line .acts button{width:max(var(--tile)*.875,var(--floor));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:calc(var(--fs)*.8);font-weight:600;color:var(--fg);background:var(--muted)}
 .line .acts button.del{background:var(--destructive);color:var(--destructive-fg)}
 .line.reveal .lb{transform:translateX(calc(-2 * max(var(--tile)*.875,var(--floor))))}
-/* web: the same two actions appear on hover inside the row, no swipe */
+/* web (Paul 2026-09-17): no hover buttons; hovering the total nudges the line to show the strip under it, and a click on the total opens it */
 .line .hov{display:none;position:absolute;right:calc(var(--u)*3);top:50%;transform:translateY(-50%);gap:calc(var(--u)*1);z-index:2;background:var(--card);padding-left:calc(var(--u)*2)}
-.frame[data-w="desktop"] .line:hover .hov,.frame[data-w="desktop"] .line.hover .hov{display:flex}
-.frame[data-w="desktop"] .line.reveal .lb{transform:none} .frame[data-w="desktop"] .line .acts{display:none}   /* no swipe on a fine pointer */
-.frame[data-w="desktop"] .line:hover .lb,.frame[data-w="desktop"] .line.hover .lb{background:var(--muted)}
+.frame[data-w="desktop"] .line:not(.reveal):not(.drag):has(.tot:hover) .lb{transform:translateX(-14px)}
+.line.drag .lb{transition:none} .line.going .lb{transform:translateX(-100%);transition:transform 160ms var(--ease)}
+/* the quantity expands in place: 48 px cells (touch floor), the number cell over the box, − to its left overhanging the cart's edge, + to its right, the keypad beneath */
+.qx{position:absolute;z-index:26;width:144px;background:var(--card);border:var(--hair) solid var(--border);border-radius:6px;box-shadow:0 10px 28px oklch(0.2 0.02 250 / .18);display:grid;grid-template-columns:repeat(3,48px);grid-auto-rows:48px;animation:qgrow 180ms var(--ease);overflow:hidden;color:var(--fg)}
+@keyframes qgrow{from{clip-path:inset(var(--qdy,6px) 48px calc(100% - 48px + var(--qdy,6px)) 48px round 6px);box-shadow:none}}
+.qx button,.qx b{display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:calc(var(--fs)*1.2);border:0;background:none;color:inherit;font-family:inherit;cursor:pointer} .qx button:hover{background:var(--muted)} .qx b{border-bottom:var(--hair) solid var(--border)} .qx .top{border-bottom:var(--hair) solid var(--border)} .qx .del{color:var(--destructive)} .qx .ok{color:var(--primary)}
+.qx svg{width:18px;height:18px}
+.undo{display:flex;align-items:center;gap:calc(var(--u)*2);margin:calc(var(--u)*2) calc(var(--u)*4);padding:calc(var(--u)*2.5) calc(var(--u)*3);border-radius:var(--r);background:var(--fg);color:var(--bg);font-size:calc(var(--fs)*.93)} .undo button{margin-left:auto;font-weight:700;color:oklch(0.85 0.1 240)}
+/* the phone's bottom sheet for quantity */
+.qsheet .stp{display:grid;grid-template-columns:56px 1fr 56px;height:56px;border:var(--hair) solid var(--border);border-radius:10px;overflow:hidden} .qsheet .stp button,.qsheet .stp b{display:inline-flex;align-items:center;justify-content:center;font-size:22px;font-weight:600} .qsheet .stp .del{color:var(--destructive)}
+.qsheet .kb{display:grid;grid-template-columns:repeat(3,1fr);gap:8px} .qsheet .kb button{height:56px;border-radius:10px;background:var(--muted);display:inline-flex;align-items:center;justify-content:center;font-size:20px;font-weight:600} .qsheet .kb .ok{background:var(--primary);color:var(--primary-fg)} .qsheet .kb .del{color:var(--destructive)}
 .hov .ibtn{width:36px;height:36px;color:var(--muted-fg)} .hov .ibtn.del{color:var(--destructive)}
 .line.fee .q{visibility:hidden}
 .totals{padding:calc(var(--u)*3) calc(var(--u)*4) calc(var(--u)*2);border-top:var(--hair) solid var(--border);flex:none}
@@ -393,7 +402,7 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 <div class="strip" id="strip"></div>
 <div class="stage"><div id="frame"></div><div class="notes" id="notes"></div></div>
 <script>
-const I = {
+const I = { minus:'<svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>',
   search:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',
   scan:'<svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 9v6M11 9v6M14 9v6M17 9v6"/></svg>',
   grid:'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>',
@@ -465,7 +474,7 @@ const S={ w:'tablet', theme:'light', scale:'regular', scn:'open',
   closePos:'tr', legacy:'header-text',   /* Paul 2026-09-16: decided, switches removed. Void = outlined red, matched (voidStyle 'red'). */ termStep:1, sortCart:'newest-last', tabStyle:'line1',   /* Paul 2026-09-14: amount + dot, with a format setting */
   voidStyle:'red', vmenu:false, toast:null,
   /* personality touches (research: personality/ideas on the hub). Each is one small behaviour, not a skin. */
-  tx:{roll:1,stamp:1,pence:1,badge:1,tear:1,doodle:1}, icons:'tabler-15', surface:'today' };   /* Paul 2026-09-17: a switch for today's, the floating sheet, all white; the header stays caps over a hairline */   /* Paul 2026-09-16: Tabler at 1.5 px, for a while; Hugeicons the standing alternative */
+  tx:{roll:1,stamp:1,pence:1,badge:1,tear:1,doodle:1}, icons:'tabler-15', surface:'today', qx:null, qbuf:'', undoLine:null };   /* Paul 2026-09-17: the quantity expands in place; edit and delete by swiping the total */   /* Paul 2026-09-17: a switch for today's, the floating sheet, all white; the header stays caps over a hairline */   /* Paul 2026-09-16: Tabler at 1.5 px, for a while; Hugeicons the standing alternative */
 /* Paul 2026-09-16: the voice is out (translations); pence and the tear-off belong to the whimsical themes only; the badge is kept for a property chosen in POS Products settings, stock for now. */
 const WHIMSY=['market','paper'];
 const STR=()=>S.long?{
@@ -487,7 +496,7 @@ const STR=()=>S.long?{
   noResults:'Nothing matches',clear:'Clear search',pickT:'Which register is this device?',toPay:'To pay',take:'Take',in:'in',change:'Change',exactAmt:'Exact',paid:'Paid',printNew:'Print receipt · New sale',email:'Email receipt',noRcpt:'No receipt · New sale',notAvail:'not available right now',split:'Split',payments:'Payments',legacy:'Legacy',legacyLink:'Use the store checkout instead',items:'items',
   qty:'Qty',item:'Item',price:'Price',lineTotal:'Total',edit:'Edit',remove:'Remove',more:'more',openOrders:'Open orders',newOrder:'New order',backCart:'Back to cart',otherWays:'Other ways to pay',
 };
-const SCENES=[['open','Session open · focus on search'],['added','Line just added (beat)'],['line-actions','Line actions (swipe / hover)'],['line-edit','Line · inline edit'],['many-orders','12 open orders'],['cart-settings','Cart settings (anchored)'],['empty','New empty cart'],
+const SCENES=[['open','Session open · focus on search'],['added','Line just added (beat)'],['line-actions','Line actions (swipe the total)'],['line-edit','Line · inline edit'],['many-orders','12 open orders'],['cart-settings','Cart settings (anchored)'],['empty','New empty cart'],
   ['closed','Register closed'],['pick','Choose register'],['counting','Counting'],['overdue','Overdue'],['panel','Register panel'],['closure','Closure written (beat)'],['offline','Offline'],
   ['loading','Products loading'],['noresults','No results'],['table','Products · table view'],['settings','Products settings (slide-out)'],['tender','Tender · keypad'],['tender-card','Tender · on the terminal'],['tender-legacy','Tender · legacy (iframe)'],['paid','Paid (beat)'],['long','German strings']];
 
@@ -677,13 +686,15 @@ function renderTabs(pos){
       ${open.map((o,i)=>`<button class="orow press ${i===0?'on':''}" data-act="selOrder" data-id="${o.id}"><span><span class="l1"><b class="money">${fmt(o.t)}</b><span>${o.c}</span></span><span class="l2">${o.chip?`<span class="c ${o.chip[1]} st"><i></i>${o.chip[0]}</span>`:`<span>${o.age==='now'?'This cart':`Started ${o.age} ago`}</span>`}</span></span>${I.chev}</button>`).join('')}</div>`:'';
   return `<div class="tabs ${pos}">${more}<div class="scrollx">${shown.map(tab).join('')}</div><button class="otab plus press" aria-label="${t.newOrder}" title="${t.newOrder}">${I.plus}</button></div>${list}`;
 }
+/* the expanding quantity (tablet, desktop) and its phone sheet twin: − n + on top, 1–9, then ⌫ 0 ✓ */
+const qKeys=(i)=>[1,2,3,4,5,6,7,8,9].map(k=>`<button class="press" data-act="qkey" data-k="${k}" data-i="${i}">${k}</button>`).join('')+`<button class="press del" data-act="qkey" data-k="bs" data-i="${i}">${I.x}</button><button class="press" data-act="qkey" data-k="0" data-i="${i}">0</button>`;
+function qxHtml(i){ const l=lines()[i]; const q=S.qbuf||l[1]; return `<div class="qx" data-stop="1" data-i="${i}"><button class="top press ${l[1]<=1?'del':''}" data-act="qdec" data-i="${i}">${l[1]<=1?I.trash:I.minus}</button><b>${q}</b><button class="top press" data-act="qinc" data-i="${i}">${I.plus}</button>${qKeys(i)}<button class="ok press" data-act="qclose">${I.check}</button></div>`; }
 function renderLine([n,q,p,s,kind],i){
   const t=T(); const lb = S.edit===i
-    ? `<div class="lb"><span class="q">${q}</span><input class="ed ring" value="${n}" aria-label="${t.item}"><input class="ed" value="${p.toFixed(2)}" style="text-align:right" aria-label="${t.price}"><span class="tot money">${fmt(q*p)}</span></div>`
-    : `<div class="lb"><span class="q ${S.settle==='line'&&i===0?'ring':''}">${q}</span><span class="n"><span class="t ell" data-act="editLine" data-i="${i}">${n}</span>${s?`<span class="sub">${s}</span>`:''}</span><span class="pr money" data-act="editLine" data-i="${i}">${fmt(p)}</span><span class="tot money">${fmt(q*p)}</span></div>`;
-  return `<div class="line ${kind} ${S.settle==='line'&&i===0?'settle':''} ${S.reveal===i?'reveal':''} ${S.reveal===i&&S.w==='desktop'?'hover':''}">${lb}
-    <div class="acts"><button class="press" data-act="openSheet" data-sheet="edit">${I.pen}${t.edit}</button><button class="del press" data-act="removeLine">${I.trash}${t.remove}</button></div>
-    <div class="hov"><button class="ibtn press" data-act="openSheet" data-sheet="edit" aria-label="${t.edit}">${I.pen}</button><button class="ibtn del press" data-act="removeLine" aria-label="${t.remove}">${I.trash}</button></div></div>`;
+    ? `<div class="lb"><span class="q">${q}</span><input class="ed ring" value="${n}" aria-label="${t.item}"><input class="ed" value="${p.toFixed(2)}" style="text-align:right" aria-label="${t.price}"><span class="tot money" data-tot="1" data-i="${i}">${fmt(q*p)}</span></div>`
+    : `<div class="lb"><button class="q press ${S.settle==='line'&&i===0?'ring':''}" data-act="qopen" data-i="${i}" aria-label="Quantity ${q}">${q}</button><span class="n"><span class="t ell" data-act="editLine" data-i="${i}">${n}</span>${s?`<span class="sub">${s}</span>`:''}</span><span class="pr money" data-act="editLine" data-i="${i}">${fmt(p)}</span><span class="tot money" data-tot="1" data-i="${i}">${fmt(q*p)}</span></div>`;
+  return `<div class="line ${kind} ${S.settle==='line'&&i===0?'settle':''} ${S.reveal===i?'reveal':''}" data-i="${i}">${lb}
+    <div class="acts"><button class="press" data-act="openSheet" data-sheet="edit">${I.pen}${t.edit}</button><button class="del press" data-act="removeLine" data-i="${i}">${I.trash}${t.remove}</button></div></div>`;
 }
 /* one line, drawn by hand: a till with a curl of receipt. The only illustration in the app, reused for closed / offline / nothing found. */
 const DOODLE='<svg class="doodle" viewBox="0 0 120 84" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 62c-1 10 4 13 12 13h62c8 0 12-4 11-13l-4-26H22z"/><path d="M30 36l4-14h44l6 14"/><path d="M52 22c0-8 3-13 10-14 8-1 12 4 9 10-2 4-8 4-6-2"/><path d="M32 46h10M48 46h10M64 46h10M32 54h10M48 54h10M64 54h10"/><path d="M84 44c6 0 8 4 8 8"/><path d="M40 75c8 5 32 5 40 0"/></svg>';
@@ -694,7 +705,8 @@ function renderCart(){
   const orderChip = S.voidStyle==='chip' ? `<button class="chip press ${S.vmenu?'on':''}" style="border-color:transparent;padding:0 calc(var(--u)*2)" data-act="vmenu"><b>#102476</b>${I.chevd}</button>` : `<span class="mut">${t.customer}</span>`;
   const head=`<div class="custrow" style="position:relative">${orderChip}<button class="chip press">${t.guest}${I.chevd}</button><span class="grow"></span>${S.voidStyle==='trash'&&items.length?`<button class="ibtn press" style="color:var(--destructive)" data-act="void" aria-label="${t.void} order" title="${t.void} order">${I.trash}</button>`:''}<button class="ibtn press" aria-label="Add">${I.plus}</button><button class="ibtn press ${S.pop==='cart'?'on':''}" data-act="togglePop" data-pop="cart" aria-label="Cart settings">${I.sliders}</button>${chipMenu}</div>`;
   const th=items.length?`<div class="cart-th"><span>${t.qty}</span><span>${t.item}</span><span class="r">${t.price}</span><span class="r">${t.lineTotal}</span></div>`:'';
-  const body=items.length?items.map(renderLine).join(''):`<div class="empty">${S.tx.doodle?DOODLE:I.cart}<div class="t">${t.emptyT}</div><div class="xs">${t.emptyS}</div></div>`;
+  const undo=S.undoLine?`<div class="undo" data-stop="1">${I.trash}${S.undoLine.l[0]} ${t.remove.toLowerCase()}d<button class="press" data-act="undoLine">Undo</button></div>`:'';
+  const body=(items.length?items.map(renderLine).join(''):`<div class="empty">${S.tx.doodle?DOODLE:I.cart}<div class="t">${t.emptyT}</div><div class="xs">${t.emptyS}</div></div>`)+undo;
   const totals=items.length?`<div class="totals"><div class="r2 mut"><span>${t.subtotal}</span><span class="money">${fmt(goods-tax)}</span></div>${fees?`<div class="r2 mut"><span>${t.fees}</span><span class="money">${fmt(fees)}</span></div>`:''}<div class="r2 mut"><span>${t.tax}</span><span class="money">${fmt(tax)}</span></div><div class="r2 big"><span>${t.total}</span><span class="money">${fmt(s)}</span></div></div>`:'';
   /* Void style (strip): where the one destructive action lives — the void board, live */
   const dis=items.length?'':'disabled'; const vs=S.voidStyle;
@@ -728,7 +740,7 @@ function renderCart(){
       <div class="opt"><span>Show receipt</span><span class="sw on"></span></div><div class="opt"><span>Print receipt</span><span class="sw"></span></div>
       <div class="opt"><span>Quick discounts</span><span class="grow"></span><span class="mut">5 · 10 · 15 · 20 %</span></div>
     </div>`:'';
-  return `${S.tabsPos==='top'?renderTabs('top'):''}${head}${th}<div class="lines">${body}</div>${totals}${f2}${foot}${S.tabsPos==='bottom'?renderTabs('bottom'):''}${pop}`;
+  return `${S.tabsPos==='top'?renderTabs('top'):''}${head}${th}<div class="lines">${body}</div>${totals}${f2}${foot}${S.tabsPos==='bottom'?renderTabs('bottom'):''}${pop}${S.qx!=null&&S.w!=='phone'&&items[S.qx]?qxHtml(S.qx):''}`;
 }
 function renderOpenCard(){
   const t=T();
@@ -778,6 +790,7 @@ function renderPanel(){
 function renderSheet(){
   if(!S.sheet) return ''; const t=T();
   const wrap=(title,sub,body,foot)=>`<div class="sheet-wrap" data-act="closeSheet"><div class="sheet" data-stop="1"><div class="sheet-h"><div class="grow"><div class="t">${title}</div>${sub?`<div class="mut">${sub}</div>`:''}</div><button class="ibtn press" data-act="closeSheet" aria-label="Close">${I.x}</button></div><div class="sheet-b">${body}</div>${foot?`<div class="sheet-f">${foot}</div>`:''}</div></div>`;
+  if (S.sheet==='qty' && S.qx!=null && lines()[S.qx]){ const i=S.qx, l=lines()[i]; return wrap(l[0], l[3]||`${fmt(l[2])} each`, `<div class="qsheet"><div class="stp"><button class="press ${l[1]<=1?'del':''}" data-act="qdec" data-i="${i}">${l[1]<=1?I.trash:I.minus}</button><b>${S.qbuf||l[1]}</b><button class="press" data-act="qinc" data-i="${i}">${I.plus}</button></div><div class="kb" style="margin-top:8px">${qKeys(i)}<button class="ok press" data-act="qclose">Done</button></div></div>`); }
   if (S.sheet==='user') return wrap('Demo Cashier','Cashier · UK Store',`<div class="list"><div class="lr"><span>Your sales today</span><span class="mut xs">9 sales</span><span class="v money">${fmt(412.30)}</span></div></div><div class="mut xs b" style="text-transform:uppercase;letter-spacing:.04em">Switch user</div><div class="list"><button class="lr click press"><span class="av" style="width:28px;height:28px">AO</span><span>Amy Okafor</span><span class="mut xs" style="margin-left:auto">on this device</span>${I.chev}</button><button class="lr click press"><span class="av" style="width:28px;height:28px">SR</span><span>Sam Reilly</span><span class="mut xs" style="margin-left:auto">on this device</span>${I.chev}</button><button class="lr click press"><span>Another account…</span><span class="mut xs" style="margin-left:auto">WordPress login</span></button></div>${S.w==='desktop'?`<div class="mut xs b" style="text-transform:uppercase;letter-spacing:.04em">This site</div><div class="list"><button class="lr click press"><span class="row">${I.globe}WordPress admin</span><span class="mut xs" style="margin-left:auto">opens in a new tab</span></button><button class="lr click press"><span class="row">${I.pos}Desktop app</span><span class="mut xs" style="margin-left:auto">download</span></button></div>`:''}`,`<button class="btn d press">Sign out</button><span class="grow"></span><button class="btn press" data-act="closeSheet">Close</button>`);
   if (S.sheet==='closure') return wrap(`<span class="row"><span class="disc">${I.check}</span>Closure 13 written</span>`,'UK Store · Sun 14 Sep 18:04',`<div class="kpis"><div class="kpi"><div class="l">Counted</div><div class="v money">${fmt(463.30)}</div></div><div class="kpi"><div class="l">Expected</div><div class="v money">${fmt(480.80)}</div></div><div class="kpi"><div class="l">Variance</div><div class="v money neg">${fmt(-17.50,true)}</div></div></div><div class="fold"><button class="press">${I.chev}<span>Z-report</span><span class="mut">preview</span></button></div>`,`<button class="btn q press" data-act="closeSheet">Print later</button><span class="grow"></span><button class="btn p press" data-act="closeSheet">${I.print}Print Z-report</button>`);
   if (S.sheet==='edit-centred') return wrap('Edit Flat white','Line 1 · 2 × £3.20',`<div class="fld"><label>Name</label><input class="in" value="Flat white"></div><div class="row"><div class="fld grow"><label>Quantity</label><input class="in" value="2"></div><div class="fld grow"><label>Price</label><input class="in" value="3.20"></div></div><div class="fld"><label>Tax class</label><button class="btn press" style="width:100%;justify-content:space-between">Standard${I.chevd}</button></div><div class="fold"><button class="press">${I.chev}<span>Metadata</span><span class="mut">Oat milk</span></button></div><div class="fold"><button class="press">${I.chev}<span>Split</span><span class="mut">into 2 lines</span></button></div>`,`<button class="btn d press" data-act="closeSheet">${t.remove}</button><span class="grow"></span><button class="btn press" data-act="closeSheet">Cancel</button><button class="btn p press" data-act="closeSheet">Save</button>`);
@@ -858,7 +871,7 @@ function renderPOS(){
 }
 function renderNotes(){
   const rows=[['Scale step',S.scale,{compact:'unit 3.5 · base 13 · control 40 (44 on touch) · row 36 (44 on touch) · tile 56 · radius 6',regular:'unit 4 · base 14 · control 44 · row 44 · tile 64 · radius 8',spacious:'unit 5 · base 16 · control 52 · row 52 · tile 80 · radius 10'}[S.scale]],
-    ['Pointer',S.w==='desktop'?'fine (mouse)':'coarse (touch)',S.w==='desktop'?'line actions on hover; the divider grip on hover':'line actions by swipe; the divider grip always faint'],
+    ['Pointer',S.w==='desktop'?'fine (mouse)':'coarse (touch)',S.w==='desktop'?'hover the total for the nudge, click it to open; the divider grip on hover':'line actions by swiping the total; the divider grip always faint'],
     ['Focus','',{open:'search field, on open; the scanner is captured anywhere',added:'the quantity of the line just added; Enter checks out','line-edit':'the name field; Tab moves to price, Enter saves, Esc cancels',tender:'the amount; digits type, Enter takes the selected method, Esc closes',closed:'the float amount; Enter opens the register',counting:'the counted amount; Enter closes and prints'}[S.scn]||'—']];
   document.getElementById('notes').innerHTML=`<b>Prototype for wcpos/roadmap#287 (cut 2).</b> The dark strip is not part of the design. `+rows.map(([k,v,d])=>`<span style="display:inline-block;margin-right:16px"><b>${k}:</b> ${v} <span style="color:#6b7280">${d}</span></span>`).join('');
 }
@@ -873,11 +886,13 @@ function render(){
   const f=document.getElementById('frame'); f.className='frame'; f.dataset.w=S.w; f.dataset.theme=S.theme; f.dataset.scale=S.scale; f.dataset.surface=S.surface;
   f.innerHTML=`<div class="body">${S.w==='phone'?'':renderRail()}<div class="main">${renderPOS()}${renderSide()}${renderPanel()}${renderSheet()}</div></div>`;
   renderNotes();
+  const x=f.querySelector('.qx'); if(x){ const q=f.querySelector(`.line[data-i="${S.qx}"] .q`); const col=f.querySelector('.cartcol'); if(q&&col){ const a=q.getBoundingClientRect(), c=col.getBoundingClientRect(); const dy=(48-a.height)/2; x.style.left=(a.left-c.left-48-(48-a.width)/2)+'px'; x.style.top=(a.top-c.top-dy)+'px'; x.style.setProperty('--qdy',dy+'px'); } else { S.qx=null; x.remove(); } }
 }
 function stepTerminal(){ clearTimeout(termTimer); if(S.view!=='terminal') return; if(S.termStep<3){ termTimer=setTimeout(()=>{ S.termStep++; render(); stepTerminal(); }, S.termStep===1?2600:900); } else termTimer=setTimeout(()=>{ S.view='paid'; render(); },500); }
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-set],[data-scn],[data-act],[data-tx],[data-txall]');
-  if(!b){ if(!e.target.closest('[data-stop]') && (S.pop||S.ordlist||S.reveal!=null||S.edit!=null)){ S.pop=null; S.ordlist=false; S.reveal=null; S.edit=null; render(); } return; }
+  if(S.dragged){ S.dragged=false; return; }   /* the click that follows a swipe must not close what the swipe opened */
+  if(!b){ if(!e.target.closest('[data-stop]') && (S.pop||S.ordlist||S.reveal!=null||S.edit!=null||S.qx!=null)){ S.pop=null; S.ordlist=false; S.reveal=null; S.edit=null; S.qx=null; S.qbuf=''; render(); } return; }
   if(b.dataset.set){ const v=b.dataset.v; S[b.dataset.set]=(v==='1'||v==='3')?+v:v; render(); return; }
   if(b.dataset.tx){ S.tx[b.dataset.tx]=S.tx[b.dataset.tx]?0:1; render(); return; }
   if(b.dataset.txall!==undefined){ const v=+b.dataset.txall; Object.keys(S.tx).forEach(k=>S.tx[k]=v); render(); return; }
@@ -888,7 +903,13 @@ document.addEventListener('click',e=>{
     case 'jumpTo': jump(b.dataset.scn); return;
     case 'addLine': { if(!sessionOpen()) break; const before=sub(); S.scn='added'; S.settle='line'; S.phoneTab='cart'; render(); if(S.tx.roll) rollMoney(before, sub()); setTimeout(()=>{ if(S.settle==='line'){ S.settle=null; document.querySelectorAll('.line.settle').forEach(n=>n.classList.remove('settle')); } },900); return; }
     case 'editLine': S.edit=+b.dataset.i; S.reveal=null; break;
-    case 'removeLine': S.reveal=null; break;
+    case 'removeLine': { const i=+b.dataset.i; const arr=lines(); if(!arr[i]) break; const [l]=arr.splice(i,1); S.reveal=null; S.qx=null; S.qbuf=''; S.undoLine={l,at:i,arr}; clearTimeout(S.undoT); S.undoT=setTimeout(()=>{ S.undoLine=null; render(); },3000); break; }
+    case 'undoLine': if(S.undoLine){ S.undoLine.arr.splice(S.undoLine.at,0,S.undoLine.l); S.undoLine=null; clearTimeout(S.undoT); } break;
+    case 'qopen': { const i=+b.dataset.i; S.qbuf=''; S.reveal=null; S.edit=null; if(S.qx===i){ S.qx=null; S.sheet=S.sheet==='qty'?null:S.sheet; } else { S.qx=i; if(S.w==='phone') S.sheet='qty'; } break; }
+    case 'qclose': S.qx=null; S.qbuf=''; if(S.sheet==='qty') S.sheet=null; break;
+    case 'qinc': { const l=lines()[+b.dataset.i]; if(l){ l[1]++; S.qbuf=''; } break; }
+    case 'qdec': { const i=+b.dataset.i; const l=lines()[i]; if(!l) break; S.qbuf=''; if(l[1]<=1){ const arr=lines(); const [g]=arr.splice(i,1); S.qx=null; if(S.sheet==='qty') S.sheet=null; S.undoLine={l:g,at:i,arr}; clearTimeout(S.undoT); S.undoT=setTimeout(()=>{ S.undoLine=null; render(); },3000); } else l[1]--; break; }
+    case 'qkey': { const i=+b.dataset.i; const l=lines()[i]; if(!l) break; const k=b.dataset.k; S.qbuf = k==='bs' ? S.qbuf.slice(0,-1) : (S.qbuf+k).replace(/^0+(?=\d)/,'').slice(0,3); const n=parseInt(S.qbuf||'0',10); if(n>0) l[1]=n; break; }
     case 'vmenu': S.vmenu=!S.vmenu; break;
     case 'void': S.vmenu=false; S.pop=null; S.scn='empty'; S.toast='voided'; clearTimeout(toastTimer); toastTimer=setTimeout(()=>{S.toast=null;render();},4000); break;
     case 'undoVoid': S.toast=null; clearTimeout(toastTimer); S.scn='open'; break;
@@ -919,7 +940,20 @@ document.addEventListener('click',e=>{
   render();
 });
 document.addEventListener('input',e=>{ if(e.target.dataset.count){ S.counted=e.target.value; const pos=e.target.selectionStart; render(); const n=document.querySelector('[data-count]'); if(n){n.focus(); n.setSelectionRange(pos,pos);} } });
+document.addEventListener('pointerdown',e=>{
+  const tot=e.target.closest('.line .tot[data-tot]'); if(!tot||S.edit!=null) return; const ln=tot.closest('.line'); const lb=ln.querySelector('.lb'); const i=+ln.dataset.i;
+  const x0=e.clientX; let dx=0, moved=false; const open=S.reveal===i; const w=ln.querySelector('.acts').getBoundingClientRect().width||160;
+  ln.classList.add('drag'); ln.setPointerCapture(e.pointerId);
+  const move=ev=>{ dx=Math.min(0,Math.max(-(w+140),ev.clientX-x0-(open?w:0))); if(Math.abs(ev.clientX-x0)>3) moved=true; lb.style.transform=`translateX(${dx}px)`; };
+  const up=()=>{ ln.removeEventListener('pointermove',move); ln.removeEventListener('pointerup',up); ln.removeEventListener('pointercancel',up); ln.classList.remove('drag'); lb.style.transform='';
+    if(moved){ S.dragged=true; setTimeout(()=>{ S.dragged=false; },250); }
+    if(!moved){ if(S.w==='desktop'){ S.reveal = open?null:i; render(); } return; }
+    if(dx < -(w+80)){ ln.classList.add('going'); setTimeout(()=>{ document.querySelector(`.line[data-i="${i}"] .acts .del`)?.click(); },170); }
+    else if(dx < -(w/2)){ S.reveal=i; render(); } else { S.reveal=null; render(); } };
+  ln.addEventListener('pointermove',move); ln.addEventListener('pointerup',up); ln.addEventListener('pointercancel',up);
+});
 document.addEventListener('keydown',e=>{
+  if (S.qx!=null && S.w!=='phone'){ if(/^[0-9]$/.test(e.key)) { document.querySelector(`.qx [data-act="qkey"][data-k="${e.key}"]`)?.click(); return; } if(e.key==='Backspace'){ document.querySelector('.qx [data-act="qkey"][data-k="bs"]')?.click(); return; } if(e.key==='Enter'||e.key==='Escape'){ S.qx=null; S.qbuf=''; render(); return; } }
   if (S.edit!=null && (e.key==='Enter'||e.key==='Escape')){ S.edit=null; render(); return; }
   if (!S.tender || S.view!=='keypad') return;
   if (/^[0-9]$/.test(e.key)) document.querySelector(`[data-act="key"][data-k="${e.key}"]`)?.click();

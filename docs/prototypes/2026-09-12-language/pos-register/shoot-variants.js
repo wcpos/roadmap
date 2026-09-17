@@ -42,6 +42,15 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   // surfaces: the sheet and all white, tiles and table, tablet and desktop
   for (const k of ['float','allwhite']) { await set('surface', k); await scn('open'); await shot(`surface-${k}-tiles`); await page.click('[data-act="toggleView"]'); await shot(`surface-${k}-table`); await set('w','desktop'); await shot(`surface-${k}-desktop-table`); await page.click('[data-act="toggleView"]'); await set('w','tablet'); }
   await set('surface', 'today');
+  // the cart line: the quantity expands, the swipe on the total, the desktop nudge, the phone sheet
+  await scn('open'); await page.click('.line[data-i="1"] .q'); await page.waitForTimeout(250); await shot('cart-qty-open');
+  await page.click('.qx [data-k="1"]'); await page.click('.qx [data-k="2"]'); await page.waitForTimeout(80); await shot('cart-qty-typed-12');
+  { const q = await page.locator('.line[data-i="1"] .q').innerText(); if (q.trim() !== '12') throw new Error('keypad did not set 12: ' + q); }
+  await page.click('.qx [data-act="qclose"]'); await page.waitForTimeout(80);
+  { const tb = await page.locator('.line[data-i="2"] .tot').boundingBox(); await page.mouse.move(tb.x + 20, tb.y + 10); await page.mouse.down(); await page.mouse.move(tb.x - 60, tb.y + 10, { steps: 5 }); await page.mouse.move(tb.x - 110, tb.y + 10, { steps: 5 }); await page.mouse.up(); await page.waitForTimeout(300); await shot('cart-swipe-open');
+    if (!(await page.locator('.line[data-i="2"]').evaluate(el => el.classList.contains('reveal')))) throw new Error('short swipe did not open the strip'); }
+  await scn('open'); await set('w', 'desktop'); await page.evaluate(() => window.scrollTo(0, 0)); { const tb = await page.locator('.line[data-i="1"] .tot').boundingBox(); await page.mouse.move(tb.x + 20, tb.y + 10); await page.waitForTimeout(300); await shot('cart-desktop-nudge'); await page.mouse.click(tb.x + 20, tb.y + 10); await page.waitForTimeout(300); await shot('cart-desktop-click-open'); }
+  await set('w', 'phone'); await scn('open'); await page.click('.line[data-i="1"] .q'); await page.waitForTimeout(300); await shot('cart-phone-sheet'); await page.click('[data-act="qclose"]'); await set('w', 'tablet'); await scn('open');
   // phone: the dots
   await set('w', 'phone'); await scn('open'); await shot('phone-dots'); await page.click('[data-act="vmenu"]'); await shot('phone-dots-open'); await set('w', 'tablet');
   await browser.close();

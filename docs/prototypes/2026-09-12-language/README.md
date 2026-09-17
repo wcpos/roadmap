@@ -395,6 +395,13 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     total nudges the line 14 px so the strip's edge shows, and a click on the total opens it.
     Live as D1 (tablet, with the sliver) and D2 (phone) at the top of the cart board; the five
     explorations are folded below.
+    **In the register (2026-09-17, Paul: "I don't see the cart changes"):** the quantity is a
+    button opening the expanding keypad (positioned over the box after each render, `--qdy` for
+    the grow animation), a `qty` sheet on the phone width, real quantity and removal on the line
+    data with a 3 s Undo row, the swipe on the total (`pointerdown` on `.tot`, the strip's own
+    width as the snap point, strip + 80 px to delete), the desktop nudge via `:has(.tot:hover)` and
+    click-to-open on the total; the hover buttons are removed. Keyboard digits, ⌫, Enter, Esc drive
+    the open keypad.
 37. **The products footer (2026-09-17).** Paul's screenshot of today's app: *Tax based on: Shop
     base address* left, *Showing 24 of 209 ⟳* right; important, and cluttered; icons perhaps.
     Five treatments under `Footer` on board 4: today's text · icons with the values (a percent
