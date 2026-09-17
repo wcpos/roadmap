@@ -82,12 +82,13 @@ is set; Guest has no hint. The customer picker remains a no-op in this prototype
 ### Split payments (2026-09-17)
 
 **The ring** (Paul 2026-09-17, decided): the amount sits inside a ring that divides into arcs per
-leg and fills leg by leg in the method's colour; the leg chips carry matching dots; the Even,
-Percent and Amount tiles carry little pies. There is no switch. The four other looks drawn on the
+leg and fills leg by leg in the method's colour; the leg chips carry matching dots; the Even
+tiles carry little pies. There is no switch. The four other looks drawn on the
 way (chips, the bar that fills, tear the receipt, seats) live on only in `board-split.html`, the
 record of the choice, which opens them from the URL with State and tablet/phone switches.
 The Split chip opens Even, Amount, Percent and Item in the pay pane; Done or × returns to the
 keypad, with the plan and Change split below the amount.
+Amount and Percent are typed on the keypad with quick keys above; the commit reads what the split will be.
 Quick-amount helpers stay above the pinned keypad, and Cancel payment is in the pay head after
 a payment is taken.
 

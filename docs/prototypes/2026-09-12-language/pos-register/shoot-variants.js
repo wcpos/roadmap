@@ -264,6 +264,76 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   if (await balance() !== money(splitTotal - 20)) throw new Error('typed partial remaining');
   await page.click('.pay .hd [data-act="cancelPay"]');
   if (await page.locator('.ledger .payrow').count()) throw new Error('cancel did not remove payment');
+  // Amount / Percent: keypad input previews a two-leg plan before committing it.
+  for (const w of ['tablet', 'phone']) {
+    await set('w', w); await scn('split');
+    const total = await page.evaluate(() => sub());
+    const mode = v => page.click(`[data-act="splitMode"][data-v="${v}"]`);
+    const key = k => page.click(`[data-act="splitKey"][data-k="${k}"]`);
+    const value = () => page.locator('.splitbody .big').innerText();
+    const line = () => page.locator('.splitbody .line').innerText();
+    const commit = page.locator('.commit [data-act="splitDone"]');
+    await mode('amount');
+    if (await page.locator('.splitbody .big.ghost').count() !== 1) throw new Error(`${w}: missing ghost amount`);
+    await shot(`split-amount-${w}`);
+    for (const k of ['2', '0', '0', '0']) await key(k);
+    if (await value() !== '£20.00' || !(await line()).includes('first')) throw new Error(`${w}: typed amount preview`);
+    await shot(`split-amount-typed-${w}`);
+    await commit.click();
+    const amountPlan = await page.evaluate(() => ({ plan: S.payPlan, closed: S.split === null }));
+    if (!amountPlan.closed || JSON.stringify(amountPlan.plan) !== JSON.stringify([20, Math.round((total - 20) * 100) / 100])) throw new Error(`${w}: amount plan`);
+    await page.click('[data-act="splitOpen"]'); await mode('percent');
+    await page.locator('.splitbody .helpers .chip').filter({ hasText: /^25 %$/ }).click();
+    if (!(await line()).includes('25 %')) throw new Error(`${w}: percent chip preview`);
+    await key('C'); await key('7'); await key('5');
+    if (await value() !== '75 %') throw new Error(`${w}: typed percent`);
+    await shot(`split-percent-typed-${w}`);
+    await commit.click();
+    const percentPlan = await page.evaluate(() => ({ plan: S.payPlan, closed: S.split === null }));
+    const first = Math.round(total * 75) / 100;
+    if (!percentPlan.closed || JSON.stringify(percentPlan.plan) !== JSON.stringify([first, Math.round((total - first) * 100) / 100])) throw new Error(`${w}: percent plan`);
+    await page.click('[data-act="splitOpen"]'); await mode('amount');
+    for (const k of ['9', '9', '9', '9', '9']) await key(k);
+    if (!(await commit.isDisabled()) || !(await line()).includes('below')) throw new Error(`${w}: invalid amount accepted`);
+    await mode('even');
+    if (await page.locator('.splitgrid .mt').count() !== 5) throw new Error(`${w}: Even tiles changed`);
+    await mode('item');
+    if (!(await page.locator('.splitbody [data-act="splitItem"]').count())) throw new Error(`${w}: Item list missing`);
+    await mode('amount');
+    if (await value() !== '£999.99') throw new Error(`${w}: amount buffer lost on mode switch`);
+    await mode('percent'); await page.keyboard.type('25');
+    await page.keyboard.press('Backspace');
+    if (await value() !== '2 %') throw new Error(`${w}: physical keyboard/backspace`);
+    await mode('amount'); await mode('percent');
+    if (await value() !== '2 %') throw new Error(`${w}: percent buffer lost on mode switch`);
+    await page.keyboard.press('Escape');
+    if (!(await page.evaluate(() => S.split === null))) throw new Error(`${w}: Escape did not close chooser`);
+    await page.click('[data-act="splitOpen"]');
+    for (const scale of ['compact', 'regular', 'spacious']) for (const v of ['amount', 'percent']) {
+      await set('scale', scale); await mode(v);
+      if (await page.locator('.splitbody .big.ghost').count() !== 1) throw new Error(`${w}: reopening did not clear ${v}`);
+      if (v === 'amount') for (const k of '99999999') await key(k);
+      const fits = await page.locator('.pay').evaluate(el => {
+        const pane = el.getBoundingClientRect();
+        return [...el.querySelectorAll('.keys, .commit')].every(control => {
+          const r = control.getBoundingClientRect();
+          return r.top >= pane.top && r.bottom <= pane.bottom + 1 && r.left >= pane.left && r.right <= pane.right + 1 && control.parentElement === el;
+        }) && [...el.querySelectorAll('.scroll, .splitbody, .helpers, .splitbody .big')].every(control => control.scrollWidth <= control.clientWidth + 1);
+      });
+      if (!fits) throw new Error(`split keypad overflow: ${w}-${scale}-${v}`);
+      await key('C');
+    }
+    await set('scale', 'regular');
+    // Half rounding uses pennies, including odd-penny balances.
+    const savedLines = await page.evaluate(() => LINES.map(l => [...l]));
+    await page.evaluate(() => { LINES.splice(0, LINES.length, ['Odd penny', 1, .29, '', 'p']); S.pays=[]; S.payPlan=null; openSplit(); render(); });
+    await mode('amount');
+    await page.locator('.splitbody .helpers .chip').filter({ hasText: /^Half$/ }).click();
+    if (await value() !== '£0.15') throw new Error(`${w}: odd-penny Half`);
+    await commit.click();
+    if (await page.evaluate(() => JSON.stringify(S.payPlan)) !== '[0.15,0.14]') throw new Error(`${w}: odd-penny plan`);
+    await page.evaluate(saved => LINES.splice(0, LINES.length, ...saved), savedLines);
+  }
   // The ring, decided (Paul 2026-09-17); the other four looks live on only for board-split.html, the record of the choice.
   const looks = ['chips', 'bar', 'ring', 'tear', 'seats'];
   if (await page.locator('.strip [data-set="splitLook"]').count()) throw new Error('the Split look switch is still in the strip');

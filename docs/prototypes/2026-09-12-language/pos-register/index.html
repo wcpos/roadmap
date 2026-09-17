@@ -436,6 +436,10 @@ body:has(#strip[hidden]) .notes{display:none}
 .frame[data-screen="register"] .splitbody{max-width:520px;width:100%;margin:0 auto;padding:0 calc(var(--u)*4)}
 .frame[data-screen="register"] .splitbody>.segt{display:flex;width:max-content;max-width:100%;margin:calc(var(--u)*4) auto}
 .frame[data-screen="register"] .splitbody>p{margin:calc(var(--u)*2) 0 0;text-align:center}
+.frame[data-screen="register"] .splitbody .amtblock{padding:0}.frame[data-screen="register"] .splitbody .big{white-space:normal;overflow-wrap:anywhere}
+.frame[data-screen="register"] .splitbody .helpers{padding-left:0;padding-right:0}
+.frame[data-screen="register"] .splitbody.splitpin{flex:none;padding-top:calc(var(--u)*2)} .frame[data-screen="register"] .splitbody.splitpin .helpers{padding-top:calc(var(--u)*2)}
+.frame[data-screen="register"] .splitbody.splitpin .big{font-size:calc(var(--amt)*1.15);line-height:1.1;white-space:nowrap;overflow-wrap:normal}   /* the ring's inner figure, one line: the pinned block must leave room for the keypad and the commit at spacious */
 .frame[data-screen="register"] .splitgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(var(--u)*2)}
 .frame[data-screen="register"][data-w="phone"] .splitgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
 .frame[data-screen="register"] .splitgrid .mt{height:var(--tile);flex-direction:column;gap:2px;text-align:center;overflow-wrap:anywhere}
@@ -892,6 +896,7 @@ if(S.screen==='reports'){S.scn='today';S.theme=Q.get('theme')==='dark'?'dark':'l
 if(S.screen==='orders')S.scn='default';
 const WHIMSY=['market','paper'];
 const STR=()=>S.long?{
+  first:'zuerst',thenLeft:'danach {x}',typeBelow:'Betrag unter {x} eingeben',typePctBelow:'Prozentsatz unter 100 eingeben',splitFirst:'Teilen · {x} zuerst',
   ways:'Teile',each:'je',then:'danach',half:'Hälfte',typeFirst:'Erste Zahlung eingeben',typeRest:'Auf der Tastatur, der Rest folgt',tickItems:'Artikel für diese Zahlung markieren',changeSplit:'Aufteilung ändern',cancelPay:'Zahlung stornieren',paymentN:'Zahlung {n}',ofN:'von {n}',left:'offen',done:'Fertig',even:'Gleich',amount:'Betrag',percent:'Prozent',splitHint:'Jede Zahlungsart je Zahlung · Aufteilung jederzeit ändern',afterThis:'danach offen',forItems:'für',
   search:'Produkte suchen',scan:'Scannen',priceCheck:'Nur Preisprüfung, bis die Kasse geöffnet ist.',counting:'Keine Verkäufe, während die Kasse gezählt wird.',
   customer:'Kunde',guest:'Gast',details:'Bestelldetails',save:'Bestellung speichern',bill:'Rechnung drucken',void:'Stornieren',checkout:'Zur Kasse',subtotal:'Zwischensumme',fees:'Gebühren',tax:'MwSt. 19 %',total:'Gesamt',
@@ -902,6 +907,7 @@ const STR=()=>S.long?{
   noResults:'Nichts passt zu',clear:'Suche leeren',pickT:'Welche Kasse ist dieses Gerät?',toPay:'Zu zahlen',take:'Nehmen',in:'in',change:'Wechselgeld',exactAmt:'Genau',paid:'Bezahlt',printNew:'Beleg drucken · Neuer Verkauf',email:'Beleg per E-Mail',noRcpt:'Kein Beleg · Neuer Verkauf',notAvail:'nicht verfügbar',split:'Teilen',payments:'Zahlungen',legacy:'Klassisch',legacyLink:'Stattdessen den Shop-Checkout verwenden',items:'Artikel',
   qty:'Menge',item:'Artikel',price:'Preis',lineTotal:'Summe',edit:'Bearbeiten',remove:'Entfernen',more:'weitere',openOrders:'Offene Bestellungen',newOrder:'Neue Bestellung',backCart:'Zurück zum Warenkorb',otherWays:'Weitere Zahlungsarten',
 }:{
+  first:'first',thenLeft:'then {x}',typeBelow:'Type an amount below {x}',typePctBelow:'Type a percentage below 100',splitFirst:'Split · {x} first',
   ways:'ways',each:'each',then:'then',half:'Half',typeFirst:'Type the first payment',typeRest:'on the keypad, the rest comes after',tickItems:'Tick the items this payment covers',changeSplit:'Change split',cancelPay:'Cancel payment',paymentN:'Payment {n}',ofN:'of {n}',left:'left',done:'Done',even:'Even',amount:'Amount',percent:'Percent',splitHint:'Any method for each payment · change the split at any time',afterThis:'left after this',forItems:'for',
   search:'Search products',scan:'Scan',priceCheck:'Price check only until the register is open.',counting:'No sales while the register is counting.',
   customer:'Customer',guest:'Guest',details:'Order details',save:'Save order',bill:'Print bill',void:'Void',checkout:'Checkout',subtotal:'Subtotal',fees:'Fees',tax:'VAT 20%',total:'Total',
@@ -938,7 +944,7 @@ function jump(scn){
     case 'split': S.tender=true; openSplit(); break;
     case 'split-1of2': S.tender=true; splitEven(2); settle(S.payPlan[0]); S.method='card'; S.legMethods[S.leg]='card'; break;
     case 'split-2of3': S.tender=true; setPaymentPlan([10.60,2,cents(remaining()-12.60)]); settle(10.60); S.method='card'; settle(2); break;
-    case 'split-item': S.tender=true; S.split={mode:'item',items:[0,1]}; break;
+    case 'split-item': S.tender=true; S.split={mode:'item',items:[0,1],buf:{amount:'',percent:''}}; break;
     case 'paid': settle(sub()); S.tender=true; S.view='paid'; S.phoneTab='products'; break;
     case 'long': S.long=true; break;
     case 'counting': S.counted='463.30'; break;
@@ -1297,7 +1303,7 @@ function splitEven(n){
   const units=Math.round(remaining()*100), part=Math.floor(units/n);
   setPaymentPlan(Array.from({length:n},(_,i)=>(part+(i<units%n?1:0))/100));
 }
-function openSplit(){ S.entry=null; S.split={mode:'even',items:[]}; S.view='keypad'; }
+function openSplit(){ S.entry=null; S.split={mode:'even',items:[],buf:{amount:'',percent:''}}; S.view='keypad'; }
 function settle(amount){
   const due=remaining(), amt=cents(Math.min(amount,due)); if(amt<=0) return;
   const pending=S.payPlan?.map((amt,i)=>({amt,m:S.legMethods[i]})).filter((_,i)=>i>=S.pays.length&&i!==S.leg);
@@ -1393,17 +1399,43 @@ function animateSplitLook(frame,before){
     }
   });
 }
+function splitValue(){
+  const mode=S.split.mode, buf=S.split.buf[mode], due=remaining(), pct=mode==='percent';
+  const units=Math.round(due*100), half=Math.ceil(units/2)/100;
+  const value=buf===''?(pct?50:half):+buf/(pct?1:100);
+  const first=pct?Math.round(units*value/100)/100:value;
+  return {value,first,half,ghost:buf==='',valid:value>0&&value<(pct?100:due)&&first>0&&first<due,label:pct?`${value} %`:fmt(value)};
+}
 function renderSplit(){
-  const t=T(), mode=S.split?.mode||'even', due=remaining();
-  const tile=(label,sub,act,v)=>`<button class="mt press" data-act="${act}" data-v="${v}">${splitTileGlyph(mode,v,due)}<b>${label}</b><span class="mut">${sub}</span></button>`;
-  const tiles=mode==='even'?[2,3,4,5,6].map(n=>tile(`${n} ${t.ways}`,`${fmt(Math.floor(due*100/n)/100)} ${t.each}`,'splitEven',n)).join('')
-    :mode==='amount'?[5,10,20,50].map(n=>tile(fmt(n),`${t.then} ${fmt(Math.max(0,due-n))}`,'splitAmount',n)).join('')+tile(t.half,fmt(cents(due/2)),'splitAmount',cents(due/2))+`<button class="mt wide" data-act="splitType"><b>${t.typeFirst}</b><span>${t.typeRest}</span></button>`
-    :[10,20,25,30,50,75].map(n=>tile(`${n}%`,fmt(cents(due*n/100)),'splitAmount',cents(due*n/100))).join('');
-  return `<div class="splitbody"><div class="segt">${[['even',t.even],['amount',t.amount],['percent',t.percent],['item',t.item]].map(([v,l])=>`<button class="${mode===v?'on':''}" data-act="splitMode" data-v="${v}">${l}</button>`).join('')}</div>${mode==='item'?splitItems():`<div class="splitgrid">${tiles}</div>`}<p class="mut xs">${t.splitHint}</p></div>`;
+  const t=T(), mode=S.split.mode, due=remaining(), typed=mode==='amount'||mode==='percent';
+  let body;
+  if(typed){
+    const {value,first,half,ghost,valid,label}=splitValue(), pct=mode==='percent';
+    const line=valid?`${pct?label+' · ':''}${fmt(first)} ${t.first} · ${t.thenLeft.replace('{x}',fmt(cents(due-first)))}`:pct?t.typePctBelow:t.typeBelow.replace('{x}',fmt(due));
+    const choices=pct?[10,25,50,75].map(n=>[n,`${n} %`]):[...[5,10,20,50].map(n=>[n,`${CUR}${n}`]),[half,t.half]];
+    body='';   /* the typed value and the quick keys are pinned above the keypad: splitTypedBody() */
+  } else if(mode==='item') body=splitItems();
+  else body=`<div class="splitgrid">${[2,3,4,5,6].map(n=>`<button class="mt press" data-act="splitEven" data-v="${n}">${splitTileGlyph(mode,n,due)}<b>${n} ${t.ways}</b><span class="mut">${fmt(Math.floor(due*100/n)/100)} ${t.each}</span></button>`).join('')}</div>`;
+  return `<div class="splitbody"><div class="segt">${[['even',t.even],['amount',t.amount],['percent',t.percent],['item',t.item]].map(([v,l])=>`<button class="${mode===v?'on':''}" data-act="splitMode" data-v="${v}">${l}</button>`).join('')}</div>${body}${typed?'':`<p class="mut xs">${t.splitHint}</p>`}</div>`;
+}
+/* Amount and Percent: the typed value, what the split will be, and the quick keys, pinned above the keypad so they never scroll away (the ring above scrolls instead) */
+function splitTypedBody(){
+  const t=T(), mode=S.split.mode, due=remaining(), pct=mode==='percent';
+  const {value,first,half,ghost,valid,label}=splitValue();
+  const line=valid?`${pct?label+' · ':''}${fmt(first)} ${t.first} · ${t.thenLeft.replace('{x}',fmt(cents(due-first)))}`:pct?t.typePctBelow:t.typeBelow.replace('{x}',fmt(due));
+  const choices=pct?[10,25,50,75].map(n=>[n,`${n} %`]):[...[5,10,20,50].map(n=>[n,`${CUR}${n}`]),[half,t.half]];
+  return `<div class="splitbody splitpin"><div class="amtblock"><div class="big money ${ghost?'ghost':''}">${label}</div><div class="line" ${valid?'':'style="color:var(--warn)"'}>${line}</div></div><div class="helpers">${choices.map(([n,l])=>`<button class="chip press ${value===n?'on':''}" data-act="splitQuick" data-v="${pct?n:Math.round(n*100)}">${l}</button>`).join('')}</div></div>`;
 }
 function splitCommit(){
   const t=T(), a=itemAmount();
+  if(['amount','percent'].includes(S.split?.mode)){
+    const {valid,label}=splitValue();
+    return `<button class="btn xl p press" data-act="splitDone" ${valid?'':'disabled'}>${t.splitFirst.replace('{x}',label)}</button>`;
+  }
   return S.split?.mode==='item'?`<button class="btn xl p press" data-act="splitDone" ${a<=0?'disabled':''}>${a>0?`${t.take} ${fmt(a)} ${t.forItems} ${S.split.items.length} ${t.items}`:t.tickItems}</button>`:'';
+}
+function paymentKeys(act='key'){
+  return `<div class="keys">${['1','2','3','4','5','6','7','8','9'].map(k=>`<button class="k press" data-act="${act}" data-k="${k}">${k}</button>`).join('')}<button class="k sub press" data-act="${act}" data-k="C">C</button><button class="k press" data-act="${act}" data-k="0">0</button><button class="k sub press" data-act="${act}" data-k="⌫">${I.del}</button></div>`;
 }
 function closeBtn(){ const t=T(); return `<button class="ibtn press" data-act="${S.split?'splitClose':'closeTender'}" aria-label="${S.split?t.done:t.backCart}" title="${S.split?t.done:t.backCart}">${I.x}</button>`; }
 function tenderHead(){
@@ -1419,6 +1451,8 @@ function tenderHead(){
 }
 function renderTender(){
   const t=T(); const total=remaining(); const entry=paymentAmount(); const ghost=S.entry===null; const m=METHODS.find(x=>x.id===S.method)||METHODS[0];
+  /* Amount and Percent (Paul 2026-09-17: a keypad with quick keys): the typed value is the figure, so the ring stays out; the mode switch is all that scrolls */
+  if (S.split&&['amount','percent'].includes(S.split.mode)) return `<div class="pay">${tenderHead()}<div class="scroll"><div class="amtblock"><div class="lbl">${t.split} <span class="money">${fmt(total)}</span></div></div>${renderSplit()}</div>${splitTypedBody()}${paymentKeys('splitKey')}<div class="commit">${splitCommit()}<button class="btn q" data-act="splitClose">${t.done}</button></div></div>`;
   if (S.split) return `<div class="pay">${tenderHead()}<div class="scroll">${splitAmountBlock(t.split,total)}${renderSplit()}</div><div class="commit">${splitCommit()}<button class="btn q" data-act="splitClose">${t.done}</button></div></div>`;
   if (S.view==='paid'){
     const last=S.pays.at(-1), change=last?.change||0;
@@ -1462,7 +1496,7 @@ function renderTender(){
   const amount=splitAmountBlock(label,entry,line,ghost);
   return `<div class="pay">${tenderHead()}<div class="scroll">${amount}${methods}${unav}</div>
     <div class="helpers">${helpers}</div>
-    <div class="keys">${['1','2','3','4','5','6','7','8','9'].map(k=>`<button class="k press" data-act="key" data-k="${k}">${k}</button>`).join('')}<button class="k sub press" data-act="key" data-k="C">C</button><button class="k press" data-act="key" data-k="0">0</button><button class="k sub press" data-act="key" data-k="⌫">${I.del}</button></div>
+    ${paymentKeys()}
     <div class="commit"><button class="btn xl p press" data-act="take" ${entry<=0?'disabled':''}>${commit}</button>${bottomClose}</div></div>`;
 }
 
@@ -1635,13 +1669,13 @@ document.addEventListener('click',e=>{
     case 'openVar': S.pview='var'; S.slide='push'; break;
     case 'popView': S.pview='products'; S.slide='pop'; break;
     case 'splitOpen': openSplit(); break;
-    case 'splitMode': S.split={mode:b.dataset.v,items:[]}; S.entry=null; break;
+    case 'splitMode': S.split.mode=b.dataset.v; S.split.items=[]; S.entry=null; break;
+    case 'splitQuick': S.split.buf[S.split.mode]=b.dataset.v; break;
+    case 'splitKey': { const mode=S.split.mode, cur=S.split.buf[mode], k=b.dataset.k; S.split.buf[mode]=k==='C'?'':k==='⌫'?cur.slice(0,-1):(cur+k).slice(0,mode==='percent'?3:8); break; }
     case 'splitEven': splitEven(+b.dataset.v); break;
-    case 'splitAmount': { const a=Math.min(+b.dataset.v,remaining()); setPaymentPlan([a,cents(remaining()-a)].filter(n=>n>0)); break; }
     case 'splitClose': S.split=null; S.view='keypad'; break;
-    case 'splitType': S.split=null; S.view='keypad'; S.payPlan=null; S.legMethods=[]; S.leg=S.pays.length; S.entry=null; break;
     case 'splitItem': { const i=+b.dataset.i, at=S.split.items.indexOf(i); if(at<0) S.split.items.push(i); else S.split.items.splice(at,1); S.entry=null; break; }
-    case 'splitDone': { const a=itemAmount(); if(a>0) setPaymentPlan([a,cents(remaining()-a)].filter(n=>n>0)); else {S.split=null;S.view='keypad';} break; }
+    case 'splitDone': { if(['amount','percent'].includes(S.split.mode)){ const {first,valid}=splitValue(); if(valid) setPaymentPlan([first,cents(remaining()-first)]); break; } const a=itemAmount(); if(a>0) setPaymentPlan([a,cents(remaining()-a)].filter(n=>n>0)); else {S.split=null;S.view='keypad';} break; }
     case 'cancelPay': clearTimeout(termTimer); S.pending=null; S.pays.pop(); S.leg=S.pays.length; S.method=S.legMethods[S.leg]||'cash'; S.entry=null; S.split=null; S.view='keypad'; break;
     case 'checkout': S.xf=true; S.tender=true; S.view='keypad'; S.entry=null; S.method='cash'; break;
     case 'closeTender': S.split=null; S.xf=true; clearTimeout(termTimer); S.tender=false; S.view='keypad'; break;
@@ -1677,7 +1711,12 @@ document.addEventListener('keydown',e=>{
   if(S.screen==='orders'){OP.keydown(e);return;}
   if (S.qx!=null && S.w!=='phone'){ if(/^[0-9]$/.test(e.key)) { document.querySelector(`.qx [data-act="qkey"][data-k="${e.key}"]`)?.click(); return; } if(e.key==='Backspace'){ document.querySelector('.qx [data-act="qkey"][data-k="bs"]')?.click(); return; } if(e.key==='Enter'||e.key==='Escape'){ S.qx=null; S.qbuf=''; render(); return; } }
   if (S.edit!=null && (e.key==='Enter'||e.key==='Escape')){ S.edit=null; render(); return; }
-  if(S.tender&&S.split){ if(e.key==='Escape'){S.split=null;render();} else if(e.key==='Enter') document.querySelector('[data-act="splitDone"]')?.click(); return; }
+  if(S.tender&&S.split){
+    if(e.key==='Escape'){e.preventDefault();S.split=null;render();}
+    else if(e.key==='Enter'){e.preventDefault();document.querySelector('[data-act="splitDone"]')?.click();}
+    else if(/^[0-9]$/.test(e.key)||e.key==='Backspace'){e.preventDefault();document.querySelector(`[data-act="splitKey"][data-k="${e.key==='Backspace'?'⌫':e.key}"]`)?.click();}
+    return;
+  }
   if (!S.tender || S.view!=='keypad') return;
   if (/^[0-9]$/.test(e.key)) document.querySelector(`[data-act="key"][data-k="${e.key}"]`)?.click();
   else if (e.key==='Backspace') document.querySelector('[data-act="key"][data-k="⌫"]')?.click();

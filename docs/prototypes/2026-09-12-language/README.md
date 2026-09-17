@@ -371,6 +371,12 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     **Paul (2026-09-17, later): the ring only makes sense in the context of a split.** A plain sale
     shows the amount as before; the ring draws in when the chooser opens and stays while a plan or
     a part payment exists.
+    **Paul (2026-09-17, later): Amount and Percent get a keypad with sensible quick keys above.**
+    Both modes: a SPLIT label and the mode switch, then, pinned above the register's keypad, the
+    typed figure (ghosted default: half, or 50 %), what the split will be, and the quick keys
+    (£5 · £10 · £20 · £50 · Half; 10 · 25 · 50 · 75 %); the commit reads "Split · £20.00 first" and
+    is disabled with a warning when the value is zero or not below the remaining. The ring stays
+    out of these two modes. Even and Item unchanged.
 51. **The ledger's Payments block, six drawings (Paul, 2026-09-17).** Paul: do something with the
     payments listed under the line items; more information, more visual; research it, at least
     five. From Mobbin: Klarna's paid · left bar over a ticked plan, Stripe's and Wise's event
