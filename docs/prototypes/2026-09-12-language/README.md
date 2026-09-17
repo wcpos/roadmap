@@ -229,6 +229,10 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     the register. The Reports design is not signed off (Paul, the same day: it "sucks"); it is
     being reworked component by component in the sibling session, so this entry names the
     page, not its current state.
+    **Paul (2026-09-17, later): the Sales chart is decided**, By hour | Running total behind one
+    toggle in the chart head, busiest bucket labelled, comparison as a dashed line, tax off the
+    chart; the eight drawings in `reports/chart-variants.html` (H the result), the notes in
+    `reports/README.md`. The rest of the page is still under review.
 
 48. **Orders inside the register; the rail toggles the pages (Paul, 2026-09-17).** Paul: put
     the Orders mock-up into `pos-register/index.html` and toggle between the POS page, the
