@@ -32,6 +32,7 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
   <div class="grp">Live prototypes</div>
   <a href="#register">POS register</a>
   <a href="#orders">Orders</a>
+  <a href="#reports">Reports</a>
   <div class="grp">Boards (options side by side)</div>
   <a href="#icons">Icon sets — 12 families</a>
   <a href="#ideas">Personality — ideas + live touches</a>
@@ -55,6 +56,7 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
   <h2>What changed</h2>
   <div class="meta">Newest first. Every push adds a line here; the date is the day it landed.</div>
   <div class="log">
+    <div><time>2026-09-17 · later 24</time><span><b>Reports, in the language.</b> From the sibling session: the Reports page redrawn in the language: the Sales glance (hero, signed delta chip, ghost bars capped at 40 px, tiles) and the shipped Closures room (session card, closures by day, closure as recorded with corrections, Recount sheet, Reprint) as a sibling of the register, with the register's rail, bar, bell panel and Free strip. Live under <a href="#reports">Reports</a>; 228 captures in <code>reports/screens/</code>. Two picks made while drawing, for you to confirm or overturn: detail panels open from the right (there is no cart to return to) and the Free strip at the top. The Reports design itself is not signed off; this is what you react to next.</span></div>
     <div><time>2026-09-17 · later 23</time><span><b>The row goes; Void becomes the ⋯; the ⋯ opens the order sheet.</b> Paul: the Order details | Save order | Print bill row should be removed; change the Void button to a three-dot icon like the phone app; it opens a modal (side slide, or it takes over the cart like the open orders list) with the order details and, at the bottom, Void | Save | Print. Done on the register for every width: the row is gone, the cart foot is ⋯ | Checkout, and the ⋯ opens the order sheet: the details form, then Void (red outline) · Print bill · Save order at its foot. Both homes under <kbd>Order sheet</kbd>: <i>slides in from the right</i> (the same slide-out as edit line, cart settings and the bell; a bottom sheet on the phone) or <i>takes over the cart</i> (the open orders list's frame). The order note taps open the same sheet. Recommendation: the slide. Captures: <code>pos-register/screens/variants/osheet-foot-tablet.jpg</code>, <code>osheet-side-tablet.jpg</code>, <code>osheet-side-desktop.jpg</code>, <code>osheet-side-phone.jpg</code>, <code>osheet-cart-tablet.jpg</code>, <code>osheet-cart-phone.jpg</code>, <code>osheet-voided.jpg</code>.</span></div>
     <div><time>2026-09-17 · later 22</time><span><b>Notifications approved; the strip gets an ×.</b> Paul: the notifications look good, the banner looks good too, it just needs an × so users can dismiss it. Done: an × at the right end of the strip, gone for the session and back on the next launch (the point of the strip is that it comes back). Capture <code>pos-register/screens/variants/plan-dismissed.jpg</code>. Top is what Paul approved on the register; bottom stays on the switch until he says the word.</span></div>
     <div><time>2026-09-17 · later 21</time><span><b>Update in the bell, free strip top or bottom.</b> Paul: the update notice goes in the bell notifications, which open in a side panel; the free banner is meant to be slightly annoying and belongs in a strip at the top or bottom; check Mobbin. Done on the register: the bell above the cart carries a dot and opens a slide-out from the right, the update at its head with <i>Update now</i> and <i>Later</i>, ordinary notifications below (<kbd>Update</kbd> switch to see it without). A <kbd>Plan</kbd> switch draws the free strip at the top, at the bottom, or not at all. Second Mobbin sweep on the <a href="#banners">banners board</a>: strips at the top in Circle, Fireflies, Descript and Rox, at the bottom in Readymag; notification side panels in Time2book, Hootsuite, Savee, Aboard, QuickBooks, Magnific. Recommendation: top. Captures <code>pos-register/screens/variants/plan-*.jpg</code> and <code>notif-*.jpg</code>.</span></div>
@@ -120,6 +122,7 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
     <li><b>Order sheet, slide or takeover:</b> the ⋯ beside Checkout opens it; both homes under <kbd>Order sheet</kbd> on the register. The slide is the recommendation: it is the surface edit line, cart settings and the bell already use, and the cart stays in view behind it while you decide to void.</li>
     <li><b>Product list layers:</b> anything from the second table board to layer onto the decided rows (category tabs, sort chips, search-first, steppers)?</li>
     <li><b>Orders:</b> the list is frameless by decision; grouping by day and the status-count strip are waiting as additions.</li>
+    <li><b>Reports:</b> the page is drawn in the language and not signed off. Two picks to confirm: detail panels from the right, the Free strip at the top.</li>
   </ol></div>
 </section>
 
@@ -165,6 +168,12 @@ kbd{font:inherit;font-size:12px;background:#f3f4f6;border:1px solid #d1d5db;bord
   <h2>Orders — live <a class="open" href="orders/index.html">open on its own ↗</a></h2>
   <div class="what"><b>List style</b> in the strip; rows on tablet and phone, a table on desktop; ↑↓ Enter Esc work on the desktop table; the display-options popover changes columns live.</div>
   <iframe src="orders/index.html" style="height:1140px" loading="lazy" title="Orders prototype"></iframe>
+</section>
+
+<section id="reports">
+  <h2>Reports — live <a class="open" href="reports/index.html">open on its own ↗</a></h2>
+  <div class="what">The Sales glance and the Closures room as another room of the register: same rail, bar, bell panel and Free strip. Width, theme, scale and state in the strip; detail documents open in a panel from the right, a page on the phone. Not signed off; drawn so there is something to react to.</div>
+  <iframe src="reports/index.html" style="height:1140px" loading="lazy" title="Reports prototype"></iframe>
 </section>
 
 <section id="personality">
