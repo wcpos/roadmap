@@ -61,7 +61,7 @@ const SCALES = QUICK ? ['regular'] : ['regular','compact'];
   await set('w','phone');
   await page.click('.bar [data-sheet="menu"]');
   await page.click('.sheet .menu-list [data-nav="reports"]');
-  if (!(await page.locator('.frame[data-screen="reports"] .phone-tabs').count()) || await page.locator('.sheet').count()) throw new Error('phone menu did not open Reports');
+  if (!(await page.locator('.frame[data-screen="reports"] .bar').count()) || await page.locator('.sheet').count()) throw new Error('phone menu did not open Reports');   // the Reports page's own bar; its phone tab row is a Reports layout choice, not this script's
   await page.click('.bar [data-sheet="menu"]');
   await page.click('.sheet .menu-list [data-nav="register"]');
   if (!(await page.locator('.frame[data-screen="register"]').count())) throw new Error('phone menu did not return to the register');

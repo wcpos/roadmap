@@ -281,6 +281,9 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     headers are the information worth the room, progress repeats the totals block, facts are
     not acted on, and a live customer needs an app change (payment locks the customer today).
     Not decided.
+    **Paul (2026-09-17, later): the order number in the cart is "not a bad idea"; the pay pane's
+    "Order #… · n items · Guest" title goes, and the Payments | Legacy toggle moves to the left
+    in its place.** Done on every width.
     (c) **chips** — pills, the current one filled; reads as a filter row rather than tabs;
     (d) **cards** — small cards with amount, customer and status, current with a primary top
     edge; the most information, the tallest;

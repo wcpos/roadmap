@@ -469,6 +469,15 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .frame:where([data-screen="reports"])[data-w="phone"] .datepick{flex-direction:column} .frame:where([data-screen="reports"])[data-w="phone"] .quick{flex-direction:row;flex-wrap:wrap;gap:var(--u)} .frame:where([data-screen="reports"])[data-w="phone"] .quick .pr{width:auto;flex:1 1 30%} :where(.frame[data-screen="reports"]) .delta.up{color:var(--ok)} :where(.frame[data-screen="reports"]) .delta.down{color:var(--bad)}
 :where(.frame[data-screen="reports"]) .cmpbtn{display:inline-flex;align-items:center;gap:var(--u);min-height:max(var(--ctl),var(--floor));color:var(--muted-fg)}
 :where(.frame[data-screen="reports"]) .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(var(--u)*6);align-content:center;margin-right:calc(var(--ctl))} :where(.frame[data-screen="reports"]) .kpi .n{font-size:calc(var(--fs)*1.7);font-weight:600} :where(.frame[data-screen="reports"]) .kpi .p{color:var(--muted-fg);font-size:calc(var(--fs)*.9)}
+:where(.frame[data-screen="reports"]) .rp-panels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(var(--u)*3);margin-top:calc(var(--u)*4)} .frame:where([data-screen="reports"])[data-w="tablet"] .rp-panels{grid-template-columns:repeat(2,minmax(0,1fr))} .frame:where([data-screen="reports"])[data-w="phone"] .rp-panels{grid-template-columns:1fr}
+:where(.frame[data-screen="reports"]) .rp-panel{background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);display:flex;flex-direction:column;min-width:0} :where(.frame[data-screen="reports"]) .rp-panel .ph{display:flex;align-items:center;gap:calc(var(--u)*2);width:100%;text-align:left;min-height:max(var(--ctl),var(--floor));padding:0 calc(var(--u)*3) 0 calc(var(--u)*4);border-bottom:var(--hair) solid var(--border)} :where(.frame[data-screen="reports"]) .rp-panel .ph:hover{background:var(--muted)}
+:where(.frame[data-screen="reports"]) .rp-panel .ph .n{font-weight:600;flex:1} :where(.frame[data-screen="reports"]) .rp-panel .ph .v{font-weight:600;font-variant-numeric:tabular-nums;color:var(--muted-fg)} :where(.frame[data-screen="reports"]) .rp-panel .ph>svg{width:16px;height:16px;color:var(--muted-fg)}
+:where(.frame[data-screen="reports"]) .rp-panel .pb{padding:calc(var(--u)*2) calc(var(--u)*4) calc(var(--u)*3);display:flex;flex-direction:column;gap:calc(var(--u)*2.5);flex:1} :where(.frame[data-screen="reports"]) .rp-panel .pf-more{padding:0 calc(var(--u)*4) calc(var(--u)*3)}
+:where(.frame[data-screen="reports"]) .br{display:grid;grid-template-columns:1fr auto;grid-template-areas:"l r" "sh sh" "s s";column-gap:calc(var(--u)*3);row-gap:3px;align-items:center;min-width:0} :where(.frame[data-screen="reports"]) .br .l{grid-area:l;display:flex;align-items:center;gap:calc(var(--u)*2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} :where(.frame[data-screen="reports"]) .br .r{grid-area:r;font-weight:600;font-variant-numeric:tabular-nums} :where(.frame[data-screen="reports"]) .br .sh{grid-area:sh;display:block;height:4px;border-radius:2px;background:var(--muted);overflow:hidden} :where(.frame[data-screen="reports"]) .br .sh b{display:block;height:100%;background:var(--primary);border-radius:2px} :where(.frame[data-screen="reports"]) .br .s{grid-area:s;color:var(--muted-fg);font-size:calc(var(--fs)*.86)}
+:where(.frame[data-screen="reports"]) .or{display:flex;align-items:center;justify-content:space-between;gap:calc(var(--u)*3);min-height:calc(var(--fs)*1.9)} :where(.frame[data-screen="reports"]) .or .l{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} :where(.frame[data-screen="reports"]) .or .r{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap} :where(.frame[data-screen="reports"]) .or .st{margin-left:var(--u)}
+:where(.frame[data-screen="reports"]) .rlist.more{margin-top:calc(var(--u)*3)}
+:where(.frame[data-screen="reports"]) .br .avi{width:22px;height:22px;border-radius:50%;background:var(--muted);color:var(--fg);display:inline-flex;align-items:center;justify-content:center;font-size:calc(var(--fs)*.8);font-weight:600;flex:none}
+.frame:where([data-screen="reports"])[data-w="phone"] .or{flex-wrap:wrap;row-gap:2px} .frame:where([data-screen="reports"])[data-w="phone"] .or .l{white-space:normal;flex:1 1 100%}
 :where(.frame[data-screen="reports"]) .rlist{margin-top:calc(var(--u)*4);border-top:var(--hair) solid var(--border)} :where(.frame[data-screen="reports"]) .rrow{display:grid;grid-template-columns:minmax(140px,1fr) 2fr auto 20px;align-items:center;gap:calc(var(--u)*3);width:100%;text-align:left;min-height:max(var(--row),var(--floor));padding:0 var(--u);border-bottom:var(--hair) solid var(--border)} :where(.frame[data-screen="reports"]) .rrow:hover{background:var(--muted)} :where(.frame[data-screen="reports"]) .rrow:disabled{opacity:.6}
 :where(.frame[data-screen="reports"]) .rrow .rn{font-weight:500} :where(.frame[data-screen="reports"]) .rrow .rs{color:var(--muted-fg);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} :where(.frame[data-screen="reports"]) .rrow .rv{font-weight:600;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap} :where(.frame[data-screen="reports"]) .rrow>svg{width:16px;height:16px;color:var(--muted-fg)}
 .frame:where([data-screen="reports"])[data-w="phone"] .rrow{grid-template-columns:1fr auto 20px;grid-template-areas:"n v c" "s v c";row-gap:2px;padding:calc(var(--u)*2) var(--u)} .frame:where([data-screen="reports"])[data-w="phone"] .rrow .rn{grid-area:n} .frame:where([data-screen="reports"])[data-w="phone"] .rrow .rs{grid-area:s;font-size:calc(var(--fs)*.9)} .frame:where([data-screen="reports"])[data-w="phone"] .rrow .rv{grid-area:v} .frame:where([data-screen="reports"])[data-w="phone"] .rrow>svg{grid-area:c}
@@ -810,7 +819,7 @@ function renderStrip(){
     ${S.screen==='register'?`<div class="g"><b>Tabs</b>${seg('tabsPos',[['bottom','bottom'],['top','top']])}</div>`:''}
     ${S.screen!=='orders'?`<div class="g"><b>Touches</b><span class="seg">${(()=>{const all=Object.values(S.tx).every(Boolean), none=!Object.values(S.tx).some(Boolean); return `<button class="${none?'on':''}" data-txall="0">before</button><button class="${all?'on':''}" data-txall="1">after</button>`;})()}</span><span class="seg">${[['roll','total settles'],['stamp','PAID stamp'],['pence','price-tag pence (whimsical themes)'],['badge','tile badge · stock'],['tear','receipt tears off (whimsical themes)'],['doodle','doodle']].map(([k,l])=>`<button class="${S.tx[k]?'on':''}" data-tx="${k}">${l}</button>`).join('')}</span></div>`:''}
     ${S.screen==='register'?`<div class="g"><b>Registers</b>${seg('registers',[[1,'1'],[3,'3']])}</div>`:''}
-    ${S.screen==='reports'?`<div class="g"><b>Stores</b>${seg('stores',[[1,'1'],[2,'2']],RS)}</div><div class="g"><b>Below the chart</b>${seg('layout',[['list','one list, Closures a row'],['tiles','Sales | Closures tabs + tiles (as drawn)']],RS)}</div>`:''}
+    ${S.screen==='reports'?`<div class="g"><b>Stores</b>${seg('stores',[[1,'1'],[2,'2']],RS)}</div><div class="g"><b>Below the chart</b>${seg('layout',[['panels','panels: each report’s top rows, with bars'],['list','one list, Closures a row'],['tiles','Sales | Closures tabs + tiles (as drawn)']],RS)}</div>`:''}
     ${S.screen==='orders'?`<div class="g"><b>List style</b>${seg('listStyle',[['bleed','no frame (Linear)'],['grouped','no frame · by day'],['stats','status counts + no frame (Stripe)'],['card','hairline card (cut 1)']],OS)}</div>`:''}
     <div class="g"><b>State</b><span class="seg">${(S.screen==='reports'?RP.SCENES:S.screen==='orders'?OP.SCENES:SCENES).map(([v,l])=>`<button class="${S.scn===v?'on':''}" data-scn="${v}">${l}</button>`).join('')}</span></div>`;
 }
@@ -1124,13 +1133,13 @@ function renderSheet(){
 function closeBtn(){ const t=T(); return `<button class="ibtn press" data-act="closeTender" aria-label="${t.backCart}" title="${t.backCart}">${I.x}</button>`; }
 function tenderHead(){
   const t=T();
-  const title=`<span class="mut ell">Order <b>#102476</b> · ${lines().length} ${t.items} · ${t.guest}</span>`;
+  /* Paul 2026-09-17: the ledger head now names the order and the customer, so the pay pane's title line goes and the Payments | Legacy toggle takes its place on the left */
   const leg = S.view==='legacy';
   const toggle = S.legacy==='header-text' ? `<span class="segt" style="height:36px" role="tablist"><button class="${leg?'':'on'}" data-act="mode" data-mode="keypad">${t.payments}</button><button class="${leg?'on':''}" data-act="mode" data-mode="legacy">${t.legacy}</button></span>`
     : S.legacy==='header-icons' ? `<span class="segt" style="height:36px" role="tablist"><button class="${leg?'':'on'}" data-act="mode" data-mode="keypad" aria-label="${t.payments}" title="${t.payments}">${I.keypad}</button><button class="${leg?'on':''}" data-act="mode" data-mode="legacy" aria-label="${t.legacy}" title="${t.legacy}">${I.globe}</button></span>` : '';
-  if (S.closePos==='tl') return `<div class="hd">${closeBtn()}${title}<span class="grow"></span>${toggle}</div>`;
-  if (S.closePos==='tr') return `<div class="hd" style="padding-left:calc(var(--u)*4)">${title}<span class="grow"></span>${toggle}${closeBtn()}</div>`;
-  return `<div class="hd" style="padding-left:calc(var(--u)*4)">${title}<span class="grow"></span>${toggle}</div>`;
+  if (S.closePos==='tl') return `<div class="hd">${closeBtn()}${toggle}<span class="grow"></span></div>`;
+  if (S.closePos==='tr') return `<div class="hd" style="padding-left:calc(var(--u)*4)">${toggle}<span class="grow"></span>${closeBtn()}</div>`;
+  return `<div class="hd" style="padding-left:calc(var(--u)*4)">${toggle}<span class="grow"></span></div>`;
 }
 function renderTender(){
   const t=T(); const total=sub(); const entry=S.entry??total; const ghost=S.entry===null; const m=METHODS.find(x=>x.id===S.method)||METHODS[0];
@@ -1351,7 +1360,7 @@ const RS = {
   register:'front', store:'uk', cashier:'all',
   unticked: new Set(), detail: null, closure: null, xreport: false, tpl:'default', chart:'hour',   /* 'hour' | 'run' (Paul 2026-09-17: an easy toggle) */
   pop: null, hint: null, tip: null, frameH: 780, calMonth: 0, pickStart: null,
-  layout: 'list',   /* Paul 2026-09-17: Closures is one more kind of information, not a different room; the tiles go, one list of reports under the chart */
+  layout: 'panels',   /* Paul 2026-09-17 ("surely we can do better", Mobbin: Vercel, Framer, Lloyds, Revolut): the content of each report inline, a few rows deep, with share bars; 'list' and 'tiles' kept to compare. Closures is one more kind of information, not a different room; the tiles go, one list of reports under the chart */
 };
 
 const RP=(()=>{
@@ -1570,7 +1579,7 @@ function panelTitle() {
 /* ---- Sales room ---- */
 function sales() {
   const m = model();
-  return `<div class="pad">${hero(m)}${RS.layout==='list'?reportList(m):tiles(m)}</div>`;
+  return `<div class="pad">${hero(m)}${RS.layout==='panels'?reportPanels(m):RS.layout==='list'?reportList(m):tiles(m)}</div>`;
 }
 function periodDates(gran, off) {
   const m3 = d => MON[d.getMonth()].slice(0, 3);
@@ -1663,6 +1672,37 @@ function reportRows(m) {
 }
 /* Paul 2026-09-17: what does a cashier or owner come here to do? Below the chart, one list in that order: the orders behind the figure,
    the payments split (to reconcile the till and the card batch), the till's closures, then the accountant's and the owner's reports. */
+/* panels: what the good dashboards put under the chart (Vercel, Framer, Featurebase, Lovable on the web; Lloyds, Revolut, YNAB, Starling on the phone):
+   each report's first rows in view with a share bar, the figure at the head, the head opens the whole report. Order: the jobs. */
+function reportPanels(m) {
+  const T = m.total || 1;
+  const bar = (label, val, share, sub = '', extra = '') => `<div class="br"><span class="l">${label}</span><span class="r">${val}</span><i class="sh"><b style="width:${Math.max(2, Math.round(share * 100))}%"></b></i><span class="s">${pct(share)}${sub ? ' · ' + sub : ''}</span>${extra}</div>`;
+  const panel = (k, name, fig, body, foot = '') => `<section class="rp-panel" data-k="${k}"><button class="ph press" data-act="detail" data-v="${k}"><span class="n">${name}</span><span class="v">${fig}</span>${I.chev}</button><div class="pb">${body}</div>${foot}</section>`;
+  const out = [];
+  /* Orders: the last three, then the count; the report is the full list with the tick boxes */
+  { const last = [...m.t].sort((a, b) => a.time < b.time ? 1 : -1).slice(0, 3);
+    out.push(panel('orders', 'Orders', m.orders, last.map(o => `<div class="or"><span class="l">#${o.n}<span class="mut"> · ${o.time} · ${esc(o.cashier)}</span></span><span class="r">${fmt(o.total)}</span></div>`).join('') || '<div class="mut sm">No orders yet</div>', last.length && m.orders > 3 ? `<div class="pf-more mut sm">and ${m.orders - 3} more</div>` : '')); }
+  /* Payments: the till and the card batch */
+  { const ks = Object.keys(m.byMethod).sort((a, b) => m.byMethod[b] - m.byMethod[a]);
+    out.push(panel('payments', 'Payments', fmt(m.total), ks.map(k => bar(esc(k), fmt(m.byMethod[k]), m.byMethod[k] / T, `${m.cntMethod[k]} order${m.cntMethod[k] === 1 ? '' : 's'}`)).join('') || '<div class="mut sm">No payments yet</div>')); }
+  /* Closures: the till now, then the period's closures */
+  { const cl = closureRows(), open = RS.regOpen && RS.register !== 'back';
+    const head = open ? `<div class="or"><span class="l">${esc(REGISTERS[0].name)} <span class="st ok"><i></i>Open</span><span class="mut"> · since ${OPEN_SESSION.open} by ${OPEN_SESSION.by}</span></span><span class="r">${fmt(OPEN_SESSION.expected)}<span class="mut"> expected</span></span></div>` : '';
+    const rows = RS.empty ? '<div class="mut sm">No closures yet</div>' : cl.slice(0, 3).map(c => `<div class="or"><span class="l">Closure ${c.num}<span class="mut"> · ${c.open}–${c.close} · ${esc(c.by)}</span></span><span class="r">${status(c.variance ? 'warn' : 'ok', c.variance ? fmt(Math.abs(c.variance)) + (c.variance < 0 ? ' short' : ' over') : 'Exact')}</span></div>`).join('');
+    out.push(panel('closures', 'Closures', RS.empty ? '0' : cl.length, head + rows, cl.length > 3 ? `<div class="pf-more mut sm">and ${cl.length - 3} more</div>` : '')); }
+  /* Top products */
+  out.push(panel('products', 'Top products', fmt(r2(T * PRODUCTS[0][1])), PRODUCTS.slice(0, 4).map(([n, sh]) => bar(esc(n), fmt(r2(T * sh)), sh, `${Math.max(1, Math.round(m.items * sh * 1.1))} sold`)).join('')));
+  /* Cashiers */
+  { const ks = Object.keys(m.byCashier).sort((a, b) => m.byCashier[b] - m.byCashier[a]);
+    out.push(panel('cashiers', 'Cashiers', ks.length, ks.map(k => bar(`<span class="avi">${k[0]}</span>${esc(k)}`, fmt(m.byCashier[k]), m.byCashier[k] / T, `${m.cntCashier[k]} order${m.cntCashier[k] === 1 ? '' : 's'}`)).join('') || '<div class="mut sm">No sales yet</div>')); }
+  /* Taxes */
+  { const t20 = r2(m.tax * .958), t5 = r2(m.tax - t20);
+    out.push(panel('taxes', 'Taxes', fmt(m.tax), bar('VAT 20%', fmt(t20), m.tax ? t20 / m.tax : 0, `on ${fmt(r2(t20 * 5))}`) + bar('VAT 5%', fmt(t5), m.tax ? t5 / m.tax : 0, `on ${fmt(r2(t5 * 20))}`))); }
+  /* the rest as one plain list: the monthly look */
+  const rest = reportRows(m).filter(([k]) => ['refunds', 'categories', 'registers', 'cash', 'deposits'].includes(k));
+  const more = `<div class="rlist more">${rest.map(([k, l, n, line]) => `<button class="rrow press" data-act="detail" data-v="${k}" ${k === 'deposits' && !RS.online ? 'disabled' : ''}><span class="rn">${l}</span><span class="rs">${line}</span><span class="rv">${n}</span>${I.chev}</button>`).join('')}</div>`;
+  return `<div class="rp-panels">${out.join('')}</div>${more}`;
+}
 function reportList(m) {
   const order=['orders','payments','closures','taxes','refunds','products','cashiers','categories','registers','cash','deposits'];
   const rows=reportRows(m); const byK=Object.fromEntries(rows.map(r=>[r[0],r]));
