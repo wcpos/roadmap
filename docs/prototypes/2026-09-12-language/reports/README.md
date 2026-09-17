@@ -184,6 +184,10 @@ refunds marked and named, the float as a dashed line, "£293.70 now" at the end;
 is closed the line ends at the count with the drawer result. Desktop keeps it in the middle of
 the strip; tablet and phone give it its own row; the phone drops the event labels. The chips
 remain behind the strip's *Till* switch as the backup.
+Spacing pass (Paul): the button group was named `tr` and inherited the register's table-row
+hairline, which drew a stray line under X-report on tablet; renamed. On tablet, and on a busy
+day at any width, X-report and the chevron now span both rows and sit centred beside the line
+or the chips instead of floating above an empty corner; the row gap is tighter.
 
 ## What changed from 2026-09-14
 
