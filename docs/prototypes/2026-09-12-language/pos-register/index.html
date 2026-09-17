@@ -193,6 +193,16 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .cartcol{width:min(42%,440px);min-width:340px;border-left:0;background:var(--card);display:flex;flex-direction:column;position:relative;border-left:var(--hair) solid var(--border)}
 .frame[data-w="desktop"] .cartcol{width:480px}
 .frame[data-w="phone"] .cartcol{width:100%;min-width:0;border-left:0;flex:1;min-height:0}
+/* Paul 2026-09-17: the free version keeps a strip, slightly annoying on purpose; top or bottom is the open question */
+.upstrip{display:flex;align-items:center;gap:calc(var(--u)*2.5);padding:0 calc(var(--u)*2) 0 calc(var(--u)*4);min-height:40px;background:var(--warn-bg);color:var(--fg);border-bottom:var(--hair) solid color-mix(in oklch,var(--warn) 45%,transparent);flex:none;font-size:calc(var(--fs)*.93)} .upstrip.bottom{border-bottom:0;border-top:var(--hair) solid color-mix(in oklch,var(--warn) 45%,transparent)}
+.upstrip>svg{width:16px;height:16px;flex:none;color:var(--warn)} .upstrip .msg{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .upstrip .msg b{font-weight:600} .upstrip .act{height:28px;padding:0 calc(var(--u)*2.5);border-radius:var(--r);background:var(--primary);color:var(--primary-fg);font-weight:600;font-size:calc(var(--fs)*.9);white-space:nowrap} .upstrip .more{color:var(--muted-fg);white-space:nowrap;text-decoration:underline;text-underline-offset:2px}
+.frame[data-w="phone"] .upstrip .more{display:none}
+.ibtn{position:relative} .ndot{position:absolute;top:9px;right:9px;width:8px;height:8px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 2px var(--card)}
+/* Paul 2026-09-17: the update notice lives in the bell; the bell opens a side panel */
+.sidepanel .bd.notif{padding:0} .ngrp{padding:calc(var(--u)*3) calc(var(--u)*4) calc(var(--u)*1.5);font-size:calc(var(--fs)*.78);font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-fg)}
+.nitem{display:flex;gap:calc(var(--u)*3);padding:calc(var(--u)*3) calc(var(--u)*4);border-bottom:var(--hair) solid var(--border);width:100%;text-align:left;align-items:flex-start} .nitem .ic{width:32px;height:32px;border-radius:50%;background:var(--muted);color:var(--muted-fg);display:grid;place-items:center;flex:none} .nitem .ic svg{width:16px;height:16px} .nitem .ic.ok{background:var(--ok-bg);color:var(--ok)} .nitem .ic.warn{background:var(--warn-bg);color:var(--warn)} .nitem .ic.upd{background:var(--primary);color:var(--primary-fg)}
+.nitem .tx{flex:1;min-width:0} .nitem .t{font-weight:500} .nitem .s{color:var(--muted-fg);font-size:calc(var(--fs)*.9);margin-top:2px} .nitem .when{color:var(--muted-fg);font-size:calc(var(--fs)*.8);flex:none;margin-top:2px} .nitem .udot{width:8px;height:8px;border-radius:50%;background:var(--primary);flex:none;margin-top:6px}
+.nitem.upd{background:color-mix(in oklch,var(--primary) 6%,var(--card));border-bottom-color:color-mix(in oklch,var(--primary) 25%,transparent)} .nitem.upd .acts{display:flex;gap:calc(var(--u)*2);margin-top:calc(var(--u)*2.5)} .nitem.upd .acts .btn{height:32px;padding:0 calc(var(--u)*3)}
 .bar{height:max(var(--ctl),var(--floor));display:flex;align-items:center;gap:calc(var(--u)*2);padding:0 calc(var(--u)*2) 0 calc(var(--u)*4);border-bottom:var(--hair) solid var(--border);flex:none}
 .bar .place{font-weight:600;display:inline-flex;align-items:center;gap:calc(var(--u)*2)}
 .bar .avbtn{width:max(var(--ctl),var(--floor));height:max(var(--ctl),var(--floor));display:inline-flex;align-items:center;justify-content:center;border-radius:var(--r)} .bar .avbtn:active{background:var(--muted)}
@@ -429,7 +439,7 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 <div class="strip" id="strip"></div>
 <div class="stage"><div id="frame"></div><div class="notes" id="notes"></div></div>
 <script>
-const I = { note:'<svg viewBox="0 0 24 24"><path d="M5 5h14v10H9l-4 4z"/><path d="M9 9h6M9 12h4"/></svg>', minus:'<svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>', folder:'<svg viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>', tag:'<svg viewBox="0 0 24 24"><path d="M3 12V4h8l9 9-8 8zM7.5 7.5h.01"/></svg>', star:'<svg viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg>', percent:'<svg viewBox="0 0 24 24"><path d="M5 19L19 5"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/></svg>', sync:'<svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.5-4.5L4 8M4 4v4h4M4 13a8 8 0 0 0 14.5 4.5L20 16M20 20v-4h-4"/></svg>',
+const I = { down:'<svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>', spark:'<svg viewBox="0 0 24 24"><path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z"/></svg>', note:'<svg viewBox="0 0 24 24"><path d="M5 5h14v10H9l-4 4z"/><path d="M9 9h6M9 12h4"/></svg>', minus:'<svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>', folder:'<svg viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>', tag:'<svg viewBox="0 0 24 24"><path d="M3 12V4h8l9 9-8 8zM7.5 7.5h.01"/></svg>', star:'<svg viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg>', percent:'<svg viewBox="0 0 24 24"><path d="M5 19L19 5"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/></svg>', sync:'<svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.5-4.5L4 8M4 4v4h4M4 13a8 8 0 0 0 14.5 4.5L20 16M20 20v-4h-4"/></svg>',
   search:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',
   scan:'<svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 9v6M11 9v6M14 9v6M17 9v6"/></svg>',
   grid:'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>',
@@ -501,7 +511,7 @@ const S={ w:'tablet', theme:'light', scale:'regular', scn:'open',
   closePos:'tr', legacy:'header-text',   /* Paul 2026-09-16: decided, switches removed. Void = outlined red, matched (voidStyle 'red'). */ termStep:1, sortCart:'newest-last', tabStyle:'line1',   /* Paul 2026-09-14: amount + dot, with a format setting */
   voidStyle:'red', vmenu:false, toast:null,
   /* personality touches (research: personality/ideas on the hub). Each is one small behaviour, not a skin. */
-  tx:{roll:1,stamp:1,pence:1,badge:1,tear:1,doodle:1}, qx:null, qbuf:'', undoLine:null, note:'row', vars:'slide', pview:'products', cats:[], tags:[], menu:false, slide:null, stock:null, feat:false, quick:false };   /* Paul 2026-09-17: today's POS lets you pick many categories and a tag on top; a category is a chip, not a crumb */   /* 2026-09-17: filters are chips in the bar, the breadcrumb is the place; the footer says the count */   /* Paul 2026-09-17: variations slide the table left behind a breadcrumb (board 4); inline rows stay as the other style, a POS panel setting */   /* Paul 2026-09-17: the quantity expands in place; edit and delete by swiping the total */   /* Paul 2026-09-17: surface decided, today's; the header stays caps over a hairline */   /* Paul 2026-09-16: Tabler at 1.5 px, for a while; Hugeicons the standing alternative */
+  tx:{roll:1,stamp:1,pence:1,badge:1,tear:1,doodle:1}, qx:null, qbuf:'', undoLine:null, plan:'top', upd:'ready', note:'row', vars:'slide', pview:'products', cats:[], tags:[], menu:false, slide:null, stock:null, feat:false, quick:false };   /* Paul 2026-09-17: today's POS lets you pick many categories and a tag on top; a category is a chip, not a crumb */   /* 2026-09-17: filters are chips in the bar, the breadcrumb is the place; the footer says the count */   /* Paul 2026-09-17: variations slide the table left behind a breadcrumb (board 4); inline rows stay as the other style, a POS panel setting */   /* Paul 2026-09-17: the quantity expands in place; edit and delete by swiping the total */   /* Paul 2026-09-17: surface decided, today's; the header stays caps over a hairline */   /* Paul 2026-09-16: Tabler at 1.5 px, for a while; Hugeicons the standing alternative */
 /* Paul 2026-09-16: the voice is out (translations); pence and the tear-off belong to the whimsical themes only; the badge is kept for a property chosen in POS Products settings, stock for now. */
 const WHIMSY=['market','paper'];
 const STR=()=>S.long?{
@@ -565,6 +575,8 @@ function renderStrip(){
   const seg=(k,opts)=>`<span class="seg">${opts.map(([v,l])=>`<button class="${S[k]===v?'on':''}" data-set="${k}" data-v="${v}">${l}</button>`).join('')}</span>`;
   document.getElementById('strip').innerHTML=`
     <div class="g"><b>Width</b>${seg('w',[['phone','Phone 390'],['tablet','Tablet 1024'],['desktop','Desktop 1440']])}</div>
+    <div class="g"><b>Plan</b>${seg('plan',[['top','Free · strip at the top'],['bottom','Free · strip at the bottom'],['pro','Pro · no strip']])}</div>
+    <div class="g"><b>Update</b>${seg('upd',[['ready','ready · in the bell'],['none','none']])}</div>
     <div class="g"><b>Order note</b>${seg('note',[['row','row above the totals'],['line','last row of the cart'],['chip','chip by the customer'],['none','none']])}</div>
     <div class="g"><b>Variations</b>${seg('vars',[['slide','Slide, breadcrumb'],['inline','Inline rows']])}</div>
     <div class="g"><b>Theme</b>${seg('theme',[['light','Default light'],['dark','Default dark'],['paper','Paper till'],['bold','Bold money'],['warm','Warm shop'],['market','Market stall'],['ocean','Ocean'],['sunset','Sunset'],['monochrome','Monochrome']])}</div>
@@ -692,6 +704,21 @@ function renderSide(){
         ${S.voidStyle==='details'?`<div class="fold"><button class="press" style="color:var(--destructive)" data-act="void">${I.trash}<span>${t.void} this order</span></button></div>`:''}
       </div>
       <div class="ft"><span class="grow"></span><button class="btn press" data-act="togglePop" data-pop="details">Cancel</button><button class="btn p press" data-act="togglePop" data-pop="details">Save</button></div></div></div>`;
+  if (S.sheet==='notif') { const item=(ic,cls,t,sub,when,unread)=>`<button class="nitem press"><span class="ic ${cls}">${ic}</span><span class="tx"><div class="t">${t}</div><div class="s">${sub}</div></span><span class="when">${when}</span>${unread?'<span class="udot"></span>':''}</button>`;
+    const how=S.w==='desktop'?'Restart the app to finish; your open orders are kept.':'Opens the App Store; your open orders are kept.';
+    return `<div class="sidewrap right" data-act="closeSheet"><div class="sidepanel" data-stop="1">
+      <div class="h"><span class="grow">Notifications</span><button class="btn q press" style="height:32px;padding:0 calc(var(--u)*2.5);color:var(--muted-fg)">Mark all read</button><button class="ibtn press" data-act="closeSheet" aria-label="Close">${I.x}</button></div>
+      <div class="bd notif">
+        ${S.upd==='ready'?`<div class="nitem upd"><span class="ic upd">${I.down}</span><span class="tx"><div class="t">WCPOS 1.11.1 is ready to install</div><div class="s">${how} <span style="text-decoration:underline;text-underline-offset:2px">What's new</span></div><div class="acts"><button class="btn p press" data-set="upd" data-v="none">Update now</button><button class="btn q press" data-act="closeSheet">Later</button></div></span></div>`:''}
+        <div class="ngrp">New</div>
+        ${item(I.sync,'ok','Order #1042 synced to the store','Paid £12.72 · cash · Demo Cashier','2 min',true)}
+        ${item(I.products,'warn','Low stock: Tote bag · Natural · L','0 left after order #1041 · reorder from the product page','14 min',true)}
+        <div class="ngrp">Earlier</div>
+        ${item(I.check,'','Closure 12 written','UK Store · counted £463.30, variance −£17.50','Yesterday 18:04',false)}
+        ${item(I.customers,'','Amy Okafor signed in on this device','Front counter · UK Store','Yesterday 09:02',false)}
+        ${item(I.cloudoff,'','Back online','3 orders queued while offline were sent','Mon 16:40',false)}
+      </div>
+      <div class="ft"><button class="btn q press" style="color:var(--muted-fg)">${I.gear}Notification settings</button><span class="grow"></span><button class="btn press" data-act="closeSheet">Close</button></div></div></div>`; }
   if (S.sheet==='edit') return `<div class="sidewrap" data-act="closeSheet"><div class="sidepanel" data-stop="1">
       <div class="h"><span class="grow">Edit Flat white<span class="mut" style="font-weight:400;margin-left:8px">line 1 · 2 × £3.20</span></span><button class="ibtn press" data-act="closeSheet" aria-label="Close">${I.x}</button></div>
       <div class="bd form">
@@ -714,7 +741,7 @@ function renderBar(){
   const drawer=sessionOpen()?`<button class="ibtn press" data-act="openPanel" aria-label="${t.register}" style="${S.scn==='overdue'?'color:var(--warn)':''}">${I.drawer}</button>`:'';
   const discard=S.voidStyle==='discard'&&sessionOpen()&&lines().length&&!S.tender?`<button class="btn q press" style="height:36px;padding:0 calc(var(--u)*2.5);color:var(--muted-fg)" data-act="void">Discard</button>`:'';
   pill+=discard;
-  return `<div class="bar">${phone?`<button class="ibtn press" aria-label="Menu" style="margin-left:calc(var(--u)*-3)">${I.menu}</button>`:''}<span class="place ell"><span class="ell">${name}</span>${S.registers>1?`<span class="mut" style="font-weight:400">· UK Store</span>`:''}</span>${pill}${off}<span class="grow"></span>${drawer}<button class="ibtn press" aria-label="Notifications" title="Notifications">${I.bell}</button>${phone?`<button class="avbtn press" data-act="openSheet" data-sheet="user" aria-label="Demo Cashier"><span class="av">DC</span></button>`:''}</div>`;
+  return `<div class="bar">${phone?`<button class="ibtn press" aria-label="Menu" style="margin-left:calc(var(--u)*-3)">${I.menu}</button>`:''}<span class="place ell"><span class="ell">${name}</span>${S.registers>1?`<span class="mut" style="font-weight:400">· UK Store</span>`:''}</span>${pill}${off}<span class="grow"></span>${drawer}<button class="ibtn press" data-act="openSheet" data-sheet="notif" aria-label="Notifications" title="Notifications">${I.bell}${S.upd==='ready'?'<span class="ndot"></span>':''}</button>${phone?`<button class="avbtn press" data-act="openSheet" data-sheet="user" aria-label="Demo Cashier"><span class="av">DC</span></button>`:''}</div>`;
 }
 /* the open-order tabs */
 /* one strip, six styles (strip → Tab style). Always: scrolls horizontally with a fade at the end, the overview
@@ -945,7 +972,8 @@ function render(){
   renderStrip();
   const f=document.getElementById('frame'); f.className='frame'; f.dataset.w=S.w; f.dataset.theme=S.theme; f.dataset.scale=S.scale;
   const oldPane=S.slide&&f.querySelector('.pane:not(.exit-l):not(.exit-r)'); const oldHtml=oldPane?oldPane.outerHTML:null;
-  f.innerHTML=`<div class="body">${S.w==='phone'?'':renderRail()}<div class="main">${renderPOS()}${renderSide()}${renderPanel()}${renderSheet()}</div></div>`;
+  const strip=(pos)=>`<div class="upstrip ${pos}">${I.spark}<span class="msg"><b>You're on the free version of WCPOS.</b> ${S.w==='phone'?'':'Pro adds receipt templates, held orders, reports and priority support.'}</span><span class="more">See what Pro adds</span><button class="act press">Upgrade to Pro</button></div>`;
+  f.innerHTML=`${S.plan==='top'?strip('top'):''}<div class="body">${S.w==='phone'?'':renderRail()}<div class="main">${renderPOS()}${renderSide()}${renderPanel()}${renderSheet()}</div></div>${S.plan==='bottom'?strip('bottom'):''}`;
   renderNotes();
   { const bar=f.querySelector('.fbar'); const show=(pl)=>{ if(!pl||!bar) return; const over=pl.offsetLeft+pl.offsetWidth-(bar.scrollLeft+bar.clientWidth)+24; if(over>0) bar.scrollLeft+=over; else if(pl.offsetLeft<bar.scrollLeft+16) bar.scrollLeft=Math.max(0,pl.offsetLeft-16); };
     const mn=f.querySelector('.fwrap .menu'); const pl=mn&&f.querySelector(`.pill[data-menu="${S.menu}"]`); if(pl) show(pl); else if(S.quick) show(f.querySelector('.pill.q.on'));

@@ -7,7 +7,7 @@ const DIR = __dirname; const OUT = path.join(DIR, 'screens', 'variants');
 fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive: true });
 (async () => {
   const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 1500, height: 1000 }, reducedMotion: 'reduce' });
+  const page = await browser.newPage({ viewport: { width: 1500, height: 1400 } /* tall enough that the 844 px phone frame never scrolls under the sticky control strip */, reducedMotion: 'reduce' });
   const errors = [];
   page.on('pageerror', e => errors.push('pageerror: ' + e.message));
   await page.goto('file://' + path.join(DIR, 'index.html'));
@@ -15,6 +15,12 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   const scn = (v) => page.click(`.strip button[data-scn="${v}"]`);
   const shot = async (name) => { await page.evaluate(() => window.scrollTo(0, 0)); await page.locator('#frame').screenshot({ path: path.join(OUT, name + '.jpg'), type: 'jpeg', quality: 82, animations: 'disabled' }); };
   await set('w', 'tablet'); await set('theme', 'light'); await set('scale', 'regular');
+  // the free strip, top or bottom (Paul 2026-09-17: a banner, slightly annoying on purpose); and the bell panel with the update at its head
+  for (const w of ['tablet', 'phone']) { await set('w', w); await scn('open'); for (const pl of ['top', 'bottom']) { await set('plan', pl); await shot(`plan-${pl}-${w}`); if (!(await page.locator(`.upstrip.${pl}`).count())) throw new Error('strip not drawn: ' + pl); } }
+  await set('plan', 'pro'); if (await page.locator('.upstrip').count()) throw new Error('strip still drawn on pro');
+  for (const w of ['tablet', 'desktop', 'phone']) { await set('w', w); await scn('open'); if (!(await page.locator('.bar .ndot').count())) throw new Error('bell has no dot: ' + w); await page.click('.bar [data-sheet="notif"]'); await page.waitForTimeout(300); if (!(await page.locator('.sidepanel .nitem.upd').count())) throw new Error('update not at the head of the panel: ' + w); await shot(`notif-${w}`); await page.click('.sidepanel [data-act="closeSheet"].ibtn'); }
+  await set('w', 'tablet'); await scn('open'); await page.click('.bar [data-sheet="notif"]'); await page.click('.nitem.upd [data-set="upd"]'); await page.waitForTimeout(200);
+  if (await page.locator('.bar .ndot').count()) throw new Error('dot stayed after Update now'); await shot('notif-after-update'); await page.click('.sidepanel [data-act="closeSheet"].ibtn'); await set('upd', 'ready');
   // the tabs: amount over status on large screens, amount + dot on the phone (decided 2026-09-17), 12 orders
   for (const w of ['tablet', 'phone']) { await set('w', w); await scn('many-orders'); await page.click('.ordlist [data-act="ordlist"]'); await shot(`tabs-${w}`); }
   await set('w', 'tablet');

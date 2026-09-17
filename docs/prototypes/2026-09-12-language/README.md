@@ -150,6 +150,16 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     foot of the rail for the plan (never dismissed, never in the way, the modal only at a Pro
     feature), and a floating notice under the toolbar for the update that stays until acted on
     (web: reload; desktop: restart; iOS/Android: the store). Not decided.
+    **Paul (2026-09-17): the update notice goes in the bell, and the bell opens a side panel; the
+    free banner is meant to be slightly annoying and stays a strip, top or bottom.** Register:
+    the bell above the cart carries a dot while an update waits and opens a slide-out from the
+    right, the update at its head with `Update now` / `Later` and ordinary notifications below;
+    a `Plan` switch draws the free strip at the top, at the bottom, or not at all (Pro). Second
+    Mobbin sweep: Circle, Fireflies, Descript and Rox keep the strip at the top, Readymag at the
+    bottom; Time2book, Hootsuite, Savee, Aboard, QuickBooks and Magnific open notifications in a
+    side panel. **Recommendation: top.** Every strip on Mobbin sits there; it pushes the toolbar
+    down rather than the Pay button up; and the top edge is the cashier's, the bottom edge is the
+    one a customer-facing screen shows. Top or bottom not decided.
 
 44. **The order note (2026-09-17).** Paul: today a note sits under the totals with a bubble
     glyph; how do we show it? Three homes on the register's `Order note` switch: a row above the
