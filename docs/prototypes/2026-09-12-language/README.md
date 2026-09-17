@@ -434,8 +434,10 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     crumb; the media apps (Apple Photos, Pinterest) zoom out of the tile; Loyverse and Square put
     a back tile first in the child grid; Blinkit and Square Go re-filter under chips and never
     navigate. `pos-register/board-grid.html` draws six live: push, fade, zoom, hero (Material's
-    container transform), stagger, back tile. **Recommendation: push**, the table's own motion,
-    so the register's grid now has the breadcrumb and slides like the table. Not decided.
+    container transform), stagger, back tile. Push was the recommendation (the table's own
+    motion). **Decided (Paul, 2026-09-17): stagger, with the plain breadcrumb like push's.** In
+    the register: the old tiles drop out together, the new ones land one after another with a
+    22 ms step; the breadcrumb just appears. The table keeps its slide.
 
 40. **Filters and breadcrumbs (2026-09-17).** Paul: with a variable selected, can you toggle
     in-stock; does it show in the breadcrumb; what about two chips; what about a quick filter

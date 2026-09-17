@@ -79,14 +79,15 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   await page.click('.pill.on[data-act="clearCat"]'); await page.waitForTimeout(400);
   await page.click('[data-act="toggleView"]');
   // the grid: the same breadcrumb and slide, tiles instead of rows
-  await page.click('.tile[data-act="openVar"]'); await page.waitForTimeout(400); await shot('grid-var-slide');
+  await page.click('.tile[data-act="openVar"]'); await page.waitForTimeout(700); await shot('grid-var-stagger');
+  if (await page.locator('.pane').count() !== 1) throw new Error('grid: old pane not removed after the stagger');
   { const h = await page.locator('.crumb .here').innerText(); if (h.trim() !== 'Tote bag') throw new Error('grid crumb: ' + h); if (await page.locator('.tiles .tile').count() !== 3) throw new Error('grid variation tiles'); }
   await page.click('.tile[data-s="Natural · S"]'); await page.waitForTimeout(200);
   { const c = await page.locator('.tile[data-s="Natural · S"] .tcnt').innerText(); if (c.trim() !== '2') throw new Error('grid variation tap did not count to 2: ' + c); }
-  await page.click('.crumb [data-act="popView"]'); await page.waitForTimeout(400);
-  await page.click('[data-act="catMenu"]'); await page.click('.menu [data-c="Bakery"]'); await page.waitForTimeout(400); await shot('grid-cat-slide');
+  await page.click('.crumb [data-act="popView"]'); await page.waitForTimeout(700);
+  await page.click('[data-act="catMenu"]'); await page.click('.menu [data-c="Bakery"]'); await page.waitForTimeout(700); await shot('grid-cat-stagger');
   if (await page.locator('.tiles .tile').count() !== 3) throw new Error('Bakery tiles');
-  await page.click('.pill.on[data-act="clearCat"]'); await page.waitForTimeout(400);
+  await page.click('.pill.on[data-act="clearCat"]'); await page.waitForTimeout(700);
   if (await page.locator('.tiles .tile').count() !== 12) throw new Error('clear category in the grid');
   // the cart line: the quantity expands, the swipe on the total, the desktop nudge, the phone sheet
   await scn('open'); await page.click('.line[data-i="1"] .q'); await page.waitForTimeout(250); await shot('cart-qty-open');
