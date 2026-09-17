@@ -282,6 +282,9 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     drawer equation as chips, X-report, a chevron into the Closures room; when closed, expected ·
     counted = drawer result with Reprint); date, chart and the seven cards are one block; the
     "Right now" section is gone.
+    **Sibling session (2026-09-17, later): `reports/till-variants.html`**, six till-strip designs
+    across five states of the till (paid in, paid out, refunds, counting, closed, all registers).
+    To react to; nothing decided.
 
 48. **Orders inside the register; the rail toggles the pages (Paul, 2026-09-17).** Paul: put
     the Orders mock-up into `pos-register/index.html` and toggle between the POS page, the
@@ -345,7 +348,10 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     same flow under a `Split look` switch, side by side on `pos-register/board-split.html`: as drawn
     (chips) · the bar that fills (Binance, Satispay) · the ring (bunq; the Reports donuts) · tear the
     receipt (the till's own paper and PAID stamp) · seats (Splitwise, Toast). Only the drawing of
-    the amount, the plan and the tiles differs. Recommendation: the ring. Not decided.
+    the amount, the plan and the tiles differs. Recommendation: the ring.
+    **Paul (2026-09-17, later): the ring. Decided** ("totally improves the understanding, visibility
+    and comprehension of what's going on"). The switch is gone; the other four looks live on only
+    in `board-split.html` as the record.
     (c) **chips** — pills, the current one filled; reads as a filter row rather than tabs;
     (d) **cards** — small cards with amount, customer and status, current with a primary top
     edge; the most information, the tallest;

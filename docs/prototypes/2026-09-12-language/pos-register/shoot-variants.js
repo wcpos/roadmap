@@ -264,11 +264,10 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   if (await balance() !== money(splitTotal - 20)) throw new Error('typed partial remaining');
   await page.click('.pay .hd [data-act="cancelPay"]');
   if (await page.locator('.ledger .payrow').count()) throw new Error('cancel did not remove payment');
-  // Five drawings, one payment flow.
+  // The ring, decided (Paul 2026-09-17); the other four looks live on only for board-split.html, the record of the choice.
   const looks = ['chips', 'bar', 'ring', 'tear', 'seats'];
-  if (await page.locator('.strip [data-set="splitLook"]').count() !== 5) throw new Error('expected five split looks');
-  for (const look of looks) {
-    await set('splitLook', look);
+  if (await page.locator('.strip [data-set="splitLook"]').count()) throw new Error('the Split look switch is still in the strip');
+  for (const look of ['ring']) {
     for (const w of ['tablet', 'phone']) {
       await set('w', w); await scn('split'); await shot(`split-look-${look}-${w}`);
       await scn('split-1of2');

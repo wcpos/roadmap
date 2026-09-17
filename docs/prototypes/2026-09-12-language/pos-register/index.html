@@ -829,7 +829,7 @@ const OPEN=[
 
 const Q=new URLSearchParams(location.search);
 const S={ screen:['reports','orders'].includes(Q.get('screen'))?Q.get('screen'):'register', w:['tablet','phone','desktop'].includes(Q.get('w'))?Q.get('w'):'tablet', theme:'light', scale:'regular', scn:'open',
-  splitLook:['chips','bar','ring','tear','seats'].includes(Q.get('splitLook'))?Q.get('splitLook'):'ring', splitDetail:null,
+  splitLook:['chips','bar','ring','tear','seats'].includes(Q.get('splitLook'))?Q.get('splitLook'):'ring', splitDetail:null,   /* Paul 2026-09-17: the ring, decided; the other looks live on only for board-split.html (URL), the strip has no switch */
   pays:[], payPlan:null, split:null, leg:0, legMethods:[], pending:null,
   phoneTab:'cart', panel:false, sheet:null, tender:false, view:'keypad', entry:null, method:'cash', settle:null, online:true, long:false,
   pop:null, tabsPos:'bottom', ledgerHead:'still', xf:false, customer:null, registers:1, counted:'', open:'200.00', reveal:null, edit:null, orders:2, ordlist:false, view2:'grid',
@@ -912,7 +912,6 @@ function renderStrip(){
     <div class="g"><b>Update</b>${seg('upd',[['ready','ready · in the bell'],['none','none']])}</div>
     ${S.screen==='register'?`<div class="g"><b>Order note</b>${seg('note',[['row','row above the totals'],['line','last row of the cart'],['chip','chip by the customer'],['none','none']])}</div>`:''}
     ${S.screen==='register'?`<div class="g"><b>Ledger head</b>${seg('ledgerHead',[['still','Same head, stilled'],['customer','Customer stays live'],['progress','Payment progress'],['facts','Receipt facts']])}</div>`:''}
-    ${S.screen==='register'?`<div class="g"><b>Split look</b>${seg('splitLook',[['chips','As drawn (chips)'],['bar','The bar that fills'],['ring','The ring'],['tear','Tear the receipt'],['seats','Seats']])}</div>`:''}
     ${S.screen==='register'?`<div class="g"><b>Variations</b>${seg('vars',[['slide','Slide, breadcrumb'],['inline','Inline rows']])}</div>`:''}
     <div class="g"><b>Theme</b>${seg('theme',[['light','Default light'],['dark','Default dark'],['paper','Paper till'],['bold','Bold money'],['warm','Warm shop'],['market','Market stall'],['ocean','Ocean'],['sunset','Sunset'],['monochrome','Monochrome']])}</div>
     <div class="g"><b>Scale</b>${seg('scale',[['compact','Compact'],['regular','Regular'],['spacious','Spacious']])}</div>
@@ -1272,7 +1271,7 @@ function splitTileGlyph(mode,value,due){
   const cuts=Array.from({length:n-1},(_,i)=>(i+1)/n);
   let glyph='';
   if(S.splitLook==='bar') glyph=mode==='even'?`<span class="sl-mini-track">${Array.from({length:n},()=>'<i></i>').join('')}</span>`:`<span class="sl-mini-track"><i style="flex:none;width:${share*100}%"></i></span>`;
-  if(S.splitLook==='ring') glyph=mode==='even'?`<span class="sl-mini-pie" style="background:repeating-conic-gradient(var(--primary) 0deg ${360/n-5}deg,var(--card) ${360/n-5}deg ${360/n}deg)"></span>`:`<span class="sl-mini-pie" style="background:conic-gradient(var(--primary) ${share*100}%,var(--muted) 0)"></span>`;
+  if(S.splitLook==='ring') glyph=mode==='even'?`<span class="sl-mini-pie" style="background:repeating-conic-gradient(var(--primary) 0deg ${360/n-10}deg,var(--card) ${360/n-10}deg ${360/n}deg)"></span>`:`<span class="sl-mini-pie" style="background:conic-gradient(var(--primary) ${share*100}%,var(--muted) 0)"></span>`;
   if(S.splitLook==='tear') glyph=`<svg viewBox="0 0 20 20"><path d="M4 1h12v18l-2-1-2 1-2-1-2 1-2-1-2 1z"/>${(mode==='even'?cuts:[share]).map(f=>`<path stroke-dasharray="2 1" d="M4 ${2+f*15}h12"/>`).join('')}</svg>`;
   if(S.splitLook==='seats') glyph=Array.from({length:n},()=>'<i class="sl-mini-seat"></i>').join('');
   return `<span class="sl-glyph" aria-hidden="true">${glyph}</span>`;
