@@ -609,6 +609,7 @@ body:has(#strip[hidden]) .notes{display:none}
 .frame:where([data-screen="reports"])[data-w="tablet"] .till{grid-template-columns:1fr auto;grid-template-areas:"tl tr" "eq eq"} .frame:where([data-screen="reports"])[data-w="phone"] .till{grid-template-columns:1fr;grid-template-areas:"tl" "eq" "tr";row-gap:calc(var(--u)*2.5)} .frame:where([data-screen="reports"])[data-w="phone"] .till .tr{justify-self:stretch;justify-content:space-between}
 :where(.frame[data-screen="reports"]) .eq{display:flex;align-items:center;gap:calc(var(--u)*2)} :where(.frame[data-screen="reports"]) .eq .term{display:flex;flex-direction:column;gap:1px;padding:var(--u) calc(var(--u)*2.5);border-radius:var(--r);background:var(--muted);flex:none}   /* Paul 2026-09-17: chips never stretch; the row reads as an equation, not a table of boxes */ :where(.frame[data-screen="reports"]) .eq .term .l{color:var(--muted-fg);font-size:calc(var(--fs)*.8);white-space:nowrap} :where(.frame[data-screen="reports"]) .eq .term .v{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap} :where(.frame[data-screen="reports"]) .eq .term.res{background:var(--primary);color:var(--primary-fg)} :where(.frame[data-screen="reports"]) .eq .term.res .l{color:var(--primary-fg);opacity:.85} :where(.frame[data-screen="reports"]) .eq .note{color:var(--muted-fg);font-size:calc(var(--fs)*.86);margin-left:var(--u)} :where(.frame[data-screen="reports"]) .eq{flex-wrap:wrap}
 :where(.frame[data-screen="reports"]) .till.busy{grid-template-columns:1fr auto;grid-template-areas:"tl tr" "eq eq"}
+:where(.frame[data-screen="reports"]) .till svg.lvl{grid-area:eq;width:620px;max-width:100%;height:auto;display:block;overflow:visible;stroke:none} :where(.frame[data-screen="reports"]) .till svg.lvl text{font-family:var(--font)} .frame:where([data-screen="reports"])[data-w="tablet"] .till.level{grid-template-columns:1fr auto;grid-template-areas:"tl tr" "eq eq"} .frame:where([data-screen="reports"])[data-w="tablet"] .till.level svg.lvl{width:100%} .frame:where([data-screen="reports"])[data-w="phone"] .till.level svg.lvl{width:100%}
 :where(.frame[data-screen="reports"]) .eq.ledger{display:flex;flex-direction:column;gap:2px;width:100%} :where(.frame[data-screen="reports"]) .eq.ledger .lr{display:grid;grid-template-columns:16px 1fr auto;align-items:center;gap:calc(var(--u)*2);min-height:26px;padding:0 var(--u);border-radius:calc(var(--r) - 2px)} :where(.frame[data-screen="reports"]) .eq.ledger .lr .op{color:var(--muted-fg);font-weight:600;text-align:center} :where(.frame[data-screen="reports"]) .eq.ledger .lr .l{color:var(--muted-fg)} :where(.frame[data-screen="reports"]) .eq.ledger .lr .v{font-weight:600;font-variant-numeric:tabular-nums} :where(.frame[data-screen="reports"]) .eq.ledger .lr.res{background:var(--primary);color:var(--primary-fg);margin-top:var(--u);min-height:32px} :where(.frame[data-screen="reports"]) .eq.ledger .lr.res .l,:where(.frame[data-screen="reports"]) .eq.ledger .lr.res .op{color:var(--primary-fg);font-weight:600} :where(.frame[data-screen="reports"]) .eq .op{color:var(--muted-fg);font-weight:600;font-size:calc(var(--fs)*1.1)}
 :where(.frame[data-screen="reports"]) .till .btn{height:36px;padding:0 calc(var(--u)*3);flex:none} :where(.frame[data-screen="reports"]) .till .btn svg{width:16px;height:16px} :where(.frame[data-screen="reports"]) .till .ibtn{width:36px;height:36px}
 .frame:where([data-screen="reports"])[data-w="phone"] .till .who{white-space:nowrap;min-width:0} .frame:where([data-screen="reports"])[data-w="phone"] .till .who .mut{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
@@ -969,7 +970,7 @@ function renderStrip(){
     ${S.screen==='register'?`<div class="g"><b>Tabs</b>${seg('tabsPos',[['bottom','bottom'],['top','top']])}</div>`:''}
     ${S.screen!=='orders'?`<div class="g"><b>Touches</b><span class="seg">${(()=>{const all=Object.values(S.tx).every(Boolean), none=!Object.values(S.tx).some(Boolean); return `<button class="${none?'on':''}" data-txall="0">before</button><button class="${all?'on':''}" data-txall="1">after</button>`;})()}</span><span class="seg">${[['roll','total settles'],['stamp','PAID stamp'],['pence','price-tag pence (whimsical themes)'],['badge','tile badge · stock'],['tear','receipt tears off (whimsical themes)'],['doodle','doodle']].map(([k,l])=>`<button class="${S.tx[k]?'on':''}" data-tx="${k}">${l}</button>`).join('')}</span></div>`:''}
     ${S.screen==='register'?`<div class="g"><b>Registers</b>${seg('registers',[[1,'1'],[3,'3']])}</div>`:''}
-    ${S.screen==='reports'?`<div class="g"><b>Stores</b>${seg('stores',[[1,'1'],[2,'2']],RS)}</div><div class="g"><b>Below the chart</b>${seg('layout',[['panels','panels: each report’s top rows, with bars'],['list','one list, Closures a row'],['tiles','Sales | Closures tabs + tiles (as drawn)']],RS)}</div>`:''}
+    ${S.screen==='reports'?`<div class="g"><b>Stores</b>${seg('stores',[[1,'1'],[2,'2']],RS)}</div><div class="g"><b>Till</b>${seg('till',[['level','cash level through the session'],['chips','equation chips (backup)']],RS)}</div><div class="g"><b>Below the chart</b>${seg('layout',[['panels','panels: each report’s top rows, with bars'],['list','one list, Closures a row'],['tiles','Sales | Closures tabs + tiles (as drawn)']],RS)}</div>`:''}
     ${S.screen==='orders'?`<div class="g"><b>List style</b>${seg('listStyle',[['bleed','no frame (Linear)'],['grouped','no frame · by day'],['stats','status counts + no frame (Stripe)'],['card','hairline card (cut 1)']],OS)}</div>`:''}
     <div class="g"><b>State</b><span class="seg">${(S.screen==='reports'?RP.SCENES:S.screen==='orders'?OP.SCENES:SCENES).map(([v,l])=>`<button class="${S.scn===v?'on':''}" data-scn="${v}">${l}</button>`).join('')}</span></div>`;
 }
@@ -1583,6 +1584,7 @@ document.addEventListener('click',e=>{
   if(b.dataset.nav){ nav(b.dataset.nav); return; }
   if(b.dataset.set==='listStyle'){OS.listStyle=b.dataset.v;render();return;}
   if(b.dataset.set==='stores'){RS.stores=+b.dataset.v;render();return;}
+  if(b.dataset.set==='till'){RS.till=b.dataset.v;render();return;}
   if(b.dataset.set==='layout'){RS.layout=b.dataset.v;RS.detail=null;RS.closure=null;RS.view='sales';render();return;}
   if(b.dataset.set){ const v=b.dataset.v; S[b.dataset.set]=(v==='1'||v==='3')?+v:v; if(b.dataset.set==='plan') S.nostrip=false; render(); return; }
   if(b.dataset.tx){ S.tx[b.dataset.tx]=S.tx[b.dataset.tx]?0:1; render(); return; }
@@ -1690,7 +1692,7 @@ const RS = {
   cmp: ['lastweek','yesterday'].includes(Q.get('cmp')) ? Q.get('cmp') : 'yesterday',
   register:'front', store:'uk', cashier:'all',
   unticked: new Set(), detail: null, closure: null, xreport: false, tpl:'default', chart:'hour',   /* 'hour' | 'run' (Paul 2026-09-17: an easy toggle) */
-  pop: null, hint: null, tip: null, frameH: 780, calMonth: 0, pickStart: null, merch: 'products', where: 'channels', busy: false,
+  pop: null, hint: null, tip: null, frameH: 780, calMonth: 0, pickStart: null, merch: 'products', where: 'channels', busy: false, till: 'level',
   layout: 'panels',   /* Paul 2026-09-17 ("surely we can do better", Mobbin: Vercel, Framer, Lloyds, Revolut): the content of each report inline, a few rows deep, with share bars; 'list' and 'tiles' kept to compare. Closures is one more kind of information, not a different room; the tiles go, one list of reports under the chart */
 };
 
@@ -2009,6 +2011,31 @@ function reportRows(m) {
 /* panels: what the good dashboards put under the chart (Vercel, Framer, Featurebase, Lovable on the web; Lloyds, Revolut, YNAB, Starling on the phone):
    each report's first rows in view with a share bar, the figure at the head, the head opens the whole report. Order: the jobs. */
 /* the till now, above the chart (Paul 2026-09-17): a strip with the drawer equation, float + cash sales − paid out = expected, the last closure and the X-report; outside the date */
+/* Paul 2026-09-17: C3 from till-concepts.html, "the most interesting": how the drawer filled. A step line from the float at open to now,
+   up with every cash sale, down where cash left (paid out, refunds), the paid-in and paid-out named; when the till is closed the line ends at
+   the count with the drawer result. The equation chips stay as the backup (strip switch Till: cash level | chips). */
+function tillEvents(open) {
+  if (!open) return { t0: '09:02', t1: '12:30', ev: [{ t: '09:02', k: 'float', amt: 100 }, { t: '09:12', k: 'sale', amt: 24.50 }, { t: '10:31', k: 'sale', amt: 72.40 }, { t: '11:02', k: 'sale', amt: 15 }] };
+  const ev = [{ t: '13:00', k: 'float', amt: 100 }, { t: '13:20', k: 'sale', amt: 49 }, { t: '15:15', k: 'sale', amt: 88.20 }, { t: '15:40', k: 'out', amt: -150, l: 'to bank' }, { t: '16:02', k: 'sale', amt: 134.70 }, { t: '16:44', k: 'sale', amt: 12.80 }, { t: '17:10', k: 'sale', amt: 59 }];
+  if (RS.busy) ev.push({ t: '13:20', k: 'in', amt: 20, l: 'from safe' }, { t: '16:05', k: 'out', amt: -30, l: 'milk' }, { t: '16:20', k: 'refund', amt: -12.50, l: 'refund' });
+  ev.sort((a, b) => a.t.localeCompare(b.t));
+  return { t0: '13:00', t1: '17:30', ev };
+}
+function cashLevel(open, last) {
+  const { t0, t1, ev } = tillEvents(open), mins = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+  const W = phone() ? 342 : 620, H = phone() ? 120 : 96, a = mins(t0), z = mins(t1), X = t => 16 + (W - 32) * (mins(t) - a) / (z - a), pts = []; let bal = 0;   /* the phone gets its own viewBox so the type stays readable */
+  ev.forEach(x => { const b0 = bal; bal += x.amt; pts.push({ t: x.t, b0, b1: bal, x }); });
+  const max = Math.max(1, ...pts.map(p => Math.max(p.b0, p.b1))) * 1.12, Y = v => 12 + (H - 34) * (1 - v / max);
+  let d = `M${X(t0)},${Y(0)}`, cur = 0; pts.forEach(p => { d += ` L${X(p.t)},${Y(p.b0)} L${X(p.t)},${Y(p.b1)}`; cur = p.b1; }); d += ` L${X(t1)},${Y(cur)}`;
+  let svg = `<svg class="lvl" viewBox="0 0 ${W} ${H}" aria-label="Cash in the drawer through the session"><path d="${d} L${X(t1)},${Y(0)} L${X(t0)},${Y(0)} Z" fill="var(--primary)" fill-opacity=".1"/><path class="line" d="${d}" fill="none" stroke="var(--primary)" stroke-width="2"/>`;
+  svg += `<line x1="${X(t0)}" x2="${X(t1)}" y1="${Y(100)}" y2="${Y(100)}" stroke="var(--border)" stroke-dasharray="3 3"/><text x="${X(t0) + 4}" y="${Y(100) + 12}" font-size="10" fill="var(--muted-fg)">float £100</text>`;
+  let k = 0; pts.filter(p => ['out', 'in', 'refund'].includes(p.x.k)).forEach(p => { const up = p.x.amt > 0, dy = up ? -10 - (k % 2) * 13 : 14 + (k % 2) * 14; k++; svg += `<circle class="ev" cx="${X(p.t)}" cy="${Y(p.b1)}" r="4" fill="${up ? 'var(--c2)' : 'var(--warn)'}"/>${phone() ? '' : `<text x="${X(p.t)}" y="${Y(p.b1) + dy}" text-anchor="middle" font-size="10.5" fill="var(--fg)">${fmt(p.x.amt, true)} <tspan fill="var(--muted-fg)">${p.x.l}</tspan></text>`}`; });
+  if (open) svg += `<circle cx="${X(t1)}" cy="${Y(cur)}" r="4" fill="var(--primary)"/><text class="now" x="${X(t1) - 8}" y="${Y(cur) - 9}" text-anchor="end" font-size="12" font-weight="600" fill="var(--fg)">${fmt(cur)} now</text>`;
+  else svg += `<circle cx="${X(t1)}" cy="${Y(last.counted)}" r="5" fill="${last.variance ? 'var(--warn)' : 'var(--ok)'}"/><text class="now" x="${X(t1) - 10}" y="${Y(cur) - 9}" text-anchor="end" font-size="12" font-weight="600" fill="var(--fg)">counted ${fmt(last.counted)} <tspan fill="${last.variance ? 'var(--warn)' : 'var(--ok)'}">${last.variance ? fmt(Math.abs(last.variance)) + (last.variance < 0 ? ' short' : ' over') : 'exact'}</tspan></text>`;
+  const ticks = open ? ['13:00', '14:00', '15:00', '16:00', '17:00'] : ['09:00', '10:00', '11:00', '12:00'];
+  ticks.forEach(t => svg += `<text x="${X(t)}" y="${H - 4}" text-anchor="middle" font-size="10" fill="var(--muted-fg)">${t}</text>`);
+  return svg + '</svg>';
+}
 function tillStrip() {
   /* Paul 2026-09-17: V1 from till-variants.html, the equation as chips, "but it really sucks on smaller screens": so chips in a row on tablet
      and desktop (wrapping when the day is busy), and on the phone the same terms stack into a ledger, one line per term, the result filled.
@@ -2026,12 +2053,14 @@ function tillStrip() {
        ['Expected in drawer', fmt(expected), '=']]
     : [['Expected', fmt(last.counted - last.variance), ''], ['Counted', fmt(last.counted), '·'], ['Drawer result', last.variance ? fmt(Math.abs(last.variance)) + (last.variance < 0 ? ' short' : ' over') : 'Exact', '=']];
   const note = open && sess.quiet.length ? `<span class="note">· ${sess.quiet.join(', ')}</span>` : '';
-  const eq = phone()
+  const eq = RS.till !== 'chips'
+    ? cashLevel(open, last)
+    : phone()
     ? `<div class="eq ledger">${terms.map(([l, v, op], i) => `<div class="lr ${i === terms.length - 1 ? 'res' : ''}"><span class="op">${op || ' '}</span><span class="l">${l}</span><span class="v">${v}</span></div>`).join('')}${note ? `<div class="lr"><span class="op"></span><span class="l mut">${sess.quiet.join(', ')}</span></div>` : ''}</div>`
     : `<div class="eq">${terms.map(([l, v, op], i) => `${op ? `<span class="op">${op}</span>` : ''}<span class="term ${i === terms.length - 1 ? 'res' : ''}"><span class="l">${l}</span><span class="v">${v}</span></span>`).join('')}${note}</div>`;
   const who = open ? `<b>${esc(OPEN_SESSION.reg)}</b> ${status('ok', 'Open')}<span class="mut"> · since ${OPEN_SESSION.open} · ${esc(OPEN_SESSION.by)}</span>` : `<b>${esc(REGISTERS[0].name)}</b> ${status('neutral', 'Closed')}<span class="mut"> · at ${last.close} · ${esc(last.by)}</span>`;
   const lastLine = RS.empty ? 'No closures yet' : last ? `Last closure ${last.num} · ${last.dayLabel} ${last.close} · ${last.variance ? fmt(Math.abs(last.variance)) + (last.variance < 0 ? ' short' : ' over') : 'exact'}` : '';
-  return `<section class="card till ${open && terms.length > 4 ? 'busy' : ''}" data-k="closures"><div class="tl"><div class="who">${who}</div><div class="mut sm">${lastLine}</div></div>${eq}<div class="tr">${open ? `<button class="btn press" data-act="xreport" data-testid="card-xreport">${I.print}X-report</button>` : `<button class="btn press" data-act="reprint" data-v="${last.id}">${I.print}Reprint</button>`}<button class="ibtn press" data-act="detail" data-v="closures" aria-label="Closures">${I.chev}</button></div></section>`;
+  return `<section class="card till ${RS.till !== 'chips' ? 'level' : open && terms.length > 4 ? 'busy' : ''}" data-k="closures"><div class="tl"><div class="who">${who}</div><div class="mut sm">${lastLine}</div></div>${eq}<div class="tr">${open ? `<button class="btn press" data-act="xreport" data-testid="card-xreport">${I.print}X-report</button>` : `<button class="btn press" data-act="reprint" data-v="${last.id}">${I.print}Reprint</button>`}<button class="ibtn press" data-act="detail" data-v="closures" aria-label="Closures">${I.chev}</button></div></section>`;
 }
 function reportPanels(m) {
   const T = m.total || 1;

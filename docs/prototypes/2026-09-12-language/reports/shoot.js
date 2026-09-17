@@ -23,7 +23,7 @@ const checks = {
   recount: '#recount-reason', empty: '[data-testid="closures-empty"]', loading: '.skeleton',
   offline: '.bar .st.warn', 'offline-recount': '[data-testid="recount-offline"]',
   'free-sales': '[data-testid="reports-lock-hint"]', 'free-closures': '[data-testid="reports-lock-hint"]',
-  bell: '.bd.notif', error: '[data-testid="closure-document-error"]', busy: '.till.busy',
+  bell: '.bd.notif', error: '[data-testid="closure-document-error"]', busy: '.till svg.lvl circle.ev >> nth=3',
 };
 (async () => {
   assert(fs.existsSync(path.join(__dirname, 'index.html')), 'Reports index.html must exist');
@@ -60,7 +60,8 @@ const checks = {
           assert(await page.locator('.till').evaluate(t => t.getBoundingClientRect().bottom <= document.querySelector('.hero').getBoundingClientRect().top + 1), 'the till strip is above the hero');
           assert((await page.locator('.rp-sec.dated .rp-h').textContent()).startsWith(s === 'today' ? 'Today' : 'Last week'), 'the period section is headed by the date');
           assert.equal(await page.locator('.rp-panel[data-k="deposits"], .rp-panel[data-k="cash"]').count(), 0, 'deposits and cash movements have no card (audit 2026-09-17)');
-          assert.equal(await page.locator(w === 'phone' ? '.till .eq .lr:not(:has(.l.mut))' : '.till .eq .term').count(), s === 'closed' ? 3 : 4, 'the drawer equation in the till strip; a ledger on the phone');
+          assert.equal(await page.locator('.till svg.lvl .line').count(), 1, 'the cash level line in the till strip (Paul 2026-09-17: C3)');
+          assert((await page.locator('.till svg.lvl .now').textContent()).includes(s === 'closed' ? 'counted' : 'now'), 'the line ends at now, or at the count when closed');
           assert.equal(await page.locator('.till [data-testid="card-xreport"]').count(), s === 'closed' ? 0 : 1, 'X-report on the strip while the till is open');
           assert.equal(await page.locator('.till[data-k="closures"]').count(), 1, 'the till strip carries the closures (Paul 2026-09-17)');
           assert(await page.locator('.rp-panel .br .sh b').count() >= 4, 'bars on the ranked panel (Top products)');
@@ -79,7 +80,8 @@ const checks = {
           assert.equal(await page.locator('.pad [data-p="overflow"]').count(), 0);
         }
         if (s === 'today') assert.equal(await page.locator('.scope-row [data-p="overflow"]').count(), 0);
-        if (s === 'busy') { assert.equal(await page.locator(w === 'phone' ? '.till .eq.ledger .lr.res' : '.till .eq .term.res').count(), 1, 'the result is the filled chip'); assert.equal(await page.locator(w === 'phone' ? '.till .eq .lr:not(:has(.l.mut))' : '.till .eq .term').count(), 6, 'six terms when the till is busy'); }
+        if (s === 'busy') assert.equal(await page.locator('.till svg.lvl circle.ev').count(), 4, 'a paid-in, two paid-outs and a refund marked on the line');
+        if (s === 'today') assert.equal(await page.locator('.till svg.lvl circle.ev').count(), 1, 'the paid-out marked on the line');
         if (s === 'closure') {
           assert.equal(await page.locator('.detail .h [aria-label="Close"]').count(), w === 'phone' ? 0 : 1);
           assert.equal(await page.locator('.detail .ft .status').textContent(), w === 'phone' ? 'Recorded 17:45' : 'As recorded at 17:45');

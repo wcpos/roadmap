@@ -172,6 +172,19 @@ row when the day is busy; on the phone the same terms stack into a ledger, one l
 with the sign at the left and the expected row filled. Repeated paid-outs fold into one chip
 with a count; no-sale and void move no money and are a note. The State row gains *Till busy*.
 
+**Scrapped and redrawn (fourteenth pass, same day).** Paul: five width variations of the
+chips were "just minor variations … scrap everything, find some interesting ways to present
+this information". `till-concepts.html` holds ten pictures of the same session that are not
+chips: the X-report as a receipt, a cash tray, the cash level through the session, what leaves
+the drawer tonight, a drawer-limit gauge, a sentence, opened-with against holds-now, the day as
+handovers, a cash book, a scoreboard. **Decided:** C3, the cash level through the session, "the
+most interesting", with the chips as the backup. The strip now draws a step line from the float
+at open to now, up with every cash sale, down where cash left, the paid-in, paid-outs and
+refunds marked and named, the float as a dashed line, "£293.70 now" at the end; when the till
+is closed the line ends at the count with the drawer result. Desktop keeps it in the middle of
+the strip; tablet and phone give it its own row; the phone drops the event labels. The chips
+remain behind the strip's *Till* switch as the backup.
+
 ## What changed from 2026-09-14
 
 - Copied the register's tokens, controls, rail, page bar, notification panel, side-panel and
