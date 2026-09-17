@@ -259,6 +259,9 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     whole are donuts with rows (Payments, Where sold with a Registers view, Categories); rankings
     are bars (Top products, Cashiers); Taxes a row of figures; Orders a basket-size distribution.
     Not decided.
+    **Sibling session (2026-09-17, later still): `reports/panel-variants.html`**, ten Orders panels
+    and eight share-chart styles on the fixture, after Paul asked for research and ten options.
+    To react to; nothing decided.
 
 48. **Orders inside the register; the rail toggles the pages (Paul, 2026-09-17).** Paul: put
     the Orders mock-up into `pos-register/index.html` and toggle between the POS page, the
