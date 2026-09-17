@@ -378,6 +378,18 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     stay compact; Paul's brief exactly). All five: − at 1 becomes a trash; remove shows a 2.6 s
     Undo toast; on desktop + − ⌫ ↑ ↓ act on the selected line. **Pick: 03 with 02's quantity
     popover** (the line never reflows, quantity gets a keypad); 05 if the stepper should be seen.
+    **Decided (Paul, 2026-09-17):** the one-tap quick edit of name and price stays (from cut 2).
+    **Quantity is the button**, but not a popover below: the box expands in place, the number
+    exactly where it was, − to its left, + to its right, the keypad beneath, the border appearing
+    to grow (drawn with a 180 ms clip-path from the box's rectangle; the panel is 3 × 36 px cells,
+    so it overhangs the cart's left edge by 20 px, and the board draws a sliver of the products
+    column to show that honestly). Typing on the keypad replaces the number, − at 1 is a trash. On
+    phones the same opens the app's bottom sheet (stepper and keypad, Done). **Edit and delete
+    live under the line**: press and swipe the *total column* left; under 80 px it springs back,
+    past 80 it snaps to Edit / Delete, past 240 it deletes (with Undo). On a mouse, hovering the
+    total nudges the line 14 px so the strip's edge shows, and a click on the total opens it.
+    Live as D1 (tablet, with the sliver) and D2 (phone) at the top of the cart board; the five
+    explorations are folded below.
 37. **The products footer (2026-09-17).** Paul's screenshot of today's app: *Tax based on: Shop
     base address* left, *Showing 24 of 209 ⟳* right; important, and cluttered; icons perhaps.
     Five treatments under `Footer` on board 4: today's text · icons with the values (a percent

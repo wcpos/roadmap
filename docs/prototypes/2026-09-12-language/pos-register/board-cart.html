@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Cart line — quantity, edit and remove, five ways, tablet and desktop</title>
+<title>Cart line — decided: quick edit, the quantity expands, swipe the total</title>
 <style>
 :root{--u:4px;--fs:14px;--ctl:44px;--row:44px;--r:8px;--hair:1px;
   --bg:oklch(0.975 0.004 250);--fg:oklch(0.22 0.02 250);--card:oklch(1 0 0);--muted:oklch(0.955 0.006 250);--muted-fg:oklch(0.50 0.02 250);--border:oklch(0.90 0.008 250);
@@ -36,6 +36,35 @@ svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:
 .step button.del{color:var(--destructive)}
 /* small icon actions */
 .acts{display:inline-flex;gap:2px} .act{width:36px;height:36px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg)} .act:hover{background:var(--muted);color:var(--fg)} .act.del:hover{background:color-mix(in oklch,var(--destructive) 12%,transparent);color:var(--destructive)}
+/* ── decided (2026-09-17) ───────────────────────────────────────────── */
+.frame.dec{width:488px;flex-direction:row} .frame.dec .sliver{width:48px;flex:none;background:var(--bg);border-right:var(--hair) solid var(--border);position:relative} .frame.dec .sliver::after{content:"";position:absolute;right:2px;top:50%;width:4px;height:48px;margin-top:-24px;border-radius:2px;background:var(--border)}
+.frame.dec .cartcol{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
+.frame.dec .lines{overflow:visible} .frame.dec .line{overflow:hidden}
+.frame.dec .line .clip{position:absolute;inset:0;overflow:hidden;z-index:0}   /* the under-strip clips; the expanding quantity does not */
+.frame.dec .line .un{z-index:0}
+/* quick edit: the name and the price are one-tap inputs */
+.frame.dec .nm,.frame.dec .pr{cursor:text;border-radius:4px;padding:2px 4px;margin:-2px -4px} .frame[data-pt="mouse"].dec .nm:hover,.frame[data-pt="mouse"].dec .pr:hover{background:var(--muted)}
+.frame.dec .ed{height:32px;border:var(--hair) solid var(--primary);box-shadow:0 0 0 1px var(--primary);border-radius:6px;padding:0 6px;width:100%;background:var(--card);outline:none;font:inherit;color:inherit;min-width:0} .frame.dec .ed.r{text-align:right}
+/* the quantity expands in place: the number cell stays where the box was; − to its left (overhanging the cart's edge), + to its right, the keypad below */
+.frame.dec .qx{position:absolute;left:-20px;width:108px;z-index:7;background:var(--card);border:var(--hair) solid var(--border);border-radius:6px;box-shadow:0 10px 28px oklch(0.2 0.02 250 / .18);display:grid;grid-template-columns:repeat(3,36px);grid-auto-rows:36px;animation:grow 180ms var(--ease);clip-path:inset(0 0 0 0 round 6px);overflow:hidden}
+@keyframes grow{from{clip-path:inset(0 36px calc(100% - 36px) 36px round 6px);box-shadow:none}}
+.frame.dec .qx button,.frame.dec .qx b{display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:14px} .frame.dec .qx button:hover{background:var(--muted)} .frame.dec .qx b{font-size:15px;border-bottom:var(--hair) solid var(--border)} .frame.dec .qx .top{border-bottom:var(--hair) solid var(--border)} .frame.dec .qx .del{color:var(--destructive)} .frame.dec .qx .ok{color:var(--primary)}
+.frame.dec .line.qopen{z-index:8}
+/* swipe the total: drag left on the total column; full swipe deletes, a short one snaps to Edit / Delete; on a mouse the total nudges on hover to show there is something under the line */
+.frame.dec .tot{cursor:grab;position:relative;display:inline-block;padding:6px 0 6px 12px;margin:-6px 0 -6px -12px;border-radius:4px}
+.frame[data-pt="mouse"].dec .line:not(.open):not(.drag):has(.tot:hover) .lb{transform:translateX(-14px)} .frame[data-pt="mouse"].dec .line:not(.open):not(.drag):has(.tot:hover) .un{opacity:1}
+.frame[data-pt="mouse"].dec .line .un{display:flex;opacity:1}
+.frame.dec .line.open .lb{transform:translateX(-160px)}
+.frame.dec .line.going .lb{transform:translateX(-100%);transition:transform 160ms var(--ease)}
+/* the phone: the same cart, and the quantity opens a bottom sheet */
+.frame.phone{width:390px;height:560px} .frame.phone .cth{grid-template-columns:44px 1fr 74px} .frame.phone .line .lb{grid-template-columns:44px 1fr 74px}
+.frame.phone .sheet{position:absolute;left:0;right:0;bottom:0;z-index:9;background:var(--card);border-radius:16px 16px 0 0;box-shadow:0 -12px 32px oklch(0.2 0.02 250 / .2);padding:8px 16px 20px;animation:up 220ms var(--ease)} @keyframes up{from{transform:translateY(100%)}}
+.frame.phone .scrim{position:absolute;inset:0;background:oklch(0.2 0.02 250 / .35);z-index:8}
+.frame.phone .sheet .grab{width:36px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 12px} .frame.phone .sheet .ttl{display:flex;align-items:center;gap:10px;margin-bottom:12px} .frame.phone .sheet .ttl .q{height:36px;min-width:36px;border:var(--hair) solid var(--border);border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-weight:600} .frame.phone .sheet .ttl .sub{display:block;color:var(--muted-fg);font-size:12px}
+.frame.phone .sheet .stp{display:grid;grid-template-columns:56px 1fr 56px;height:56px;border:var(--hair) solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px} .frame.phone .sheet .stp button,.frame.phone .sheet .stp b{display:inline-flex;align-items:center;justify-content:center;font-size:22px;font-weight:600} .frame.phone .sheet .stp .del{color:var(--destructive)}
+.frame.phone .sheet .kb{display:grid;grid-template-columns:repeat(3,1fr);gap:6px} .frame.phone .sheet .kb button{height:52px;border-radius:10px;background:var(--muted);display:inline-flex;align-items:center;justify-content:center;font-size:20px;font-weight:600} .frame.phone .sheet .kb .ok{background:var(--primary);color:var(--primary-fg)}
+.frame.phone .sheet .kb .del{color:var(--destructive)}
+.rej{margin-top:36px;max-width:960px} .rej summary{cursor:pointer;font-size:14px;color:#374151;padding:10px 0} .rej .board{margin-top:16px}
 /* 01 the selected line expands */
 .line .more{display:none;align-items:center;gap:8px;padding:0 16px 10px;background:color-mix(in srgb,var(--primary) 8%,var(--card))} .line.sel .more{display:flex} .more .grow{flex:1} .more .btn{height:36px;padding:0 12px;border:var(--hair) solid var(--border);border-radius:6px;display:inline-flex;align-items:center;gap:6px;background:var(--card)} .more .btn.del{color:var(--destructive);border-color:color-mix(in oklch,var(--destructive) 45%,transparent)}
 /* 02 the quantity is the button: popover */
@@ -63,8 +92,10 @@ svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:
   <div class="g"><span style="color:#d1d5db;text-transform:none;letter-spacing:0;font-weight:400">Every frame is live: tap or click a line, drag it left on touch, hover on mouse. With a line selected, <kbd>+</kbd> <kbd>−</kbd> change quantity and <kbd>⌫</kbd> removes (click the frame first).</span></div>
 </div>
 <h1>Cart line — quantity, edit and remove, five ways</h1>
-<p class="lead">Paul: the stepper is right for cart quantity but takes too much room, so it should only be active on the active line; the swipe is intuitive on a tablet, but a row that slides on mouse-over would confuse desktop users, who still need two things on every line: <b>edit</b> (the line's details) and <b>remove</b>. Five answers, each drawn for touch and for mouse. The <b>Pointer</b> switch shows both; the same code runs, the reveal changes.</p>
-<div class="board" id="board"></div>
+<p class="lead"><b>Decided (Paul):</b> the one-tap quick edit of name and price stays. The <b>quantity is the button</b>: press it and the box expands in place, the number exactly where it was, − to its left, + to its right, a keypad beneath, as if the border grew. On a phone it is a bottom sheet instead. <b>Edit and delete</b> live under the line: press and swipe the total column left; a short swipe snaps to Edit / Delete, a full swipe deletes; on a mouse, hovering the total nudges the line to show there is something under it, and a click on the total opens it. Below the fold, the five ideas that led here. Paul then: the stepper is right for cart quantity but takes too much room, so it should only be active on the active line; the swipe is intuitive on a tablet, but a row that slides on mouse-over would confuse desktop users, who still need two things on every line: <b>edit</b> (the line's details) and <b>remove</b>. Five answers, each drawn for touch and for mouse. The <b>Pointer</b> switch shows both; the same code runs, the reveal changes.</p>
+<h2 style="font-size:16px;margin:0 0 8px">Decided, 2026-09-17</h2>
+<div class="board" id="decided" style="grid-template-columns:488px 390px"></div>
+<details class="rej"><summary>The five explorations that led here (touch and mouse)</summary><div class="board" id="board"></div></details>
 <script>
 const I={plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',minus:'<svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>',chevd:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',x:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',pen:'<svg viewBox="0 0 24 24"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3M13.5 6.5l3 3"/></svg>',trash:'<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>',dots:'<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg>',info:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>',sliders:'<svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg>',drawer:'<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="9" rx="2"/><path d="M3 15h18M10 17.5h4M6 11V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/></svg>',keypad:'<svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h.01M12 7h.01M16 7h.01M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01"/></svg>'};
 const CUR='£'; const fmt=n=>`${CUR}${n.toFixed(2)}`;
@@ -120,6 +151,49 @@ function makeCart(frame,mode){
   });
   render(); return {S,render};
 }
+function makeDecided(frame,phone){
+  const S={lines:LINES(),qopen:null,edit:null,undo:null,buf:''};
+  const head=`<div class="bar"><b>UK Store</b><span class="ibtn" style="margin-left:auto">${I.drawer}</span><span class="av">DC</span></div><div class="custrow"><span class="mut">Customer</span><span class="chip">Guest ${I.chevd}</span><span class="grow"></span><span class="ibtn">${I.plus}</span><span class="ibtn">${I.sliders}</span></div><div class="cth"><span>Qty</span><span>Item</span>${phone?'':'<span class="r">Price</span>'}<span class="r">Total</span></div>`;
+  const qx=(i)=>`<div class="qx" data-i="${i}"><button class="top ${S.lines[i].q<=1?'del':''}" data-act="dec" data-i="${i}">${S.lines[i].q<=1?I.trash:I.minus}</button><b>${S.buf||S.lines[i].q}</b><button class="top" data-act="inc" data-i="${i}">${I.plus}</button>${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-act="key" data-k="${n}" data-i="${i}">${n}</button>`).join('')}<button data-act="key" data-k="bs" data-i="${i}">${I.x}</button><button data-act="key" data-k="0" data-i="${i}">0</button><button class="ok" data-act="qclose" data-i="${i}">✓</button></div>`;
+  const line=(l,i)=>{const e=S.edit;
+    const name=e&&e.i===i&&e.f==='n'?`<input class="ed" data-f="n" data-i="${i}" value="${l.n}">`:`<span class="nm" data-act="edit" data-f="n" data-i="${i}">${l.n}${l.s?`<span class="sub">${l.s}</span>`:''}</span>`;
+    const price=phone?'':(e&&e.i===i&&e.f==='p'?`<input class="ed r" data-f="p" data-i="${i}" value="${l.p.toFixed(2)}">`:`<span class="r"><span class="pr mut money" data-act="edit" data-f="p" data-i="${i}">${fmt(l.p)}</span></span>`);
+    return `<div class="line ${S.qopen===i?'qopen':''}" data-i="${i}"><div class="clip"><div class="un"><button data-act="ledit" data-i="${i}">${I.pen}Edit</button><button class="del" data-act="del" data-i="${i}">${I.trash}Delete</button></div></div><div class="lb"><button class="q" data-act="qopen" data-i="${i}">${l.q}</button>${name}${price}<span class="r"><span class="tot b money" data-tot="1">${fmt(l.q*l.p)}</span></span></div></div>`;};
+  const sheet=()=>{const i=S.qopen; if(i==null) return ''; const l=S.lines[i]; return `<div class="scrim" data-act="qclose"></div><div class="sheet"><div class="grab"></div><div class="ttl"><span class="q">${l.q}</span><span>${l.n}<span class="sub">${l.s||fmt(l.p)+' each'}</span></span></div><div class="stp"><button class="${l.q<=1?'del':''}" data-act="dec" data-i="${i}">${l.q<=1?I.trash:I.minus}</button><b>${S.buf||l.q}</b><button data-act="inc" data-i="${i}">${I.plus}</button></div><div class="kb">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-act="key" data-k="${n}" data-i="${i}">${n}</button>`).join('')}<button class="del" data-act="key" data-k="bs" data-i="${i}">${I.x}</button><button data-act="key" data-k="0" data-i="${i}">0</button><button class="ok" data-act="qclose">Done</button></div></div>`;};
+  const render=()=>{const sub=S.lines.reduce((a,l)=>a+l.q*l.p,0), vat=sub*0.2; frame.dataset.pt=G.pt; frame.tabIndex=0;
+    frame.innerHTML=`${phone?'':'<div class="sliver"></div>'}<div class="cartcol">${head}<div class="lines">${S.lines.map(line).join('')}${S.qopen!=null&&!phone?qx(S.qopen):''}${S.undo?`<div class="toast">${I.trash}${S.undo.n} deleted<button data-act="undo">Undo</button></div>`:''}</div><div class="totals"><div class="mut"><span>Subtotal</span><span>${fmt(sub)}</span></div><div class="mut"><span>VAT 20%</span><span>${fmt(vat)}</span></div><div class="big"><span>Total</span><span>${fmt(sub+vat)}</span></div></div><div class="cf"><span class="btn d">Void</span><span class="btn p">Checkout ${fmt(sub+vat)}</span></div>${phone?sheet():''}</div>`;
+    const ed=frame.querySelector('.ed'); if(ed){ed.focus();ed.select();}
+    const x=frame.querySelector('.qx'); if(x){const ln=frame.querySelector(`.line[data-i="${S.qopen}"]`); x.style.top=(ln.offsetTop+4)+'px';}};
+  const remove=(i)=>{const [l]=S.lines.splice(i,1);S.qopen=null;S.buf='';S.undo={...l,at:i};render();clearTimeout(S.ut);S.ut=setTimeout(()=>{S.undo=null;render();},2600);};
+  const commit=()=>{const ed=frame.querySelector('.ed'); if(!ed) return; const i=+ed.dataset.i; if(ed.dataset.f==='n') S.lines[i].n=ed.value||S.lines[i].n; else {const v=parseFloat(ed.value); if(!isNaN(v)) S.lines[i].p=v;} S.edit=null; render();};
+  frame.addEventListener('click',e=>{
+    if(S.dragged){S.dragged=false;return;}   /* the click that follows a drag must not close what the drag opened */
+    const t=e.target.closest('[data-act]'); const act=t?t.dataset.act:null; const i=t?+t.dataset.i:null;
+    if(e.target.closest('.ed')) return;
+    if(!t){ if(S.edit){commit();return;} if(S.qopen!=null){S.qopen=null;S.buf='';render();} frame.querySelectorAll('.line.open').forEach(l=>{l.classList.remove('open');l.querySelector('.lb').style.transform='';}); return; }
+    if(act==='qopen'){S.qopen=S.qopen===i?null:i;S.buf='';S.edit=null;render();return;}
+    if(act==='qclose'){S.qopen=null;S.buf='';render();return;}
+    if(act==='inc'){S.lines[i].q++;S.buf='';render();return;} if(act==='dec'){S.buf=''; if(S.lines[i].q<=1) remove(i); else {S.lines[i].q--;render();} return;}
+    if(act==='key'){const k=t.dataset.k; if(k==='bs') S.buf=S.buf.slice(0,-1); else S.buf=(S.buf+k).replace(/^0+(?=\d)/,'').slice(0,3); const n=parseInt(S.buf||'0',10); if(n>0) S.lines[i].q=n; render(); return;}
+    if(act==='edit'){S.edit={i,f:t.dataset.f};S.qopen=null;render();return;}
+    if(act==='ledit'){frame.querySelector('.lines').insertAdjacentHTML('beforeend',`<div class="toast">${I.pen}Edit line: ${S.lines[i].n} (opens the line slide-out)</div>`); setTimeout(()=>{const x=frame.querySelector('.toast'); if(x&&x.textContent.startsWith('Edit')) x.remove();},1500); return;}
+    if(act==='del'){remove(i);return;} if(act==='undo'){S.lines.splice(S.undo.at,0,{q:S.undo.q,n:S.undo.n,s:S.undo.s,p:S.undo.p});S.undo=null;render();return;}
+  });
+  frame.addEventListener('keydown',e=>{ if(e.target.closest('.ed')){ if(e.key==='Enter') commit(); if(e.key==='Escape'){S.edit=null;render();} return; } });
+  frame.addEventListener('focusout',e=>{ if(e.target.closest&&e.target.closest('.ed')) setTimeout(()=>{ if(S.edit&&!frame.querySelector('.ed:focus')) commit(); },0); });
+  /* swipe the total column: only a press that starts on the total drags the line */
+  frame.addEventListener('pointerdown',e=>{
+    const tot=e.target.closest('.tot'); if(!tot) return; const ln=tot.closest('.line'); const lb=ln.querySelector('.lb'); const x0=e.clientX; let dx=0, moved=false; const open=ln.classList.contains('open');
+    ln.classList.add('drag'); ln.setPointerCapture(e.pointerId);
+    const move=ev=>{dx=Math.min(0,Math.max(-300,ev.clientX-x0-(open?160:0))); if(Math.abs(ev.clientX-x0)>3) moved=true; lb.style.transform=`translateX(${dx}px)`;};
+    const up=()=>{ln.removeEventListener('pointermove',move);ln.removeEventListener('pointerup',up);ln.removeEventListener('pointercancel',up); ln.classList.remove('drag');
+      if(moved) S.dragged=true;
+      if(!moved&&G.pt==='mouse'){ /* a click on the total, on a mouse: open or close the strip */ if(open){ln.classList.remove('open');lb.style.transform='';} else {ln.classList.add('open');lb.style.transform='';} return; }
+      if(dx<-240){ln.classList.add('going');setTimeout(()=>remove(+ln.dataset.i),170);} else if(dx<-80){ln.classList.add('open');lb.style.transform='';} else {ln.classList.remove('open');lb.style.transform='';} };
+    ln.addEventListener('pointermove',move);ln.addEventListener('pointerup',up);ln.addEventListener('pointercancel',up);
+  });
+  render(); return {S,render};
+}
 const panel=(n,mode,title,touch,mouse,note)=>`<section class="panel" data-n="${String(n).padStart(2,'0')}-${title.toLowerCase().replace(/[^a-z0-9]+/g,'-')}"><div class="cap"><span class="n">${String(n).padStart(2,'0')}</span><b>${title}</b></div><div class="frame" data-mode="${mode}"></div><p class="note"><b>Touch:</b> ${touch} <b>Mouse:</b> ${mouse} ${note}</p></section>`;
 document.getElementById('board').innerHTML=[
  panel(1,'expand','The selected line expands','tap a line and it grows a second row: the stepper, Edit, Remove. Tap again or elsewhere to close. Swipe still removes.','the same on click, plus hover tint. Keys: + − ⌫.','One idea, both pointers, no hidden gesture. Costs a row of height on the active line only, and the cart never has to reflow anything but that line.'),
@@ -128,8 +202,9 @@ document.getElementById('board').innerHTML=[
  panel(4,'menu','A … on every line','tap … for a menu: quantity stepper, Edit line, Remove. Swipe left still works.','click … for the same menu. Keys too.','The explicit version: one visible control per line, no gesture needed on either pointer, and it takes 36 px at the line end, not a stepper\'s 110. This is Lightspeed R and Shopify\'s answer. Dullest, safest.'),
  panel(5,'inplace','Stepper in place on the selected line','tap a line: its quantity box widens into − n + where it was, the total stacks over "n × price", and Edit and Remove appear at the end. Other lines stay compact. Swipe removes.','click a line for the same; hover tints. Keys: + − ⌫.','Paul\'s brief exactly: the stepper only exists on the active line. The reflow is one line\'s columns. The trap is the tap target: the line must select on a tap anywhere, so the stepper\'s buttons need to swallow their own taps (they do here).'),
 ].join('');
-window.APPS=[...document.querySelectorAll('.frame')].map(f=>makeCart(f,f.dataset.mode));
-document.querySelector('.strip').addEventListener('click',e=>{const b=e.target.closest('button[data-v]'); if(!b) return; const seg=b.closest('.seg'); G[seg.dataset.k]=b.dataset.v; seg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); APPS.forEach(a=>{a.S.sel=null;a.S.pop=null;a.S.menu=null;a.render();});});
+document.getElementById('decided').innerHTML=`<section class="panel" data-n="00-decided-tablet"><div class="cap"><span class="n">D1</span><b>Tablet and desktop</b></div><div class="frame dec" data-mode="decided"></div><p class="note"><b>Quantity:</b> press the box. <b>Name, price:</b> press to edit, Enter or click away to keep. <b>Edit / Delete:</b> drag the total left (any pointer); on the Desktop setting, hover the total for the nudge and click it to open. A 48 px sliver of the products column is drawn so the expanded quantity's overhang past the cart's edge is judged honestly.</p></section><section class="panel" data-n="00-decided-phone"><div class="cap"><span class="n">D2</span><b>Phone</b></div><div class="frame dec phone" data-mode="decided-phone"></div><p class="note">The same cart at phone width: no price column, and the quantity opens the app's bottom sheet with the stepper and keypad.</p></section>`;
+window.APPS=[...document.querySelectorAll('.frame')].map(f=>f.dataset.mode==='decided'?makeDecided(f,false):f.dataset.mode==='decided-phone'?makeDecided(f,true):makeCart(f,f.dataset.mode));
+document.querySelector('.strip').addEventListener('click',e=>{const b=e.target.closest('button[data-v]'); if(!b) return; const seg=b.closest('.seg'); G[seg.dataset.k]=b.dataset.v; seg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); APPS.forEach(a=>{a.S.sel=null;a.S.pop=null;a.S.menu=null;a.S.qopen=null;a.render();});});
 </script>
 </body>
 </html>

@@ -10,7 +10,8 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   const errors = []; page.on('pageerror', e => errors.push('pageerror: ' + e.message));
   await page.goto('file://' + path.join(DIR, 'board-cart.html'));
   const set = async (v) => { await page.locator(`.seg[data-k="pt"] button[data-v="${v}"]`).click(); await page.waitForTimeout(60); };
-  const panels = page.locator('section.panel'); const n = await panels.count();
+  await page.evaluate(() => document.querySelectorAll('details').forEach(d => { d.open = true; }));
+  const panels = page.locator('details section.panel'); const n = await panels.count();
   for (const pt of ['touch', 'mouse']) {
     await set(pt);
     for (let i = 0; i < n; i++) {
