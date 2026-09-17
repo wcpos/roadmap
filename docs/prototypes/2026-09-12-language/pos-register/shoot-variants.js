@@ -50,11 +50,15 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   { const c = await page.locator('.tr.rowbtn[data-s="Natural · S"] .cnt').innerText(); if (c.trim() !== '1') throw new Error('variation tap did not count: ' + c); }
   await page.click('.crumb [data-act="popView"]'); await page.waitForTimeout(400);
   if (await page.locator('.crumb').count()) throw new Error('crumb still there after Products');
-  await page.click('[data-act="catMenu"]'); await page.waitForTimeout(100); await shot('table-cat-menu');
-  await page.click('.menu [data-c="Drinks"]'); await page.waitForTimeout(400); await shot('table-cat-slide');
-  { const n = await page.locator('.pane .tr').count(); if (n !== 3) throw new Error('Drinks should show 3 rows: ' + n); const pill = await page.locator('.pill.on').innerText(); if (!/Drinks/.test(pill)) throw new Error('Category pill not filled: ' + pill); }
-  await page.click('.pill.on[data-act="clearCat"]'); await page.waitForTimeout(400);
-  if (await page.locator('.pane .tr').count() < 12) throw new Error('clearing the category did not restore the rows');
+  // categories and tags are multi-select chips, never a crumb (Paul 2026-09-17: today's POS allows many categories and a tag on top)
+  await page.click('[data-act="catMenu"]'); await page.waitForTimeout(100); await page.click('.menu [data-act="togCat"][data-c="Drinks"]'); await page.waitForTimeout(200);
+  { const n = await page.locator('.pane .tr').count(); if (n !== 3) throw new Error('Drinks should show 3 rows: ' + n); if (await page.locator('.crumb').count()) throw new Error('a category filter must not make a crumb'); }
+  await page.click('.menu [data-act="togCat"][data-c="Bakery"]'); await page.waitForTimeout(200); await shot('table-cat-menu-two');
+  { const n = await page.locator('.pane .tr').count(); if (n !== 6) throw new Error('Drinks + Bakery should show 6 rows: ' + n); const pill = await page.locator('.pill.on').first().innerText(); if (!/Drinks \+1/.test(pill)) throw new Error('Category chip should read Drinks +1: ' + pill); }
+  await page.click('[data-act="tagMenu"]'); await page.waitForTimeout(100); await page.click('.menu [data-act="togTag"][data-c="Local"]'); await page.waitForTimeout(200); await page.click('.thead'); await page.waitForTimeout(150); await shot('table-cats-and-tag');
+  { const n = await page.locator('.pane .tr').count(); if (n !== 3) throw new Error('Drinks + Bakery, tag Local should show 3 rows: ' + n); if (!(await page.locator('.pill.clr').count())) throw new Error('Clear all missing with two filter groups on'); }
+  await page.click('.pill.clr'); await page.waitForTimeout(200);
+  if (await page.locator('.pane .tr').count() < 12) throw new Error('Clear all did not restore the rows');
   await set('vars', 'inline'); await shot('table-var-inline');
   if (await page.locator('.tr.vh').count() !== 3) throw new Error('inline style should show 3 indented rows');
   await set('vars', 'slide');
@@ -72,11 +76,10 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   { const n = await page.locator('.pane .tr').count(); if (n !== 6) throw new Error('Morning menu + in stock should leave 6 rows: ' + n); }
   await page.click('[data-act="quickMenu"]'); await page.waitForTimeout(150); await shot('table-quick-filter-open');
   if (!(await page.locator('.menu .part').count())) throw new Error('quick filter parts not shown');
-  await page.click('[data-act="catMenu"]'); await page.click('.menu [data-c="Merch"]'); await page.waitForTimeout(400); await shot('table-empty-clear-filters');
+  await page.click('[data-act="catMenu"]'); await page.click('.menu [data-act="togCat"][data-c="Merch"]'); await page.waitForTimeout(200); await page.click('.thead'); await page.waitForTimeout(150); await shot('table-empty-clear-filters');
   if (!(await page.locator('.pane [data-act="clearFilters"]').count())) throw new Error('Merch with Morning menu on should be empty with Clear filters');
   await page.click('.pane [data-act="clearFilters"]'); await page.waitForTimeout(200);
-  { const n = await page.locator('.pane .tr').count(); if (n !== 3) throw new Error('Merch after clearing filters: ' + n); }
-  await page.click('.pill.on[data-act="clearCat"]'); await page.waitForTimeout(400);
+  { const n = await page.locator('.pane .tr').count(); if (n !== 12) throw new Error('after Clear filters: ' + n); }
   await page.click('[data-act="toggleView"]');
   // the grid: the same breadcrumb and slide, tiles instead of rows
   await page.click('.tile[data-act="openVar"]'); await page.waitForTimeout(700); await shot('grid-var-stagger');
@@ -85,9 +88,9 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   await page.click('.tile[data-s="Natural · S"]'); await page.waitForTimeout(200);
   { const c = await page.locator('.tile[data-s="Natural · S"] .tcnt').innerText(); if (c.trim() !== '2') throw new Error('grid variation tap did not count to 2: ' + c); }
   await page.click('.crumb [data-act="popView"]'); await page.waitForTimeout(700);
-  await page.click('[data-act="catMenu"]'); await page.click('.menu [data-c="Bakery"]'); await page.waitForTimeout(700); await shot('grid-cat-stagger');
+  await page.click('[data-act="catMenu"]'); await page.click('.menu [data-act="togCat"][data-c="Bakery"]'); await page.waitForTimeout(700); await page.click('.ptable'); await page.waitForTimeout(150); await shot('grid-cat-stagger');
   if (await page.locator('.tiles .tile').count() !== 3) throw new Error('Bakery tiles');
-  await page.click('.pill.on[data-act="clearCat"]'); await page.waitForTimeout(700);
+  await page.click('.pill.on [data-act="clearCats"]'); await page.waitForTimeout(700);
   if (await page.locator('.tiles .tile').count() !== 12) throw new Error('clear category in the grid');
   // the cart line: the quantity expands, the swipe on the total, the desktop nudge, the phone sheet
   await scn('open'); await page.click('.line[data-i="1"] .q'); await page.waitForTimeout(250); await shot('cart-qty-open');

@@ -5,8 +5,8 @@
 
 ## The question
 
-The product table and grid now drill in: a category, then a variable product's variations,
-each behind a breadcrumb. The filter bar sits above with the app's chips (Stock status,
+The product table and grid now drill in: a variable product's variations behind a breadcrumb
+(and, when this was asked, a category too; see the last section for why that went). The filter bar sits above with the app's chips (Stock status,
 Featured, On sale, Category, Tag, Brand) plus the user's own quick filters. Paul asked how the
 two interact:
 
@@ -23,7 +23,7 @@ Three separate jobs, three separate places, and nothing is ever said twice.
 
 | | Answers | Lives in | Persists across levels |
 |---|---|---|---|
-| Breadcrumb | Where am I? | `Products › Drinks`, `Products › Tote bag` | No: it *is* the level |
+| Breadcrumb | Where am I? | `Products › Tote bag` | No: it *is* the level |
 | Chips | What am I narrowing by? | the filter bar, filled when on | Yes |
 | Count | What did that leave? | the footer, `3 of 12`, `2 of 3` | Recomputed per level |
 
@@ -62,21 +62,46 @@ dim, and their tooltip says why: *A product filter; not used inside a product's 
 Stock keeps full weight because it applies. Nothing is silently dropped and nothing lies about
 what is filtering.
 
-**A place and a condition that disagree.** The place always wins the *scope*; the conditions
-narrow inside it. Drilling into Merch with `Morning menu` on (which includes a category clause)
-gives an empty pane: *Nothing here matches the filters* with **Clear filters**. That is honest
-and one tap away from recovery. The alternative, quietly ignoring the quick filter's category
-clause because a crumb superseded it, produces a list the chips do not describe.
+**Conditions that disagree.** Merch ticked with `Morning menu` on (which includes a category
+clause of its own) gives an empty pane: *Nothing here matches the filters* with **Clear
+filters**. That is honest and one tap away from recovery. The alternative, quietly dropping one
+clause because another contradicts it, produces a list the chips do not describe.
+
+## Many categories, and a tag on top
+
+Paul (2026-09-17, with a screenshot of today's POS: `Promotions +31 ×` beside `Acme ×`): today a
+user can tick many categories and add a tag. Under the rule this is not a breadcrumb question
+at all. A breadcrumb holds **one** place; thirty-one categories are not a place, they are a
+condition. So:
+
+- **Category is a chip, not a crumb.** Its menu is a checkbox list, as today. Off, it reads
+  `Category ▾`. On, it reads the first pick and how many more (`Drinks +1`, `Promotions +31`),
+  the full list in its tooltip, and it splits in two: the label reopens the list, the × clears
+  the whole group, which is exactly the shape today's chip already has.
+- **Tag is the same chip.** `Tag ▾` off; `Acme ×` on. Both filled, both in the bar, ANDed with
+  everything else. Within a group the picks are OR (any of these categories); across groups
+  they are AND (one of these categories, and this tag, and in stock). That is the standard
+  faceted-search semantics and what today's POS does.
+- **The breadcrumb is for variations only, for now.** `Products › Tote bag`. Categories would
+  earn a crumb only if the POS gained folder browsing (tap a category tile, go inside it, as
+  Loyverse and Square do), and that would be navigation living beside the chip, not instead of
+  it. The category slide from board 4 is therefore out of the register; the grid still staggers
+  on every re-fill, which is the motion Paul chose for it.
+- **Clear all** appears at the end of the bar as soon as two groups are on, so `Promotions +31`
+  plus `Acme` is one tap to undo.
+
+Nothing changes for the footer: it says what the whole set left, `3 of 12`.
 
 ## What the prototype does
 
-- Category chip: a select (menu); a pick slides to the category pane and fills the chip with
-  `Category · Drinks ×`. The × and the breadcrumb's `‹ Products` both return.
+- Category chip: a checkbox list; the chip fills with `Drinks +1 ×`. The label reopens the list,
+  the × clears the group. Tag is the same. No crumb, no slide.
 - Stock chip: a select (Any, In stock, Low stock, Out of stock); the chip fills with the pick.
 - Featured chip: a toggle; filled with × when on.
 - Morning menu: the quick filter as above.
 - Footer: `12 of 1,204` unfiltered; `n of 12` when anything narrows; `n of 3` in the variations.
-- Empty state in the pane with Clear filters (clears the chips, not the place).
+- Empty state in the pane with Clear filters (clears every chip, not the place). Clear all at
+  the end of the bar once two groups are on.
 
 ## Sources
 

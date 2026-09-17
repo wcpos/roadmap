@@ -142,6 +142,9 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .tile .vbadge{position:absolute;right:6px;top:6px;width:24px;height:24px;border-radius:999px;background:var(--card);display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg);box-shadow:0 1px 2px oklch(0.2 0.02 250 / .12)} .tile .vbadge svg{width:14px;height:14px}
 .tile .tcnt{position:absolute;left:6px;top:6px;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:var(--primary);color:var(--primary-fg);font-size:calc(var(--fs)*.75);font-weight:700;display:inline-flex;align-items:center;justify-content:center}
 /* a chip that does not apply at this level (product filters inside a product's variations) stays on but dims */
+.pill.split{padding:0;overflow:hidden;flex:none;min-width:max-content} .pill.split>button{height:100%;display:inline-flex;align-items:center;gap:5px;padding:0 8px 0 12px;color:inherit;font-weight:inherit} .pill.split>button.x{padding:0 10px 0 8px;border-left:var(--hair) solid color-mix(in srgb,var(--bg) 30%,transparent)} .pill.split>button.x svg{width:12px;height:12px}
+.pill.clr{border:0;background:transparent;color:var(--muted-fg);text-decoration:underline;text-underline-offset:3px}
+.fwrap .menu button .cb{margin-right:2px} .fwrap .menu .cb:not(.on) svg{visibility:hidden}
 .pill.na{opacity:.45} .pill .n{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--bg);color:var(--fg);font-size:calc(var(--fs)*.75);font-weight:700;margin-left:2px}
 .fwrap .menu button.on{font-weight:600} .fwrap .menu button .n svg{width:14px;height:14px}
 .fwrap .menu .h{display:flex;align-items:baseline;gap:8px;padding:6px 10px 4px;font-weight:600} .fwrap .menu .h span{font-weight:400;font-size:calc(var(--fs)*.86)}
@@ -497,7 +500,7 @@ const S={ w:'tablet', theme:'light', scale:'regular', scn:'open',
   closePos:'tr', legacy:'header-text',   /* Paul 2026-09-16: decided, switches removed. Void = outlined red, matched (voidStyle 'red'). */ termStep:1, sortCart:'newest-last', tabStyle:'line1',   /* Paul 2026-09-14: amount + dot, with a format setting */
   voidStyle:'red', vmenu:false, toast:null,
   /* personality touches (research: personality/ideas on the hub). Each is one small behaviour, not a skin. */
-  tx:{roll:1,stamp:1,pence:1,badge:1,tear:1,doodle:1}, icons:'tabler-15', qx:null, qbuf:'', undoLine:null, vars:'slide', pview:'products', cat:null, menu:false, slide:null, stock:null, feat:false, quick:false };   /* 2026-09-17: filters are chips in the bar, the breadcrumb is the place; the footer says the count */   /* Paul 2026-09-17: variations slide the table left behind a breadcrumb (board 4); inline rows stay as the other style, a POS panel setting */   /* Paul 2026-09-17: the quantity expands in place; edit and delete by swiping the total */   /* Paul 2026-09-17: surface decided, today's; the header stays caps over a hairline */   /* Paul 2026-09-16: Tabler at 1.5 px, for a while; Hugeicons the standing alternative */
+  tx:{roll:1,stamp:1,pence:1,badge:1,tear:1,doodle:1}, icons:'tabler-15', qx:null, qbuf:'', undoLine:null, vars:'slide', pview:'products', cats:[], tags:[], menu:false, slide:null, stock:null, feat:false, quick:false };   /* Paul 2026-09-17: today's POS lets you pick many categories and a tag on top; a category is a chip, not a crumb */   /* 2026-09-17: filters are chips in the bar, the breadcrumb is the place; the footer says the count */   /* Paul 2026-09-17: variations slide the table left behind a breadcrumb (board 4); inline rows stay as the other style, a POS panel setting */   /* Paul 2026-09-17: the quantity expands in place; edit and delete by swiping the total */   /* Paul 2026-09-17: surface decided, today's; the header stays caps over a hairline */   /* Paul 2026-09-16: Tabler at 1.5 px, for a while; Hugeicons the standing alternative */
 /* Paul 2026-09-16: the voice is out (translations); pence and the tear-off belong to the whimsical themes only; the badge is kept for a property chosen in POS Products settings, stock for now. */
 const WHIMSY=['market','paper'];
 const STR=()=>S.long?{
@@ -526,7 +529,7 @@ const SCENES=[['open','Session open · focus on search'],['added','Line just add
 let termTimer=null;
 function jump(scn){
   clearTimeout(termTimer);
-  Object.assign(S,{scn,panel:false,sheet:null,tender:false,view:'keypad',entry:null,method:'cash',settle:null,online:true,long:false,pop:null,phoneTab:'cart',counted:'',open:'200.00',reveal:null,edit:null,orders:2,ordlist:false,termStep:1,view2:'grid',pview:'products',cat:null,menu:false,slide:null,stock:null,feat:false,quick:false});
+  Object.assign(S,{scn,panel:false,sheet:null,tender:false,view:'keypad',entry:null,method:'cash',settle:null,online:true,long:false,pop:null,phoneTab:'cart',counted:'',open:'200.00',reveal:null,edit:null,orders:2,ordlist:false,termStep:1,view2:'grid',pview:'products',cats:[],tags:[],menu:false,slide:null,stock:null,feat:false,quick:false});
   switch(scn){
     case 'added': S.settle='line'; break;
     case 'line-actions': S.reveal=0; break;
@@ -577,12 +580,13 @@ function renderRail(){
   return `<nav class="rail"><div class="logo"></div>${items.map(([k,l],i)=>`<button class="it press ${i===0?'on':''}" aria-label="${l}">${I[k]}</button>`).join('')}<div class="sp"></div>${bottom.map(([k,l])=>`<button class="it press" aria-label="${l}">${I[k]}</button>`).join('')}</nav>`;
 }
 const EMO={'Flat white':'☕','Sourdough loaf':'🍞','Tote bag':'👜','Oat latte':'🥛','Croissant':'🥐','Beans 250g':'🫘','Cinnamon bun':'🥯','Gift card':'🎁','Cold brew':'🧊','Granola jar':'🥣','Espresso cup':'☕','Tea tin':'🍵'};
-const CATS=['Drinks','Bakery','Merch','Drinks','Bakery','Coffee','Bakery','Merch','Drinks','Pantry','Merch','Pantry']; const CATLIST=['Drinks','Bakery','Coffee','Merch','Pantry'];
+const CATS=['Drinks','Bakery','Merch','Drinks','Bakery','Coffee','Bakery','Merch','Drinks','Pantry','Merch','Pantry']; const CATLIST=['Drinks','Bakery','Coffee','Merch','Pantry']; const TAGS=[['Local'],[],['Acme','Gift'],['Local'],[],['Acme'],[],['Gift'],['Local'],['Acme'],['Acme','Gift'],[]]; const TAGLIST=['Acme','Gift','Local'];
 const STK=[12,4,8,30,8,15,6,null,20,3,9,11];   /* Tote bag: 8 across its variations (6 + 0 + 2) */ const FEAT=[0,4,8]; const VARS=[['Natural · S','TB-NAT-S',12,6],['Natural · L','TB-NAT-L',12,0],['Black · L','TB-BLK-L',14,2]];
 const stockOk=s=>S.stock==null?true:S.stock==='in'?(s==null||s>0):S.stock==='out'?s===0:(s!=null&&s>0&&s<5);
 /* what the bar leaves visible: the place (the category) AND every chip; a quick filter is its parts ANDed in */
-const visIdx=(prods)=>prods.map((x,i)=>i).filter(i=>(!S.cat||CATS[i]===S.cat)&&stockOk(STK[i])&&(!S.feat||FEAT.includes(i))&&(!S.quick||(['Drinks','Bakery'].includes(CATS[i])&&STK[i]!==0)));
-const anyFilter=()=>!!(S.cat||S.stock||S.feat||S.quick);
+const visIdx=(prods)=>prods.map((x,i)=>i).filter(i=>(!S.cats.length||S.cats.includes(CATS[i]))&&(!S.tags.length||S.tags.some(t=>TAGS[i].includes(t)))&&stockOk(STK[i])&&(!S.feat||FEAT.includes(i))&&(!S.quick||(['Drinks','Bakery'].includes(CATS[i])&&STK[i]!==0)));
+const anyFilter=()=>!!(S.cats.length||S.tags.length||S.stock||S.feat||S.quick);
+const onGroups=()=>[S.cats.length,S.tags.length,S.stock,S.feat,S.quick].filter(Boolean).length;
 const STOCK={'Tote bag':8,'Beans 250g':14,'Gift card':52,'Granola jar':3,'Espresso cup':6,'Tea tin':11};
 const inCart=(n,v='')=>lines().filter(l=>l[0]===n&&(v?l[3]===v:true)).reduce((a,l)=>a+l[1],0);
 function renderProducts(){
@@ -605,29 +609,33 @@ function renderProducts(){
     /* the panes: products, a category (the table slides left behind a breadcrumb), the variations of one product (slide style) */
     const thead=(name)=>`<div class="thead" style="grid-template-columns:${grid}"><div class="th c"></div><div class="th">${name}<span class="rz"></span></div><div class="th">SKU<span class="rz"></span></div><div class="th r">Price<span class="rz"></span></div><div class="th r">Stock<span class="rz"></span></div><div class="th c"></div></div>`;
     const tfoot=(count)=>`<div class="tfoot"><span class="tax" title="Tax based on: Shop base address"><span class="fi">${I.percent}</span><b>Shop base</b>${I.chevd}</span><span class="grow"></span><span>${count}</span><button class="ibtn press" style="width:36px;height:36px" aria-label="Sync">${I.sync}</button></div>`;
-    const crumb=(here,count,extra='')=>`<div class="crumb"><button class="press" data-act="popView">${I.chevl}${S.pview==='var'&&S.cat?S.cat:'Products'}</button><span class="sep">›</span><span class="here">${here}</span>${count?`<span class="num">· ${count}</span>`:''}${extra}</div>`;
+    const crumb=(here,count,extra='')=>`<div class="crumb"><button class="press" data-act="popView">${I.chevl}Products</button><span class="sep">›</span><span class="here">${here}</span>${count?`<span class="num">· ${count}</span>`:''}${extra}</div>`;
     let pane;
     if (S.pview==='var') pane=`<div class="pane" data-pv="var">${crumb(prods[2][0])}${thead('Variation')}<div class="tbody">${vlist.length?vrows:empty()}</div>${tfoot(`${vlist.length} of 3`)}</div>`;
     else { const idx=visIdx(prods); const rowsHtml=idx.map(i=>row(prods[i],i)+(i===2&&!slide?vrows:'')).join('').replace('aria-label="Choose variation">'+I.chevd,'aria-label="Collapse variations">'+I.chevu);
-      pane=`<div class="pane" data-pv="${S.pview}">${S.cat?crumb(S.cat):''}${thead('Name')}<div class="tbody">${idx.length?rowsHtml:empty()}</div>${tfoot(anyFilter()?`${idx.length} of 12`:'12 of 1,204')}</div>`; }
+      pane=`<div class="pane" data-pv="${S.pview}">${thead('Name')}<div class="tbody">${idx.length?rowsHtml:empty()}</div>${tfoot(anyFilter()?`${idx.length} of 12`:'12 of 1,204')}</div>`; }
     body=`<div class="ptable">${pane}</div>`;
   }
   else { const empty=()=>`<div class="empty">${I.search}<div class="t">Nothing here matches the filters</div><button class="btn q press" data-act="clearFilters">Clear filters</button></div>`;
-    const crumbG=(here)=>`<div class="crumb"><button class="press" data-act="popView">${I.chevl}${S.pview==='var'&&S.cat?S.cat:'Products'}</button><span class="sep">›</span><span class="here">${here}</span></div>`;
+    const crumbG=(here)=>`<div class="crumb"><button class="press" data-act="popView">${I.chevl}Products</button><span class="sep">›</span><span class="here">${here}</span></div>`;
     const img=(n,e,extra='')=>`<div class="img" data-i="${n[0]}" data-e="${e}">${extra}</div>`;
     const tile=([n,p],i)=>i===2?`<button class="tile press" data-act="openVar">${img(n,EMO[n]||'🛍️',`<span class="vbadge">${I.chev}</span>`)}<div class="n">${n}</div><div class="p money">from ${fmt(p)}</div></button>`:`<button class="tile press" data-act="addLine" data-n="${n}" data-p="${p}">${img(n,EMO[n]||'🛍️',`${S.tx.badge&&STOCK[n]!==undefined?`<span class="sold ${STOCK[n]<5?'low':''}">${STOCK[n]} left</span>`:''}${inCart(n)?`<span class="tcnt">${inCart(n)}</span>`:''}`)}<div class="n">${n}</div><div class="p money">${fmt(p)}</div></button>`;
     let inner;
     if (S.pview==='var'){ const vl=VARS.filter(v=>stockOk(v[3])); inner=`${crumbG(prods[2][0])}${vl.length?`<div class="tiles">${vl.map(([vn,sk,vp,st])=>`<button class="tile press" data-act="addLine" data-n="Tote bag" data-s="${vn}" data-p="${vp}">${img('T','👜',inCart('Tote bag',vn)?`<span class="tcnt">${inCart('Tote bag',vn)}</span>`:'')}<div class="n">${vn}</div><div class="p money">${fmt(vp)}</div></button>`).join('')}</div>`:empty()}`; }
-    else { const idx=visIdx(prods); inner=`${S.cat?crumbG(S.cat):''}${idx.length?`<div class="tiles">${idx.map(i=>tile(prods[i],i)).join('')}</div>`:empty()}`; }
+    else { const idx=visIdx(prods); inner=`${idx.length?`<div class="tiles">${idx.map(i=>tile(prods[i],i)).join('')}</div>`:empty()}`; }
     body=`<div class="ptable grid"><div class="pane" data-pv="${S.pview}">${inner}</div></div>`; }
   const focus=['open','empty','offline','long'].includes(S.scn)?'ring':'';
   const side = '';
   const inVar=S.pview==='var'; const na=inVar?' na':''; const naT=inVar?' title="A product filter; not used inside a product\'s variations"':'';
   const stockLbl={in:'In stock',low:'Low stock',out:'Out of stock'};
-  const menus=S.menu==='cat'?`<div class="menu" data-stop="1">${CATLIST.map(c=>`<button class="press" data-act="cat" data-c="${c}">${I.folder}${c}<span class="n">${CATS.filter(x=>x===c).length}</span></button>`).join('')}</div>`
+  const checks=(list,sel,act,clear,icon,count)=>`<div class="menu" data-stop="1">${list.map(c=>`<button class="press ${sel.includes(c)?'on':''}" data-act="${act}" data-c="${c}"><span class="cb ${sel.includes(c)?'on':''}">${I.check}</span>${c}<span class="n">${count(c)}</span></button>`).join('')}${sel.length?`<div class="acts"><button class="press" data-act="${clear}">Clear</button></div>`:''}</div>`;
+  const menus=S.menu==='cat'?checks(CATLIST,S.cats,'togCat','clearCats',I.folder,c=>CATS.filter(x=>x===c).length)
+    :S.menu==='tag'?checks(TAGLIST,S.tags,'togTag','clearTags',I.tag,c=>TAGS.filter(x=>x.includes(c)).length)
     :S.menu==='stock'?`<div class="menu" data-stop="1">${[['','Any stock'],['in','In stock'],['low','Low stock'],['out','Out of stock']].map(([v,l])=>`<button class="press ${(S.stock||'')===v?'on':''}" data-act="setStock" data-v="${v}">${l}${(S.stock||'')===v?`<span class="n">${I.check}</span>`:''}</button>`).join('')}</div>`
     :S.menu==='quick'?`<div class="menu" data-stop="1"><div class="h">Morning menu<span class="mut">quick filter · 2 parts</span></div><div class="part">${I.folder}Category<b>Drinks, Bakery</b></div><div class="part">${I.products}Stock<b>In stock</b></div><div class="acts"><button class="press" data-act="toggleQuick">Turn off</button><button class="press mut" data-act="noop">Edit</button></div></div>`:'';
-  const fbar=S.scn==='loading'?'':`<div class="fwrap"><div class="fbar">${S.cat?`<button class="pill on press${na}" data-act="clearCat"${naT}>Category · ${S.cat}<span class="x">${I.x}</span></button>`:`<button class="pill press ${S.menu==='cat'?'on':''}${na}" data-act="catMenu" data-menu="cat"${naT}>${I.folder}Category ${I.chevd}</button>`}<button class="pill press ${S.stock||S.menu==='stock'?'on':''}" data-act="stockMenu" data-menu="stock">${I.products}${S.stock?'Stock · '+stockLbl[S.stock]:'Stock'} ${I.chevd}</button><button class="pill press ${S.feat?'on':''}${na}" data-act="toggleFeat"${naT}>${I.star}Featured${S.feat?`<span class="x">${I.x}</span>`:''}</button><button class="pill press">${I.tag}On sale</button><button class="pill press">${I.folder}Tag ${I.chevd}</button><button class="pill press">${I.folder}Brand ${I.chevd}</button><button class="pill q press ${S.quick||S.menu==='quick'?'on':''}${na}" data-act="quickMenu" data-menu="quick"${naT}>Morning menu${S.quick?`<span class="n">2</span>`:''}</button><button class="pill add press" aria-label="Add a quick filter">${I.plus}</button></div>${menus}</div>`;
+  /* a multi-select chip: off it is a select; on it reads the first pick and how many more, and splits into the label (reopens the list) and a × (clears them all) */
+  const multi=(k,sel,label,icon,openAct,clearAct)=>sel.length?`<span class="pill on split${na}"${naT} title="${sel.join(', ')}"><button class="press" data-act="${openAct}" data-menu="${k}">${icon}${sel[0]}${sel.length>1?` +${sel.length-1}`:''}</button><button class="press x" data-act="${clearAct}" aria-label="Clear ${label.toLowerCase()}">${I.x}</button></span>`:`<button class="pill press ${S.menu===k?'on':''}${na}" data-act="${openAct}" data-menu="${k}"${naT}>${icon}${label} ${I.chevd}</button>`;
+  const fbar=S.scn==='loading'?'':`<div class="fwrap"><div class="fbar">${multi('cat',S.cats,'Category',I.folder,'catMenu','clearCats')}<button class="pill press ${S.stock||S.menu==='stock'?'on':''}" data-act="stockMenu" data-menu="stock">${I.products}${S.stock?'Stock · '+stockLbl[S.stock]:'Stock'} ${I.chevd}</button><button class="pill press ${S.feat?'on':''}${na}" data-act="toggleFeat"${naT}>${I.star}Featured${S.feat?`<span class="x">${I.x}</span>`:''}</button><button class="pill press">${I.tag}On sale</button>${multi('tag',S.tags,'Tag',I.tag,'tagMenu','clearTags')}<button class="pill press">${I.folder}Brand ${I.chevd}</button><button class="pill q press ${S.quick||S.menu==='quick'?'on':''}${na}" data-act="quickMenu" data-menu="quick"${naT}>Morning menu${S.quick?`<span class="n">2</span>`:''}</button>${onGroups()>=2?`<button class="pill clr press" data-act="clearFilters">Clear all</button>`:''}<button class="pill add press" aria-label="Add a quick filter">${I.plus}</button></div>${menus}</div>`;
   return `<div class="prodcol">
     <div class="toolbar">${phone?`<button class="ibtn press" aria-label="Menu">${I.menu}</button>`:''}
       <div class="search">${I.search}<input class="in ${focus}" placeholder="${t.search}" value="${S.scn==='noresults'?'latte oat':''}" aria-label="${t.search}"></div>
@@ -944,7 +952,7 @@ function render(){
   { const dir=S.slide; S.slide=null; const stage=f.querySelector('.ptable'); const nw=stage&&stage.querySelector('.pane');
     if(dir&&oldHtml&&nw&&stage.classList.contains('grid')){ nw.style.opacity='0'; stage.insertAdjacentHTML('beforeend',oldHtml); const op=stage.lastElementChild; op.classList.remove('sout'); op.querySelectorAll('.tile').forEach(x=>x.classList.remove('tin')); op.classList.add('sout'); op.querySelectorAll('.tile').forEach((x,i)=>x.style.animationDelay=(i*10)+'ms');
       setTimeout(()=>{ op.remove(); nw.style.opacity=''; nw.querySelectorAll('.tile').forEach((x,i)=>{ x.classList.add('tin'); x.style.animationDelay=(i*22)+'ms'; }); },150); }
-    else if(dir&&oldHtml&&nw){ nw.classList.add(dir==='push'?'enter-r':'enter-l',dir==='push'?'over':'under'); stage.insertAdjacentHTML('beforeend',oldHtml); const op=stage.lastElementChild; op.classList.remove('enter-r','enter-l','over','under'); op.classList.add(dir==='push'?'under':'over');
+    else if(dir&&dir!=='refill'&&oldHtml&&nw){ nw.classList.add(dir==='push'?'enter-r':'enter-l',dir==='push'?'over':'under'); stage.insertAdjacentHTML('beforeend',oldHtml); const op=stage.lastElementChild; op.classList.remove('enter-r','enter-l','over','under'); op.classList.add(dir==='push'?'under':'over');
       void nw.offsetWidth; requestAnimationFrame(()=>{ nw.classList.remove('enter-r','enter-l'); op.classList.add(dir==='push'?'exit-l':'exit-r'); }); setTimeout(()=>{ op.remove(); nw.classList.remove('over','under'); },320); } }
   const x=f.querySelector('.qx'); if(x){ const q=f.querySelector(`.line[data-i="${S.qx}"] .q`); const col=f.querySelector('.cartcol'); if(q&&col){ const a=q.getBoundingClientRect(), c=col.getBoundingClientRect(); const dy=(48-a.height)/2; x.style.left=(a.left-c.left-48-(48-a.width)/2)+'px'; x.style.top=(a.top-c.top-dy)+'px'; x.style.setProperty('--qdy',dy+'px'); } else { S.qx=null; x.remove(); } }
 }
@@ -986,15 +994,18 @@ document.addEventListener('click',e=>{
     case 'toggleView': S.view2=S.view2==='grid'?'list':'grid'; break;
     case 'catMenu': S.menu=S.menu==='cat'?false:'cat'; break;
     case 'stockMenu': S.menu=S.menu==='stock'?false:'stock'; break;
-    case 'setStock': S.stock=b.dataset.v||null; S.menu=false; break;
-    case 'toggleFeat': S.feat=!S.feat; break;
-    case 'quickMenu': if(!S.quick){ S.quick=true; S.menu=false; } else S.menu=S.menu==='quick'?false:'quick'; break;
-    case 'toggleQuick': S.quick=!S.quick; S.menu=false; break;
-    case 'clearFilters': S.stock=null; S.feat=false; S.quick=false; S.menu=false; break;
-    case 'cat': S.menu=false; S.cat=b.dataset.c; S.pview='cat'; S.slide='push'; break;
-    case 'clearCat': S.cat=null; S.pview='products'; S.slide='pop'; break;
+    case 'setStock': S.stock=b.dataset.v||null; S.menu=false; S.slide='refill'; break;
+    case 'toggleFeat': S.feat=!S.feat; S.slide='refill'; break;
+    case 'quickMenu': if(!S.quick){ S.quick=true; S.menu=false; S.slide='refill'; } else S.menu=S.menu==='quick'?false:'quick'; break;
+    case 'toggleQuick': S.quick=!S.quick; S.menu=false; S.slide='refill'; break;
+    case 'clearFilters': S.stock=null; S.feat=false; S.quick=false; S.cats=[]; S.tags=[]; S.menu=false; S.slide='refill'; break;
+    case 'tagMenu': S.menu=S.menu==='tag'?false:'tag'; break;
+    case 'togCat': { const c=b.dataset.c, i=S.cats.indexOf(c); if(i<0) S.cats.push(c); else S.cats.splice(i,1); S.slide='refill'; break; }
+    case 'togTag': { const c=b.dataset.c, i=S.tags.indexOf(c); if(i<0) S.tags.push(c); else S.tags.splice(i,1); S.slide='refill'; break; }
+    case 'clearCats': S.cats=[]; S.menu=false; S.slide='refill'; break;
+    case 'clearTags': S.tags=[]; S.menu=false; S.slide='refill'; break;
     case 'openVar': S.pview='var'; S.slide='push'; break;
-    case 'popView': if(S.pview==='var'&&S.cat) S.pview='cat'; else { S.pview='products'; S.cat=null; } S.slide='pop'; break;
+    case 'popView': S.pview='products'; S.slide='pop'; break;
     case 'checkout': S.tender=true; S.view='keypad'; S.entry=null; S.method='cash'; break;
     case 'closeTender': clearTimeout(termTimer); S.tender=false; S.view='keypad'; break;
     case 'method': S.method=b.dataset.m; S.entry=null; break;

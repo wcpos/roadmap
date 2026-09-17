@@ -452,6 +452,12 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     matches the filters" with Clear filters. Written up in
     `docs/design/2026-09-17-filters-and-breadcrumbs.md` and live in the register (Stock is a
     select, Featured a toggle, Morning menu the quick filter).
+    **Confirmed by Paul (2026-09-17), with one case added:** today's POS allows many categories
+    and a tag on top (`Promotions +31 ×` beside `Acme ×`). Thirty-one categories are not a place,
+    so Category is a multi-select chip, not a crumb: off `Category ▾`, on `Drinks +1 ×` with the
+    label reopening the checkbox list and the × clearing the group; Tag the same; OR within a
+    group, AND across; Clear all at the end of the bar once two groups are on. The breadcrumb is
+    for variations only; the category slide is out of the register.
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·
