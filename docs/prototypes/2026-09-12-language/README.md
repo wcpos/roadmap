@@ -267,6 +267,9 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     Taxes and Refunds are cards with a proportional bar; no rows under the panels; the filter sits in
     the hero's title row beside the date. Eight cards. A five-colour categorical set (`--c1`…`--c5`,
     dark variant) sits in the reports CSS scope and moves to the shared tokens if it stands.
+    **Sibling session (2026-09-17, later): `reports/closures-variants.html`**, ten Closures card
+    options on the fixture with a Today | This week switch, after Paul called the Closures card the
+    weakest point. To react to; nothing decided.
 
 48. **Orders inside the register; the rail toggles the pages (Paul, 2026-09-17).** Paul: put
     the Orders mock-up into `pos-register/index.html` and toggle between the POS page, the
