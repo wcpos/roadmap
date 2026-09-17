@@ -298,6 +298,9 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     backup behind a `Till` switch. A step line from the float at open to now, up with cash sales,
     down where cash left, movements marked and named; closed, the line ends at the count with the
     drawer result; its own row on tablet and phone.
+    **Sibling session (2026-09-17, later): spacing pass.** The stray hairline under X-report was the
+    register's table-row class on the button group, renamed; X-report and the chevron centred
+    against both rows on tablet.
 
 48. **Orders inside the register; the rail toggles the pages (Paul, 2026-09-17).** Paul: put
     the Orders mock-up into `pos-register/index.html` and toggle between the POS page, the
