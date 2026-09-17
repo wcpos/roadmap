@@ -17,6 +17,8 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   await set('w', 'tablet'); await set('theme', 'light'); await set('scale', 'regular');
   // the free strip, top or bottom (Paul 2026-09-17: a banner, slightly annoying on purpose); and the bell panel with the update at its head
   for (const w of ['tablet', 'phone']) { await set('w', w); await scn('open'); for (const pl of ['top', 'bottom']) { await set('plan', pl); await shot(`plan-${pl}-${w}`); if (!(await page.locator(`.upstrip.${pl}`).count())) throw new Error('strip not drawn: ' + pl); } }
+  await set('w', 'tablet'); await set('plan', 'top'); await page.click('.upstrip [data-act="dismissStrip"]'); await page.waitForTimeout(100); if (await page.locator('.upstrip').count()) throw new Error('strip still drawn after ×'); await shot('plan-dismissed');
+  await set('plan', 'bottom'); if (!(await page.locator('.upstrip.bottom').count())) throw new Error('strip did not come back on a plan change');
   await set('plan', 'pro'); if (await page.locator('.upstrip').count()) throw new Error('strip still drawn on pro');
   for (const w of ['tablet', 'desktop', 'phone']) { await set('w', w); await scn('open'); if (!(await page.locator('.bar .ndot').count())) throw new Error('bell has no dot: ' + w); await page.click('.bar [data-sheet="notif"]'); await page.waitForTimeout(300); if (!(await page.locator('.sidepanel .nitem.upd').count())) throw new Error('update not at the head of the panel: ' + w); await shot(`notif-${w}`); await page.click('.sidepanel [data-act="closeSheet"].ibtn'); }
   await set('w', 'tablet'); await scn('open'); await page.click('.bar [data-sheet="notif"]'); await page.click('.nitem.upd [data-set="upd"]'); await page.waitForTimeout(200);

@@ -197,6 +197,7 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .upstrip{display:flex;align-items:center;gap:calc(var(--u)*2.5);padding:0 calc(var(--u)*2) 0 calc(var(--u)*4);min-height:40px;background:var(--warn-bg);color:var(--fg);border-bottom:var(--hair) solid color-mix(in oklch,var(--warn) 45%,transparent);flex:none;font-size:calc(var(--fs)*.93)} .upstrip.bottom{border-bottom:0;border-top:var(--hair) solid color-mix(in oklch,var(--warn) 45%,transparent)}
 .upstrip>svg{width:16px;height:16px;flex:none;color:var(--warn)} .upstrip .msg{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .upstrip .msg b{font-weight:600} .upstrip .act{height:28px;padding:0 calc(var(--u)*2.5);border-radius:var(--r);background:var(--primary);color:var(--primary-fg);font-weight:600;font-size:calc(var(--fs)*.9);white-space:nowrap} .upstrip .more{color:var(--muted-fg);white-space:nowrap;text-decoration:underline;text-underline-offset:2px}
 .frame[data-w="phone"] .upstrip .more{display:none}
+.upstrip .x{width:32px;height:32px;border-radius:var(--r);display:grid;place-items:center;color:var(--muted-fg);flex:none;margin-left:calc(var(--u)*-1)} .upstrip .x svg{width:16px;height:16px} .upstrip .x:active{background:color-mix(in oklch,var(--warn) 20%,transparent)}
 .ibtn{position:relative} .ndot{position:absolute;top:9px;right:9px;width:8px;height:8px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 2px var(--card)}
 /* Paul 2026-09-17: the update notice lives in the bell; the bell opens a side panel */
 .sidepanel .bd.notif{padding:0} .ngrp{padding:calc(var(--u)*3) calc(var(--u)*4) calc(var(--u)*1.5);font-size:calc(var(--fs)*.78);font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-fg)}
@@ -540,7 +541,7 @@ const SCENES=[['open','Session open · focus on search'],['added','Line just add
 let termTimer=null;
 function jump(scn){
   clearTimeout(termTimer);
-  Object.assign(S,{scn,panel:false,sheet:null,tender:false,view:'keypad',entry:null,method:'cash',settle:null,online:true,long:false,pop:null,phoneTab:'cart',counted:'',open:'200.00',reveal:null,edit:null,orders:2,ordlist:false,termStep:1,view2:'grid',pview:'products',cats:[],tags:[],menu:false,slide:null,stock:null,feat:false,quick:false});
+  Object.assign(S,{scn,panel:false,sheet:null,tender:false,view:'keypad',entry:null,method:'cash',settle:null,online:true,long:false,pop:null,phoneTab:'cart',counted:'',open:'200.00',reveal:null,edit:null,orders:2,ordlist:false,termStep:1,view2:'grid',pview:'products',cats:[],tags:[],menu:false,slide:null,stock:null,feat:false,quick:false,nostrip:false});
   switch(scn){
     case 'added': S.settle='line'; break;
     case 'line-actions': S.reveal=0; break;
@@ -972,8 +973,8 @@ function render(){
   renderStrip();
   const f=document.getElementById('frame'); f.className='frame'; f.dataset.w=S.w; f.dataset.theme=S.theme; f.dataset.scale=S.scale;
   const oldPane=S.slide&&f.querySelector('.pane:not(.exit-l):not(.exit-r)'); const oldHtml=oldPane?oldPane.outerHTML:null;
-  const strip=(pos)=>`<div class="upstrip ${pos}">${I.spark}<span class="msg"><b>You're on the free version of WCPOS.</b> ${S.w==='phone'?'':'Pro adds receipt templates, held orders, reports and priority support.'}</span><span class="more">See what Pro adds</span><button class="act press">Upgrade to Pro</button></div>`;
-  f.innerHTML=`${S.plan==='top'?strip('top'):''}<div class="body">${S.w==='phone'?'':renderRail()}<div class="main">${renderPOS()}${renderSide()}${renderPanel()}${renderSheet()}</div></div>${S.plan==='bottom'?strip('bottom'):''}`;
+  const strip=(pos)=>`<div class="upstrip ${pos}">${I.spark}<span class="msg"><b>You're on the free version of WCPOS.</b> ${S.w==='phone'?'':'Pro adds receipt templates, held orders, reports and priority support.'}</span><span class="more">See what Pro adds</span><button class="act press">Upgrade to Pro</button><button class="x press" data-act="dismissStrip" aria-label="Dismiss until next launch" title="Dismiss until next launch">${I.x}</button></div>`;
+  f.innerHTML=`${S.plan==='top'&&!S.nostrip?strip('top'):''}<div class="body">${S.w==='phone'?'':renderRail()}<div class="main">${renderPOS()}${renderSide()}${renderPanel()}${renderSheet()}</div></div>${S.plan==='bottom'&&!S.nostrip?strip('bottom'):''}`;
   renderNotes();
   { const bar=f.querySelector('.fbar'); const show=(pl)=>{ if(!pl||!bar) return; const over=pl.offsetLeft+pl.offsetWidth-(bar.scrollLeft+bar.clientWidth)+24; if(over>0) bar.scrollLeft+=over; else if(pl.offsetLeft<bar.scrollLeft+16) bar.scrollLeft=Math.max(0,pl.offsetLeft-16); };
     const mn=f.querySelector('.fwrap .menu'); const pl=mn&&f.querySelector(`.pill[data-menu="${S.menu}"]`); if(pl) show(pl); else if(S.quick) show(f.querySelector('.pill.q.on'));
@@ -990,7 +991,7 @@ document.addEventListener('click',e=>{
   const b=e.target.closest('[data-set],[data-scn],[data-act],[data-tx],[data-txall]');
   if(S.dragged){ S.dragged=false; return; }   /* the click that follows a swipe must not close what the swipe opened */
   if(!b){ if(!e.target.closest('[data-stop]') && (S.pop||S.ordlist||S.reveal!=null||S.edit!=null||S.qx!=null||S.menu)){ S.pop=null; S.menu=false; S.ordlist=false; S.reveal=null; S.edit=null; S.qx=null; S.qbuf=''; render(); } return; }
-  if(b.dataset.set){ const v=b.dataset.v; S[b.dataset.set]=(v==='1'||v==='3')?+v:v; render(); return; }
+  if(b.dataset.set){ const v=b.dataset.v; S[b.dataset.set]=(v==='1'||v==='3')?+v:v; if(b.dataset.set==='plan') S.nostrip=false; render(); return; }
   if(b.dataset.tx){ S.tx[b.dataset.tx]=S.tx[b.dataset.tx]?0:1; render(); return; }
   if(b.dataset.txall!==undefined){ const v=+b.dataset.txall; Object.keys(S.tx).forEach(k=>S.tx[k]=v); render(); return; }
   if(b.dataset.scn && !b.dataset.act){ jump(b.dataset.scn); return; }
@@ -1016,6 +1017,7 @@ document.addEventListener('click',e=>{
     case 'openPanel': S.panel=true; break;
     case 'closePanel': if(e.target.closest('[data-stop]') && !b.classList.contains('ibtn')) return; S.panel=false; break;
     case 'openSheet': S.sheet=b.dataset.sheet; S.reveal=null; break;
+    case 'dismissStrip': S.nostrip=true; break;   /* Paul 2026-09-17: the strip has an ×; gone for the session, back on the next launch */
     case 'closeSheet': if(e.target.closest('[data-stop]') && !b.classList.contains('ibtn') && !b.classList.contains('btn')) return; S.sheet=null; if(S.scn==='closure') S.scn='closed'; break;
     case 'startCount': S.panel=false; S.scn='counting'; S.counted=''; break;
     case 'doOpen': S.scn='open'; break;

@@ -160,6 +160,10 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     side panel. **Recommendation: top.** Every strip on Mobbin sits there; it pushes the toolbar
     down rather than the Pay button up; and the top edge is the cashier's, the bottom edge is the
     one a customer-facing screen shows. Top or bottom not decided.
+    **Paul (2026-09-17, later): the notifications look good; the banner looks good, it just
+    needs an × so users can dismiss it.** Decided: the bell panel as drawn. The strip gains an ×
+    at its right end: dismissed for the session, back on the next launch. Top is what he approved
+    on the register; the bottom option stays on the switch until he names one.
 
 44. **The order note (2026-09-17).** Paul: today a note sits under the totals with a bubble
     glyph; how do we show it? Three homes on the register's `Order note` switch: a row above the
