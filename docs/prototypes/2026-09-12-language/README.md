@@ -310,6 +310,10 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     cancel. A first draft of this board also offered two other behaviours (the keypad as the split,
     a Fresha-style list of payments); Paul ruled the behaviour decided, so they were dropped before
     they were drawn. Not decided.
+    **Paul (2026-09-17, later, in capitals): the functionality has been decided; the only job is to
+    polish the UI.** The switch and the sheet and inline drawings are gone; the register draws
+    dev-next's screens as they are, in its own tiles, chips, segmented control and quiet button.
+    Decided; nothing to pick.
     (c) **chips** — pills, the current one filled; reads as a filter row rather than tabs;
     (d) **cards** — small cards with amount, customer and status, current with a primary top
     edge; the most information, the tallest;

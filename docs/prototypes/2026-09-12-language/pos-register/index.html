@@ -371,15 +371,20 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .k{height:max(calc(var(--tile)*.875),var(--floor));border-radius:var(--r);border:var(--hair) solid var(--border);background:var(--card);font-size:calc(var(--fs)*1.6);font-weight:500;display:flex;align-items:center;justify-content:center} .k:active{background:var(--muted)} .k.sub{color:var(--muted-fg)}
 .commit{padding:calc(var(--u)*3) calc(var(--u)*4) calc(var(--u)*4);flex:none;max-width:520px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:calc(var(--u)*2)} .commit .btn{width:100%}
 /* the terminal moment, as approved on 2026-09-11: ring, reader card, four steps */
-/* Split options belong only to the register; keypad and commit stay outside the scroll. */
+/* Split uses dev-next's pane drawing; keypad and commit stay outside the scroll. */
 .frame[data-screen="register"] .pay .lbl{flex-wrap:wrap;justify-content:center}
-.frame[data-screen="register"] .splitbody{padding:0 calc(var(--u)*4)}.frame[data-screen="register"] .splitbody>.segt{display:flex;margin:calc(var(--u)*4) 0;height:max(var(--ctl),var(--floor))}.frame[data-screen="register"] .splitbody>.segt button{flex:1;padding:0 8px}
-.frame[data-screen="register"] .splitgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:calc(var(--u)*2)}.frame[data-screen="register"] .splitgrid .mt{height:auto;min-height:var(--tile);flex-direction:column;padding:calc(var(--u)*2);gap:2px}.frame[data-screen="register"] .splitgrid .wide{grid-column:1/-1}
+.frame[data-screen="register"] .splitbody{max-width:520px;width:100%;margin:0 auto;padding:0 calc(var(--u)*4)}
+.frame[data-screen="register"] .splitbody>.segt{display:flex;width:max-content;max-width:100%;margin:calc(var(--u)*4) auto}
+.frame[data-screen="register"] .splitbody>p{margin:calc(var(--u)*2) 0 0;text-align:center}
+.frame[data-screen="register"] .splitgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(var(--u)*2)}
+.frame[data-screen="register"][data-w="phone"] .splitgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.frame[data-screen="register"] .splitgrid .mt{height:var(--tile);flex-direction:column;gap:2px;text-align:center;overflow-wrap:anywhere}
+.frame[data-screen="register"] .splitgrid .wide{grid-column:1/-1}
 .frame[data-screen="register"] .legs{display:flex;gap:calc(var(--u)*2);flex-wrap:wrap;justify-content:center;margin-top:calc(var(--u)*2)}.frame[data-screen="register"] .taken{color:var(--ok)}
 .frame[data-screen="register"] .cancelpay{color:var(--destructive);font-size:calc(var(--fs)*.86);white-space:normal;min-height:var(--floor);padding:4px}.frame[data-screen="register"] .pay .hd{flex-wrap:wrap}.frame[data-screen="register"] .pay .hd>.ibtn{flex:none}
 .frame[data-screen="register"] .splitbody .cb:not(.on) svg{visibility:hidden}.frame[data-screen="register"] .splitbody .lr{text-align:left}.frame[data-screen="register"] .splitbody .lr .grow{min-width:0;overflow-wrap:anywhere}
-.frame[data-screen="register"] .splitlink{color:var(--muted-fg);text-decoration:underline;text-underline-offset:3px;min-height:var(--floor)}.frame[data-screen="register"] .legs .chip{flex:none}.frame[data-screen="register"] .helpers.legs{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;max-width:520px;width:100%;margin:0 auto}.frame[data-screen="register"] .helpers.legs .splitlink{flex:none}
-.frame[data-screen="register"] [data-act="splitClose"] .sheet-f .btn{white-space:normal;height:auto;min-height:max(var(--ctl),var(--floor));width:100%;padding:8px}.frame[data-screen="register"] .sheet-b>.splitbody{padding:0}
+.frame[data-screen="register"] .legs .splitlink{color:var(--muted-fg);height:max(calc(var(--ctl) - 8px),var(--floor));border:0;padding:0 calc(var(--u)*3)}
+.frame[data-screen="register"] .legs .chip{flex:none}
 .frame[data-screen="register"] .pay .commit .btn{white-space:normal;height:auto;min-height:max(calc(var(--tile)*.875),var(--floor));padding:8px}
 .frame[data-screen="register"][data-scale="spacious"] .pay .keys{gap:8px;padding-top:12px}.frame[data-screen="register"][data-scale="spacious"] .pay .k{height:56px}.frame[data-screen="register"][data-scale="spacious"] .pay .helpers{padding-top:12px}.frame[data-screen="register"][data-scale="spacious"] .pay .commit{padding-top:12px;padding-bottom:16px}
 .paidwrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*3);padding:calc(var(--u)*6);text-align:center;animation:pop 400ms cubic-bezier(.2,.9,.3,1.15) both}
@@ -752,7 +757,7 @@ const OPEN=[
 
 const Q=new URLSearchParams(location.search);
 const S={ screen:['reports','orders'].includes(Q.get('screen'))?Q.get('screen'):'register', w:'tablet', theme:'light', scale:'regular', scn:'open',
-  pays:[], payPlan:null, split:null, splitUi:'inline', leg:0, legMethods:[], pending:null,
+  pays:[], payPlan:null, split:null, leg:0, legMethods:[], pending:null,
   phoneTab:'cart', panel:false, sheet:null, tender:false, view:'keypad', entry:null, method:'cash', settle:null, online:true, long:false,
   pop:null, tabsPos:'bottom', ledgerHead:'still', xf:false, customer:null, registers:1, counted:'', open:'200.00', reveal:null, edit:null, orders:2, ordlist:false, view2:'grid',
   closePos:'tr', legacy:'header-text',   /* Paul 2026-09-16: decided, switches removed. Void = outlined red, matched (voidStyle 'red'). */ termStep:1, sortCart:'newest-last', tabStyle:'line1',   /* Paul 2026-09-14: amount + dot, with a format setting */
@@ -764,7 +769,7 @@ if(S.screen==='reports'){S.scn='today';S.theme=Q.get('theme')==='dark'?'dark':'l
 if(S.screen==='orders')S.scn='default';
 const WHIMSY=['market','paper'];
 const STR=()=>S.long?{
-  ways:'Teile',each:'je',then:'danach',half:'Hälfte',typeFirst:'Erste Zahlung eingeben',typeRest:'Auf der Tastatur, der Rest folgt',tickItems:'Artikel für diese Zahlung markieren',changeSplit:'Aufteilung ändern',cancelPay:'Zahlung stornieren',paymentN:'Zahlung {n}',ofN:'von {n}',left:'offen',done:'Fertig',even:'Gleich',amount:'Betrag',percent:'Prozent',splitSub:'Jede Zahlungsart je Zahlung',splitHint:'Jede Zahlungsart je Zahlung · Aufteilung jederzeit ändern',afterThis:'danach offen',forItems:'für',
+  ways:'Teile',each:'je',then:'danach',half:'Hälfte',typeFirst:'Erste Zahlung eingeben',typeRest:'Auf der Tastatur, der Rest folgt',tickItems:'Artikel für diese Zahlung markieren',changeSplit:'Aufteilung ändern',cancelPay:'Zahlung stornieren',paymentN:'Zahlung {n}',ofN:'von {n}',left:'offen',done:'Fertig',even:'Gleich',amount:'Betrag',percent:'Prozent',splitHint:'Jede Zahlungsart je Zahlung · Aufteilung jederzeit ändern',afterThis:'danach offen',forItems:'für',
   search:'Produkte suchen',scan:'Scannen',priceCheck:'Nur Preisprüfung, bis die Kasse geöffnet ist.',counting:'Keine Verkäufe, während die Kasse gezählt wird.',
   customer:'Kunde',guest:'Gast',details:'Bestelldetails',save:'Bestellung speichern',bill:'Rechnung drucken',void:'Stornieren',checkout:'Zur Kasse',subtotal:'Zwischensumme',fees:'Gebühren',tax:'MwSt. 19 %',total:'Gesamt',
   emptyT:'Ein Produkt antippen, um einen Verkauf zu beginnen',emptyS:'Der Scanner funktioniert überall auf diesem Bildschirm',cart:'Warenkorb',products:'Produkte',register:'Kasse',
@@ -774,7 +779,7 @@ const STR=()=>S.long?{
   noResults:'Nichts passt zu',clear:'Suche leeren',pickT:'Welche Kasse ist dieses Gerät?',toPay:'Zu zahlen',take:'Nehmen',in:'in',change:'Wechselgeld',exactAmt:'Genau',paid:'Bezahlt',printNew:'Beleg drucken · Neuer Verkauf',email:'Beleg per E-Mail',noRcpt:'Kein Beleg · Neuer Verkauf',notAvail:'nicht verfügbar',split:'Teilen',payments:'Zahlungen',legacy:'Klassisch',legacyLink:'Stattdessen den Shop-Checkout verwenden',items:'Artikel',
   qty:'Menge',item:'Artikel',price:'Preis',lineTotal:'Summe',edit:'Bearbeiten',remove:'Entfernen',more:'weitere',openOrders:'Offene Bestellungen',newOrder:'Neue Bestellung',backCart:'Zurück zum Warenkorb',otherWays:'Weitere Zahlungsarten',
 }:{
-  ways:'ways',each:'each',then:'then',half:'Half',typeFirst:'Type the first payment',typeRest:'on the keypad, the rest comes after',tickItems:'Tick the items this payment covers',changeSplit:'Change split',cancelPay:'Cancel payment',paymentN:'Payment {n}',ofN:'of {n}',left:'left',done:'Done',even:'Even',amount:'Amount',percent:'Percent',splitSub:'Any method for each payment',splitHint:'Any method for each payment · change the split at any time',afterThis:'left after this',forItems:'for',
+  ways:'ways',each:'each',then:'then',half:'Half',typeFirst:'Type the first payment',typeRest:'on the keypad, the rest comes after',tickItems:'Tick the items this payment covers',changeSplit:'Change split',cancelPay:'Cancel payment',paymentN:'Payment {n}',ofN:'of {n}',left:'left',done:'Done',even:'Even',amount:'Amount',percent:'Percent',splitHint:'Any method for each payment · change the split at any time',afterThis:'left after this',forItems:'for',
   search:'Search products',scan:'Scan',priceCheck:'Price check only until the register is open.',counting:'No sales while the register is counting.',
   customer:'Customer',guest:'Guest',details:'Order details',save:'Save order',bill:'Print bill',void:'Void',checkout:'Checkout',subtotal:'Subtotal',fees:'Fees',tax:'VAT 20%',total:'Total',
   emptyT:'Tap a product to start a sale',emptyS:'The scanner works anywhere on this screen',cart:'Cart',products:'Products',register:'Register',
@@ -833,7 +838,6 @@ function renderStrip(){
     <div class="g"><b>Update</b>${seg('upd',[['ready','ready · in the bell'],['none','none']])}</div>
     ${S.screen==='register'?`<div class="g"><b>Order note</b>${seg('note',[['row','row above the totals'],['line','last row of the cart'],['chip','chip by the customer'],['none','none']])}</div>`:''}
     ${S.screen==='register'?`<div class="g"><b>Ledger head</b>${seg('ledgerHead',[['still','Same head, stilled'],['customer','Customer stays live'],['progress','Payment progress'],['facts','Receipt facts']])}</div>`:''}
-    ${S.screen==='register'?`<div class="g"><b>Split</b>${seg('splitUi',[['pane','Chooser fills the pane (dev-next)'],['sheet','Chooser in a sheet, keypad stays'],['inline','Chooser under the amount']])}</div>`:''}
     ${S.screen==='register'?`<div class="g"><b>Variations</b>${seg('vars',[['slide','Slide, breadcrumb'],['inline','Inline rows']])}</div>`:''}
     <div class="g"><b>Theme</b>${seg('theme',[['light','Default light'],['dark','Default dark'],['paper','Paper till'],['bold','Bold money'],['warm','Warm shop'],['market','Market stall'],['ocean','Ocean'],['sunset','Sunset'],['monochrome','Monochrome']])}</div>
     <div class="g"><b>Scale</b>${seg('scale',[['compact','Compact'],['regular','Regular'],['spacious','Spacious']])}</div>
@@ -1141,10 +1145,8 @@ function renderPanel(){
     <div class="panel-f"><button class="btn press" data-act="startCount">${t.closeReg}</button></div></div></div>`;
 }
 function renderSheet(){
-  const splitSheet=S.tender&&S.split&&S.splitUi==='sheet';
-  if(!S.sheet&&!splitSheet) return ''; const t=T();
-  const wrap=(title,sub,body,foot,close='closeSheet')=>`<div class="sheet-wrap" data-act="${close}"><div class="sheet" data-stop="1"><div class="sheet-h"><div class="grow"><div class="t">${title}</div>${sub?`<div class="mut">${sub}</div>`:''}</div><button class="ibtn press" data-act="${close}" aria-label="Close">${I.x}</button></div><div class="sheet-b">${body}</div>${foot?`<div class="sheet-f">${foot}</div>`:''}</div></div>`;
-  if(splitSheet) return wrap(`${t.split} ${fmt(remaining())}`,t.splitSub,renderSplit(),splitCommit(),'splitClose');
+  if(!S.sheet) return ''; const t=T();
+  const wrap=(title,sub,body,foot)=>`<div class="sheet-wrap" data-act="closeSheet"><div class="sheet" data-stop="1"><div class="sheet-h"><div class="grow"><div class="t">${title}</div>${sub?`<div class="mut">${sub}</div>`:''}</div><button class="ibtn press" data-act="closeSheet" aria-label="Close">${I.x}</button></div><div class="sheet-b">${body}</div>${foot?`<div class="sheet-f">${foot}</div>`:''}</div></div>`;
   if (S.sheet==='qty' && S.qx!=null && lines()[S.qx]){ const i=S.qx, l=lines()[i]; return wrap(l[0], l[3]||`${fmt(l[2])} each`, `<div class="qsheet"><div class="stp"><button class="press ${l[1]<=1?'del':''}" data-act="qdec" data-i="${i}">${l[1]<=1?I.trash:I.minus}</button><b>${S.qbuf||l[1]}</b><button class="press" data-act="qinc" data-i="${i}">${I.plus}</button></div><div class="kb" style="margin-top:8px">${qKeys(i)}<button class="ok press" data-act="qclose">Done</button></div></div>`); }
   if (S.sheet==='menu') return wrap('UK Store','Front counter',menuList());
   if (S.sheet==='user') return wrap('Demo Cashier','Cashier · UK Store',`<div class="list"><div class="lr"><span>Your sales today</span><span class="mut xs">9 sales</span><span class="v money">${fmt(412.30)}</span></div></div><div class="mut xs b" style="text-transform:uppercase;letter-spacing:.04em">Switch user</div><div class="list"><button class="lr click press"><span class="av" style="width:28px;height:28px">AO</span><span>Amy Okafor</span><span class="mut xs" style="margin-left:auto">on this device</span>${I.chev}</button><button class="lr click press"><span class="av" style="width:28px;height:28px">SR</span><span>Sam Reilly</span><span class="mut xs" style="margin-left:auto">on this device</span>${I.chev}</button><button class="lr click press"><span>Another account…</span><span class="mut xs" style="margin-left:auto">WordPress login</span></button></div>${S.w==='desktop'?`<div class="mut xs b" style="text-transform:uppercase;letter-spacing:.04em">This site</div><div class="list"><button class="lr click press"><span class="row">${I.globe}WordPress admin</span><span class="mut xs" style="margin-left:auto">opens in a new tab</span></button><button class="lr click press"><span class="row">${I.pos}Desktop app</span><span class="mut xs" style="margin-left:auto">download</span></button></div>`:''}`,`<button class="btn d press">Sign out</button><span class="grow"></span><button class="btn press" data-act="closeSheet">Close</button>`);
@@ -1198,12 +1200,12 @@ function splitCommit(){
   const t=T(), a=itemAmount();
   return S.split?.mode==='item'?`<button class="btn xl p press" data-act="splitDone" ${a<=0?'disabled':''}>${a>0?`${t.take} ${fmt(a)} ${t.forItems} ${S.split.items.length} ${t.items}`:t.tickItems}</button>`:'';
 }
-function closeBtn(){ const t=T(); return `<button class="ibtn press" data-act="closeTender" aria-label="${t.backCart}" title="${t.backCart}">${I.x}</button>`; }
+function closeBtn(){ const t=T(); return `<button class="ibtn press" data-act="${S.split?'splitClose':'closeTender'}" aria-label="${S.split?t.done:t.backCart}" title="${S.split?t.done:t.backCart}">${I.x}</button>`; }
 function tenderHead(){
   const t=T();
   /* Paul 2026-09-17: the ledger head now names the order and the customer, so the pay pane's title line goes and the Payments | Legacy toggle takes its place on the left */
   const leg = S.view==='legacy';
-  const cancel=S.pays.length&&(S.splitUi==='pane'||S.w==='phone')&&S.view!=='terminal'?`<button class="btn q cancelpay" data-act="cancelPay">${t.cancelPay}</button>`:'';
+  const cancel=S.pays.length&&S.view!=='terminal'?`<button class="btn q cancelpay" data-act="cancelPay">${t.cancelPay}</button>`:'';
   const toggle = S.legacy==='header-text' ? `<span class="segt" style="height:36px" role="tablist"><button class="${leg?'':'on'}" data-act="mode" data-mode="keypad">${t.payments}</button><button class="${leg?'on':''}" data-act="mode" data-mode="legacy">${t.legacy}</button></span>`
     : S.legacy==='header-icons' ? `<span class="segt" style="height:36px" role="tablist"><button class="${leg?'':'on'}" data-act="mode" data-mode="keypad" aria-label="${t.payments}" title="${t.payments}">${I.keypad}</button><button class="${leg?'on':''}" data-act="mode" data-mode="legacy" aria-label="${t.legacy}" title="${t.legacy}">${I.globe}</button></span>` : '';
   if (S.closePos==='tl') return `<div class="hd">${closeBtn()}${toggle}<span class="grow"></span>${cancel}</div>`;
@@ -1212,7 +1214,7 @@ function tenderHead(){
 }
 function renderTender(){
   const t=T(); const total=remaining(); const entry=paymentAmount(); const ghost=S.entry===null; const m=METHODS.find(x=>x.id===S.method)||METHODS[0];
-  if (S.split&&S.splitUi==='pane') return `<div class="pay">${tenderHead()}<div class="scroll"><div class="amtblock"><div class="lbl">${t.split}</div><div class="big money">${fmt(total)}</div></div>${renderSplit()}</div><div class="commit">${splitCommit()}<button class="btn q" data-act="splitClose">${t.done}</button></div></div>`;
+  if (S.split) return `<div class="pay">${tenderHead()}<div class="scroll"><div class="amtblock"><div class="lbl">${t.split}</div><div class="big money">${fmt(total)}</div></div>${renderSplit()}</div><div class="commit">${splitCommit()}<button class="btn q" data-act="splitClose">${t.done}</button></div></div>`;
   if (S.view==='paid'){
     const last=S.pays.at(-1), change=last?.change||0;
     return `<div class="pay"><div class="paidwrap">${S.tx.stamp?`<div class="stampwrap"><span class="stamp">PAID</span></div>`:`<span class="disc">${I.check}</span>`}<div class="h money">${change>0?`${t.change} ${fmt(change)}`:`${t.paid} ${fmt(sub())}`}</div><div class="mut">${change>0?`${t.paid} ${fmt(sub())} · tendered ${fmt((last?.amt||0)+change)} in Cash`:S.pays.map(p=>`${methodName(p.m)} ${fmt(p.amt)}`).join(' · ')}</div>
@@ -1252,22 +1254,19 @@ function renderTender(){
   const unav=`<div class="unav xs">${UNAVAIL.length} ${t.notAvail} · ${UNAVAIL.map(([n,w])=>`${n} (${w})`).join(', ')}</div>`;
   const bottomClose = (S.closePos==='bottom' ? `<button class="btn q press" data-act="closeTender">${I.back}${t.backCart}</button>` : '') + (S.legacy==='bottom' ? `<button class="btn q press" data-act="mode" data-mode="legacy" style="color:var(--muted-fg)">${I.globe}${t.legacyLink}</button>` : '');
   const label=S.pays.length||S.payPlan?`${paymentName(S.leg)} ${S.payPlan?t.ofN.replace('{n}',S.payPlan.length):''} · ${fmt(total)} ${t.left}`:`${t.toPay} ${fmt(total)}`;
-  const changeSplit=`<button class="splitlink" data-act="splitOpen">${t.changeSplit}</button>`;
-  const legText=(a,i)=>`${S.pays[i]?`✓ ${methodName(S.pays[i].m)} `:''}${fmt(a)}`;
+  const changeSplit=`<button class="btn q splitlink" data-act="splitOpen">${t.changeSplit}</button>`;
+  const legText=(a,i)=>`${S.pays[i]?`${I.check}${methodName(S.pays[i].m)} `:''}${fmt(a)}`;
   const legs=S.payPlan?S.payPlan.map((a,i)=>`<span class="chip ${i===S.leg?'on':i<S.pays.length?'taken':'mut'}">${legText(a,i)}</span>`).join('')+changeSplit:'';
-  const planLine=S.payPlan&&S.splitUi==='sheet'?`${S.leg+1} ${t.ofN.replace('{n}',S.payPlan.length)} · ${S.payPlan.map((a,i)=>`<span class="${S.pays[i]?'taken':''}">${legText(a,i)}</span>`).join(` ${t.then} `)} · ${changeSplit}`:'';
-  const choosing=S.split&&S.splitUi==='inline';
-  const amount=`<div class="amtblock"><div class="lbl">${choosing?t.split:label}${choosing?'':`<button class="chip press" data-act="splitOpen">${t.split}</button>`}${!S.online?`<span class="pill warn">${I.cloudoff}${t.offline}</span>`:''}</div><div class="big money ${ghost&&!choosing?'ghost':''}">${fmt(choosing?total:entry)}</div><div class="line">${choosing?'':planLine||line}</div>${S.splitUi==='pane'&&legs?`<div class="legs">${legs}</div>`:''}</div>`;
-  return `<div class="pay">${tenderHead()}${S.splitUi==='inline'?amount:''}<div class="scroll">${S.splitUi==='inline'?'':amount}
-    ${choosing?renderSplit():methods+unav}</div>${choosing?`<div class="commit">${splitCommit()}<button class="btn q" data-act="splitClose">${t.done}</button></div>`:`
-    <div class="helpers ${S.splitUi==='inline'&&legs?'legs':''}">${S.splitUi==='inline'&&legs?legs:helpers}</div>
+  const amount=`<div class="amtblock"><div class="lbl">${label}<button class="chip press" data-act="splitOpen">${t.split}</button>${!S.online?`<span class="pill warn">${I.cloudoff}${t.offline}</span>`:''}</div><div class="big money ${ghost?'ghost':''}">${fmt(entry)}</div><div class="line">${line}</div>${legs?`<div class="legs">${legs}</div>`:''}</div>`;
+  return `<div class="pay">${tenderHead()}<div class="scroll">${amount}${methods}${unav}</div>
+    <div class="helpers">${helpers}</div>
     <div class="keys">${['1','2','3','4','5','6','7','8','9'].map(k=>`<button class="k press" data-act="key" data-k="${k}">${k}</button>`).join('')}<button class="k sub press" data-act="key" data-k="C">C</button><button class="k press" data-act="key" data-k="0">0</button><button class="k sub press" data-act="key" data-k="⌫">${I.del}</button></div>
-    <div class="commit"><button class="btn xl p press" data-act="take" ${entry<=0?'disabled':''}>${commit}</button>${bottomClose}</div>`}</div>`;
+    <div class="commit"><button class="btn xl p press" data-act="take" ${entry<=0?'disabled':''}>${commit}</button>${bottomClose}</div></div>`;
 }
 
 function renderLedger(){
   const t=T(); const items=lines(); const s=sub(); const paid=cents(s-remaining());
-  const payRow=S.pays.map((p,i)=>`<div class="line payrow"><div class="lb" style="grid-template-columns:1fr auto"><span class="n">${methodName(p.m)} · <span class="st ok">Captured</span><span class="sub">${p.m==='cash'?`Tendered ${fmt(p.amt+p.change)} · change ${fmt(p.change)}`:'Contactless'}</span>${S.splitUi!=='pane'&&i===S.pays.length-1?`<button class="cancelpay" data-act="cancelPay">${t.cancelPay}</button>`:''}</span><span class="money b">${fmt(p.amt)}</span></div></div>`).join('')
+  const payRow=S.pays.map(p=>`<div class="line payrow"><div class="lb" style="grid-template-columns:1fr auto"><span class="n">${methodName(p.m)} · <span class="st ok">Captured</span><span class="sub">${p.m==='cash'?`Tendered ${fmt(p.amt+p.change)} · change ${fmt(p.change)}`:'Contactless'}</span></span><span class="money b">${fmt(p.amt)}</span></div></div>`).join('')
     +(S.view==='terminal'?`<div class="line payrow"><div class="lb" style="grid-template-columns:1fr auto"><span class="n">${methodName(S.pending?.m||S.method)}<span class="sub st warn">Waiting on the terminal</span></span><span class="money">${fmt(S.pending?.amount??paymentAmount())}</span></div></div>`:'')
     +(!S.pays.length&&S.view!=='terminal'?`<div class="mut" style="padding:0 calc(var(--u)*4) calc(var(--u)*3)">No payments yet</div>`:'');
 
@@ -1343,7 +1342,6 @@ document.addEventListener('click',e=>{
   if(b.dataset.set==='listStyle'){OS.listStyle=b.dataset.v;render();return;}
   if(b.dataset.set==='stores'){RS.stores=+b.dataset.v;render();return;}
   if(b.dataset.set==='layout'){RS.layout=b.dataset.v;RS.detail=null;RS.closure=null;RS.view='sales';render();return;}
-  if(b.dataset.set==='splitUi'){ S.splitUi=b.dataset.v; S.split=null; if(S.scn.startsWith('split')){jump(S.scn);return;} render();return; }
   if(b.dataset.set){ const v=b.dataset.v; S[b.dataset.set]=(v==='1'||v==='3')?+v:v; if(b.dataset.set==='plan') S.nostrip=false; render(); return; }
   if(b.dataset.tx){ S.tx[b.dataset.tx]=S.tx[b.dataset.tx]?0:1; render(); return; }
   if(b.dataset.txall!==undefined){ const v=+b.dataset.txall; Object.keys(S.tx).forEach(k=>S.tx[k]=v); render(); return; }
@@ -1394,7 +1392,7 @@ document.addEventListener('click',e=>{
     case 'splitMode': S.split={mode:b.dataset.v,items:[]}; S.entry=null; break;
     case 'splitEven': splitEven(+b.dataset.v); break;
     case 'splitAmount': { const a=Math.min(+b.dataset.v,remaining()); setPaymentPlan([a,cents(remaining()-a)].filter(n=>n>0)); break; }
-    case 'splitClose': if(e.target.closest('[data-stop]')&&!b.matches('button')) return; S.split=null; S.view='keypad'; break;
+    case 'splitClose': S.split=null; S.view='keypad'; break;
     case 'splitType': S.split=null; S.view='keypad'; S.payPlan=null; S.legMethods=[]; S.leg=S.pays.length; S.entry=null; break;
     case 'splitItem': { const i=+b.dataset.i, at=S.split.items.indexOf(i); if(at<0) S.split.items.push(i); else S.split.items.splice(at,1); S.entry=null; break; }
     case 'splitDone': { const a=itemAmount(); if(a>0) setPaymentPlan([a,cents(remaining()-a)].filter(n=>n>0)); else {S.split=null;S.view='keypad';} break; }

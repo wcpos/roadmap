@@ -211,30 +211,36 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   });
   if (keypadOpacity !== 1) throw new Error('keypad replayed the fade: ' + keypadOpacity);
   await motion.close();
-  // Split: all three presentations settle the same remaining balance.
+  // Split: dev-next's pane drawing settles the remaining balance.
+  if (await page.locator('.strip [data-set="splitUi"]').count()) throw new Error('split drawing switch still exists');
   await set('theme', 'light'); await set('scale', 'regular');
   const balance = () => page.locator('.ledger .totals .r2').last().locator('.money').innerText();
   const money = n => '£' + n.toFixed(2);
-  for (const opt of ['pane', 'sheet', 'inline']) for (const w of ['tablet', 'phone']) {
-    await set('splitUi', opt); await set('w', w);
+  for (const w of ['tablet', 'phone']) {
+    await set('w', w);
     await scn('split');
-    if (await page.locator('[data-act="splitMode"]').count() !== 4) throw new Error('split chooser modes: ' + opt);
-    if (await page.locator('.sheet').count() !== (opt === 'sheet' ? 1 : 0)) throw new Error('split chooser placement: ' + opt);
-    await shot(`split-${opt}-${w}`);
+    if (await page.locator('[data-act="splitMode"]').count() !== 4) throw new Error('split chooser modes: ' + w);
+    if (await page.locator('.sheet').count() !== 0) throw new Error('split chooser placement: ' + w);
+    await shot(`split-${w}`);
+    await page.click('.pay .commit [data-act="splitClose"]');
+    await page.locator('.pay .keys').waitFor();
+    await page.click('.pay [data-act="splitOpen"]');
+    await page.click('.pay .hd [data-act="splitClose"]');
+    await page.locator('.pay .keys').waitFor();
     await scn('split-1of2');
     if (w === 'tablet') {
       const total = await page.evaluate(() => sub());
-      if (await page.locator('.ledger .payrow').count() !== 1 || !/Cash/.test(await page.locator('.ledger .payrow').innerText())) throw new Error('split first cash leg: ' + opt);
-      if (await balance() !== money(total - Math.ceil(total * 100 / 2) / 100)) throw new Error('split remaining half: ' + opt);
+      if (await page.locator('.ledger .payrow').count() !== 1 || !/Cash/.test(await page.locator('.ledger .payrow').innerText())) throw new Error('split first cash leg: ' + w);
+      if (await balance() !== money(total - Math.ceil(total * 100 / 2) / 100)) throw new Error('split remaining half: ' + w);
     }
-    await shot(`split-1of2-${opt}-${w}`);
+    await shot(`split-1of2-${w}`);
     await page.click('.pay .commit [data-act="take"]');
     await page.locator('.paidwrap').waitFor();
-    await scn('split-item'); await shot(`split-item-${opt}-${w}`);
+    await scn('split-item'); await shot(`split-item-${w}`);
   }
   // The pinned controls must fit at every scale; the area above them may scroll.
-  for (const opt of ['pane', 'sheet', 'inline']) for (const w of ['tablet', 'phone']) for (const scale of ['compact', 'regular', 'spacious']) {
-    await set('splitUi', opt); await set('w', w); await set('scale', scale);
+  for (const w of ['tablet', 'phone']) for (const scale of ['compact', 'regular', 'spacious']) {
+    await set('w', w); await set('scale', scale);
     for (const state of ['split', 'split-item', 'split-1of2']) {
       await scn(state);
       const fits = await page.locator('.pay').evaluate(el => {
@@ -242,28 +248,21 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
         return [...el.querySelectorAll('.keys, .commit')].every(control => {
           const r = control.getBoundingClientRect();
           return r.top >= pane.top && r.bottom <= pane.bottom + 1 && r.left >= pane.left && r.right <= pane.right + 1;
-        }) && el.scrollWidth <= el.clientWidth + 1;
+        }) && el.scrollWidth <= el.clientWidth + 1
+          && [...el.querySelectorAll('.scroll, .splitbody, .splitgrid, .legs')].every(control => control.scrollWidth <= control.clientWidth + 1);
       });
-      if (!fits) throw new Error(`split pinned controls overflow: ${opt}-${w}-${scale}-${state}`);
-      if (opt === 'sheet' && state !== 'split-1of2') {
-        const sheetFits = await page.locator('.sheet').evaluate(el => {
-          const r = el.getBoundingClientRect(), frame = el.closest('.frame').getBoundingClientRect();
-          const foot = el.querySelector('.sheet-f')?.getBoundingClientRect();
-          return r.top >= frame.top && r.bottom <= frame.bottom + 1 && el.scrollWidth <= el.clientWidth + 1 && (!foot || foot.bottom <= r.bottom + 1);
-        });
-        if (!sheetFits) throw new Error(`split sheet overflow: ${w}-${scale}-${state}`);
-      }
+      if (!fits) throw new Error(`split pinned controls overflow: ${w}-${scale}-${state}`);
     }
   }
   await set('scale', 'regular');
-  await set('w', 'tablet'); await set('splitUi', 'inline'); await scn('tender');
+  await set('w', 'tablet'); await scn('tender');
   const splitTotal = await page.evaluate(() => sub());
   for (const k of ['2', '0', '0', '0']) await page.click(`.pay [data-act="key"][data-k="${k}"]`);
   if (!/left after this/.test(await page.locator('.amtblock .line').innerText())) throw new Error('typed partial hint');
   await page.click('.pay .commit [data-act="take"]');
   if (await page.locator('.ledger .payrow').count() !== 1 || await page.locator('.paidwrap').count()) throw new Error('partial payment prematurely completed sale');
   if (await balance() !== money(splitTotal - 20)) throw new Error('typed partial remaining');
-  await page.click('.ledger [data-act="cancelPay"]');
+  await page.click('.pay .hd [data-act="cancelPay"]');
   if (await page.locator('.ledger .payrow').count()) throw new Error('cancel did not remove payment');
   await browser.close();
   if (errors.length) { console.error(errors.join('\n')); process.exit(1); }

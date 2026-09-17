@@ -79,22 +79,22 @@ The first two keep the column labels; the others use that row for the payment am
 facts. Customer stays live keeps the customer chip tappable, with a receipt hint when a customer
 is set; Guest has no hint. The customer picker remains a no-op in this prototype.
 
-**Split** (register only, beside *Ledger head*): three drawings of dev-next's signed-off
-functionality — *Chooser fills the pane (dev-next)* (`pane`), *Chooser in a sheet, keypad stays*
-(`sheet`), and *Chooser under the amount* (`inline`, default). All offer Even, Amount, Percent,
-and Item; each payment has its own method, and Change split reopens the chooser.
-
 ### Split payments (2026-09-17)
 
-The shared model keeps taken payments in `S.pays`, planned amounts in `S.payPlan`, and a method
-for each leg; `remaining()` and `settle()` serve cash and terminal payments alike.
-Typing a first amount below the remaining balance also takes a partial payment, and Cancel
-payment removes the last taken payment; `S.plan` remains the unrelated Free/Pro switch.
+**Split** has one drawing: dev-next's signed-off pane flow, polished in the register's
+language, with no drawing switch. The Split chip opens Even, Amount, Percent and Item in the
+pay pane; Done or × returns to the keypad, with the leg chips and Change split below the amount.
+Quick-amount helpers stay above the pinned keypad, and Cancel payment is in the pay head after
+a payment is taken.
 
-State **Tender · split open** (`split`) opens the chosen chooser; **Tender · 1 of 2 taken**
+State **Tender · split open** (`split`) opens the chooser; **Tender · 1 of 2 taken**
 (`split-1of2`) has the first half taken in Cash and the second ready on Card; **Tender · split
 by item** (`split-item`) opens Item mode with the first two lines ticked.
-The halves follow the current cart total, not a fixed demo amount.
+
+The model keeps taken payments in `S.pays`, planned amounts in `S.payPlan` and a method per leg,
+with `remaining()` and `settle()` shared by cash and terminal payments and halves based on the
+current cart total. Typing a first amount below the balance takes a partial payment, Cancel
+payment removes the last taken payment, and `S.plan` remains the unrelated Free/Pro switch.
 
 ### Cart → checkout (2026-09-17)
 
