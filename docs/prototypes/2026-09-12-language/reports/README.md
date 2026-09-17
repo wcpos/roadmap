@@ -209,6 +209,21 @@ or a busy day at any width) they get the whole width and X-report sits on the ti
 right, so the equation never wraps around the buttons; "= Expected in drawer" is one piece
 that never splits across a wrap; the phone ledger is unchanged.
 
+**The chart's filters, audited (seventeenth pass, same day).** Paul: "there is one filter that
+says Everyone but then it has an Orders section; we need to organise the chart filters and
+toggles more efficiently and clearly." `filter-variants.html` opens with an audit of every
+control that scopes the chart (register and store in the bar; the period; the Everyone menu
+that is really cashier *and* order status; the comparison hidden in the delta chip; the view
+toggle; the orders-left-out chip; print) and then draws ten arrangements at tablet and phone
+width with a switch that sets a non-default filter so each shows how it reads when something
+is filtered: F1 a sentence with one word per choice; F2 the period as title and a row of
+labelled filter chips; F3 one Filters button opening the right panel beside a live chart with a
+"Showing…" line; F4 a toolbar of selects above the card; F5 filters in the head and lenses in a
+chart footer; F6 cashiers as tabs, the rest in ⋯; F7 Everyone honest (cashiers only), status
+and comparison in ⋯; F8 a plain sentence under the figure with linked words; F9 the chart
+stacked by cashier with the legend as the filter; F10 two tiers, page scope in the bar and
+chart lenses on the card. Not decided.
+
 ## What changed from 2026-09-14
 
 - Copied the register's tokens, controls, rail, page bar, notification panel, side-panel and
