@@ -161,6 +161,17 @@ under it, the drawer equation as chips (Opening float £100.00 + Cash sales £34
 Closures room; when closed, Expected · Counted = Drawer result with Reprint. The seven cards
 keep the period as their heading; the "Right now" section is gone.
 
+**The strip under load (thirteenth pass, same day).** Paul: what happens with money paid in,
+paid out and other things; four or five examples. `till-variants.html` draws six strips
+(equation chips, the bridge, one composition bar, in and out columns, the figure with pills,
+every tender) across five states (open with sales only; open with a paid-in, two paid-outs,
+cash refunds, a no-sale and a void; counting; closed short; all registers), with what a
+session can contain in the file's head. **Decided:** V1, the equation chips, "but it really
+sucks on smaller screens", so: chips in a row on tablet and desktop, wrapping onto their own
+row when the day is busy; on the phone the same terms stack into a ledger, one line per term
+with the sign at the left and the expected row filled. Repeated paid-outs fold into one chip
+with a count; no-sale and void move no money and are a note. The State row gains *Till busy*.
+
 ## What changed from 2026-09-14
 
 - Copied the register's tokens, controls, rail, page bar, notification panel, side-panel and
