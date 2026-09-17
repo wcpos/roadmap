@@ -294,6 +294,10 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     `reports/till-concepts.html` draws ten different pictures of the till (receipt, cash tray, cash
     level, to bank tonight, limit gauge, sentence, before and after, handovers, cash book,
     scoreboard). To react to; nothing decided.
+    **Paul (2026-09-17, later): C3, the cash level through the session. Decided**, the chips as the
+    backup behind a `Till` switch. A step line from the float at open to now, up with cash sales,
+    down where cash left, movements marked and named; closed, the line ends at the count with the
+    drawer result; its own row on tablet and phone.
 
 48. **Orders inside the register; the rail toggles the pages (Paul, 2026-09-17).** Paul: put
     the Orders mock-up into `pos-register/index.html` and toggle between the POS page, the
