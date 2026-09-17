@@ -198,9 +198,23 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     (the open orders list's frame, header and ×). Recommendation: the slide, because it is the one
     surface language the register already has and the cart stays visible behind it while the
     cashier decides to void; the takeover hides the very order being voided. Supersedes the Void
-    ruling in 23 (outlined red matched) and the row from 41. Not decided: slide or takeover.
+    ruling in 23 (outlined red matched) and the row from 41.
+    **Paul (2026-09-17, later): decided, from the left.** He liked the takeover but named two
+    problems: the cart is resizable, so the takeover would look odd at some widths; and cart
+    settings slides out from the other side, a different modal, which is jarring. The rule that
+    settled it, in his words: a settings panel must not cover the thing it configures, because
+    you change a switch and want to see the result at once; and editing a line item or the order
+    details might change the cart too, so the cart must stay in view for those as well. So the
+    order sheet is a panel from the left over the products, the same panel as cart settings and
+    edit line, with Void | Print bill | Save order at its foot. The takeover and the switch are
+    gone; the open orders list is the one thing that takes over the cart, because it is choosing
+    which cart you look at. The panel rule on the register: anything that acts on the cart opens
+    over the products; anything about the products opens over the cart; the bell and the cashier
+    come from the right.
 
-47. **Reports in the language (2026-09-17, sibling session).** `reports/index.html`: the Sales
+47. **Reports in the language (2026-09-17, sibling session).** `pos-register/index.html?screen=reports`
+    (Paul: put it inside the register page and swap the toggles at the top; a `Screen` switch
+    heads the strip, Register | Reports; `reports/index.html` redirects there): the Sales
     glance (hero, signed delta chip, ghost bars capped at 40 px, tiles) and the shipped Closures
     room (session card, closures by day, closure as recorded with corrections, Recount sheet,
     Reprint) redrawn as a sibling of the register, with the register's rail, bar, bell panel and
