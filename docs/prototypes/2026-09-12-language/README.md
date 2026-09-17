@@ -262,6 +262,11 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     **Sibling session (2026-09-17, later still): `reports/panel-variants.html`**, ten Orders panels
     and eight share-chart styles on the fixture, after Paul asked for research and ten options.
     To react to; nothing decided.
+    **Paul (2026-09-17, later): picked.** Orders is the summary block with a status bar; Payments,
+    Cashiers, Categories and Where sold are thick distinct-hue donuts with the total in the middle;
+    Taxes and Refunds are cards with a proportional bar; no rows under the panels; the filter sits in
+    the hero's title row beside the date. Eight cards. A five-colour categorical set (`--c1`…`--c5`,
+    dark variant) sits in the reports CSS scope and moves to the shared tokens if it stands.
 
 48. **Orders inside the register; the rail toggles the pages (Paul, 2026-09-17).** Paul: put
     the Orders mock-up into `pos-register/index.html` and toggle between the POS page, the
