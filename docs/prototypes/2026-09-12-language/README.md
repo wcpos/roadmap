@@ -419,7 +419,8 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
 38. **Variations slide, or inline rows: a setting (2026-09-17).** Paul: bring the table breadcrumbs
     and the slide across, rather than the popovers; users will get a POS panel setting to choose
     the style. In the register a variable product slides the table left behind a breadcrumb
-    (`‹ Products › Tote bag · 3 variations`, the SKU and from-price on the right); the Category
+    (`‹ Products › Tote bag`; the SKU, from-price and count came across from board 4 and Paul
+    struck them, that information is already on the page); the Category
     pill opens a menu and a pick slides the same way, the pill filling with the name and its ×
     the way back. The strip's **Variations** switch and a row in the products settings swap
     between the slide and the inline indented rows (decision 22). Default in the mock-up: slide.

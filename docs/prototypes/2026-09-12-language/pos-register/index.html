@@ -594,9 +594,9 @@ function renderProducts(){
     /* the panes: products, a category (the table slides left behind a breadcrumb), the variations of one product (slide style) */
     const thead=(name)=>`<div class="thead" style="grid-template-columns:${grid}"><div class="th c"></div><div class="th">${name}<span class="rz"></span></div><div class="th">SKU<span class="rz"></span></div><div class="th r">Price<span class="rz"></span></div><div class="th r">Stock<span class="rz"></span></div><div class="th c"></div></div>`;
     const tfoot=(count)=>`<div class="tfoot"><span class="tax" title="Tax based on: Shop base address"><span class="fi">${I.percent}</span><b>Shop base</b>${I.chevd}</span><span class="grow"></span><span>${count}</span><button class="ibtn press" style="width:36px;height:36px" aria-label="Sync">${I.sync}</button></div>`;
-    const crumb=(here,count,extra='')=>`<div class="crumb"><button class="press" data-act="popView">${I.chevl}${S.pview==='var'&&S.cat?S.cat:'Products'}</button><span class="sep">›</span><span class="here">${here}</span><span class="num">· ${count}</span>${extra}</div>`;
+    const crumb=(here,count,extra='')=>`<div class="crumb"><button class="press" data-act="popView">${I.chevl}${S.pview==='var'&&S.cat?S.cat:'Products'}</button><span class="sep">›</span><span class="here">${here}</span>${count?`<span class="num">· ${count}</span>`:''}${extra}</div>`;
     let pane;
-    if (S.pview==='var') pane=`<div class="pane" data-pv="var">${crumb(prods[2][0],'3 variations',`<span class="pv"><span class="img"></span>${sku[2]} · from ${fmt(12)}</span>`)}${thead('Variation')}<div class="tbody">${vrows}</div>${tfoot('3 variations')}</div>`;
+    if (S.pview==='var') pane=`<div class="pane" data-pv="var">${crumb(prods[2][0])}${thead('Variation')}<div class="tbody">${vrows}</div>${tfoot('3 of 3')}</div>`;
     else { const idx=prods.map((x,i)=>i).filter(i=>!S.cat||CATS[i]===S.cat); const rowsHtml=idx.map(i=>row(prods[i],i)+(i===2&&!slide?vrows:'')).join('').replace('aria-label="Choose variation">'+I.chevd,'aria-label="Collapse variations">'+I.chevu);
       pane=`<div class="pane" data-pv="${S.pview}">${S.cat?crumb(S.cat,`${idx.length} products`):''}${thead('Name')}<div class="tbody">${rowsHtml}</div>${tfoot(S.cat?`${idx.length} of ${idx.length}`:'12 of 1,204')}</div>`; }
     body=`<div class="ptable">${pane}</div>`;
