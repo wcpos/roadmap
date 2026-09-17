@@ -270,6 +270,10 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     **Sibling session (2026-09-17, later): `reports/closures-variants.html`**, ten Closures card
     options on the fixture with a Today | This week switch, after Paul called the Closures card the
     weakest point. To react to; nothing decided.
+    **Paul (2026-09-17, later): C2, decided.** The date is for the figures, so the Closures card is
+    the one card outside it: the till now, register · open since · cashier, X-report, the drawer
+    ladder (float + cash sales − paid out = expected), the last closure as the footer; when closed,
+    expected, counted, drawer result, Reprint. The Closures room keeps its own date.
 
 48. **Orders inside the register; the rail toggles the pages (Paul, 2026-09-17).** Paul: put
     the Orders mock-up into `pos-register/index.html` and toggle between the POS page, the
