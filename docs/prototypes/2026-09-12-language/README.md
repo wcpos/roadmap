@@ -415,6 +415,8 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     condensed to "Shop base" (the full name in the tooltip and in the select).** Board 4's default.
     In the register too (2026-09-17, Paul: "the footer is still the old footer"), with the filter
     bar, the row as the button, the count in the last column, and adds that change the sale.
+    **Decided (Paul, 2026-09-17): today's surface.** The switch and the sheet and all-white CSS are
+    out of the register; board 3 and board 4 keep the ten for the record.
 
 38. **Variations slide, or inline rows: a setting (2026-09-17).** Paul: bring the table breadcrumbs
     and the slide across, rather than the popovers; users will get a POS panel setting to choose
@@ -424,6 +426,30 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     pill opens a menu and a pick slides the same way, the pill filling with the name and its ×
     the way back. The strip's **Variations** switch and a row in the products settings swap
     between the slide and the inline indented rows (decision 22). Default in the mock-up: slide.
+
+39. **The grid drills in the same way; the transition, six ways (2026-09-17).** Paul: the grid
+    needs the same breadcrumbs; research the best grid transitions on Mobbin. The sweep: every
+    iOS catalogue (Afterpay, Shop, DICK'S, SKIMS) pushes, the name becomes the title and a back
+    arrow returns; web tools (Craft, Air, Savee) swap the folder's contents in place under a
+    crumb; the media apps (Apple Photos, Pinterest) zoom out of the tile; Loyverse and Square put
+    a back tile first in the child grid; Blinkit and Square Go re-filter under chips and never
+    navigate. `pos-register/board-grid.html` draws six live: push, fade, zoom, hero (Material's
+    container transform), stagger, back tile. **Recommendation: push**, the table's own motion,
+    so the register's grid now has the breadcrumb and slides like the table. Not decided.
+
+40. **Filters and breadcrumbs (2026-09-17).** Paul: with a variable selected, can you toggle
+    in-stock; does it show in the breadcrumb; what about two chips; what about a quick filter
+    with several parts. The model, from NN/g and Baymard and the saved-view pattern in Linear,
+    Notion and Innovaccer: **the breadcrumb is the place, the chips are the conditions, the
+    footer is the count.** The crumb only ever shows hierarchy (Products › Drinks, Products ›
+    Tote bag); the bar keeps every applied chip visible and filled (Stock · In stock, Featured ×)
+    and they persist across levels; a quick filter is one chip with a parts badge, and pressing
+    it when on opens its parts with Turn off and Edit; a chip that does not apply at the current
+    level (a product filter inside a product's variations) stays on but dims, with the reason in
+    its tooltip; conditions AND together with the place; an empty result shows "Nothing here
+    matches the filters" with Clear filters. Written up in
+    `docs/design/2026-09-17-filters-and-breadcrumbs.md` and live in the register (Stock is a
+    select, Featured a toggle, Morning menu the quick filter).
 24. **More product-list options.** `pos-register/board-table-2.html` (captures in
     `screens/board-table-2/`): the decided base for comparison, then compact no-images (Attio) ·
     comfortable with category (Shopify POS) · menu board, name and price only (Toast, Square) ·

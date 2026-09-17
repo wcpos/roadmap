@@ -39,9 +39,6 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   // the icon sets, session open
   for (const k of ['hugeicons','lucide']) { await set('icons', k); await scn('open'); await shot(`icons-${k}`); }
   await set('icons', 'tabler-15');
-  // surfaces: the sheet and all white, tiles and table, tablet and desktop
-  for (const k of ['float','allwhite']) { await set('surface', k); await scn('open'); await shot(`surface-${k}-tiles`); await page.click('[data-act="toggleView"]'); await shot(`surface-${k}-table`); await set('w','desktop'); await shot(`surface-${k}-desktop-table`); await page.click('[data-act="toggleView"]'); await set('w','tablet'); }
-  await set('surface', 'today');
   // the table: filter bar, the row as the button, the count, the footer
   await scn('open'); await page.click('[data-act="toggleView"]'); await shot('table-bar-footer');
   await page.click('.tr.rowbtn[data-n="Cold brew"]'); await page.waitForTimeout(200); await page.click('.tr.rowbtn[data-n="Cold brew"]'); await page.waitForTimeout(200); await shot('table-row-tapped-twice');
@@ -61,7 +58,36 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   await set('vars', 'inline'); await shot('table-var-inline');
   if (await page.locator('.tr.vh').count() !== 3) throw new Error('inline style should show 3 indented rows');
   await set('vars', 'slide');
+  // filters and the breadcrumb: chips stay in the bar, the crumb stays the place, the footer says the count
+  await page.click('.tr.rowbtn[data-act="openVar"]'); await page.waitForTimeout(400);
+  await page.click('[data-act="stockMenu"]'); await page.waitForTimeout(100); await shot('table-var-stock-menu');
+  await page.click('.menu [data-act="setStock"][data-v="in"]'); await page.waitForTimeout(200); await shot('table-var-with-stock-filter');
+  { const n = await page.locator('.pane .tr').count(); if (n !== 2) throw new Error('in stock should leave 2 variations: ' + n); if (await page.locator('.pill.na').count() < 3) throw new Error('product-level chips not dimmed in the variations pane'); const f = await page.locator('.tfoot > span:not(.tax):not(.grow)').innerText(); if (!/2 of 3/.test(f)) throw new Error('variations footer: ' + f); const h = await page.locator('.crumb .here').innerText(); if (h.trim() !== 'Tote bag') throw new Error('crumb changed with a filter: ' + h); }
+  await page.click('.crumb [data-act="popView"]'); await page.waitForTimeout(400);
+  { const n = await page.locator('.pane .tr').count(); if (n !== 12) throw new Error('in stock should leave 12 products: ' + n); }
+  await page.click('[data-act="toggleFeat"]'); await page.waitForTimeout(200); await shot('table-filters-stacked');
+  { const n = await page.locator('.pane .tr').count(); if (n !== 3) throw new Error('in stock + featured should leave 3 rows: ' + n); const f = await page.locator('.tfoot > span:not(.tax):not(.grow)').innerText(); if (!/3 of 12/.test(f)) throw new Error('footer count: ' + f); }
+  await page.click('[data-act="toggleFeat"]'); await page.waitForTimeout(200);
+  await page.click('[data-act="quickMenu"]'); await page.waitForTimeout(200);
+  { const n = await page.locator('.pane .tr').count(); if (n !== 6) throw new Error('Morning menu + in stock should leave 6 rows: ' + n); }
+  await page.click('[data-act="quickMenu"]'); await page.waitForTimeout(150); await shot('table-quick-filter-open');
+  if (!(await page.locator('.menu .part').count())) throw new Error('quick filter parts not shown');
+  await page.click('[data-act="catMenu"]'); await page.click('.menu [data-c="Merch"]'); await page.waitForTimeout(400); await shot('table-empty-clear-filters');
+  if (!(await page.locator('.pane [data-act="clearFilters"]').count())) throw new Error('Merch with Morning menu on should be empty with Clear filters');
+  await page.click('.pane [data-act="clearFilters"]'); await page.waitForTimeout(200);
+  { const n = await page.locator('.pane .tr').count(); if (n !== 3) throw new Error('Merch after clearing filters: ' + n); }
+  await page.click('.pill.on[data-act="clearCat"]'); await page.waitForTimeout(400);
   await page.click('[data-act="toggleView"]');
+  // the grid: the same breadcrumb and slide, tiles instead of rows
+  await page.click('.tile[data-act="openVar"]'); await page.waitForTimeout(400); await shot('grid-var-slide');
+  { const h = await page.locator('.crumb .here').innerText(); if (h.trim() !== 'Tote bag') throw new Error('grid crumb: ' + h); if (await page.locator('.tiles .tile').count() !== 3) throw new Error('grid variation tiles'); }
+  await page.click('.tile[data-s="Natural · S"]'); await page.waitForTimeout(200);
+  { const c = await page.locator('.tile[data-s="Natural · S"] .tcnt').innerText(); if (c.trim() !== '2') throw new Error('grid variation tap did not count to 2: ' + c); }
+  await page.click('.crumb [data-act="popView"]'); await page.waitForTimeout(400);
+  await page.click('[data-act="catMenu"]'); await page.click('.menu [data-c="Bakery"]'); await page.waitForTimeout(400); await shot('grid-cat-slide');
+  if (await page.locator('.tiles .tile').count() !== 3) throw new Error('Bakery tiles');
+  await page.click('.pill.on[data-act="clearCat"]'); await page.waitForTimeout(400);
+  if (await page.locator('.tiles .tile').count() !== 12) throw new Error('clear category in the grid');
   // the cart line: the quantity expands, the swipe on the total, the desktop nudge, the phone sheet
   await scn('open'); await page.click('.line[data-i="1"] .q'); await page.waitForTimeout(250); await shot('cart-qty-open');
   await page.click('.qx [data-k="1"]'); await page.click('.qx [data-k="2"]'); await page.waitForTimeout(80); await shot('cart-qty-typed-12');
