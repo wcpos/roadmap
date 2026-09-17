@@ -285,6 +285,9 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     **Sibling session (2026-09-17, later): `reports/till-variants.html`**, six till-strip designs
     across five states of the till (paid in, paid out, refunds, counting, closed, all registers).
     To react to; nothing decided.
+    **Paul (2026-09-17, later): V1, the equation chips. Decided.** Content-width at every size, the
+    equation on its own row on a busy day, a ledger on the phone with the sign at the left; a
+    "Till busy" State.
 
 48. **Orders inside the register; the rail toggles the pages (Paul, 2026-09-17).** Paul: put
     the Orders mock-up into `pos-register/index.html` and toggle between the POS page, the
