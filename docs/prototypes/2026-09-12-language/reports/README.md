@@ -81,6 +81,19 @@ nobody reads daily (Categories, Refunds and discounts, Cash movements, Deposits,
 when all) sit under the panels as the plain list. Three across on desktop, two on tablet, one
 on the phone. My pick; the list and the tiles stay behind the switch until he chooses.
 
+**Audit (seventh pass, same day).** Paul: the bars are a nice touch; categories could get the
+same treatment with a pie chart; go over every box and row and make sure it earns its keep
+(would deposits not just be part of the Orders data? is there a separate report for deposits?
+which report templates go where?). `AUDIT-2026-09-17.md` holds the answer, read off fresh
+exports of the plugin and the client by Codex and judged here. Applied: Top products and
+Categories are one panel with two views, and Categories draws a donut with its rows; cash
+movements fold into the Closures panel (they are session records that explain the drawer);
+discounts fold into the Orders panel's footer (an order field); Deposits is gone (no endpoint,
+field, line type, template or plugin integration anywhere; it was the 2026-09-14 example of a
+plugin-registered report and returns only when one registers); "voided" is gone (no such
+aggregate exists); Refunds stays as a row; In store · Online returns as a row. Under the six
+panels the list is now In store · Online, Refunds, and Registers under All registers.
+
 ## What changed from 2026-09-14
 
 - Copied the register's tokens, controls, rail, page bar, notification panel, side-panel and

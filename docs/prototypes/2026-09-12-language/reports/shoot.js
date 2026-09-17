@@ -21,7 +21,7 @@ const checks = {
   orders: '.detail input[data-act="tick"]', session: '[data-testid="session-expected"]',
   closed: '[data-testid="session-reprint"]', closure: '[data-testid="closure-settled"]',
   recount: '#recount-reason', empty: '[data-testid="closures-empty"]', loading: '.skeleton',
-  offline: '.rrow[data-v="deposits"][disabled]', 'offline-recount': '[data-testid="recount-offline"]',
+  offline: '.bar .st.warn', 'offline-recount': '[data-testid="recount-offline"]',
   'free-sales': '[data-testid="reports-lock-hint"]', 'free-closures': '[data-testid="reports-lock-hint"]',
   bell: '.bd.notif', error: '[data-testid="closure-document-error"]',
 };
@@ -56,6 +56,8 @@ const checks = {
           assert((await page.locator('.hero .datebtn').textContent()).startsWith(s === 'today' ? 'Today' : 'Last week'), 'the date is the chart title');
           assert.equal(await page.locator('.scope-row').count(), 0, 'Sales has no scope row');
           assert.equal(await page.locator('.rp-panel').count(), 6, 'six panels under the chart');
+          assert.equal(await page.locator('.rlist.more .rrow[data-v="deposits"], .rlist.more .rrow[data-v="cash"]').count(), 0, 'deposits and cash movements have no row (audit 2026-09-17)');
+          assert.equal(await page.locator('.rp-panel[data-k="closures"] .or').count() >= 3, true, 'cash movements live in the Closures panel');
           assert.equal(await page.locator('.rp-panel[data-k="closures"]').count(), 1, 'Closures is a panel like the others');
           assert(await page.locator('.rp-panel .br .sh b').count() >= 8, 'share bars');
         }
@@ -108,6 +110,9 @@ const checks = {
     // Exercise interactions, not just strip presets.
     await set('w','tablet'); await set('theme','light'); await set('scale','regular'); await scn('today');
     const total = await page.locator('.hero .big').textContent();
+    await page.click('[data-act="merch"][data-v="categories"]');   // what sold: two views, the donut (audit 2026-09-17)
+    assert.equal(await page.locator('.rp-panel svg.donut').count(), 1, 'categories donut');
+    await page.click('[data-act="merch"][data-v="products"]');
     await page.click('.rp-panel[data-k="orders"] .ph');
     await page.locator('[data-act="tick"]').first().click();
     await page.locator('[data-act="tick"]').nth(1).click();
