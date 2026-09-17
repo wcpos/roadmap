@@ -255,6 +255,10 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     templates** (`reports/AUDIT-2026-09-17.md`): Top products and Categories one panel with a
     donut; cash movements into Closures; discounts into Orders; Deposits and "voided" gone;
     Refunds a row; In store · Online a row. Not decided.
+    **Sibling session (2026-09-17, later still): each panel by the shape of its data.** Parts of a
+    whole are donuts with rows (Payments, Where sold with a Registers view, Categories); rankings
+    are bars (Top products, Cashiers); Taxes a row of figures; Orders a basket-size distribution.
+    Not decided.
 
 48. **Orders inside the register; the rail toggles the pages (Paul, 2026-09-17).** Paul: put
     the Orders mock-up into `pos-register/index.html` and toggle between the POS page, the
