@@ -453,7 +453,10 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 :where(.frame[data-screen="reports"]) .prev{display:flex;flex-wrap:wrap;align-items:center;gap:calc(var(--u)*2);color:var(--muted-fg)} :where(.frame[data-screen="reports"]) .delta{border:var(--hair) solid var(--border);border-radius:var(--r);padding:var(--u) calc(var(--u)*2);color:var(--muted-fg)} :where(.frame[data-screen="reports"]) .delta.up{color:var(--ok)} :where(.frame[data-screen="reports"]) .delta.down{color:var(--bad)}
 :where(.frame[data-screen="reports"]) .cmpbtn{display:inline-flex;align-items:center;gap:var(--u);min-height:max(var(--ctl),var(--floor));color:var(--muted-fg)}
 :where(.frame[data-screen="reports"]) .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(var(--u)*6);align-content:center;margin-right:calc(var(--ctl))} :where(.frame[data-screen="reports"]) .kpi .n{font-size:calc(var(--fs)*1.7);font-weight:600} :where(.frame[data-screen="reports"]) .kpi .p{color:var(--muted-fg);font-size:calc(var(--fs)*.9)}
-:where(.frame[data-screen="reports"]) .printb{position:absolute;right:calc(var(--u)*2);top:calc(var(--u)*2)} .frame:where([data-screen="reports"]) svg.bars{width:100%;height:auto;stroke:none;display:block;margin-top:calc(var(--u)*4)}
+:where(.frame[data-screen="reports"]) .printb{position:absolute;right:calc(var(--u)*2);top:calc(var(--u)*2)} .frame:where([data-screen="reports"]) svg.bars{width:100%;height:auto;stroke:none;display:block;margin-top:calc(var(--u)*2);overflow:visible}
+:where(.frame[data-screen="reports"]) .chart-head{display:flex;flex-wrap:wrap;align-items:center;gap:var(--u) calc(var(--u)*3);margin-top:calc(var(--u)*5);color:var(--muted-fg);font-size:calc(var(--fs)*.93)} :where(.frame[data-screen="reports"]) .chart-head b{color:var(--fg);font-weight:600} :where(.frame[data-screen="reports"]) .chart-plot{position:relative}
+:where(.frame[data-screen="reports"]) .chart-mode{height:max(36px,var(--floor))} :where(.frame[data-screen="reports"]) .chart-mode button{font-size:calc(var(--fs)*.93);padding:0 calc(var(--u)*2.5)}
+:where(.frame[data-screen="reports"]) .lg i.dash{width:14px;height:0;border-top:2px dashed var(--muted-fg);border-radius:0} :where(.frame[data-screen="reports"]) .lg i.line{width:14px;height:0;border-top:2px solid var(--primary);border-radius:0}
 :where(.frame[data-screen="reports"]) .cap{display:flex;gap:calc(var(--u)*3);flex-wrap:wrap;font-size:calc(var(--fs)*.9);color:var(--muted-fg);padding-top:calc(var(--u)*2)} :where(.frame[data-screen="reports"]) .cap b{color:var(--fg);font-weight:500}
 :where(.frame[data-screen="reports"]) .lg{display:inline-flex;gap:var(--u);align-items:center} :where(.frame[data-screen="reports"]) .lg i{width:calc(var(--u)*2);height:calc(var(--u)*2);border-radius:var(--r)}
 :where(.frame[data-screen="reports"]) .tip{position:absolute;z-index:1;background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);padding:calc(var(--u)*2);max-width:100%}
@@ -1309,7 +1312,7 @@ const RS = {
   gran: ['day','week','month'].includes(Q.get('gran')) ? Q.get('gran') : 'day', off: 0, cFrom: 13, cTo: 0, status: 'done',
   cmp: ['lastweek','yesterday','lastyear'].includes(Q.get('cmp')) ? Q.get('cmp') : 'lastweek',
   register:'front', store:'uk', cashier:'all',
-  unticked: new Set(), detail: null, closure: null, xreport: false, tpl:'default',
+  unticked: new Set(), detail: null, closure: null, xreport: false, tpl:'default', chart:'hour',   /* 'hour' | 'run' (Paul 2026-09-17: an easy toggle) */
   pop: null, hint: null, tip: null, frameH: 780,
 };
 
@@ -1482,7 +1485,7 @@ function renderReports() {
   if (RS.register !== 'all' && RS.detail === 'registers') RS.detail=null;
   const hintScroll=RS.pop?.kind==='hint'?(F.querySelector('.page>.pad')?.scrollTop||0):0;
   const previousOverlay=F.querySelector('.sheet,.pop,.sidepanel'); const focusId=document.activeElement?.id;
-  F.innerHTML=`${S.plan==='top'?renderUpgradeStrip('top',true):''}<div class="body">${phone()?'':renderRail()}<div class="main"><div class="page">${pagebar()}${scopeRow()}${RS.loading?'<div class="pad" aria-label="Loading reports">'+Array.from({length:7},()=>'<div class="skeleton"></div>').join('')+'</div>':RS.view==='sales'?sales():closures()}</div>${panel()}${popover()}${renderSheet()}</div></div>${S.plan==='bottom'?renderUpgradeStrip('bottom',true):''}`;
+  F.innerHTML=`${S.plan==='top'?renderUpgradeStrip('top',true):''}<div class="body">${phone()?'':renderRail()}<div class="main"><div class="page">${pagebar()}${scopeRow()}${RS.loading?'<div class="pad" aria-label="Loading reports">'+Array.from({length:7},()=>'<div class="skeleton"></div>').join('')+'</div>':RS.view==='sales'?sales():closures()}</div>${panel()}${popover()}${renderSheet()}</div></div>`;
   document.getElementById('notes').innerHTML='Reports · the decided content, in the register’s language. Prototype figures are fixed to 14 September 2026. Print uses the selected template; recounts stay in this page and reset on reload.';
   if(RS.pop?.kind==='hint')F.querySelector('.page>.pad').scrollTop=hintScroll;
   const svg=F.querySelector('svg.bars');
@@ -1555,24 +1558,53 @@ function hero(m) {
   </div>`;
 }
 function chart(m) {
-  const W = phone() ? 340 : 1090, H = phone() ? 130 : 140, padB = 20, top = 8;
-  const n = m.bk.length, gap = n > 14 ? 3 : 8, step = W / n, bw = Math.min(40, step - gap);
-  const max = Math.max(1, ...m.cur, ...m.prev);
-  const y = v => top + (H - padB - top) * (1 - v / max);
+  /* Paul 2026-09-17: two views of the same figures behind one toggle. By hour: today's bars, the busiest hour full-colour with its amount,
+     the comparison as a dashed line, hours still to come as faint bars of the comparison. Running total: the cumulative line against the
+     comparison's, the busiest hour as the thick segment. Tax is not on the chart (it has the Taxes tile and the summary). */
+  const W = phone() ? 340 : 1090, H = phone() ? 150 : 160, padB = 20, top = 26;
+  const n = m.bk.length, gap = n > 14 ? 3 : 8, step = W / n, bw = Math.min(40, step - gap), xc = i => (i + .5) * step;
   const every = RS.gran === 'month' || RS.gran === 'custom' ? (n > 14 ? 7 : phone() ? 2 : 1) : (phone() && RS.gran === 'day' ? 2 : 1);
-  let s = `<svg class="bars" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
-  m.bk.forEach((b, i) => {
-    const x = (i + .5) * step - bw / 2;
-    const pv = m.prev[i], cv = m.cur[i];
-    if (pv > 0) s += `<rect class="ghost-bar ${b.past?'':'future'}" x="${x}" y="${y(pv)}" width="${bw}" height="${H - padB - y(pv)}" rx="2" fill="var(--border)"/>`;
-    if (cv > 0) s += `<rect x="${x}" y="${y(cv)}" width="${bw}" height="${H - padB - y(cv)}" rx="2" fill="var(--primary)"/>`;
-    s += `<rect class="hit" data-i="${i}" x="${i * step}" y="0" width="${step}" height="${H}" fill="transparent"/>`;
-    if (i % every === 0) s += `<text x="${x + bw / 2}" y="${H - 5}" text-anchor="middle" font-size="11" fill="var(--muted-fg)">${b.label}</text>`;
-  });
-  s += `</svg>`;
-  const tip = RS.tip != null ? (() => { const i = RS.tip; const b = m.bk[i]; return `<div class="tip" style="left:${(i + .5) * step / W * 100}%;top:0"><b>${fmt(m.cur[i])}</b> · ${fmt(m.prev[i])} ${esc(refLabel())}</div>`; })() : '';
+  const lastPast = m.bk.reduce((a, b, i) => b.past ? i : a, -1);
+  const live = RS.off === 0 && lastPast < n - 1;   /* the period is still running */
+  const unit = RS.gran === 'day' ? 'hour' : 'day';
+  let bi = -1; m.cur.forEach((v, i) => { if (v > 0 && (bi < 0 || v > m.cur[bi])) bi = i; });
+  const run = RS.chart === 'run';
+  const axis = () => m.bk.map((b, i) => i % every === 0 ? `<text x="${xc(i)}" y="${H - 5}" text-anchor="middle" font-size="11" fill="var(--muted-fg)">${esc(b.label)}</text>` : '').join('');
+  const hits = () => m.bk.map((b, i) => `<rect class="hit" data-i="${i}" x="${i * step}" y="0" width="${step}" height="${H}" fill="transparent"/>`).join('');
+  let s = `<svg class="bars ${run ? 'run' : 'hours'}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+  if (!run) {
+    const max = Math.max(1, ...m.cur, ...m.prev) * 1.02, y = v => top + (H - padB - top) * (1 - v / max);
+    m.bk.forEach((b, i) => {
+      const x = xc(i) - bw / 2, pv = m.prev[i], cv = m.cur[i];
+      if (!b.past && live && pv > 0) s += `<rect class="future-bar" x="${x}" y="${y(pv)}" width="${bw}" height="${H - padB - y(pv)}" rx="2" fill="var(--muted)"/>`;
+      if (cv > 0) s += `<rect class="cur-bar" x="${x}" y="${y(cv)}" width="${bw}" height="${H - padB - y(cv)}" rx="2" fill="var(--primary)" fill-opacity="${i === bi ? 1 : .5}"/>`;
+    });
+    s += `<polyline class="ref-line" points="${m.bk.map((b, i) => `${xc(i)},${y(m.prev[i])}`).join(' ')}" fill="none" stroke="var(--muted-fg)" stroke-width="1.5" stroke-dasharray="4 4" stroke-linejoin="round"/>`;
+    if (bi >= 0) s += `<text class="peak-label" x="${xc(bi)}" y="${y(m.cur[bi]) - 7}" text-anchor="middle" font-size="12" font-weight="600" fill="var(--fg)">${fmt(m.cur[bi])}</text>`;
+  } else {
+    const cum = a => a.map((_, i) => sum(a.slice(0, i + 1)));
+    const cc = cum(m.cur), cp = cum(m.prev), last = Math.max(0, lastPast);
+    const max = Math.max(1, cc[last], cp[n - 1]) * 1.06, y = v => top + (H - padB - top) * (1 - v / max);
+    const pc = cc.slice(0, last + 1).map((v, i) => `${xc(i)},${y(v)}`);
+    s += `<polygon points="${xc(0)},${H - padB} ${pc.join(' ')} ${xc(last)},${H - padB}" fill="var(--primary)" fill-opacity=".1"/>`;
+    s += `<polyline class="ref-line" points="${cp.map((v, i) => `${xc(i)},${y(v)}`).join(' ')}" fill="none" stroke="var(--muted-fg)" stroke-width="1.5" stroke-dasharray="2 4" stroke-linecap="round"/>`;
+    s += `<polyline class="run-line" points="${pc.join(' ')}" fill="none" stroke="var(--primary)" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round"/>`;
+    if (bi > 0) s += `<line x1="${xc(bi - 1)}" y1="${y(cc[bi - 1])}" x2="${xc(bi)}" y2="${y(cc[bi])}" stroke="var(--primary)" stroke-width="5" stroke-linecap="round"/><circle cx="${xc(bi)}" cy="${y(cc[bi])}" r="4" fill="var(--card)" stroke="var(--primary)" stroke-width="2"/>`;
+    /* labels: the busiest bucket sits above its marker, or above-left when it is near the end so it clears the closing label */
+    const nearEnd = bi >= n - 3;
+    if (bi >= 0 && bi !== last) s += `<text class="peak-label" x="${nearEnd ? xc(bi) - 7 : xc(bi)}" y="${y(cc[bi]) - 11}" text-anchor="${nearEnd ? 'end' : 'middle'}" font-size="11.5" font-weight="600" fill="var(--fg)">+${fmt(m.cur[bi])}${phone() ? '' : ` <tspan font-weight="400" fill="var(--muted-fg)">busiest ${unit}</tspan>`}</text>`;
+    s += `<circle cx="${xc(last)}" cy="${y(cc[last])}" r="4" fill="var(--primary)"/><text x="${xc(last) - 8}" y="${y(cc[last]) - 9}" text-anchor="end" font-size="12" font-weight="600" fill="var(--fg)">${fmt(last === n - 1 ? m.total : cc[last])}${live ? ' now' : ''}</text>`;
+    /* the comparison's closing figure is labelled only while the period is live; a finished period already says it in the hero line */
+    if (!phone() && live) s += `<text x="${xc(n - 1)}" y="${y(cp[n - 1]) - 7}" text-anchor="end" font-size="11" fill="var(--muted-fg)">${fmt(cp[n - 1])} ${esc(refLabel())}${RS.gran === 'day' ? ', all day' : ', whole ' + RS.gran}</text>`;
+  }
+  s += axis() + hits() + `</svg>`;
+  const tip = RS.tip != null ? (() => { const i = RS.tip, cum = a => sum(a.slice(0, i + 1)); return `<div class="tip" style="left:${xc(i) / W * 100}%;top:0">${run ? `<b>${fmt(cum(m.cur))}</b> so far · ${fmt(cum(m.prev))} ${esc(refLabel())}` : `<b>${fmt(m.cur[i])}</b> · ${fmt(m.prev[i])} ${esc(refLabel())}`}</div>`; })() : '';
   const busy = m.busiest ? (RS.gran === 'day' ? `Busiest hour <b>${esc(m.busiest.label)}</b>, ${fmt(m.busiest.val)} from ${m.busiest.n} order${m.busiest.n === 1 ? '' : 's'}` : `Best day <b>${esc(m.busiest.label)}</b>, ${fmt(m.busiest.val)}`) : 'Nothing sold yet';
-  return `<div class="chart" data-unit="${RS.gran}" style="position:relative">${tip}${s}<div class="cap"><span>${busy}</span><span class="lg" style="margin-left:auto"><i style="background:var(--primary)"></i>${esc(periodTitle(RS.gran, RS.off))}</span><span class="lg"><i style="background:var(--border)"></i>${esc(refLabel())}</span></div></div>`;
+  const seg = `<span class="segt chart-mode" role="tablist" aria-label="Chart"><button role="tab" aria-selected="${!run}" class="press ${run ? '' : 'on'}" data-act="chart" data-v="hour">By ${unit}</button><button role="tab" aria-selected="${run}" class="press ${run ? 'on' : ''}" data-act="chart" data-v="run">Running total</button></span>`;
+  const legend = run
+    ? `<span class="lg"><i class="line"></i>${esc(periodTitle(RS.gran, RS.off))}</span><span class="lg"><i class="dash"></i>${esc(refLabel())}${phone() && live ? `, ${fmt(sum(m.prev))} all ${unit === 'hour' ? 'day' : RS.gran}` : ''}</span>`
+    : `<span class="lg"><i style="background:var(--primary)"></i>${esc(periodTitle(RS.gran, RS.off))}</span><span class="lg"><i class="dash"></i>${esc(refLabel())}</span>${live ? `<span class="lg"><i style="background:var(--muted)"></i>still to come</span>` : ''}`;
+  return `<div class="chart" data-unit="${RS.gran}" data-mode="${RS.chart}"><div class="chart-head"><span>${busy}</span><span class="grow"></span>${seg}</div><div class="chart-plot">${tip}${s}</div><div class="cap"><span class="grow"></span>${legend}</div></div>`;
 }
 function tiles(m) {
   const T=m.total, top=Object.entries(m.byCashier).sort((a,b)=>b[1]-a[1])[0];
@@ -1736,6 +1768,7 @@ function click(e) {
   switch (a) {
     case 'openSheet': RS.sheet=el.dataset.sheet; break;
     case 'closeSheet': RS.sheet=null; break;
+    case 'chart': RS.chart=v; RS.tip=null; break;
     case 'recount': RS.sheet='recount'; RS.reason=''; RS.counted=''; RS.pieces={}; RS.denominations=false; break;
     case 'denominations': RS.denominations=!RS.denominations; break;
     case 'denomination': RS.pieces[v]=(RS.pieces[v]||0)+1; RS.counted=sum(Object.entries(RS.pieces),([v,n])=>+v*n).toFixed(2); break;
@@ -1784,7 +1817,7 @@ function toast(msg){RS.sheet='result';RS.result=msg;}
 const SCENES=[['today','Sales · today'],['last-week','Sales · last week'],['excluded','Sales · orders left out'],['date','Sales · date menu open'],['scope','Sales · scope chip open'],['payments','Sales · Payments panel'],['orders','Sales · Orders panel'],['session','Closures · session open'],['closed','Closures · register closed'],['closure','Closures · closure open'],['recount','Closures · recount sheet'],['empty','Closures · empty'],['loading','Loading'],['offline','Offline'],['offline-recount','Offline · recount'],['free-sales','Free · Sales'],['free-closures','Free · Closures'],['bell','Bell panel'],['error','Closures · error']];
 function jump(scn){
   S.scn=scn;
-  Object.assign(RS,{view:'sales',online:true,regOpen:true,gran:'day',off:0,register:'front',store:'uk',cashier:'all',status:'done',unticked:new Set(),detail:null,closure:null,xreport:false,tpl:'default',pop:null,hint:null,tip:null,sheet:null,loading:false,empty:false,error:false,reason:'',counted:'',pieces:{},denominations:false});
+  Object.assign(RS,{view:'sales',online:true,regOpen:true,gran:'day',off:0,register:'front',store:'uk',cashier:'all',status:'done',unticked:new Set(),detail:null,closure:null,xreport:false,tpl:'default',chart:'hour',pop:null,hint:null,tip:null,sheet:null,loading:false,empty:false,error:false,reason:'',counted:'',pieces:{},denominations:false});
   Object.keys(ORD_CACHE).forEach(k=>delete ORD_CACHE[k]);
   if(['last-week','closure','recount','offline-recount','error'].includes(scn))S.plan='pro';
   if(['session','closed','closure','recount','empty','free-closures','offline-recount','error'].includes(scn))RS.view='closures';

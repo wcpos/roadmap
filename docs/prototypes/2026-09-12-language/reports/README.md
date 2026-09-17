@@ -8,6 +8,20 @@ No server or build is needed; the dark control strip is not part of the design.
 **Question it answers:** can the decided Sales glance and shipped Closures paperwork read as
 another room in the register's language, at phone, tablet and desktop widths?
 
+## The chart (component review, 2026-09-17)
+
+Paul started the component-by-component review with the hero chart. `chart-variants.html`
+holds the eight drawings that led here (A the ghost bars as drawn, B–G the alternatives from
+the Mobbin references: Strava's busiest-hour callout, Midday's dashed comparison, Monzo,
+Chase, Shopify's compare, Eight Sleep's pairs, H the result). Decided: one chart, two views
+behind a toggle in the chart head. **By hour** (By day on a week or month): the period's bars,
+the busiest one full-colour with its amount, the comparison as a dashed line, buckets still to
+come as faint bars of the comparison. **Running total**: the cumulative line against the
+comparison's, the busiest bucket as the thick segment, the closing figure and the comparison's
+whole-period figure labelled. Tax is not on the chart: the 1.10.x chart stacked the tax slice on
+every bar, and that answers no hour-by-hour question; tax has the Taxes tile and the summary.
+The toggle is remembered until the next State preset (`RS.chart`).
+
 ## What changed from 2026-09-14
 
 - Copied the register's tokens, controls, rail, page bar, notification panel, side-panel and

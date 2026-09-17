@@ -45,11 +45,12 @@ const checks = {
       for (const s of STATES) {
         await scn(s);
         assert(await page.locator(checks[s]).count(), `${w}/${theme}/${scale}/${s}: distinguishing element missing`);
-        if (['today','last-week'].includes(s)) assert(await page.locator('.ghost-bar').count(), 'comparison ghost bars missing');
-        if (s === 'today') assert.equal(await page.locator('.ghost-bar.future').count(), 2, 'future hours missing');
+        if (['today','last-week'].includes(s)) assert(await page.locator('.ref-line').count(), 'comparison line missing');
+        if (s === 'today') assert.equal(await page.locator('.future-bar').count(), 2, 'hours still to come missing');
         if (['today','last-week'].includes(s)) {
           assert(await page.locator('.bars rect:not(.hit)').evaluateAll(bars => bars.every(b => b.getBoundingClientRect().width <= 40.1)), 'bar exceeds 40 px');
-          assert(await page.locator('.ghost-bar').evaluateAll(bars => bars.every(b => b.nextElementSibling.classList.contains('hit') || b.getAttribute('width') === b.nextElementSibling.getAttribute('width'))), 'ghost/current width mismatch');
+          assert.equal(await page.locator('.peak-label').count(), 1, 'busiest hour not labelled on the chart');
+          assert.equal(await page.locator('.chart-mode button.on').textContent(), s === 'today' ? 'By hour' : 'By day');
           assert.equal(await page.locator('.delta svg').count(), 0, 'delta has a glyph');
         }
         if (s === 'session') {
@@ -77,7 +78,7 @@ const checks = {
           const row = await page.locator('[data-act="hint"][data-v="closures"]').first().boundingBox(), pop = await page.locator('.pop').boundingBox();
           assert(Math.abs(pop.x-row.x)<1 && Math.abs(pop.y-row.y-row.height-6)<1 && Math.abs(pop.width-row.width)<1, 'gate is not under full locked row');
         }
-        if (s === 'last-week') assert.equal(await page.locator('.ghost-bar').count(), 7, 'week must have seven day buckets');
+        if (s === 'last-week') assert.equal(await page.locator('.cur-bar').count(), 7, 'week must have seven day buckets');
         if (s.startsWith('free-')) {
           assert.equal(await page.locator('[data-testid="reports-lock-hint"]').textContent(), s === 'free-sales' ? 'Earlier days are in WCPOS Pro' : 'Earlier closures are in WCPOS Pro');
           assert.equal(await page.locator('.gate-action').textContent(), 'See Pro');
@@ -107,6 +108,11 @@ const checks = {
     assert.notEqual(await page.locator('.hero .big').textContent(), total, 'unticking must change totals');
     await page.click('[data-act="resetTicks"]');
     assert.equal(await page.locator('.hero .big').textContent(), total);
+    await page.click('[data-act="chart"][data-v="run"]');   // the chart toggle (Paul 2026-09-17)
+    assert.equal(await page.locator('.run-line').count(), 1, 'running total did not draw');
+    assert.equal(await page.locator('.chart-mode button.on').textContent(), 'Running total');
+    await page.click('[data-act="chart"][data-v="hour"]');
+    assert.equal(await page.locator('.cur-bar').count(), 9, 'hour bars did not come back');
     await scn('free-closures'); await page.click('.popwrap', { position: { x: 1, y: 1 } });
     const locked = page.locator('[data-act="hint"][data-v="closures"]').nth(1);
     await locked.scrollIntoViewIfNeeded();

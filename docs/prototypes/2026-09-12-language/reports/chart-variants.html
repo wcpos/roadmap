@@ -45,11 +45,12 @@ svg.bars text{font-family:var(--font)}
 .tipwrap{position:relative}.tip{position:absolute;z-index:2;background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);padding:calc(var(--u)*2) calc(var(--u)*3);font-size:calc(var(--fs)*.9);pointer-events:none;white-space:nowrap;box-shadow:0 4px 16px oklch(0 0 0 / .12)}
 .tip .t{font-weight:600;margin-bottom:2px}.tip .r{display:flex;justify-content:space-between;gap:calc(var(--u)*5);color:var(--muted-fg)}.tip .r b{color:var(--fg);font-weight:500}
 .hit{cursor:crosshair}
+.segt{display:inline-flex;border:var(--hair) solid var(--border);border-radius:var(--r);overflow:hidden;height:max(36px,var(--floor));background:var(--card);align-self:center}.segt button{padding:0 calc(var(--u)*2.5);color:var(--muted-fg);font-weight:500;font-size:calc(var(--fs)*.93)}.segt button.on{background:var(--muted);color:var(--fg);font-weight:600}.segt button+button{border-left:var(--hair) solid var(--border)}
 </style>
 <div class="strip">
   <span><b>Theme</b><span class="seg"><button class="on" data-set="theme" data-v="light">Light</button><button data-set="theme" data-v="dark">Dark</button></span></span>
   <span><b>Width</b><span class="seg"><button class="on" data-set="w" data-v="desktop">Desktop</button><button data-set="w" data-v="phone">Phone</button></span></span>
-  <span><b>Show</b><span class="seg"><button class="on" data-set="only" data-v="all">All</button><button data-set="only" data-v="A">A</button><button data-set="only" data-v="B">B</button><button data-set="only" data-v="C">C</button><button data-set="only" data-v="D">D</button><button data-set="only" data-v="E">E</button><button data-set="only" data-v="F">F</button><button data-set="only" data-v="G">G</button></span></span>
+  <span><b>Show</b><span class="seg"><button class="on" data-set="only" data-v="all">All</button><button data-set="only" data-v="A">A</button><button data-set="only" data-v="B">B</button><button data-set="only" data-v="C">C</button><button data-set="only" data-v="D">D</button><button data-set="only" data-v="E">E</button><button data-set="only" data-v="F">F</button><button data-set="only" data-v="G">G</button><button data-set="only" data-v="H">H</button></span></span>
 </div>
 <div class="stage" id="stage"></div>
 <script>
@@ -63,7 +64,7 @@ const sum=a=>a.reduce((s,x)=>s+x,0);
 const fmt=n=>'£'+Math.abs(n).toFixed(2);
 const total=sum(CUR), prevRef=sum(PREV.filter((_,i)=>HOURS[i]<=NOWH));
 const peak=CUR.indexOf(Math.max(...CUR));
-const S={theme:'light',w:'desktop',only:'all',tip:null};
+const S={theme:'light',w:'desktop',only:'H',tip:null,mode:'hour'};
 const I={print:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17h2a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2"/><path d="M17 9V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v4"/><rect x="7" y="13" width="10" height="8" rx="2"/></svg>',
  chevd:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>'};
 
@@ -162,6 +163,12 @@ function chartF(withBars=true){
   s+=axis(g,every())+hits(g,withBars?'F':'G')+'</svg>';
   return `<div class="head"><b>Running total</b><span>ahead of last Monday since 11am${phone()?'':` · busiest ${label(HOURS[peak])}, ${ORDERS_AT[HOURS[peak]]} orders`}</span></div>`+s+`<div class="cap"><span class="grow"></span><span class="lg"><i class="line"></i>Today</span>${withBars?`<span class="lg"><i style="background:var(--primary);opacity:.3"></i>by hour</span>`:''}<span class="lg"><i class="dash"></i>last Monday${phone()?`, ${fmt(cp[11])} all day`:''}</span></div>`;
 }
+/* H · one chart, two views (Paul 2026-09-17: "an easy toggle for sales by the hour vs running total") */
+function chartH(){
+  const seg=`<span class="segt" style="margin-left:auto"><button class="${S.mode==='hour'?'on':''}" data-set="mode" data-v="hour">By hour</button><button class="${S.mode==='run'?'on':''}" data-set="mode" data-v="run">Running total</button></span>`;
+  const body=S.mode==='hour'?chartB():chartF(false);
+  return body.replace('</div>',`${seg}</div>`).replaceAll('data-v="B"','data-v="H"').replaceAll('data-v="G"','data-v="H"');
+}
 const VARIANTS=[
  ['A','As drawn','ghost bars behind, busiest hour in the caption. The baseline.',chartA],
  ['B','Peak on the bar, dashed reference','Strava’s busiest-hour callout + Midday’s comparison line; hours still to come as faint bars. My pick.',chartB],
@@ -170,10 +177,11 @@ const VARIANTS=[
  ['E','Running total','Shopify’s compare: cumulative lines, so ahead-or-behind is visible at every hour, not just in the chip.',chartE],
  ['F','Running total + the hours','E with B’s information: faint hourly bars under the line on their own scale, the busiest hour full-colour and marked on the line, last Monday dashed to close.',()=>chartF(true)],
  ['G','Running total, busiest hour marked','F without the bars: the busiest hour is the thick segment of the line.',()=>chartF(false)],
+ ['H','One chart, two views','B and G behind a toggle in the chart head. This is what went into the register prototype.',chartH],
 ];
 function tip(){
   if(!S.tip) return ''; const {v,i,x,y}=S.tip, h=HOURS[i];
-  const rows=['E','F','G'].includes(v)?[['Today so far',h>NOWH?'—':fmt(sum(CUR.slice(0,i+1)))],['Last Monday so far',fmt(sum(PREV.slice(0,i+1)))],...(v!=='G'&&h<=NOWH?[['This hour',fmt(CUR[i])+(ORDERS_AT[h]?` · ${ORDERS_AT[h]} order${ORDERS_AT[h]>1?'s':''}`:'')]]:[])]:[['Today',h>NOWH?'—':fmt(CUR[i])+(ORDERS_AT[h]?` · ${ORDERS_AT[h]} order${ORDERS_AT[h]>1?'s':''}`:'')],['Last Monday',fmt(PREV[i])]];
+  const rows=['E','F','G'].includes(v)||(v==='H'&&S.mode==='run')?[['Today so far',h>NOWH?'—':fmt(sum(CUR.slice(0,i+1)))],['Last Monday so far',fmt(sum(PREV.slice(0,i+1)))],...(v!=='G'&&h<=NOWH?[['This hour',fmt(CUR[i])+(ORDERS_AT[h]?` · ${ORDERS_AT[h]} order${ORDERS_AT[h]>1?'s':''}`:'')]]:[])]:[['Today',h>NOWH?'—':fmt(CUR[i])+(ORDERS_AT[h]?` · ${ORDERS_AT[h]} order${ORDERS_AT[h]>1?'s':''}`:'')],['Last Monday',fmt(PREV[i])]];
   return `<div class="tip" style="left:${x}px;top:${y}px"><div class="t">${label(h)}–${label(h+1)}</div>${rows.map(([l,n])=>`<div class="r"><span>${l}</span><b>${n}</b></div>`).join('')}</div>`;
 }
 function render(){
