@@ -156,6 +156,14 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     totals (today's place, a hairline quieter), the last row of the cart, or a chip beside the
     customer; a tap on any opens the details slide-out where it is edited. Recommendation: the
     row. Not decided.
+
+45. **Dark Stage out; icons follow the theme (Paul, 2026-09-17).** Dark Stage is gone from the
+    register, too close to the default dark. The icon set is a rule of the theme now, not a
+    switch: Tabler at 1.5 px on the default themes, Hugeicons on Market stall and Warm shop.
+    Which sets had every icon (from `docs/design/2026-09-16-icon-set-research.md`, 133 names in
+    the app): Tabler 131 direct and the other two under other names; Hugeicons 132; Phosphor 126
+    (no cart-plus / cart-check pair); Solar 114; Iconoir 115; Streamline Plump 91 of its free
+    subset. Only Tabler and Hugeicons cover the app.
     (c) **chips** — pills, the current one filled; reads as a filter row rather than tabs;
     (d) **cards** — small cards with amount, customer and status, current with a primary top
     edge; the most information, the tallest;

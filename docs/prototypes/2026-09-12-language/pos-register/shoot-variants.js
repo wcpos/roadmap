@@ -22,7 +22,7 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   for (const n of ['row', 'line', 'chip']) { await set('note', n); await scn('open'); await shot(`note-${n}`); if (!(await page.locator('.onote, .nline, .chip.notechip').count())) throw new Error('note not drawn: ' + n); }
   await set('note', 'row');
   // the personality themes, session open
-  for (const th of ['paper', 'bold', 'warm', 'market', 'stage']) { await set('theme', th); await scn('open'); await page.waitForTimeout(300); await shot(`theme-${th}`); }
+  for (const th of ['paper', 'bold', 'warm', 'market']) { await set('theme', th); await scn('open'); await page.waitForTimeout(300); await shot(`theme-${th}`); }
   await set('theme', 'light');
   // the touches: after (all on) and before (all off), in three states; the whimsical ones under Market Stall too
   const flip = (v) => page.click(`.strip button[data-txall="${v}"]`);
@@ -39,8 +39,6 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   await flip('0'); await page.waitForTimeout(300); const before = await page.locator('#frame .paidwrap').innerHTML(); await flip('1');
   if (after === before) errors.push('before/after did not change the paid screen: ' + after);
   // the icon sets, session open
-  for (const k of ['hugeicons','lucide']) { await set('icons', k); await scn('open'); await shot(`icons-${k}`); }
-  await set('icons', 'tabler-15');
   // the table: filter bar, the row as the button, the count, the footer
   await scn('open'); await page.click('[data-act="toggleView"]'); await shot('table-bar-footer');
   await page.click('.tr.rowbtn[data-n="Cold brew"]'); await page.waitForTimeout(200); await page.click('.tr.rowbtn[data-n="Cold brew"]'); await page.waitForTimeout(200); await shot('table-row-tapped-twice');
