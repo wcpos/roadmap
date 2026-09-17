@@ -1448,7 +1448,7 @@ const RS = {
   cmp: ['lastweek','yesterday'].includes(Q.get('cmp')) ? Q.get('cmp') : 'yesterday',
   register:'front', store:'uk', cashier:'all',
   unticked: new Set(), detail: null, closure: null, xreport: false, tpl:'default', chart:'hour',   /* 'hour' | 'run' (Paul 2026-09-17: an easy toggle) */
-  pop: null, hint: null, tip: null, frameH: 780, calMonth: 0, pickStart: null, merch: 'products',
+  pop: null, hint: null, tip: null, frameH: 780, calMonth: 0, pickStart: null, merch: 'products', where: 'channels',
   layout: 'panels',   /* Paul 2026-09-17 ("surely we can do better", Mobbin: Vercel, Framer, Lloyds, Revolut): the content of each report inline, a few rows deep, with share bars; 'list' and 'tiles' kept to compare. Closures is one more kind of information, not a different room; the tiles go, one list of reports under the chart */
 };
 
@@ -1757,7 +1757,7 @@ function chartSeg() {
 }
 function reportRows(m) {
   const T=m.total, top=Object.entries(m.byCashier).sort((a,b)=>b[1]-a[1])[0];
-  return [['payments','Payments',fmt(m.byMethod.Card||0),'Card · Cash '+fmt(m.byMethod.Cash||0)],['channels','In store · Online',fmt(m.byChannel['In store']||0),'Online '+fmt(m.byChannel.Online||0)],['products','Top products',fmt(T*.16),'Oat flat white'],['cashiers','Cashiers',fmt(top?.[1]||0),top?.[0]||'No sales'],...(RS.register==='all'?[['registers','Registers',fmt(T*.86),'Front till · 86%']]:[]),['categories','Categories',fmt(T*.41),'Coffee'],['taxes','Taxes',fmt(m.tax),'VAT 20% · VAT 5%'],['orders','Orders',m.orders,'Largest '+fmt(m.t.length?Math.max(...m.t.map(o=>o.total)):0)],['refunds','Refunds',fmt(0),'None in the period'],['cash','Cash movements',fmt(150)+' out','To bank at 15:40'],['deposits','Deposits',RS.online?fmt(T*.08):'Unavailable offline',RS.online?Math.max(1,Math.round(m.orders/6))+' deposits taken':'Comes from the server']];
+  return [['payments','Payments',fmt(m.byMethod.Card||0),'Card · Cash '+fmt(m.byMethod.Cash||0)],['channels','In store · Online',fmt(m.byChannel['In store']||0),'Online '+fmt(m.byChannel.Online||0)],['products','Top products',fmt(T*.16),'Oat flat white'],['cashiers','Cashiers',fmt(top?.[1]||0),top?.[0]||'No sales'],...(RS.register==='all'?[['registers','Registers',fmt(T*.86),'Front till · 86%']]:[]),['categories','Categories',fmt(T*.41),'Coffee'],['taxes','Taxes',fmt(m.tax),`VAT 20% ${fmt(r2(m.tax*.958))} · VAT 5% ${fmt(r2(m.tax-r2(m.tax*.958)))}`],['orders','Orders',m.orders,'Largest '+fmt(m.t.length?Math.max(...m.t.map(o=>o.total)):0)],['refunds','Refunds',fmt(0),'None in the period'],['cash','Cash movements',fmt(150)+' out','To bank at 15:40'],['deposits','Deposits',RS.online?fmt(T*.08):'Unavailable offline',RS.online?Math.max(1,Math.round(m.orders/6))+' deposits taken':'Comes from the server']];
 }
 /* Paul 2026-09-17: what does a cashier or owner come here to do? Below the chart, one list in that order: the orders behind the figure,
    the payments split (to reconcile the till and the card batch), the till's closures, then the accountant's and the owner's reports. */
@@ -1766,14 +1766,24 @@ function reportRows(m) {
 function reportPanels(m) {
   const T = m.total || 1;
   const bar = (label, val, share, sub = '', extra = '') => `<div class="br"><span class="l">${label}</span><span class="r">${val}</span><i class="sh"><b style="width:${Math.max(2, Math.round(share * 100))}%"></b></i><span class="s">${pct(share)}${sub ? ' · ' + sub : ''}</span>${extra}</div>`;
+  /* Paul 2026-09-17: pick the picture by the shape of the data. Parts of a whole (payments, channels, categories, registers) are a donut
+     with its rows; ranked magnitudes (products, cashiers) are bars; change over time is the hero chart; ledger figures (taxes) are numbers. */
+  const TONE = [1, .62, .38, .2, .12];
+  const donut = (parts) => { const tot = sum(parts, p => p[1]) || 1, R = 34, C = 2 * Math.PI * R; let acc = 0;
+    const arcs = parts.map((p, i) => { const sh = p[1] / tot, a = `<circle r="${R}" cx="44" cy="44" fill="none" stroke="var(--primary)" stroke-opacity="${TONE[i] ?? .1}" stroke-width="12" stroke-dasharray="${(C * sh).toFixed(2)} ${C.toFixed(2)}" stroke-dashoffset="${(-C * acc).toFixed(2)}" transform="rotate(-90 44 44)"/>`; acc += sh; return a; }).join('');
+    return `<div class="cats"><svg class="donut" viewBox="0 0 88 88" aria-hidden="true">${arcs}<text x="44" y="48" text-anchor="middle" font-size="12" font-weight="600" fill="var(--fg)">${pct(parts[0][1] / tot)}</text></svg><div class="crs">${parts.map((p, i) => `<div class="cr"><i class="sw" style="opacity:${TONE[i] ?? .1}"></i><span class="l">${p[0]}${p[2] ? `<span class="mut"> · ${p[2]}</span>` : ''}</span><span class="r">${fmt(p[1])}</span><span class="s">${pct(p[1] / tot)}</span></div>`).join('')}</div></div>`; };
   const panel = (k, name, fig, body, foot = '') => `<section class="rp-panel" data-k="${k}"><button class="ph press" data-act="detail" data-v="${k}"><span class="n">${name}</span><span class="v">${fig}</span>${I.chev}</button><div class="pb">${body}</div>${foot}</section>`;
   const out = [];
-  /* Orders: the last three, then the count; the report is the full list with the tick boxes */
-  { const last = [...m.t].sort((a, b) => a.time < b.time ? 1 : -1).slice(0, 3);
-    out.push(panel('orders', 'Orders', m.orders, last.map(o => `<div class="or"><span class="l">#${o.n}<span class="mut"> · ${o.time} · ${esc(o.cashier)}</span></span><span class="r">${fmt(o.total)}</span></div>`).join('') || '<div class="mut sm">No orders yet</div>', last.length ? `<div class="pf-more mut sm">${m.orders > 3 ? `and ${m.orders - 3} more · ` : ''}discounts ${fmt(r2(T * .011))}</div>` : '')); }   /* audit 2026-09-17: discounts are an order field, so they sit with the orders */
+  /* Orders: what the baskets look like (Paul 2026-09-17: a list of three orders gives nothing). A distribution, so bars: how many orders
+     fell in each size band and what they added up to; the largest named; the head opens the full list with the tick boxes. */
+  { const bands = [['Under £25', 0, 25], ['£25 to £50', 25, 50], ['£50 to £100', 50, 100], ['Over £100', 100, Infinity]];
+    const rows = bands.map(([l, a, b]) => { const os = m.t.filter(o => o.total >= a && o.total < b); return [l, os.length, sum(os, o => o.total)]; });
+    const big = m.t.length ? m.t.reduce((a, o) => o.total > a.total ? o : a) : null;
+    out.push(panel('orders', 'Orders', m.orders, m.orders ? rows.map(([l, n, amt]) => bar(l, `${n} order${n === 1 ? '' : 's'}`, n / m.orders, `${fmt(amt)} · ${pct(amt / T)} of sales`)).join('') : '<div class="mut sm">No orders yet</div>',
+      big ? `<div class="pf-more mut sm">Largest #${big.n} ${fmt(big.total)} · discounts ${fmt(r2(T * .011))}</div>` : '')); }
   /* Payments: the till and the card batch */
   { const ks = Object.keys(m.byMethod).sort((a, b) => m.byMethod[b] - m.byMethod[a]);
-    out.push(panel('payments', 'Payments', fmt(m.total), ks.map(k => bar(esc(k), fmt(m.byMethod[k]), m.byMethod[k] / T, `${m.cntMethod[k]} order${m.cntMethod[k] === 1 ? '' : 's'}`)).join('') || '<div class="mut sm">No payments yet</div>')); }
+    out.push(panel('payments', 'Payments', fmt(m.total), ks.length ? donut(ks.map(k => [esc(k), m.byMethod[k], `${m.cntMethod[k]} order${m.cntMethod[k] === 1 ? '' : 's'}`])) : '<div class="mut sm">No payments yet</div>')); }
   /* Closures: the till now, then the period's closures */
   { const cl = closureRows(), open = RS.regOpen && RS.register !== 'back';
     const head = open ? `<div class="or wrap"><span class="l">${esc(REGISTERS[0].name)} <span class="st ok"><i></i>Open</span><span class="mut"> · since ${OPEN_SESSION.open} by ${OPEN_SESSION.by}</span></span><span class="r">${fmt(OPEN_SESSION.expected)}<span class="mut"> expected</span></span></div>` : '';
@@ -1785,20 +1795,19 @@ function reportPanels(m) {
     const seg = `<span class="segt mini" role="tablist" aria-label="What sold"><button role="tab" aria-selected="${RS.merch !== 'categories'}" class="press ${RS.merch !== 'categories' ? 'on' : ''}" data-act="merch" data-v="products">Products</button><button role="tab" aria-selected="${RS.merch === 'categories'}" class="press ${RS.merch === 'categories' ? 'on' : ''}" data-act="merch" data-v="categories">Categories</button></span>`;
     let body;
     if (RS.merch === 'categories') {
-      const R = 34, C = 2 * Math.PI * R; let acc = 0;
-      const arcs = cats.map(([n, sh], i) => { const a = `<circle r="${R}" cx="44" cy="44" fill="none" stroke="var(--primary)" stroke-opacity="${tone[i]}" stroke-width="12" stroke-dasharray="${(C * sh).toFixed(2)} ${C.toFixed(2)}" stroke-dashoffset="${(-C * acc).toFixed(2)}" transform="rotate(-90 44 44)"/>`; acc += sh; return a; }).join('');
-      const donut = `<svg class="donut" viewBox="0 0 88 88" aria-hidden="true">${arcs}<text x="44" y="48" text-anchor="middle" font-size="13" font-weight="600" fill="var(--fg)">${cats.length}</text></svg>`;
-      body = `<div class="cats">${donut}<div class="crs">${cats.map(([n, sh], i) => `<div class="cr"><i class="sw" style="opacity:${tone[i]}"></i><span class="l">${n}</span><span class="r">${fmt(r2(T * sh))}</span><span class="s">${pct(sh)}</span></div>`).join('')}</div></div>`;
+      body = donut(cats.map(([n, sh]) => [n, r2(T * sh)]));
     } else body = PRODUCTS.slice(0, 4).map(([n, sh]) => bar(esc(n), fmt(r2(T * sh)), sh, `${Math.max(1, Math.round(m.items * sh * 1.1))} sold`)).join('');
     out.push(`<section class="rp-panel" data-k="${RS.merch === 'categories' ? 'categories' : 'products'}"><div class="ph"><button class="press n" data-act="detail" data-v="${RS.merch === 'categories' ? 'categories' : 'products'}">${RS.merch === 'categories' ? 'Categories' : 'Top products'}</button>${seg}<button class="press v" data-act="detail" data-v="${RS.merch === 'categories' ? 'categories' : 'products'}" aria-label="Open">${I.chev}</button></div><div class="pb">${body}</div></section>`); }
   /* Cashiers */
   { const ks = Object.keys(m.byCashier).sort((a, b) => m.byCashier[b] - m.byCashier[a]);
     out.push(panel('cashiers', 'Cashiers', ks.length, ks.map(k => bar(`<span class="avi">${k[0]}</span>${esc(k)}`, fmt(m.byCashier[k]), m.byCashier[k] / T, `${m.cntCashier[k]} order${m.cntCashier[k] === 1 ? '' : 's'}`)).join('') || '<div class="mut sm">No sales yet</div>')); }
-  /* Taxes */
-  { const t20 = r2(m.tax * .958), t5 = r2(m.tax - t20);
-    out.push(panel('taxes', 'Taxes', fmt(m.tax), bar('VAT 20%', fmt(t20), m.tax ? t20 / m.tax : 0, `on ${fmt(r2(t20 * 5))}`) + bar('VAT 5%', fmt(t5), m.tax ? t5 / m.tax : 0, `on ${fmt(r2(t5 * 20))}`))); }
+  /* Where sold: In store · Online as parts of a whole; Registers is its second view when all registers are shown */
+  { const two = RS.register === 'all', regs = two && RS.where === 'registers', k = regs ? 'registers' : 'channels';
+    const seg = two ? `<span class="segt mini" role="tablist" aria-label="Where sold"><button role="tab" aria-selected="${!regs}" class="press ${regs ? '' : 'on'}" data-act="where" data-v="channels">Channel</button><button role="tab" aria-selected="${regs}" class="press ${regs ? 'on' : ''}" data-act="where" data-v="registers">Registers</button></span>` : '';
+    const parts = regs ? [['Front till', r2(T * .86), `${Math.round(m.orders * .86)} orders`], ['Back office', r2(T * .14), `${m.orders - Math.round(m.orders * .86)} orders`]] : ['In store', 'Online'].filter(c => m.byChannel[c]).map(c => [c, m.byChannel[c], `${m.cntChannel[c]} order${m.cntChannel[c] === 1 ? '' : 's'}`]);
+    out.push(`<section class="rp-panel" data-k="${k}"><div class="ph"><button class="press n" data-act="detail" data-v="${k}">${regs ? 'Registers' : 'In store · Online'}</button>${seg}<button class="press v" data-act="detail" data-v="${k}" aria-label="Open">${I.chev}</button></div><div class="pb">${parts.length ? donut(parts) : '<div class="mut sm">No sales yet</div>'}</div></section>`); }
   /* the rest as one plain list: the monthly look */
-  const rest = reportRows(m).filter(([k]) => ['refunds', 'channels', 'registers'].includes(k));   /* audit 2026-09-17: Deposits has no source anywhere and goes; cash movements live in Closures; discounts in Orders */
+  const rest = reportRows(m).filter(([k]) => ['taxes', 'refunds'].includes(k));   /* taxes are figures for the return, not a chart */   /* audit 2026-09-17: Deposits has no source anywhere and goes; cash movements live in Closures; discounts in Orders */
   const more = `<div class="rlist more">${rest.map(([k, l, n, line]) => `<button class="rrow press" data-act="detail" data-v="${k}" ${k === 'deposits' && !RS.online ? 'disabled' : ''}><span class="rn">${l}</span><span class="rs">${line}</span><span class="rv">${n}</span>${I.chev}</button>`).join('')}</div>`;
   return `<div class="rp-panels">${out.join('')}</div>${more}`;
 }
@@ -1996,6 +2005,7 @@ function click(e) {
     case 'closeSheet': RS.sheet=null; break;
     case 'chart': RS.chart=v; RS.tip=null; break;
     case 'merch': RS.merch=v; break;
+    case 'where': RS.where=v; break;
     case 'recount': RS.sheet='recount'; RS.reason=''; RS.counted=''; RS.pieces={}; RS.denominations=false; break;
     case 'denominations': RS.denominations=!RS.denominations; break;
     case 'denomination': RS.pieces[v]=(RS.pieces[v]||0)+1; RS.counted=sum(Object.entries(RS.pieces),([v,n])=>+v*n).toFixed(2); break;
@@ -2050,7 +2060,7 @@ function toast(msg){RS.sheet='result';RS.result=msg;}
 const SCENES=[['today','Sales · today'],['last-week','Sales · last week'],['excluded','Sales · orders left out'],['date','Sales · date menu open'],['scope','Sales · scope chip open'],['payments','Sales · Payments panel'],['orders','Sales · Orders panel'],['session','Closures · session open'],['closed','Closures · register closed'],['closure','Closures · closure open'],['recount','Closures · recount sheet'],['empty','Closures · empty'],['loading','Loading'],['offline','Offline'],['offline-recount','Offline · recount'],['free-sales','Free · Sales'],['free-closures','Free · Closures'],['bell','Bell panel'],['error','Closures · error']];
 function jump(scn){
   S.scn=scn;
-  Object.assign(RS,{view:'sales',online:true,regOpen:true,gran:'day',off:0,register:'front',store:'uk',cashier:'all',status:'done',unticked:new Set(),detail:null,closure:null,xreport:false,tpl:'default',chart:'hour',merch:'products',calMonth:0,pickStart:null,pop:null,hint:null,tip:null,sheet:null,loading:false,empty:false,error:false,reason:'',counted:'',pieces:{},denominations:false});
+  Object.assign(RS,{view:'sales',online:true,regOpen:true,gran:'day',off:0,register:'front',store:'uk',cashier:'all',status:'done',unticked:new Set(),detail:null,closure:null,xreport:false,tpl:'default',chart:'hour',merch:'products',where:'channels',calMonth:0,pickStart:null,pop:null,hint:null,tip:null,sheet:null,loading:false,empty:false,error:false,reason:'',counted:'',pieces:{},denominations:false});
   Object.keys(ORD_CACHE).forEach(k=>delete ORD_CACHE[k]);
   if(['last-week','closure','recount','offline-recount','error'].includes(scn))S.plan='pro';
   if(['session','closed','closure','recount','empty','free-closures','offline-recount','error'].includes(scn)){if(RS.layout==='list')RS.detail='closures';else RS.view='closures';}

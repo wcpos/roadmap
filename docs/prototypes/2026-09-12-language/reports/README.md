@@ -94,6 +94,22 @@ plugin-registered report and returns only when one registers); "voided" is gone 
 aggregate exists); Refunds stays as a row; In store · Online returns as a row. Under the six
 panels the list is now In store · Online, Refunds, and Registers under All registers.
 
+**Encodings (eighth pass, same day).** Paul: why isn't In store vs Online a pie chart; check the
+best way to represent each data. The rule, now applied to every panel: **parts of a whole get a
+donut** with its rows (Payments; In store · Online; Categories; Registers), **ranked
+magnitudes get bars** (Top products; Cashiers), **change over time is the hero chart**, and
+**ledger figures are plain numbers** (Taxes is a row again, "VAT 20% £198.08 · VAT 5%
+£8.68", because a chart adds nothing to what gets typed into the return). In store · Online
+is a panel ("Where sold") whose second view, under All registers, is Registers; the Registers
+row is gone. The donut's centre shows the largest share. Six panels: Orders, Payments,
+Closures, What sold, Cashiers, Where sold; two rows: Taxes, Refunds.
+
+**Orders (ninth pass, same day).** Paul: the Orders card is just a list of three orders, it
+gives nothing. Done: the panel shows the shape of the baskets, a distribution, so bars: how
+many orders fell under £25, £25 to £50, £50 to £100 and over £100, what each band added up to
+and its share of sales, the largest order named in the footer with the discounts. The head
+still opens the full list with the tick boxes.
+
 ## What changed from 2026-09-14
 
 - Copied the register's tokens, controls, rail, page bar, notification panel, side-panel and

@@ -59,7 +59,10 @@ const checks = {
           assert.equal(await page.locator('.rlist.more .rrow[data-v="deposits"], .rlist.more .rrow[data-v="cash"]').count(), 0, 'deposits and cash movements have no row (audit 2026-09-17)');
           assert.equal(await page.locator('.rp-panel[data-k="closures"] .or').count() >= 3, true, 'cash movements live in the Closures panel');
           assert.equal(await page.locator('.rp-panel[data-k="closures"]').count(), 1, 'Closures is a panel like the others');
-          assert(await page.locator('.rp-panel .br .sh b').count() >= 8, 'share bars');
+          assert(await page.locator('.rp-panel .br .sh b').count() >= 10, 'bars on the ranked panels');
+          assert.equal(await page.locator('.rp-panel[data-k="orders"] .br').count(), 4, 'orders as four size bands');
+          assert(await page.locator('.rp-panel svg.donut').count() >= 2, 'donuts on the parts-of-a-whole panels (Payments, Where sold)');
+          assert.equal(await page.locator('.rlist.more .rrow[data-v="taxes"]').count(), 1, 'taxes are a row of figures, not a chart');
         }
         if (s === 'session') {
           assert.equal(await page.locator('[data-p="overflow"][aria-label="More"]').count(), 1);
@@ -111,7 +114,7 @@ const checks = {
     await set('w','tablet'); await set('theme','light'); await set('scale','regular'); await scn('today');
     const total = await page.locator('.hero .big').textContent();
     await page.click('[data-act="merch"][data-v="categories"]');   // what sold: two views, the donut (audit 2026-09-17)
-    assert.equal(await page.locator('.rp-panel svg.donut').count(), 1, 'categories donut');
+    assert.equal(await page.locator('.rp-panel[data-k="categories"] svg.donut').count(), 1, 'categories donut');
     await page.click('[data-act="merch"][data-v="products"]');
     await page.click('.rp-panel[data-k="orders"] .ph');
     await page.locator('[data-act="tick"]').first().click();
@@ -155,7 +158,8 @@ const checks = {
     await page.click('.pop .cal .d[data-v="13"]'); await page.click('.pop .cal .d[data-v="0"]');   // 1–14 Sep on the calendar
     assert.equal(await page.locator('.chart').getAttribute('data-unit'), 'custom');
     await scn('scope'); await set('plan','pro'); await page.click('[data-act="register"][data-v="all"]');
-    assert(await page.locator('.rrow[data-v="registers"]').count(), 'All registers must add the Registers row');
+    assert.equal(await page.locator('[data-act="where"][data-v="registers"]').count(), 1, 'All registers must add the Registers view to Where sold');
+    await page.click('[data-act="where"][data-v="registers"]'); assert.equal(await page.locator('.rp-panel[data-k="registers"] svg.donut').count(), 1, 'registers donut');
     await scn('payments'); await page.selectOption('#template','thermal');
     assert(await page.locator('.docv.thermal').count(), 'template did not change document');
     await scn('bell'); await page.click('.bd.notif');
