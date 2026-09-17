@@ -68,6 +68,19 @@ the ⋮ export); a closure opened from it has a back arrow to the list; on the p
 page with the crumb. The other position, *Sales | Closures tabs + tiles (as drawn)*, stays for
 comparison and goes once he picks.
 
+**Panels (sixth pass, same day).** Paul: look on Mobbin, surely we can do better than the list.
+The references (Vercel, Framer, Featurebase and Lovable analytics on the web; Lloyds, Revolut,
+YNAB and Starling spending on the phone) all put the *content* of each report under the chart,
+three or four rows deep with a share bar, and nobody taps a name to see anything. Done, as the
+switch's third and default position, **panels**: six panels in the order of the jobs, each a
+head (name, figure, chevron, opens the whole report) over its first rows. Orders: the last
+three and "and 11 more". Payments: Card, Cash, PayPal with share bars and order counts.
+Closures: the till now (open since 13:00 by Dylan, £293.70 expected) then the period's
+closures with their drawer result. Top products, Cashiers, Taxes with bars. The five reports
+nobody reads daily (Categories, Refunds and discounts, Cash movements, Deposits, Registers
+when all) sit under the panels as the plain list. Three across on desktop, two on tablet, one
+on the phone. My pick; the list and the tiles stay behind the switch until he chooses.
+
 ## What changed from 2026-09-14
 
 - Copied the register's tokens, controls, rail, page bar, notification panel, side-panel and

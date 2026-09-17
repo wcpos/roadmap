@@ -21,7 +21,7 @@ const checks = {
   orders: '.detail input[data-act="tick"]', session: '[data-testid="session-expected"]',
   closed: '[data-testid="session-reprint"]', closure: '[data-testid="closure-settled"]',
   recount: '#recount-reason', empty: '[data-testid="closures-empty"]', loading: '.skeleton',
-  offline: '.rrow[data-v="deposits"][disabled], .tile[data-v="deposits"][disabled]', 'offline-recount': '[data-testid="recount-offline"]',
+  offline: '.rrow[data-v="deposits"][disabled]', 'offline-recount': '[data-testid="recount-offline"]',
   'free-sales': '[data-testid="reports-lock-hint"]', 'free-closures': '[data-testid="reports-lock-hint"]',
   bell: '.bd.notif', error: '[data-testid="closure-document-error"]',
 };
@@ -55,8 +55,9 @@ const checks = {
           assert.equal(await page.locator('.hero .kpi .delta').count(), 3, 'companions carry deltas');
           assert((await page.locator('.hero .datebtn').textContent()).startsWith(s === 'today' ? 'Today' : 'Last week'), 'the date is the chart title');
           assert.equal(await page.locator('.scope-row').count(), 0, 'Sales has no scope row');
-          assert(await page.locator('.rlist .rrow').count() >= 10, 'the reports list is under the chart');
-          assert.equal(await page.locator('.rlist .rrow[data-v="closures"]').count(), 1, 'Closures is a row in the list');
+          assert.equal(await page.locator('.rp-panel').count(), 6, 'six panels under the chart');
+          assert.equal(await page.locator('.rp-panel[data-k="closures"]').count(), 1, 'Closures is a panel like the others');
+          assert(await page.locator('.rp-panel .br .sh b').count() >= 8, 'share bars');
         }
         if (s === 'session') {
           assert.equal(await page.locator('[data-p="overflow"][aria-label="More"]').count(), 1);
@@ -107,7 +108,7 @@ const checks = {
     // Exercise interactions, not just strip presets.
     await set('w','tablet'); await set('theme','light'); await set('scale','regular'); await scn('today');
     const total = await page.locator('.hero .big').textContent();
-    await page.click('.rrow[data-v="orders"]');
+    await page.click('.rp-panel[data-k="orders"] .ph');
     await page.locator('[data-act="tick"]').first().click();
     await page.locator('[data-act="tick"]').nth(1).click();
     assert.equal(await page.locator('.orders-left-out').textContent(), '2 orders left out');
@@ -121,7 +122,7 @@ const checks = {
     assert.equal(await page.locator('.chart-mode button.on').textContent(), 'Running total');
     await page.click('[data-act="chart"][data-v="hour"]');
     assert.equal(await page.locator('.cur-bar').count(), 9, 'hour bars did not come back');
-    await page.click('.rlist .rrow[data-v="closures"]');   // Closures is a row that opens like the others (Paul 2026-09-17)
+    await page.click('.rp-panel[data-k="closures"] .ph');   // Closures opens like the others (Paul 2026-09-17)
     assert.equal(await page.locator('.detail [data-testid="session-expected"]').count(), 1, 'closures panel did not open');
     await page.locator('.detail [data-act="closure"]').first().click();
     assert.equal(await page.locator('.detail [data-act="backClosures"]').count(), 1, 'a closure from the list has no way back');
