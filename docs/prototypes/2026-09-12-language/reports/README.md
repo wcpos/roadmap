@@ -137,6 +137,19 @@ The filter left the bar and sits in the hero's title row after the date as "· E
 every figure below. The bar is now the register and store, the bell, and on the phone the
 menu and the avatar.
 
+**Closures card (twelfth pass, same day).** Paul: the Closures card is the weakest point; ten
+mockups, with research into what is available and what people need. `closures-variants.html`
+holds them (as drawn, the drawer ladder, a variance strip, the day as a timeline, three checks,
+two tiles, a bullet per closure, by cashier, needs attention, the week as cells), with what the
+plugin knows and what the cashier, owner and manager need in the file's head. **Decided:** C2,
+the drawer ladder, and a rule that came with it: the date scopes the figure, the chart and the
+other seven cards, but the Closures card is outside the date and always shows the till now.
+While the till is open: register, Open, since when and by whom, the X-report button, then
+opening float + cash sales − paid out = expected in drawer, and the last closure as the footer.
+When it is closed: Closed at, by whom, Reprint, then expected, counted and the drawer result.
+The Closures room behind the head keeps its own date for looking back. Paul on the period
+question: "if the closures are affected by the date range, that gets a bit complicated"; agreed.
+
 ## What changed from 2026-09-14
 
 - Copied the register's tokens, controls, rail, page bar, notification panel, side-panel and

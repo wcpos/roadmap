@@ -57,7 +57,8 @@ const checks = {
           assert.equal(await page.locator('.scope-row').count(), 0, 'Sales has no scope row');
           assert.equal(await page.locator('.rp-panel').count(), 8, 'eight cards under the chart');
           assert.equal(await page.locator('.rp-panel[data-k="deposits"], .rp-panel[data-k="cash"]').count(), 0, 'deposits and cash movements have no card (audit 2026-09-17)');
-          assert.equal(await page.locator('.rp-panel[data-k="closures"] .or').count() >= 3, true, 'cash movements live in the Closures panel');
+          assert.equal(await page.locator('.rp-panel[data-k="closures"] .ladder .or').count(), 4, 'the Closures card is the drawer ladder, outside the date (Paul 2026-09-17)');
+          assert.equal(await page.locator('.rp-panel[data-k="closures"] [data-testid="card-xreport"]').count(), s === 'closed' ? 0 : 1, 'X-report on the card while the till is open');
           assert.equal(await page.locator('.rp-panel[data-k="closures"]').count(), 1, 'Closures is a panel like the others');
           assert(await page.locator('.rp-panel .br .sh b').count() >= 4, 'bars on the ranked panel (Top products)');
           assert.equal(await page.locator('.rp-panel[data-k="orders"] .stats .n').count(), 6, 'orders as six figures');
