@@ -10,6 +10,7 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   const page = await browser.newPage({ viewport: { width: 1500, height: 1400 } /* tall enough that the 844 px phone frame never scrolls under the sticky control strip */, reducedMotion: 'reduce' });
   const errors = [];
   page.on('pageerror', e => errors.push('pageerror: ' + e.message));
+  page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
   await page.goto('file://' + path.join(DIR, 'index.html'));
   const set = (k, v) => page.click(`.strip button[data-set="${k}"][data-v="${v}"]`);
   const scn = (v) => page.click(`.strip button[data-scn="${v}"]`);
@@ -160,6 +161,7 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   // Real motion in a separate context. Freeze each sampled frame only while writing its screenshot.
   const motion = await browser.newContext({ viewport: { width: 1500, height: 1400 } });
   const fadePage = await motion.newPage();
+  fadePage.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
   fadePage.on('pageerror', e => errors.push('fade pageerror: ' + e.message));
   await fadePage.goto('file://' + path.join(DIR, 'index.html'));
   await fadePage.click('.strip [data-set="w"][data-v="tablet"]');
@@ -209,6 +211,60 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   });
   if (keypadOpacity !== 1) throw new Error('keypad replayed the fade: ' + keypadOpacity);
   await motion.close();
+  // Split: all three presentations settle the same remaining balance.
+  await set('theme', 'light'); await set('scale', 'regular');
+  const balance = () => page.locator('.ledger .totals .r2').last().locator('.money').innerText();
+  const money = n => '£' + n.toFixed(2);
+  for (const opt of ['pane', 'sheet', 'inline']) for (const w of ['tablet', 'phone']) {
+    await set('splitUi', opt); await set('w', w);
+    await scn('split');
+    if (await page.locator('[data-act="splitMode"]').count() !== 4) throw new Error('split chooser modes: ' + opt);
+    if (await page.locator('.sheet').count() !== (opt === 'sheet' ? 1 : 0)) throw new Error('split chooser placement: ' + opt);
+    await shot(`split-${opt}-${w}`);
+    await scn('split-1of2');
+    if (w === 'tablet') {
+      const total = await page.evaluate(() => sub());
+      if (await page.locator('.ledger .payrow').count() !== 1 || !/Cash/.test(await page.locator('.ledger .payrow').innerText())) throw new Error('split first cash leg: ' + opt);
+      if (await balance() !== money(total - Math.ceil(total * 100 / 2) / 100)) throw new Error('split remaining half: ' + opt);
+    }
+    await shot(`split-1of2-${opt}-${w}`);
+    await page.click('.pay .commit [data-act="take"]');
+    await page.locator('.paidwrap').waitFor();
+    await scn('split-item'); await shot(`split-item-${opt}-${w}`);
+  }
+  // The pinned controls must fit at every scale; the area above them may scroll.
+  for (const opt of ['pane', 'sheet', 'inline']) for (const w of ['tablet', 'phone']) for (const scale of ['compact', 'regular', 'spacious']) {
+    await set('splitUi', opt); await set('w', w); await set('scale', scale);
+    for (const state of ['split', 'split-item', 'split-1of2']) {
+      await scn(state);
+      const fits = await page.locator('.pay').evaluate(el => {
+        const pane = el.getBoundingClientRect();
+        return [...el.querySelectorAll('.keys, .commit')].every(control => {
+          const r = control.getBoundingClientRect();
+          return r.top >= pane.top && r.bottom <= pane.bottom + 1 && r.left >= pane.left && r.right <= pane.right + 1;
+        }) && el.scrollWidth <= el.clientWidth + 1;
+      });
+      if (!fits) throw new Error(`split pinned controls overflow: ${opt}-${w}-${scale}-${state}`);
+      if (opt === 'sheet' && state !== 'split-1of2') {
+        const sheetFits = await page.locator('.sheet').evaluate(el => {
+          const r = el.getBoundingClientRect(), frame = el.closest('.frame').getBoundingClientRect();
+          const foot = el.querySelector('.sheet-f')?.getBoundingClientRect();
+          return r.top >= frame.top && r.bottom <= frame.bottom + 1 && el.scrollWidth <= el.clientWidth + 1 && (!foot || foot.bottom <= r.bottom + 1);
+        });
+        if (!sheetFits) throw new Error(`split sheet overflow: ${w}-${scale}-${state}`);
+      }
+    }
+  }
+  await set('scale', 'regular');
+  await set('w', 'tablet'); await set('splitUi', 'inline'); await scn('tender');
+  const splitTotal = await page.evaluate(() => sub());
+  for (const k of ['2', '0', '0', '0']) await page.click(`.pay [data-act="key"][data-k="${k}"]`);
+  if (!/left after this/.test(await page.locator('.amtblock .line').innerText())) throw new Error('typed partial hint');
+  await page.click('.pay .commit [data-act="take"]');
+  if (await page.locator('.ledger .payrow').count() !== 1 || await page.locator('.paidwrap').count()) throw new Error('partial payment prematurely completed sale');
+  if (await balance() !== money(splitTotal - 20)) throw new Error('typed partial remaining');
+  await page.click('.ledger [data-act="cancelPay"]');
+  if (await page.locator('.ledger .payrow').count()) throw new Error('cancel did not remove payment');
   await browser.close();
   if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
   console.log('ok · variants in ' + OUT);

@@ -287,6 +287,25 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     **Paul (2026-09-17, later): the order number in the cart is "not a bad idea"; the pay pane's
     "Order #… · n items · Guest" title goes, and the Payments | Legacy toggle moves to the left
     in its place.** Done on every width.
+50. **Split payments: dev-next's flow, three drawings (Paul, 2026-09-17).** Paul: the functionality
+    is on dev-next and signed off; refine the UI here. Measured on the demo store: the Split chip
+    opens a chooser with Even | Amount | Percent | Item (Even 2–6 ways with the share; Amount £5,
+    £10, £20, £50 with what is left, Half, or type the first payment; Percent 10–75; Item ticks the
+    lines), choosing sets a plan of legs, each leg takes its own method, the label reads PAYMENT 1
+    OF 2 · £x LEFT, Change split reopens the chooser, Cancel payment removes the last taken
+    payment, taken payments are rows in the ledger with Paid and Remaining. The register carries
+    that flow in one model (`S.pays`, `S.payPlan`, `remaining()`, `settle()`; terminal legs return
+    to the keypad when something is left) and a `Split` switch draws it three ways: **chooser
+    fills the pane** (dev-next tidied; legs as chips under the amount; Cancel payment in the
+    head) · **chooser in a sheet** (the keypad stays; the plan is one line under the amount;
+    Cancel payment on the ledger row) · **chooser under the amount** (the amount block never
+    moves; the chooser takes the methods' and keypad's space; the plan takes the helper chips'
+    row; the recommendation). States `split`, `split-1of2`, `split-item`; captures in
+    `pos-register/screens/` and `screens/variants/split-*.jpg`; `shoot-variants.js` asserts the
+    halves, the ledger row, completion on the last leg, and a typed £20 first payment with its
+    cancel. A first draft of this board also offered two other behaviours (the keypad as the split,
+    a Fresha-style list of payments); Paul ruled the behaviour decided, so they were dropped before
+    they were drawn. Not decided.
     (c) **chips** — pills, the current one filled; reads as a filter row rather than tabs;
     (d) **cards** — small cards with amount, customer and status, current with a primary top
     edge; the most information, the tallest;

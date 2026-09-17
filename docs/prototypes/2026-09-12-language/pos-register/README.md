@@ -6,7 +6,7 @@ Throwaway, self-contained HTML. Double-click `index.html`. The dark strip is not
 states, the tender pane and the beats) looks like in the direction decided on 2026-09-12, at phone,
 tablet and desktop, light and dark, compact and regular. The structure and flow are fixed
 ([#214](https://github.com/wcpos/roadmap/issues/214), PR #259, the 2026-09-11 prototype beside
-this one); this is a reskin, and everything that changed is skin.
+this one); the split-payment functionality is dev-next’s and signed off; this study only cleans up its UI.
 
 ## Cut 2 (2026-09-14) — Paul's nine points on cut 1
 
@@ -42,7 +42,7 @@ Each point, what changed, and where the strip shows it:
 7. **Terminal animation.** The approved 2026-09-11 moment is back on the neutral surface: *On the
    terminal*, the amount, the status line crossfading, the 112 px ring, the reader card with
    connection and battery, the four steps **Sent → On terminal → Approved → Captured**, *Cancel on
-   terminal*. Take a terminal method to run it; it lands on the Paid beat, which keeps the pop and
+   terminal*. Take a terminal method to run it; when no balance remains it lands on the Paid beat, which keeps the pop and
    the drawn check from the mockup. State *Tender · on the terminal*.
 8. **Tile / table is one toggle.** A segmented control in the products toolbar.
 9. **Products settings is the slide-out that is live on `next`.** Drawn as a panel sliding in
@@ -78,6 +78,23 @@ strings. Plus the two workshop switches (*Tender close*, *Legacy*).
 The first two keep the column labels; the others use that row for the payment amounts or receipt
 facts. Customer stays live keeps the customer chip tappable, with a receipt hint when a customer
 is set; Guest has no hint. The customer picker remains a no-op in this prototype.
+
+**Split** (register only, beside *Ledger head*): three drawings of dev-next's signed-off
+functionality — *Chooser fills the pane (dev-next)* (`pane`), *Chooser in a sheet, keypad stays*
+(`sheet`), and *Chooser under the amount* (`inline`, default). All offer Even, Amount, Percent,
+and Item; each payment has its own method, and Change split reopens the chooser.
+
+### Split payments (2026-09-17)
+
+The shared model keeps taken payments in `S.pays`, planned amounts in `S.payPlan`, and a method
+for each leg; `remaining()` and `settle()` serve cash and terminal payments alike.
+Typing a first amount below the remaining balance also takes a partial payment, and Cancel
+payment removes the last taken payment; `S.plan` remains the unrelated Free/Pro switch.
+
+State **Tender · split open** (`split`) opens the chosen chooser; **Tender · 1 of 2 taken**
+(`split-1of2`) has the first half taken in Cash and the second ready on Card; **Tender · split
+by item** (`split-item`) opens Item mode with the first two lines ticked.
+The halves follow the current cart total, not a fixed demo amount.
 
 ### Cart → checkout (2026-09-17)
 
@@ -120,6 +137,6 @@ structure; the strings in the prototype are the app's, sentence-cased.
 ## Screens
 
 `screens/<width>-<theme>-<scale>-<state>.jpg` for phone, tablet and desktop × default light and
-dark × regular and compact × the twenty-one states. `node shoot.js` regenerates them (uses the
+dark × regular and compact × the states in `shoot.js`. `node shoot.js` regenerates them (uses the
 monorepo's Playwright), runs the interaction assertions, and fails on any page or console error.
 `--quick` captures tablet light regular only.
