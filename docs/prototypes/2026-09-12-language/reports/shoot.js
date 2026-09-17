@@ -21,7 +21,7 @@ const checks = {
   orders: '.detail input[data-act="tick"]', session: '[data-testid="session-expected"]',
   closed: '[data-testid="session-reprint"]', closure: '[data-testid="closure-settled"]',
   recount: '#recount-reason', empty: '[data-testid="closures-empty"]', loading: '.skeleton',
-  offline: '.tile[data-v="deposits"][disabled]', 'offline-recount': '[data-testid="recount-offline"]',
+  offline: '.rrow[data-v="deposits"][disabled], .tile[data-v="deposits"][disabled]', 'offline-recount': '[data-testid="recount-offline"]',
   'free-sales': '[data-testid="reports-lock-hint"]', 'free-closures': '[data-testid="reports-lock-hint"]',
   bell: '.bd.notif', error: '[data-testid="closure-document-error"]',
 };
@@ -55,9 +55,12 @@ const checks = {
           assert.equal(await page.locator('.hero .kpi .delta').count(), 3, 'companions carry deltas');
           assert((await page.locator('.hero .datebtn').textContent()).startsWith(s === 'today' ? 'Today' : 'Last week'), 'the date is the chart title');
           assert.equal(await page.locator('.scope-row').count(), 0, 'Sales has no scope row');
+          assert(await page.locator('.rlist .rrow').count() >= 10, 'the reports list is under the chart');
+          assert.equal(await page.locator('.rlist .rrow[data-v="closures"]').count(), 1, 'Closures is a row in the list');
         }
         if (s === 'session') {
-          assert.equal(await page.locator('.scope-row [data-p="overflow"][aria-label="More"]').count(), 1);
+          assert.equal(await page.locator('[data-p="overflow"][aria-label="More"]').count(), 1);
+          assert.equal(await page.locator('.detail .rrow, .segt[aria-label="Report room"]').count(), 0, 'Closures is a panel, not a room');
           assert.equal(await page.locator('.bar [data-p="filter"]').count(), 1, 'the filter lives in the bar');
           assert.equal(await page.locator('.bar [data-p="scope"]').count(), 1, 'register and store are the bar title');
           assert.equal(await page.locator('.pad [data-p="overflow"]').count(), 0);
@@ -104,7 +107,7 @@ const checks = {
     // Exercise interactions, not just strip presets.
     await set('w','tablet'); await set('theme','light'); await set('scale','regular'); await scn('today');
     const total = await page.locator('.hero .big').textContent();
-    await page.click('.tile[data-v="orders"]');
+    await page.click('.rrow[data-v="orders"]');
     await page.locator('[data-act="tick"]').first().click();
     await page.locator('[data-act="tick"]').nth(1).click();
     assert.equal(await page.locator('.orders-left-out').textContent(), '2 orders left out');
@@ -118,6 +121,13 @@ const checks = {
     assert.equal(await page.locator('.chart-mode button.on').textContent(), 'Running total');
     await page.click('[data-act="chart"][data-v="hour"]');
     assert.equal(await page.locator('.cur-bar').count(), 9, 'hour bars did not come back');
+    await page.click('.rlist .rrow[data-v="closures"]');   // Closures is a row that opens like the others (Paul 2026-09-17)
+    assert.equal(await page.locator('.detail [data-testid="session-expected"]').count(), 1, 'closures panel did not open');
+    await page.locator('.detail [data-act="closure"]').first().click();
+    assert.equal(await page.locator('.detail [data-act="backClosures"]').count(), 1, 'a closure from the list has no way back');
+    await page.click('.detail [data-act="backClosures"]');
+    assert.equal(await page.locator('.detail [data-testid="session-expected"]').count(), 1, 'back did not return to closures');
+    await page.click('.detail [data-act="closePanel"]');
     await set('plan','pro'); await page.click('.hero [data-p="date"]');   // the picker: quick ranges beside a calendar (Paul 2026-09-17)
     assert.equal(await page.locator('.pop .quick .pr').count(), 6); assert.equal(await page.locator('.pop .cal .d').count(), 30, 'September has 30 days');
     await page.click('.pop .cal .d[data-v="6"]'); await page.click('.pop .cal .d[data-v="1"]');
@@ -139,7 +149,7 @@ const checks = {
     await page.click('.pop .cal .d[data-v="13"]'); await page.click('.pop .cal .d[data-v="0"]');   // 1–14 Sep on the calendar
     assert.equal(await page.locator('.chart').getAttribute('data-unit'), 'custom');
     await scn('scope'); await set('plan','pro'); await page.click('[data-act="register"][data-v="all"]');
-    assert(await page.locator('.tile[data-v="registers"]').count());
+    assert(await page.locator('.rrow[data-v="registers"]').count(), 'All registers must add the Registers row');
     await scn('payments'); await page.selectOption('#template','thermal');
     assert(await page.locator('.docv.thermal').count(), 'template did not change document');
     await scn('bell'); await page.click('.bd.notif');

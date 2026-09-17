@@ -54,6 +54,20 @@ the date; the plot is a third taller; the busiest bar's label reads "£212.40 ·
 comparison is named once, in the chip; the dashed line and the faint bars still to come carry
 no legend.
 
+**Below the chart (fifth pass, same day).** Paul: think about what a cashier or owner comes
+here to do; the most common things front and centre; not a fan of the tile cards; and why is
+Closures a tab at the top when it is just another kind of information? Answer: it is. Done,
+behind the strip's *Below the chart* switch so both can be compared: **one list, Closures a
+row** (the pick, on by default) replaces the tiles and the Sales | Closures tabs. Rows in the
+order of the jobs: Orders (the orders behind the figure, with the exclusions), Payments (the
+till and the card batch), Closures (the till's state and today's closures), Taxes, Refunds and
+discounts, Top products, Cashiers, Categories, Registers when all are shown, Cash movements,
+Deposits. Each row is name, one-line summary, figure, chevron, and opens the same panel the
+tile did. Closures opens as a panel holding the shipped room (session card, closures by day,
+the ⋮ export); a closure opened from it has a back arrow to the list; on the phone it is a
+page with the crumb. The other position, *Sales | Closures tabs + tiles (as drawn)*, stays for
+comparison and goes once he picks.
+
 ## What changed from 2026-09-14
 
 - Copied the register's tokens, controls, rail, page bar, notification panel, side-panel and
