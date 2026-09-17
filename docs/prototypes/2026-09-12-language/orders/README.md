@@ -48,10 +48,12 @@ The real screen, so the drawing is not a straw man:
 - **Web and native split**: at desktop a real table with sortable headers and resize handles on
   hover; at tablet and phone, 56 pt rows (number, customer, note icon; status, date, payment;
   total with the refund line; chevron).
-- **The open order is a pane beside the list** (560 px at desktop, 440 at tablet, full screen on
-  phone). The list keeps its core columns and the selected row while the pane is open. The
-  header carries the order, the source chip, an ellipsis with the row actions, and a close ×.
-  Footer: Refund (when eligible) and Print receipt as the primary; no Cancel — × is the way out.
+- **The open order is a pane beside the list**, the cart column's twin since cut 3 (the
+  register's width: 480 px at desktop, 42 % capped at 440 at tablet; full screen on phone). The
+  list keeps its core columns and the selected row while the pane is open. The pane's bar carries
+  the order as its place, the source chip, an ellipsis with the row actions, and a close ×; the
+  amount and status sit under it. Footer: Refund (when eligible) and Print receipt as the primary;
+  no Cancel — × is the way out.
 - **Display options are anchored** to the sliders icon, with the table live behind: toggling a
   column changes the table at once (`shoot.js` asserts it). Drag grips for order; the Customer and
   Total sub-options nest under their column; Restore defaults in the header.
@@ -74,6 +76,42 @@ the pane beside the list (7), loading as skeleton (11, owned by #308), sentence 
 - Cards for the phone list — rows with a chevron are the touch grammar.
 - The right-side settings dialog — covers the table it configures.
 - Zebra rows — a second surface colour in a one-surface language.
+
+## Cut 3 (2026-09-18) — polish in the register's language
+
+Paul: go over the Orders page and polish it with the language the other pages have established.
+Nothing new is decided; every change copies a rule the register or Reports already carries.
+
+- **The bar.** The title is the bar's place — *Orders* at the base size, 600, as *UK Store* and
+  *Front till · UK Store* are — with the search beside it as in the products toolbar, and the
+  bell at the right as on every other page. The phone gets the bar the register and Reports have
+  (menu · Orders · bell · cashier) and the search on its own row under it, as the products
+  toolbar is on the phone.
+- **The filter chips are the register's pills.** 32 px, an icon each (Unpaid, Today, My sales,
+  Status as a dot, Customer, Cashier, Created via, Register, Date range), filled when on; a select
+  that is set fills and splits into the value (reopens the list) and a × (clears it), exactly as
+  Category · Drinks +1 × does on the products bar. The row fades at its end as the products bar
+  does. Only the fill says on; the toggles keep their check.
+- **The open order is the cart column's twin.** It sits beside the page, not inside the list: the
+  register's width, a hairline on its left, full height, the bar on top with the order as its
+  place and the source chip beside it, the amount under the bar with the display face and the
+  Reports hero's tracking. Sections and the footer take the bar's 16 px inset; item images are
+  the products table's 40 px.
+- **Dates the way Reports writes them.** *Today · 10:42*, *Yesterday · 17:20*, *Sat 12 Sep · 15:48*
+  replace *2 hours ago* and *September 12, 2026*; the phone row keeps the day only. The fixture's
+  today is Mon 14 Sep 2026, as on Reports, so the weekdays are corrected and the date picker's
+  preset is *Last week*, Mon 7 – Sun 13, which reads whole in the Monday-first calendar.
+- **The footer is the products table's.** *12 of 1,248* at the right beside the sync, at the
+  footer's smaller size; *Searching…* and *Syncing…* keep their places. The frameless styles set
+  the footer on the frame's bottom edge, as the products table does.
+- **Order numbers carry their #** in the table too, as the touch rows, the open order and the
+  Reports order list already did.
+- **Every popover sits under the control that opened it**: the display options under the sliders,
+  the status and date lists under their chips, the row menu under its ellipsis.
+
+Everything else is as it was: the table components, the hairline rows, the status dot and word,
+the row grammar on touch, the four list styles and the eighteen states. Captures regenerated
+(`node shoot.js`, `node shoot-pages.js`, `node shoot-variants.js`), assertions green.
 
 ## Where it lives now (2026-09-17)
 
