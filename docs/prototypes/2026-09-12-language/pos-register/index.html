@@ -1619,7 +1619,7 @@ function rollMoney(from,to){
   if(from===to) return; const els=[...document.querySelectorAll('.cartcol .totals .big .money, .cartcol .btn.p .money')];
   els.forEach(e=>{ e.classList.remove('settled'); void e.offsetWidth; e.classList.add('settled'); setTimeout(()=>e.classList.remove('settled'),300); });
 }
-function renderUpgradeStrip(pos,reports=false){return `<div class="upstrip ${pos}">${I.spark}<span class="msg"><b>You're on the free version of WCPOS.</b> ${S.w==='phone'?'':'Pro adds receipt templates, held orders, reports and priority support.'}</span><span class="more">See what Pro adds</span><button class="act press"${reports?' data-act="toast" data-v="Opening wcpos.com/pro"':''}>Upgrade to Pro</button>${reports?'':`<button class="x press" data-act="dismissStrip" aria-label="Dismiss until next launch" title="Dismiss until next launch">${I.x}</button>`}</div>`;}
+function renderUpgradeStrip(pos,reports=false){return `<div class="upstrip ${pos}">${I.spark}<span class="msg"><b>You're on the free version of WCPOS.</b> ${S.w==='phone'?'':'Pro adds receipt templates, held orders, reports and priority support.'}</span><span class="more">See what Pro adds</span><button class="act press"${reports?' data-act="toast" data-v="Opening wcpos.com/pro"':''}>Upgrade to Pro</button><button class="x press" data-act="dismissStrip" aria-label="Dismiss until next launch" title="Dismiss until next launch">${I.x}</button></div>`;}   /* Paul 2026-09-18: the × is on Reports too (it had gone missing when Reports was folded in) */
 function render(){
   /* Paul 2026-09-17: the icon set follows the theme; Tabler 1.5 px on the default themes, Hugeicons on Market stall and Warm shop, Phosphor on Paper till, Bold money, Ocean and Sunset */
   Object.assign(I, I0, ICONSETS[['market','warm'].includes(S.theme)?'hugeicons':['paper','bold','ocean','sunset'].includes(S.theme)?'ph':'tabler-15']||{});
@@ -1787,7 +1787,7 @@ const RS = {
   cmp: ['lastweek','yesterday'].includes(Q.get('cmp')) ? Q.get('cmp') : 'yesterday',
   register:'front', store:'uk', cashier:'all',
   unticked: new Set(), detail: null, closure: null, xreport: false, tpl:'default', chart:'hour',   /* 'hour' | 'run' (Paul 2026-09-17: an easy toggle) */
-  pop: null, hint: null, tip: null, frameH: 780, calMonth: 0, pickStart: null, merch: 'products', where: 'channels', busy: false, till: 'level',
+  pop: null, hint: null, tip: null, frameH: 780, calMonth: 0, pickStart: null, where: 'channels', busy: false, till: 'level',
   layout: 'panels',   /* Paul 2026-09-17 ("surely we can do better", Mobbin: Vercel, Framer, Lloyds, Revolut): the content of each report inline, a few rows deep, with share bars; 'list' and 'tiles' kept to compare. Closures is one more kind of information, not a different room; the tiles go, one list of reports under the chart */
 };
 
@@ -1960,7 +1960,7 @@ function renderReports() {
   if (RS.register !== 'all' && RS.detail === 'registers') RS.detail=null;
   const hintScroll=RS.pop?.kind==='hint'?(F.querySelector('.page>.pad')?.scrollTop||0):0;
   const previousOverlay=F.querySelector('.sheet,.pop,.sidepanel'); const focusId=document.activeElement?.id;
-  F.innerHTML=`${S.plan==='top'?renderUpgradeStrip('top',true):''}<div class="body">${phone()?'':renderRail()}<div class="main"><div class="page">${pagebar()}${scopeRow()}${RS.loading?'<div class="pad" aria-label="Loading reports">'+Array.from({length:7},()=>'<div class="skeleton"></div>').join('')+'</div>':RS.view==='sales'||RS.layout!=='tiles'?sales():closures()}</div>${panel()}${popover()}${renderSheet()}</div></div>`;
+  F.innerHTML=`${S.plan==='top'&&!S.nostrip?renderUpgradeStrip('top',true):''}<div class="body">${phone()?'':renderRail()}<div class="main"><div class="page">${pagebar()}${scopeRow()}${RS.loading?'<div class="pad" aria-label="Loading reports">'+Array.from({length:7},()=>'<div class="skeleton"></div>').join('')+'</div>':RS.view==='sales'||RS.layout!=='tiles'?sales():closures()}</div>${panel()}${popover()}${renderSheet()}</div></div>`;
   document.getElementById('notes').innerHTML='Reports · the decided content, in the register’s language. Prototype figures are fixed to 14 September 2026. Print uses the selected template; recounts stay in this page and reset on reload.';
   if(RS.pop?.kind==='hint')F.querySelector('.page>.pad').scrollTop=hintScroll;
   const svg=F.querySelector('svg.bars');
@@ -2178,14 +2178,10 @@ function reportPanels(m) {
   /* Payments: the till and the card batch */
   { const ks = Object.keys(m.byMethod).sort((a, b) => m.byMethod[b] - m.byMethod[a]);
     out.push(panel('payments', 'Payments', fmt(m.total), ks.length ? donut(ks.map(k => [esc(k), m.byMethod[k], `${m.cntMethod[k]} order${m.cntMethod[k] === 1 ? '' : 's'}`]), `${ks.length} way${ks.length === 1 ? '' : 's'}`) : '<div class="mut sm">No payments yet</div>')); }
-  /* What sold: products and categories are one panel with two views (audit 2026-09-17: both are merchandise groupings); categories draw a donut (Paul) */
-  { const cats = [['Coffee', .41], ['Bakery', .29], ['Retail', .18], ['Uncategorised', .12]], tone = [1, .62, .38, .2];
-    const seg = `<span class="segt mini" role="tablist" aria-label="What sold"><button role="tab" aria-selected="${RS.merch !== 'categories'}" class="press ${RS.merch !== 'categories' ? 'on' : ''}" data-act="merch" data-v="products">Products</button><button role="tab" aria-selected="${RS.merch === 'categories'}" class="press ${RS.merch === 'categories' ? 'on' : ''}" data-act="merch" data-v="categories">Categories</button></span>`;
-    let body;
-    if (RS.merch === 'categories') {
-      body = donut(cats.map(([n, sh]) => [n, r2(T * sh)]), `${cats.length} categories`);
-    } else body = PRODUCTS.slice(0, 4).map(([n, sh]) => bar(esc(n), fmt(r2(T * sh)), sh, `${Math.max(1, Math.round(m.items * sh * 1.1))} sold`)).join('');
-    out.push(`<section class="rp-panel" data-k="${RS.merch === 'categories' ? 'categories' : 'products'}"><div class="ph"><button class="press n" data-act="detail" data-v="${RS.merch === 'categories' ? 'categories' : 'products'}">${RS.merch === 'categories' ? 'Categories' : 'Top products'}</button>${seg}<button class="press v" data-act="detail" data-v="${RS.merch === 'categories' ? 'categories' : 'products'}" aria-label="Open">${I.chev}</button></div><div class="pb">${body}</div></section>`); }
+  /* What sold: Top products (ranked, bars) and Categories (parts of a whole, donut) are two cards (Paul 2026-09-18: there is room for another box; they were one card with two views) */
+  out.push(`<section class="rp-panel" data-k="products"><div class="ph"><button class="press n" data-act="detail" data-v="products">Top products</button><button class="press v" data-act="detail" data-v="products" aria-label="Open">${I.chev}</button></div><div class="pb">${PRODUCTS.slice(0, 4).map(([n, sh]) => bar(esc(n), fmt(r2(T * sh)), sh, `${Math.max(1, Math.round(m.items * sh * 1.1))} sold`)).join('')}</div></section>`);
+  { const cats = [['Coffee', .41], ['Bakery', .29], ['Retail', .18], ['Uncategorised', .12]];
+    out.push(`<section class="rp-panel" data-k="categories"><div class="ph"><button class="press n" data-act="detail" data-v="categories">Categories</button><button class="press v" data-act="detail" data-v="categories" aria-label="Open">${I.chev}</button></div><div class="pb">${donut(cats.map(([n, sh]) => [n, r2(T * sh)]), `${cats.length} categories`)}</div></section>`); }
   /* Cashiers */
   { const ks = Object.keys(m.byCashier).sort((a, b) => m.byCashier[b] - m.byCashier[a]);
     out.push(panel('cashiers', 'Cashiers', ks.length, ks.length ? donut(ks.map(k => [esc(k), m.byCashier[k], `${m.cntCashier[k]} order${m.cntCashier[k] === 1 ? '' : 's'}`]), `${ks.length} cashier${ks.length === 1 ? '' : 's'}`) : '<div class="mut sm">No sales yet</div>')); }   /* Paul 2026-09-17: a share, so a donut, not bars */
@@ -2399,7 +2395,7 @@ function click(e) {
     case 'openSheet': RS.sheet=el.dataset.sheet; break;
     case 'closeSheet': RS.sheet=null; break;
     case 'chart': RS.chart=v; RS.tip=null; break;
-    case 'merch': RS.merch=v; break;
+    case 'dismissStrip': S.nostrip=true; break;   /* the same × as the register: gone for the session, back on the next launch */
     case 'where': RS.where=v; break;
     case 'recount': RS.sheet='recount'; RS.reason=''; RS.counted=''; RS.pieces={}; RS.denominations=false; break;
     case 'denominations': RS.denominations=!RS.denominations; break;
@@ -2455,7 +2451,7 @@ function toast(msg){RS.sheet='result';RS.result=msg;}
 const SCENES=[['today','Sales · today'],['last-week','Sales · last week'],['excluded','Sales · orders left out'],['date','Sales · date menu open'],['scope','Sales · scope chip open'],['payments','Sales · Payments panel'],['orders','Sales · Orders panel'],['busy','Till busy · paid in, paid out, refunds'],['session','Closures · session open'],['closed','Closures · register closed'],['closure','Closures · closure open'],['recount','Closures · recount sheet'],['empty','Closures · empty'],['loading','Loading'],['offline','Offline'],['offline-recount','Offline · recount'],['free-sales','Free · Sales'],['free-closures','Free · Closures'],['bell','Bell panel'],['error','Closures · error']];
 function jump(scn){
   S.scn=scn;
-  Object.assign(RS,{view:'sales',online:true,regOpen:true,gran:'day',off:0,register:'front',store:'uk',cashier:'all',status:'done',unticked:new Set(),detail:null,closure:null,xreport:false,tpl:'default',chart:'hour',merch:'products',where:'channels',busy:false,calMonth:0,pickStart:null,pop:null,hint:null,tip:null,sheet:null,loading:false,empty:false,error:false,reason:'',counted:'',pieces:{},denominations:false});
+  Object.assign(RS,{view:'sales',online:true,regOpen:true,gran:'day',off:0,register:'front',store:'uk',cashier:'all',status:'done',unticked:new Set(),detail:null,closure:null,xreport:false,tpl:'default',chart:'hour',where:'channels',busy:false,calMonth:0,pickStart:null,pop:null,hint:null,tip:null,sheet:null,loading:false,empty:false,error:false,reason:'',counted:'',pieces:{},denominations:false});
   Object.keys(ORD_CACHE).forEach(k=>delete ORD_CACHE[k]);
   if(['last-week','closure','recount','offline-recount','error'].includes(scn))S.plan='pro';
   if(['session','closed','closure','recount','empty','free-closures','offline-recount','error'].includes(scn)){if(RS.layout!=='tiles')RS.detail='closures';else RS.view='closures';}

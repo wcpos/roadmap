@@ -158,7 +158,7 @@ chart, the date and the cards read as one block. Done: the till is a slim full-w
 above the hero, outside the date: register · Open since 13:00 · Dylan, the last closure
 under it, the drawer equation as chips (Opening float £100.00 + Cash sales £343.70 − Paid out
 £150.00 = Expected in drawer £293.70, the result chip filled), X-report and a chevron into the
-Closures room; when closed, Expected · Counted = Drawer result with Reprint. The seven cards
+Closures room; when closed, Expected · Counted = Drawer result with Reprint. The seven cards (eight since the fifteenth pass)
 keep the period as their heading; the "Right now" section is gone.
 
 **The strip under load (thirteenth pass, same day).** Paul: what happens with money paid in,
@@ -188,6 +188,17 @@ Spacing pass (Paul): the button group was named `tr` and inherited the register'
 hairline, which drew a stray line under X-report on tablet; renamed. On tablet, and on a busy
 day at any width, X-report and the chevron now span both rows and sit centred beside the line
 or the chips instead of floating above an empty corner; the row gap is tighter.
+
+**Two boxes and a missing × (fifteenth pass, 2026-09-18).** Paul: Top products and Categories
+should be separate boxes now, there is room for one more. The What-sold card with its
+Products | Categories views is gone; Top products (ranked, bars) and Categories (parts of a
+whole, donut) are two cards, so the period section holds eight. Paul also found the free strip
+had lost its ×: it went missing when Reports was folded into the register page (612cd58), and
+the dismissal was not honoured on Reports either. The × is back and works the same as on the
+register, gone for the session, back on the next launch. Paul reported the till strip "reverted
+to an old version"; on disk it is the cash-level strip from the spacing pass at every path
+(direct URL, the rail, the hub's frame) and the captures match, so the likely cause is a stale
+tab; not reproduced.
 
 ## What changed from 2026-09-14
 

@@ -55,7 +55,7 @@ const checks = {
           assert.equal(await page.locator('.hero .kpi .delta').count(), 3, 'companions carry deltas');
           assert((await page.locator('.hero .datebtn:not(.scope)').textContent()).startsWith(s === 'today' ? 'Today' : 'Last week'), 'the date is the chart title');
           assert.equal(await page.locator('.scope-row').count(), 0, 'Sales has no scope row');
-          assert.equal(await page.locator('.rp-panel').count(), 7, 'seven cards under the chart');
+          assert.equal(await page.locator('.rp-panel').count(), 8, 'eight cards under the chart (Top products and Categories are two, Paul 2026-09-18)');
           assert.equal(await page.locator('.till').count(), 1, 'the till strip sits above the chart (Paul 2026-09-17)');
           assert(await page.locator('.till').evaluate(t => t.getBoundingClientRect().bottom <= document.querySelector('.hero').getBoundingClientRect().top + 1), 'the till strip is above the hero');
           assert((await page.locator('.rp-sec.dated .rp-h').textContent()).startsWith(s === 'today' ? 'Today' : 'Last week'), 'the period section is headed by the date');
@@ -118,14 +118,17 @@ const checks = {
         await scn('today'); await set('plan', plan);
         assert.equal(await page.locator('.upstrip').count(), plan === 'pro' ? 0 : 1);
         if (plan !== 'pro') assert(await page.locator(`#frame > .upstrip.${plan}`).count(), 'strip must be outside body');
+        if (plan !== 'pro') {   // Paul 2026-09-18: the strip has its × on Reports too; dismissed for the session
+          await page.click('.upstrip .x'); assert.equal(await page.locator('.upstrip').count(), 0, 'strip dismissed');
+          await set('plan', plan); assert.equal(await page.locator('.upstrip').count(), 1, 'strip back when the plan is set again');
+        }
       }
     }
     // Exercise interactions, not just strip presets.
     await set('w','tablet'); await set('theme','light'); await set('scale','regular'); await scn('today');
     const total = await page.locator('.hero .big').textContent();
-    await page.click('[data-act="merch"][data-v="categories"]');   // what sold: two views, the donut (audit 2026-09-17)
-    assert.equal(await page.locator('.rp-panel[data-k="categories"] svg.donut').count(), 1, 'categories donut');
-    await page.click('[data-act="merch"][data-v="products"]');
+    assert.equal(await page.locator('.rp-panel[data-k="categories"] svg.donut').count(), 1, 'categories donut, its own card');
+    assert(await page.locator('.rp-panel[data-k="products"] .br').count() >= 4, 'top products bars, its own card');
     await page.click('.rp-panel[data-k="orders"] .ph');
     await page.locator('[data-act="tick"]').first().click();
     await page.locator('[data-act="tick"]').nth(1).click();
