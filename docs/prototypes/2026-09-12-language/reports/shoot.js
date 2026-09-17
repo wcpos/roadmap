@@ -56,6 +56,9 @@ const checks = {
           assert((await page.locator('.hero .datebtn:not(.scope)').textContent()).startsWith(s === 'today' ? 'Today' : 'Last week'), 'the date is the chart title');
           assert.equal(await page.locator('.scope-row').count(), 0, 'Sales has no scope row');
           assert.equal(await page.locator('.rp-panel').count(), 8, 'eight cards under the chart');
+          assert.equal(await page.locator('.rp-sec').count(), 2, 'two sections: Right now, and the period');
+          assert.equal(await page.locator('.rp-sec:not(.dated) .rp-panel[data-k="closures"]').count(), 1, 'Closures sits in Right now');
+          assert((await page.locator('.rp-sec.dated .rp-h').textContent()).startsWith(s === 'today' ? 'Today' : 'Last week'), 'the period section is headed by the date');
           assert.equal(await page.locator('.rp-panel[data-k="deposits"], .rp-panel[data-k="cash"]').count(), 0, 'deposits and cash movements have no card (audit 2026-09-17)');
           assert.equal(await page.locator('.rp-panel[data-k="closures"] .ladder .or').count(), 4, 'the Closures card is the drawer ladder, outside the date (Paul 2026-09-17)');
           assert.equal(await page.locator('.rp-panel[data-k="closures"] [data-testid="card-xreport"]').count(), s === 'closed' ? 0 : 1, 'X-report on the card while the till is open');

@@ -149,6 +149,10 @@ opening float + cash sales − paid out = expected in drawer, and the last closu
 When it is closed: Closed at, by whom, Reprint, then expected, counted and the drawer result.
 The Closures room behind the head keeps its own date for looking back. Paul on the period
 question: "if the closures are affected by the date range, that gets a bit complicated"; agreed.
+Then: "I don't mind if the cards update with the date range but it needs to be made more
+explicit." Done: two labelled sections under the hero. **Right now · Front till** holds the
+Closures card; **Today · Mon 14 Sep** (the hero's own words, changing with the date, with
+"follows the date above" at its right) holds the seven cards that do.
 
 ## What changed from 2026-09-14
 
