@@ -222,7 +222,22 @@ labelled filter chips; F3 one Filters button opening the right panel beside a li
 chart footer; F6 cashiers as tabs, the rest in ⋯; F7 Everyone honest (cashiers only), status
 and comparison in ⋯; F8 a plain sentence under the figure with linked words; F9 the chart
 stacked by cashier with the legend as the filter; F10 two tiers, page scope in the bar and
-chart lenses on the card. Not decided.
+chart lenses on the card. Decided in the eighteenth pass.
+
+**The filters are chips (eighteenth pass, same day).** Paul: "do something like F2 but with chips
+like we already have", with a capture of the app's filter chips (an icon, the value, a × to
+clear). The Everyone menu is gone. Under the title row the chart carries one chip per filter:
+Cashier (Everyone / Priya / Dylan), Orders (Completed & processing / Every status), Compare
+with (vs yesterday / vs last Monday; a plain chip on a week or month, where the comparison is
+fixed), and, only when some orders are unticked, "N orders left out", which opens the orders
+and whose × puts them back. A chip at its default shows the default in muted text with a
+chevron; a set chip is outlined in the foreground with an × that returns it to the default; each
+chip opens its own menu. The chips are the Orders page's filter chips copied into the reports
+block (`.fchip` = `.op-chip`), to be lifted into one shared chip when the language settles; the
+1.10 app fills them in the primary colour, the prototype's chips are outlined, so the fill is
+the theme's call, not this page's. The comparison is no longer chosen on the delta line; the
+delta only states it. Register and store stay in the bar (they scope the whole page, not the
+chart). On the phone the row scrolls sideways under a fade, as the register's plan chips do.
 
 ## What changed from 2026-09-14
 

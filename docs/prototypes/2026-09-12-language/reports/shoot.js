@@ -77,7 +77,10 @@ const checks = {
         if (s === 'session') {
           assert.equal(await page.locator('[data-p="overflow"][aria-label="More"]').count(), 1);
           assert.equal(await page.locator('.detail .rrow, .segt[aria-label="Report room"]').count(), 0, 'Closures is a panel, not a room');
-          assert.equal(await page.locator('.hero .hero-head [data-p="filter"]').count(), 1, 'the filter sits with the date in the hero');
+          assert.equal(await page.locator('.hero .hero-chips [data-p="cashier"]').count(), 1, 'the cashier is a chip under the title (Paul 2026-09-18)');
+          assert.equal(await page.locator('.hero .hero-chips [data-p="status"]').count(), 1, 'the order status is its own chip');
+          assert.equal(await page.locator('.hero .datebtn.scope, .hero [data-p="filter"]').count(), 0, 'the Everyone menu is gone');
+          if (s === 'today') assert.equal(await page.locator('.hero .hero-chips .fchip.on').count(), 0, 'nothing filtered by default');
           assert.equal(await page.locator('.bar [data-p="scope"]').count(), 1, 'register and store are the bar title');
           assert.equal(await page.locator('.pad [data-p="overflow"]').count(), 0);
         }
@@ -140,8 +143,22 @@ const checks = {
     assert.equal(await page.locator('.order-row.off').count(), 2);
     await page.click('.detail [data-act="closePanel"]');
     assert.notEqual(await page.locator('.hero .big').textContent(), total, 'unticking must change totals');
+    assert((await page.locator('.hero-chips .fchip.on').textContent()).includes('2 orders left out'), 'the orders left out are a chip in the filter row');
     await page.click('[data-act="resetTicks"]');
     assert.equal(await page.locator('.hero .big').textContent(), total);
+    assert.equal(await page.locator('.hero-chips .fchip.on').count(), 0, 'the × on the left-out chip puts them back');
+    // the filter chips (Paul 2026-09-18): a set chip fills and carries an ×; the × returns it to the default
+    await page.click('.hero-chips [data-p="cashier"]'); await page.click('[data-menu="cashier"] [data-act="cashier"][data-v="Priya"]');
+    assert((await page.locator('.hero-chips .fchip.on').textContent()).includes('Priya'), 'a set cashier fills its chip');
+    await page.click('.hero-chips .fchip .x[data-act="cashier"]');
+    assert.equal(await page.locator('.hero-chips .fchip.on').count(), 0, 'the × puts the chip back to Everyone');
+    await page.click('.hero-chips [data-p="status"]'); await page.click('[data-menu="status"] [data-act="status"][data-v="all"]');
+    assert((await page.locator('.hero-chips .fchip.on').textContent()).includes('Every status'), 'every status fills the orders chip');
+    await page.click('.hero-chips .fchip .x[data-act="status"]');
+    await page.click('.hero-chips [data-p="cmp"]'); await page.click('[data-menu="cmp"] [data-act="cmp"][data-v="lastweek"]');
+    assert((await page.locator('.hero-chips .fchip.on').textContent()).startsWith('vs last'), 'the comparison is a chip');
+    await page.click('.hero-chips .fchip .x[data-act="cmp"]');
+    assert.equal(await page.locator('.hero-chips .fchip.on').count(), 0);
     await page.click('[data-act="chart"][data-v="run"]');   // the chart toggle (Paul 2026-09-17)
     assert.equal(await page.locator('.run-line').count(), 1, 'running total did not draw');
     assert.equal(await page.locator('.chart-mode button.on').textContent(), 'Running total');

@@ -638,6 +638,8 @@ body:has(#strip[hidden]) .notes{display:none}
 :where(.frame[data-screen="reports"]) .rrow .rn{font-weight:500} :where(.frame[data-screen="reports"]) .rrow .rs{color:var(--muted-fg);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} :where(.frame[data-screen="reports"]) .rrow .rv{font-weight:600;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap} :where(.frame[data-screen="reports"]) .rrow>svg{width:16px;height:16px;color:var(--muted-fg)}
 .frame:where([data-screen="reports"])[data-w="phone"] .rrow{grid-template-columns:1fr auto 20px;grid-template-areas:"n v c" "s v c";row-gap:2px;padding:calc(var(--u)*2) var(--u)} .frame:where([data-screen="reports"])[data-w="phone"] .rrow .rn{grid-area:n} .frame:where([data-screen="reports"])[data-w="phone"] .rrow .rs{grid-area:s;font-size:calc(var(--fs)*.9)} .frame:where([data-screen="reports"])[data-w="phone"] .rrow .rv{grid-area:v} .frame:where([data-screen="reports"])[data-w="phone"] .rrow>svg{grid-area:c}
 :where(.frame[data-screen="reports"]) .detail .pad.inpanel{padding:0;overflow:visible;flex:none} :where(.frame[data-screen="reports"]) .detail .ft:empty{display:none} :where(.frame[data-screen="reports"]) .detail .h>.ibtn:first-child{margin-left:calc(var(--u)*-2)}
+:where(.frame[data-screen="reports"]) .hero-chips{display:flex;flex-wrap:wrap;gap:var(--u);margin:0 0 calc(var(--u)*4)}   /* Paul 2026-09-18: the chart's filters are the app's filter chips (the Orders page's .op-chip, copied; lift both into one .chip when the language settles) */
+:where(.frame[data-screen="reports"]) .fchip{display:inline-flex;align-items:center;gap:calc(var(--u)*1.5);height:max(calc(var(--ctl) - 8px),var(--floor));padding:0 calc(var(--u)*2.5);border-radius:999px;border:var(--hair) solid var(--border);background:var(--card);white-space:nowrap;color:var(--muted-fg);font-size:calc(var(--fs)*.93)} :where(.frame[data-screen="reports"]) .fchip>svg{width:15px;height:15px;flex:none} :where(.frame[data-screen="reports"]) .fchip .car svg{width:13px;height:13px;margin-right:calc(var(--u)*-.5)} :where(.frame[data-screen="reports"]) .fchip.on{border-color:var(--fg);color:var(--fg);font-weight:500} :where(.frame[data-screen="reports"]) .fchip .x{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-right:calc(var(--u)*-1)} :where(.frame[data-screen="reports"]) .fchip .x:hover{background:var(--muted)} :where(.frame[data-screen="reports"]) .fchip .x svg{width:12px;height:12px}
 :where(.frame[data-screen="reports"]) .hero-head{display:flex;flex-wrap:wrap;align-items:center;gap:var(--u) calc(var(--u)*2);margin:calc(var(--u)*-2) calc(var(--u)*-2) calc(var(--u)*1) 0} :where(.frame[data-screen="reports"]) .printb{width:36px;height:36px} .frame:where([data-screen="reports"]) svg.bars{width:100%;height:auto;stroke:none;display:block;margin-top:calc(var(--u)*5);overflow:visible}
 :where(.frame[data-screen="reports"]) .chart-head{display:flex;flex-wrap:wrap;align-items:center;gap:var(--u) calc(var(--u)*3);margin-top:calc(var(--u)*5);color:var(--muted-fg);font-size:calc(var(--fs)*.93)} :where(.frame[data-screen="reports"]) .chart-head b{color:var(--fg);font-weight:600} :where(.frame[data-screen="reports"]) .chart-plot{position:relative}
 :where(.frame[data-screen="reports"]) .chart-mode{height:max(36px,var(--floor))} :where(.frame[data-screen="reports"]) .chart-mode button{font-size:calc(var(--fs)*.93);padding:0 calc(var(--u)*2.5)}
@@ -677,6 +679,7 @@ body:has(#strip[hidden]) .notes{display:none}
 :where(.frame[data-screen="reports"]) .skeleton{height:max(var(--row),var(--floor));margin:calc(var(--u)*3) 0;border-radius:var(--r);background:var(--muted)}
 :where(.frame[data-screen="reports"]) .crumb{display:flex;align-items:center;min-height:max(var(--ctl),var(--floor));padding:0 calc(var(--u)*3);border-bottom:var(--hair) solid var(--border);flex:none}
 .frame:where([data-screen="reports"])[data-w="phone"] .scope-row{gap:var(--u);padding:calc(var(--u)*2) calc(var(--u)*3)} .frame:where([data-screen="reports"])[data-w="phone"] .scope-row .pbar{width:100%} .frame:where([data-screen="reports"])[data-w="phone"] .scope-row>.chip{max-width:100%;font-size:calc(var(--fs)*.9)}
+.frame:where([data-screen="reports"])[data-w="phone"] .hero-chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 calc(var(--u)*-3) calc(var(--u)*3);padding:0 calc(var(--u)*3);mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent)}   /* the chips scroll sideways on the phone, as the plan chips do on the register */
 .frame:where([data-screen="reports"])[data-w="phone"] .pad{padding:calc(var(--u)*3)} .frame:where([data-screen="reports"])[data-w="phone"] .hero{padding:calc(var(--u)*3)} .frame:where([data-screen="reports"])[data-w="phone"] .hero-top{flex-direction:column;gap:calc(var(--u)*3)} .frame:where([data-screen="reports"])[data-w="phone"] .kpis{margin:0;gap:calc(var(--u)*2)} .frame:where([data-screen="reports"])[data-w="phone"] .kpi .n{font-size:calc(var(--fs)*1.3)}
 .frame:where([data-screen="reports"])[data-w="phone"] .tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:calc(var(--u)*2)} .frame:where([data-screen="reports"])[data-w="phone"] .tile{padding:calc(var(--u)*3)} .frame:where([data-screen="reports"])[data-w="phone"] .tile .n{font-size:calc(var(--fs)*1.3)} .frame:where([data-screen="reports"])[data-w="phone"] .tile .l{font-size:calc(var(--fs)*.9)}
 .frame:where([data-screen="reports"])[data-w="phone"] .sess{align-items:flex-start;flex-direction:column} .frame:where([data-screen="reports"])[data-w="phone"] .detail.sidepanel{height:100%;max-height:100%;border:0;border-radius:0} .frame:where([data-screen="reports"])[data-w="phone"] .detail .bd{padding:calc(var(--u)*3)}
@@ -2018,9 +2021,20 @@ function periodDates(gran, off) {
   const b = buckets(gran, off), a = dateOf(b[0].off), z = dateOf(b[b.length - 1].off);
   return a.getMonth() === z.getMonth() ? `${a.getDate()}–${z.getDate()} ${m3(z)}` : `${a.getDate()} ${m3(a)} – ${z.getDate()} ${m3(z)}`;
 }
-function scopeBtn() {   /* who and which orders: Everyone / a cashier, completed and processing / every status */
-  const who = RS.cashier === 'all' ? 'Everyone' : RS.cashier, on = RS.cashier !== 'all' || RS.status !== 'done';
-  return `<button class="datebtn scope press ${on ? 'on' : ''}" data-act="pop" data-p="filter" aria-label="Who and which orders"><span class="mut">·</span> ${esc(who)}${RS.status === 'all' ? '<span class="mut"> · every status</span>' : ''}<span class="car">${I.chevd}</span></button>`;
+function filterChips(m) {
+  /* Paul 2026-09-18: F2 from filter-variants.html, drawn as the filter chips the app already has (an icon, the value, × when set).
+     One chip per filter, so "Everyone" no longer hides the order status; the comparison and the orders left out are chips too,
+     since they scope the same figure. A chip at its default shows the default in muted text with a chevron; a set chip is
+     outlined in the foreground with an × that puts it back (the Orders page's .op-chip, same rules) */
+  const chip = (p, icon, label, val, act, reset, title) => `<button class="fchip press ${val ? 'on' : ''}" data-act="pop" data-p="${p}" title="${title}">${icon}<span class="fv">${esc(val || label)}</span>${val ? `<span class="x" data-act="${act}" data-v="${reset}" aria-label="Back to ${esc(label)}">${I.x}</span>` : `<span class="car">${I.chevd}</span>`}</button>`;
+  const cmpLabel = `vs ${refLabel()}`;
+  const out = [chip('cashier', I.customers, 'Everyone', RS.cashier === 'all' ? '' : RS.cashier, 'cashier', 'all', 'Cashier'),
+    chip('status', I.orders, 'Completed & processing', RS.status === 'all' ? 'Every status' : '', 'status', 'done', 'Which orders')];
+  out.push(RS.gran === 'day'
+    ? chip('cmp', I.reports, cmpLabel, RS.cmp === 'yesterday' ? '' : cmpLabel, 'cmp', 'yesterday', 'Compared with')
+    : `<span class="fchip" title="Compared with">${I.reports}<span class="fv">${esc(cmpLabel)}</span></span>`);
+  if (m.excluded) out.push(`<button class="fchip on press" data-act="detail" data-v="orders" title="Which orders">${I.cart}<span class="fv">${m.excluded} order${m.excluded > 1 ? 's' : ''} left out</span><span class="x" data-act="resetTicks" aria-label="Put them back">${I.x}</span></button>`);
+  return out.join('');
 }
 function dateBtn() {   /* Paul 2026-09-17: the date and the chart are linked and should show it; quick ranges live inside the picker, as in 1.10 */
   const t = periodTitle(RS.gran, RS.off), d = periodDates(RS.gran, RS.off);
@@ -2036,16 +2050,16 @@ function hero(m) {
      the companions' second line was "11 by now" (unclear), now a signed difference against the same comparison */
   const avg = m.orders ? m.total / m.orders : 0, pavg = m.prevOrders ? m.prevRef / m.prevOrders : 0;
   const kp = (l, n, d) => `<div class="kpi"><div class="l">${l}</div><div class="n">${n}</div><div class="p">${d}</div></div>`;
-  const chip = RS.gran === 'day'
-    ? `<button class="delta press ${deltaCls(m.total, m.prevRef)}" data-act="pop" data-p="cmp" title="Compared at the same time of day">${deltaText(m.total, m.prevRef)} vs ${esc(refLabel())}<span class="car">${I.chevd}</span></button>`
-    : `<span class="delta ${deltaCls(m.total, m.prevRef)}">${deltaText(m.total, m.prevRef)} vs ${esc(refLabel())}</span>`;
+  /* Paul 2026-09-18: the comparison is chosen on its chip in the filter row; the delta only states it */
+  const chip = `<span class="delta ${deltaCls(m.total, m.prevRef)}" title="${RS.gran === 'day' && RS.off === 0 ? 'Compared at the same time of day' : 'Whole period'}">${deltaText(m.total, m.prevRef)} vs ${esc(refLabel())}</span>`;
   /* Paul 2026-09-17: less text, more graph. The busiest-hour sentence and the legend line are gone (the chart shows them); the view toggle sits in the title row */
   return `<div class="card hero">
-    <div class="hero-head">${dateBtn()}${scopeBtn()}<span class="grow"></span>${chartSeg()}<button class="ibtn press printb" data-act="detail" data-v="summary" title="Sales summary">${I.print}</button></div>
+    <div class="hero-head">${dateBtn()}<span class="grow"></span>${chartSeg()}<button class="ibtn press printb" data-act="detail" data-v="summary" title="Sales summary">${I.print}</button></div>
+    <div class="hero-chips">${filterChips(m)}</div>
     <div class="hero-top">
       <div>
         <div class="big">${fmt(m.total)}</div>
-        <div class="prev">${chip}${m.excluded ? `<button class="chip press" data-act="resetTicks" title="Put them back">${m.excluded} order${m.excluded > 1 ? 's' : ''} left out${I.x}</button>` : ''}</div>
+        <div class="prev">${chip}</div>
       </div>
       <div class="kpis">${kp('Orders', m.orders, deltaAbs(m.orders, m.prevOrders))}${kp('Average order', fmt(avg), deltaAbs(avg, pavg, true))}${kp('Items', m.items, deltaAbs(m.items, m.prevItems))}</div>
     </div>
@@ -2338,8 +2352,10 @@ function popover() {
   if (p.kind === 'scope') {
     inner = `<div class="ph">Register</div>${REGISTERS.map(r => row(r.name, RS.register === r.id, 'register', r.id, '', !RS.pro && r.id !== 'front', 'registers')).join('')}${row('All registers', RS.register === 'all', 'register', 'all', '', !RS.pro, 'registers')}`;
     if (RS.stores > 1) inner += `<div class="ph div">Store</div>${STORES.map(s => row(s.name, RS.store === s.id, 'store', s.id, '', !RS.pro && s.id !== 'uk', 'stores')).join('')}`;
-  } else if (p.kind === 'filter') {
-    inner = `<div class="ph">Cashier</div>${row('Everyone', RS.cashier === 'all', 'cashier', 'all')}${CASHIERS.map(c => row(c, RS.cashier === c, 'cashier', c)).join('')}<div class="ph div">Orders</div>${row('Completed and processing', RS.status === 'done', 'status', 'done')}${row('Every status', RS.status === 'all', 'status', 'all', 'incl. pending, on hold')}<div class="rp-note">Refunds count on the day they were made.</div>`;
+  } else if (p.kind === 'cashier') {   /* Paul 2026-09-18: one menu per chip */
+    inner = `<div class="ph">Cashier</div>${row('Everyone', RS.cashier === 'all', 'cashier', 'all')}${CASHIERS.map(c => row(c, RS.cashier === c, 'cashier', c)).join('')}`;
+  } else if (p.kind === 'status') {
+    inner = `<div class="ph">Orders</div>${row('Completed and processing', RS.status === 'done', 'status', 'done')}${row('Every status', RS.status === 'all', 'status', 'all', 'incl. pending, on hold')}<div class="rp-note">Refunds count on the day they were made.</div>`;
   } else if (p.kind === 'date') {
     const pre = [['Today', 'day', 0], ['Yesterday', 'day', 1], ['This week', 'week', 0], ['Last week', 'week', 1], ['This month', 'month', 0], ['Last month', 'month', 1]];
     const quick = pre.map(([l, g, o]) => { const lk = !RS.pro && !(g === 'day' && o === 0); return row(l, RS.gran === g && RS.off === o, 'preset', g + ':' + o, '', lk, 'earlier'); }).join('');
