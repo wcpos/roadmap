@@ -333,7 +333,7 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     Captures `pos-register/screens/variants/ledger-*.jpg`. Recommendation: the stilled head; the
     headers are the information worth the room, progress repeats the totals block, facts are
     not acted on, and a live customer needs an app change (payment locks the customer today).
-    Not decided.
+    **Paul (2026-09-18): the same head, stilled. Decided; the switch is gone.**
     **Paul (2026-09-17, later): the order number in the cart is "not a bad idea"; the pay pane's
     "Order #… · n items · Guest" title goes, and the Payments | Legacy toggle moves to the left
     in its place.** Done on every width.
@@ -407,7 +407,9 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     Paul's screenshot (cash £10.60, card £2.00, £11.50 pending on card); payments carry a fixture
     time. `board-payments.html` shows the six ledgers side by side per State. `shoot-variants.js`
     asserts two taken and one pending, the waiting terminal, Paid in full and the empty state on
-    every drawing. Captures `pos-register/screens/variants/paylist-*.jpg`. Not decided.
+    every drawing. Captures `pos-register/screens/variants/paylist-*.jpg`.
+    **Paul (2026-09-18): the paid · left bar and timeline. Decided; the switch is gone; the other
+    five live on only in `board-payments.html` as the record.**
     (c) **chips** — pills, the current one filled; reads as a filter row rather than tabs;
     (d) **cards** — small cards with amount, customer and status, current with a primary top
     edge; the most information, the tallest;

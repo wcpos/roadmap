@@ -219,7 +219,7 @@ async function auditSplitFlows(page, w, shot) {
   await page.click('[data-act="undoVoid"]'); await set('w', 'tablet');
   // Cart → ledger: removing a head row, shrinking the customer row or moving tabs must fail these checks.
   const ledgerPosition = async (option, w, scale, tabs = 'bottom') => {
-    await set('w', w); await set('scale', scale); await set('ledgerHead', option); await scn('open');
+    await set('w', w); await set('scale', scale); await scn('open');   // the ledger head is decided (still); no switch
     await page.evaluate(() => window.scrollTo(0, 0));
     const head = async () => page.locator('.cartcol').evaluate(el => {
       const y = selector => el.querySelector(selector).getBoundingClientRect().y;
@@ -239,7 +239,8 @@ async function auditSplitFlows(page, w, shot) {
     console.log('ledger geometry', label, JSON.stringify({ cart, ledger, back }));
   };
   await set('tabsPos', 'bottom');
-  for (const option of ['still', 'customer', 'progress', 'facts']) {
+  if (await page.locator('.strip [data-set="ledgerHead"]').count()) throw new Error('the Ledger head switch is still in the strip');
+  for (const option of ['still']) {
     for (const scale of ['regular', 'compact', 'spacious']) await ledgerPosition(option, 'tablet', scale);
     await ledgerPosition(option, 'desktop', 'regular');
   }
@@ -254,7 +255,6 @@ async function auditSplitFlows(page, w, shot) {
   fadePage.on('pageerror', e => errors.push('fade pageerror: ' + e.message));
   await fadePage.goto('file://' + path.join(DIR, 'index.html'));
   await fadePage.click('.strip [data-set="w"][data-v="tablet"]');
-  await fadePage.click('.strip [data-set="ledgerHead"][data-v="still"]');
   await fadePage.click('.strip [data-scn="open"]');
   await fadePage.evaluate(() => window.scrollTo(0, 0));
   const timing = await fadePage.evaluate(async () => {
@@ -482,9 +482,10 @@ async function auditSplitFlows(page, w, shot) {
   // Six payment-list drawings share the same ledger facts.
   await page.setViewportSize({ width: 1500, height: 1400 });
   await page.goto('file://' + path.join(DIR, 'index.html'));
-  const payLists = ['rows', 'tiles', 'bar', 'story', 'receipt', 'cards'];
+  const payLists = ['bar'];   // Paul 2026-09-18: decided; the other five live on only for board-payments.html
+  if (await page.locator('.strip [data-set="payList"]').count()) throw new Error('the Payments list switch is still in the strip');
   for (const opt of payLists) {
-    await set('payList', opt); await set('w', 'tablet'); await scn('split-2of3');
+    await set('w', 'tablet'); await scn('split-2of3');
     if (await page.locator('.ledger [data-pay="taken"]').count() !== 2 || await page.locator('.ledger [data-pay="pending"]').count() !== 1) throw new Error(`${opt}: expected two taken and one pending`);
     if (await balance() !== '£11.50') throw new Error(`${opt}: remaining £11.50`);
     const text = await page.locator('.paylist').innerText();
@@ -501,7 +502,7 @@ async function auditSplitFlows(page, w, shot) {
   }
   // Layout contract: payment content fits narrow/wide ledgers and totals stay outside the scroll area.
   for (const opt of payLists) for (const theme of ['light', 'dark']) for (const scale of ['compact', 'regular', 'spacious']) {
-    await set('payList', opt); await set('theme', theme); await set('scale', scale); await scn('split-2of3');
+    await set('theme', theme); await set('scale', scale); await scn('split-2of3');
     for (const width of [340, 480]) {
       const fits = await page.locator('.ledger').evaluate((el, width) => {
         el.style.width = width + 'px'; el.style.flex = 'none';

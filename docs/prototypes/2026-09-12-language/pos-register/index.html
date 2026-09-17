@@ -895,10 +895,10 @@ const OPEN=[
 const Q=new URLSearchParams(location.search);
 const S={ screen:['reports','orders'].includes(Q.get('screen'))?Q.get('screen'):'register', w:['tablet','phone','desktop'].includes(Q.get('w'))?Q.get('w'):'tablet', theme:'light', scale:'regular', scn:'open',
   splitLook:['chips','bar','ring','tear','seats'].includes(Q.get('splitLook'))?Q.get('splitLook'):'ring', splitDetail:null,   /* Paul 2026-09-17: the ring, decided; the other looks live on only for board-split.html (URL), the strip has no switch */
-  payList:['rows','tiles','bar','story','receipt','cards'].includes(Q.get('payList'))?Q.get('payList'):'bar', payClock:842,
+  payList:['rows','tiles','bar','story','receipt','cards'].includes(Q.get('payList'))?Q.get('payList'):'bar', payClock:842,   /* Paul 2026-09-18: the paid · left bar and timeline, decided; the other drawings live on only for board-payments.html (URL), no switch */
   pays:[], payPlan:null, split:null, leg:0, legMethods:[], pending:null,
   phoneTab:'cart', panel:false, sheet:null, tender:false, view:'keypad', entry:null, method:'cash', settle:null, online:true, long:false,
-  pop:null, tabsPos:'bottom', ledgerHead:'still', xf:false, customer:null, registers:1, counted:'', open:'200.00', reveal:null, edit:null, orders:2, ordlist:false, view2:'grid',
+  pop:null, tabsPos:'bottom', ledgerHead:'still' /* Paul 2026-09-18: the same head, stilled, decided; no switch */, xf:false, customer:null, registers:1, counted:'', open:'200.00', reveal:null, edit:null, orders:2, ordlist:false, view2:'grid',
   closePos:'tr', legacy:'header-text',   /* Paul 2026-09-16: decided, switches removed. Void = outlined red, matched (voidStyle 'red'). */ termStep:1, sortCart:'newest-last', tabStyle:'line1',   /* Paul 2026-09-14: amount + dot, with a format setting */
   voidStyle:'red', vmenu:false, toast:null,   /* Paul 2026-09-17: the row goes, Void becomes ⋯, the ⋯ opens the order sheet, a panel from the left over the products so the cart stays in view */
   /* personality touches (research: personality/ideas on the hub). Each is one small behaviour, not a skin. */
@@ -982,8 +982,6 @@ function renderStrip(){
     <div class="g"><b>Plan</b>${seg('plan',[['top','Free · strip at the top'],['pro','Pro · no strip']])}</div>   <!-- Paul 2026-09-17: the strip is at the top, decided; the bottom option went -->
     <div class="g"><b>Update</b>${seg('upd',[['ready','ready · in the bell'],['none','none']])}</div>
     ${S.screen==='register'?`<div class="g"><b>Order note</b>${seg('note',[['row','row above the totals'],['line','last row of the cart'],['chip','chip by the customer'],['none','none']])}</div>`:''}
-    ${S.screen==='register'?`<div class="g"><b>Ledger head</b>${seg('ledgerHead',[['still','Same head, stilled'],['customer','Customer stays live'],['progress','Payment progress'],['facts','Receipt facts']])}</div>`:''}
-    ${S.screen==='register'?`<div class="g"><b>Payments list</b>${seg('payList',[['rows','Rows (as drawn)'],['tiles','Rows with method tiles'],['bar','Paid · left bar and timeline'],['story','The story'],['receipt','Receipt tender lines'],['cards','Cards']])}</div>`:''}
     ${S.screen==='register'?`<div class="g"><b>Variations</b>${seg('vars',[['slide','Slide, breadcrumb'],['inline','Inline rows']])}</div>`:''}
     <div class="g"><b>Theme</b>${seg('theme',[['light','Default light'],['dark','Default dark'],['paper','Paper till'],['bold','Bold money'],['warm','Warm shop'],['market','Market stall'],['ocean','Ocean'],['sunset','Sunset'],['monochrome','Monochrome']])}</div>
     <div class="g"><b>Scale</b>${seg('scale',[['compact','Compact'],['regular','Regular'],['spacious','Spacious']])}</div>

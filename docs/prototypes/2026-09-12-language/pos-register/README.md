@@ -73,7 +73,7 @@ Overdue · Register panel · Closure written (beat) · Offline · Products loadi
 Products settings (slide-out) · Tender keypad · Tender on the terminal · Paid (beat) · German
 strings. Plus the two workshop switches (*Tender close*, *Legacy*).
 
-**Ledger head** (register only, beside *Order note*): **Same head, stilled** (`still`, default) ·
+**Ledger head** (Paul 2026-09-18: the same head, stilled, decided; no switch): **Same head, stilled** (`still`) ·
 *Customer stays live* (`customer`) · *Payment progress* (`progress`) · *Receipt facts* (`facts`).
 The first two keep the column labels; the others use that row for the payment amounts or receipt
 facts. Customer stays live keeps the customer chip tappable, with a receipt hint when a customer
@@ -110,7 +110,7 @@ payment removes the last taken payment, and `S.plan` remains the unrelated Free/
 
 ### Payments list (2026-09-17)
 
-**Payments list** (register only, beside *Ledger head*): Rows (as drawn) (`rows`) · Rows with
+**Payments list** (Paul 2026-09-18: the paid · left bar and timeline, decided; no switch; the other five live on only in `board-payments.html`, opened from the URL) (register only, beside *Ledger head*): Rows (as drawn) (`rows`) · Rows with
 method tiles (`tiles`) · **Paid · left bar and timeline** (`bar`, default) · The story (`story`) ·
 Receipt tender lines (`receipt`) · Cards (`cards`). The URL also accepts `payList=<option>`.
 State **Tender · 2 of 3 taken** (`split-2of3`) has Cash £10.60 at 14:02, Card £2.00 at 14:03,
