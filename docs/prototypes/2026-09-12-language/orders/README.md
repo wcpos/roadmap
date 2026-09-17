@@ -75,11 +75,25 @@ the pane beside the list (7), loading as skeleton (11, owned by #308), sentence 
 - The right-side settings dialog — covers the table it configures.
 - Zebra rows — a second surface colour in a one-surface language.
 
+## Where it lives now (2026-09-17)
+
+Paul: put the Orders mock-up into the register page and toggle between POS, Orders and Reports
+from the sidebar icons. So the page is inside `../pos-register/index.html`, reached from the
+rail (or `?screen=orders`); `index.html` here only redirects there. The Orders code is the `OS`
+state and the `OP` module at the end of the register's script, its CSS scoped to
+`data-screen="orders"`; a few classes the register styles unscoped are `op-*` on this page
+(`op-pane`, `op-toast`, `op-search`, `op-chip`, `op-k`, `op-range`). The register's Width, Theme,
+Scale and Plan switches are shared; List style and the Orders states show on Orders only.
+
 ## Screens
 
 `screens/<width>-<theme>-<scale>-<state>.jpg`: phone, tablet, desktop × light, dark × regular,
-compact × eighteen states. `node shoot.js` regenerates them, runs the keyboard and live-column
-assertions, and fails on any page or console error; `--quick` is desktop light regular only.
+compact × eighteen states, taken from the register page. `node shoot.js` regenerates them, runs
+the keyboard and live-column assertions, and fails on any page or console error; `--quick` is
+desktop light regular only. `node shoot-variants.js` redraws the list styles into
+`screens/variants/`; `node shoot-pages.js` draws every theme, the rail round trip and the phone
+menu into `screens/pages/` and asserts each page keeps its State. Run them from a directory
+that resolves Playwright (`cd /Users/kilbot/Projects/monorepo-v2 && node <path>`).
 
 ## Cut 2 (2026-09-14) — Paul's first thoughts
 

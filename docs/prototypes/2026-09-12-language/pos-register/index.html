@@ -501,6 +501,135 @@ body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSy
 .frame:where([data-screen="reports"]) .sheet,.frame:where([data-screen="reports"])[data-w="phone"] .sidepanel{animation-name:rp-rise}
 @keyframes rp-rise{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}
 @media print{body:has(.frame[data-screen="reports"])>*:not(.stage),body:has(.frame[data-screen="reports"]) .notes{display:none!important}body:has(.frame[data-screen="reports"]) .stage{padding:0}.frame:where([data-screen="reports"]){border:0!important;width:100%!important;height:auto!important}body:has(.frame[data-screen="reports"]) .upstrip,body:has(.frame[data-screen="reports"]) .rail,body:has(.frame[data-screen="reports"]) .page,body:has(.frame[data-screen="reports"]) .detail>.h,body:has(.frame[data-screen="reports"]) .detail>.ft,body:has(.frame[data-screen="reports"]) .crumb,body:has(.frame[data-screen="reports"]) .popwrap,body:has(.frame[data-screen="reports"]) .sheet-wrap{display:none!important}body:has(.frame[data-screen="reports"]) .main,body:has(.frame[data-screen="reports"]) .body,body:has(.frame[data-screen="reports"]) .sidewrap,body:has(.frame[data-screen="reports"]) .detail.sidepanel,body:has(.frame[data-screen="reports"]) .detail .bd{display:block!important;position:static!important;width:100%!important;height:auto!important;max-height:none!important;overflow:visible!important;background:var(--card)!important}}
+/* ===== Orders (folded in 2026-09-17): every rule scoped to data-screen="orders" ===== */
+:where(.frame[data-screen="orders"]) .op-chip{display:inline-flex;align-items:center;gap:calc(var(--u)*1.5);height:max(calc(var(--ctl) - 8px),var(--floor));padding:0 calc(var(--u)*3);border-radius:999px;border:var(--hair) solid var(--border);background:var(--card);white-space:nowrap;color:var(--muted-fg)}
+:where(.frame[data-screen="orders"]) .op-chip.on{border-color:var(--fg);color:var(--fg);font-weight:500}
+:where(.frame[data-screen="orders"]) .op-chip .x{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-right:calc(var(--u)*-1)}
+:where(.frame[data-screen="orders"]) .op-chip .x svg{width:12px;height:12px}
+:where(.frame[data-screen="orders"]) .st{gap:calc(var(--u)*1.75)}
+:where(.frame[data-screen="orders"]) .page{flex:1;min-width:0;display:flex;flex-direction:column}
+:where(.frame[data-screen="orders"]) .pagebar{display:flex;align-items:center;gap:calc(var(--u)*2);padding:calc(var(--u)*3) calc(var(--u)*4) 0;flex:none}
+:where(.frame[data-screen="orders"]) .pagebar h1{font-size:calc(var(--fs)*1.3);font-weight:700;margin:0 calc(var(--u)*2) 0 0;white-space:nowrap}
+.frame:where([data-screen="orders"])[data-w="phone"] .pagebar{padding:calc(var(--u)*2.5) calc(var(--u)*3) 0}
+:where(.frame[data-screen="orders"]) .op-search{position:relative;flex:1;max-width:420px}
+:where(.frame[data-screen="orders"]) .op-search svg{position:absolute;left:calc(var(--u)*3);top:50%;transform:translateY(-50%);color:var(--muted-fg);pointer-events:none}
+:where(.frame[data-screen="orders"]) .op-search .in{padding-left:calc(var(--u)*3 + var(--fs)*1.35 + var(--u)*2)}
+:where(.frame[data-screen="orders"]) .filters{display:flex;gap:calc(var(--u)*2);padding:calc(var(--u)*2.5) calc(var(--u)*4) 0;overflow-x:auto;flex:none;scrollbar-width:none}
+:where(.frame[data-screen="orders"]) .filters::-webkit-scrollbar{display:none}
+.frame:where([data-screen="orders"])[data-w="phone"] .filters{padding:calc(var(--u)*2.5) calc(var(--u)*3) 0}
+:where(.frame[data-screen="orders"]) .progress{height:2px;background:var(--border);position:relative;overflow:hidden;margin:calc(var(--u)*2) calc(var(--u)*4) 0;border-radius:1px}
+:where(.frame[data-screen="orders"]) .progress::after{content:"";position:absolute;inset:0;width:30%;background:var(--primary);animation:op-progress 1.1s var(--ease) infinite}
+:where(.frame[data-screen="orders"]) .listwrap{flex:1;min-height:0;display:flex;gap:calc(var(--u)*3);padding:calc(var(--u)*3) calc(var(--u)*4) calc(var(--u)*4)}
+.frame:where([data-screen="orders"])[data-w="phone"] .listwrap{padding:calc(var(--u)*3) 0 0;gap:0}
+:where(.frame[data-screen="orders"]) .card{flex:1;min-width:0;background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);display:flex;flex-direction:column;overflow:hidden}
+.frame:where([data-screen="orders"])[data-w="phone"] .card{border-left:0;border-right:0;border-bottom:0;border-radius:0}
+.frame:where([data-screen="orders"])[data-list="bleed"] .card,.frame:where([data-screen="orders"])[data-list="grouped"] .card,.frame:where([data-screen="orders"])[data-list="stats"] .card{border:0;border-radius:0;background:transparent}
+.frame:where([data-screen="orders"])[data-list="bleed"] .listwrap,.frame:where([data-screen="orders"])[data-list="grouped"] .listwrap,.frame:where([data-screen="orders"])[data-list="stats"] .listwrap{padding-top:calc(var(--u)*2)}
+.frame:where([data-screen="orders"])[data-list="bleed"] .thead,.frame:where([data-screen="orders"])[data-list="grouped"] .thead,.frame:where([data-screen="orders"])[data-list="stats"] .thead{background:transparent;border-bottom:var(--hair) solid var(--border)}
+.frame:where([data-screen="orders"])[data-list="bleed"] .tfoot,.frame:where([data-screen="orders"])[data-list="grouped"] .tfoot,.frame:where([data-screen="orders"])[data-list="stats"] .tfoot{border-top:var(--hair) solid var(--border)}
+.frame:where([data-screen="orders"])[data-list="bleed"] .tr:hover,.frame:where([data-screen="orders"])[data-list="grouped"] .tr:hover,.frame:where([data-screen="orders"])[data-list="stats"] .tr:hover{background:var(--card)}
+.frame:where([data-screen="orders"])[data-list="bleed"] .op-pane,.frame:where([data-screen="orders"])[data-list="grouped"] .op-pane,.frame:where([data-screen="orders"])[data-list="stats"] .op-pane{background:var(--card)}
+:where(.frame[data-screen="orders"]) .grp{display:flex;align-items:center;gap:calc(var(--u)*2);height:max(calc(var(--row) - 8px),32px);padding:0 calc(var(--u)*3);color:var(--muted-fg);font-size:calc(var(--fs)*.86);font-weight:600;background:var(--muted);border-bottom:var(--hair) solid var(--border)}
+:where(.frame[data-screen="orders"]) .grp b{color:var(--fg)}
+:where(.frame[data-screen="orders"]) .grp .n{font-weight:500}
+:where(.frame[data-screen="orders"]) .op-chip.tog{gap:calc(var(--u)*1.5)}
+:where(.frame[data-screen="orders"]) .op-chip.tog.on{background:var(--fg);color:var(--bg);border-color:var(--fg);font-weight:600}
+:where(.frame[data-screen="orders"]) .op-chip.tog.on svg{width:12px;height:12px;stroke-width:2.5}
+:where(.frame[data-screen="orders"]) .stats{display:flex;gap:calc(var(--u)*2);padding:calc(var(--u)*2.5) calc(var(--u)*4) 0;overflow-x:auto;scrollbar-width:none;flex:none}
+:where(.frame[data-screen="orders"]) .stats::-webkit-scrollbar{display:none}
+:where(.frame[data-screen="orders"]) .stat{flex:none;display:inline-flex;flex-direction:column;justify-content:center;gap:1px;min-width:calc(var(--fs)*7);height:max(calc(var(--ctl) + 8px),52px);padding:0 calc(var(--u)*3);border:var(--hair) solid var(--border);border-radius:var(--r);background:var(--card);text-align:left}
+:where(.frame[data-screen="orders"]) .stat .l{color:var(--muted-fg);font-size:calc(var(--fs)*.86);display:inline-flex;align-items:center;gap:calc(var(--u)*1.5)}
+:where(.frame[data-screen="orders"]) .stat .v{font-weight:600;font-size:calc(var(--fs)*1.1)}
+:where(.frame[data-screen="orders"]) .stat.on{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary)}
+:where(.frame[data-screen="orders"]) .stat.on .l{color:var(--fg)}
+:where(.frame[data-screen="orders"]) .thead{display:grid;align-items:center;height:max(calc(var(--row) - 8px),32px);border-bottom:var(--hair) solid var(--border);color:var(--muted-fg);font-size:calc(var(--fs)*.8);font-weight:600;letter-spacing:.05em;text-transform:uppercase;flex:none;background:var(--muted)}
+:where(.frame[data-screen="orders"]) .th{padding:0 calc(var(--u)*3);display:flex;align-items:center;gap:calc(var(--u)*1);position:relative;height:100%;white-space:nowrap;overflow:hidden}
+:where(.frame[data-screen="orders"]) .th.r{justify-content:flex-end}
+:where(.frame[data-screen="orders"]) .th.c{justify-content:center}
+:where(.frame[data-screen="orders"]) .th .sort{opacity:0;width:12px;height:12px}
+:where(.frame[data-screen="orders"]) .th.sorted .sort{opacity:1}
+:where(.frame[data-screen="orders"]) .th:hover .sort{opacity:.6}
+:where(.frame[data-screen="orders"]) .th .rz{position:absolute;right:0;top:25%;height:50%;width:1px;background:var(--border);cursor:col-resize}
+:where(.frame[data-screen="orders"]) .th:hover .rz{background:var(--muted-fg);width:2px}
+:where(.frame[data-screen="orders"]) .tbody{flex:1;overflow:auto;min-height:0}
+:where(.frame[data-screen="orders"]) .tr{display:grid;align-items:center;min-height:max(var(--row),var(--floor));border-bottom:var(--hair) solid var(--border);position:relative}
+:where(.frame[data-screen="orders"]) .tr:hover{background:var(--muted)}
+:where(.frame[data-screen="orders"]) .tr.sel{background:color-mix(in oklch,var(--primary) 8%,transparent)}
+:where(.frame[data-screen="orders"]) .tr.focus{box-shadow:inset 0 0 0 2px var(--ring)}
+:where(.frame[data-screen="orders"]) .td{padding:calc(var(--u)*1.5) calc(var(--u)*3);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+:where(.frame[data-screen="orders"]) .td.r{text-align:right}
+:where(.frame[data-screen="orders"]) .td.c{text-align:center;display:flex;justify-content:center}
+:where(.frame[data-screen="orders"]) .td .sub{display:block;color:var(--muted-fg);font-size:calc(var(--fs)*.86);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+:where(.frame[data-screen="orders"]) .tr.sk .td>span{display:inline-block;height:calc(var(--fs)*1);width:70%;border-radius:4px;background:var(--muted)}
+:where(.frame[data-screen="orders"]) .dim .tr{opacity:.55}
+:where(.frame[data-screen="orders"]) .tfoot{display:flex;align-items:center;gap:calc(var(--u)*2);padding:0 calc(var(--u)*2) 0 calc(var(--u)*4);height:max(var(--ctl),var(--floor));border-top:var(--hair) solid var(--border);color:var(--muted-fg);flex:none}
+:where(.frame[data-screen="orders"]) .empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*2);color:var(--muted-fg);padding:calc(var(--u)*6);text-align:center}
+:where(.frame[data-screen="orders"]) .empty svg{width:calc(var(--fs)*2.2);height:calc(var(--fs)*2.2);stroke-width:1.5}
+:where(.frame[data-screen="orders"]) .empty .t{color:var(--fg);font-weight:500}
+:where(.frame[data-screen="orders"]) .empty a{color:var(--primary);text-decoration:none}
+:where(.frame[data-screen="orders"]) .spin{animation:spin 1s linear infinite}
+:where(.frame[data-screen="orders"]) .op-orow{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:calc(var(--u)*3);min-height:max(calc(var(--row) + 12px),56px);padding:calc(var(--u)*2) calc(var(--u)*4);border-bottom:var(--hair) solid var(--border);text-align:left;width:100%}
+:where(.frame[data-screen="orders"]) .op-orow:active{background:var(--muted)}
+:where(.frame[data-screen="orders"]) .op-orow.sel{background:color-mix(in oklch,var(--primary) 8%,transparent)}
+:where(.frame[data-screen="orders"]) .op-orow .l1{display:flex;align-items:center;gap:calc(var(--u)*2);min-width:0}
+:where(.frame[data-screen="orders"]) .op-orow .l2{color:var(--muted-fg);font-size:calc(var(--fs)*.9);display:flex;gap:calc(var(--u)*1.5);align-items:center;min-width:0}
+:where(.frame[data-screen="orders"]) .op-orow .amt{text-align:right;font-weight:600}
+:where(.frame[data-screen="orders"]) .op-orow .amt .sub{display:block;font-weight:400;color:var(--muted-fg);font-size:calc(var(--fs)*.86)}
+:where(.frame[data-screen="orders"]) .op-orow svg.chev{color:var(--muted-fg)}
+:where(.frame[data-screen="orders"]) .pop{position:absolute;z-index:25;width:300px;background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);padding:calc(var(--u)*2);animation:drop var(--t) var(--ease)}
+:where(.frame[data-screen="orders"]) .pop .h{font-weight:600;padding:calc(var(--u)*2) calc(var(--u)*2) calc(var(--u)*1);display:flex;align-items:center}
+:where(.frame[data-screen="orders"]) .pop .opt{display:flex;align-items:center;gap:calc(var(--u)*3);min-height:max(var(--row),var(--floor));padding:0 calc(var(--u)*2);border-radius:calc(var(--r) - 2px);width:100%;text-align:left}
+:where(.frame[data-screen="orders"]) .pop .opt:active,:where(.frame[data-screen="orders"]) .pop .opt:hover{background:var(--muted)}
+:where(.frame[data-screen="orders"]) .pop .opt.on{font-weight:600}
+:where(.frame[data-screen="orders"]) .pop .opt .ck{margin-left:auto;color:var(--primary)}
+:where(.frame[data-screen="orders"]) .pop .opt.d{color:var(--destructive)}
+:where(.frame[data-screen="orders"]) .pop .sep{border-top:var(--hair) solid var(--border);margin:calc(var(--u)*1) 0}
+:where(.frame[data-screen="orders"]) .pop .grip{color:var(--border);cursor:grab}
+:where(.frame[data-screen="orders"]) .pop .opt:hover .grip{color:var(--muted-fg)}
+:where(.frame[data-screen="orders"]) .pop .nest{padding-left:calc(var(--u)*8)}
+.frame:where([data-screen="orders"])[data-w="phone"] .pop{left:calc(var(--u)*3) !important;right:calc(var(--u)*3) !important;top:auto !important;bottom:calc(var(--u)*3);width:auto;max-height:70%;overflow:auto}
+:where(.frame[data-screen="orders"]) .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:calc(var(--u)*2)}
+:where(.frame[data-screen="orders"]) .cal .d{height:32px;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:calc(var(--fs)*.9)}
+:where(.frame[data-screen="orders"]) .cal .d.op-range{background:color-mix(in oklch,var(--primary) 12%,transparent)}
+:where(.frame[data-screen="orders"]) .cal .d.e{background:var(--primary);color:var(--primary-fg);font-weight:600}
+:where(.frame[data-screen="orders"]) .cal .d.m{color:var(--muted-fg);font-size:calc(var(--fs)*.75);font-weight:600}
+:where(.frame[data-screen="orders"]) .presets{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(var(--u)*1.5);padding:0 calc(var(--u)*2)}
+:where(.frame[data-screen="orders"]) .presets .op-chip{justify-content:center;padding:0}
+:where(.frame[data-screen="orders"]) .op-pane{width:560px;flex:none;background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);display:flex;flex-direction:column;overflow:hidden;animation:op-slidein 220ms var(--ease)}
+.frame:where([data-screen="orders"])[data-w="tablet"] .op-pane{width:440px}
+.frame:where([data-screen="orders"])[data-w="phone"] .op-pane{position:absolute;inset:0;width:auto;border:0;border-radius:0;z-index:10;animation:rise 200ms var(--ease)}
+:where(.frame[data-screen="orders"]) .pane-h{padding:calc(var(--u)*4) calc(var(--u)*3) calc(var(--u)*3) calc(var(--u)*5);border-bottom:var(--hair) solid var(--border);flex:none}
+:where(.frame[data-screen="orders"]) .pane-h .eyebrow{display:flex;align-items:center;gap:calc(var(--u)*2);color:var(--muted-fg)}
+:where(.frame[data-screen="orders"]) .pane-h .total{font-size:var(--amt);font-weight:700;line-height:1.1;margin-top:calc(var(--u)*1.5);display:flex;align-items:baseline;gap:calc(var(--u)*3);flex-wrap:wrap}
+:where(.frame[data-screen="orders"]) .pane-b{flex:1;overflow:auto;min-height:0}
+:where(.frame[data-screen="orders"]) .sec{padding:calc(var(--u)*3) calc(var(--u)*5);border-bottom:var(--hair) solid var(--border)}
+:where(.frame[data-screen="orders"]) .sec .sh{color:var(--muted-fg);font-size:calc(var(--fs)*.8);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:calc(var(--u)*2)}
+:where(.frame[data-screen="orders"]) .item{display:grid;grid-template-columns:auto 1fr auto;gap:calc(var(--u)*3);align-items:center;padding:calc(var(--u)*1.5) 0}
+:where(.frame[data-screen="orders"]) .item .img{width:44px;height:44px;border-radius:calc(var(--r) - 2px);background:var(--muted)}
+:where(.frame[data-screen="orders"]) .item .sub{display:block;color:var(--muted-fg);font-size:calc(var(--fs)*.86)}
+:where(.frame[data-screen="orders"]) .kv{display:grid;grid-template-columns:1fr auto;gap:calc(var(--u)*1) calc(var(--u)*4);padding:calc(var(--u)*.75) 0}
+:where(.frame[data-screen="orders"]) .kv .v{text-align:right}
+:where(.frame[data-screen="orders"]) .kv.big{font-weight:700;font-size:calc(var(--fs)*1.15);padding-top:calc(var(--u)*2)}
+:where(.frame[data-screen="orders"]) .dl{display:grid;grid-template-columns:1fr 1fr;gap:calc(var(--u)*3) calc(var(--u)*4)}
+:where(.frame[data-screen="orders"]) .dl .op-k{color:var(--muted-fg);font-size:calc(var(--fs)*.86)}
+:where(.frame[data-screen="orders"]) .dl .v{white-space:pre-line}
+:where(.frame[data-screen="orders"]) .pane-f{display:flex;gap:calc(var(--u)*2);padding:calc(var(--u)*3) calc(var(--u)*5) calc(var(--u)*4);border-top:var(--hair) solid var(--border);flex:none}
+:where(.frame[data-screen="orders"]) .pane-f .btn.p{flex:1}
+:where(.frame[data-screen="orders"]) .refund{border:var(--hair) solid var(--border);border-radius:var(--r);padding:calc(var(--u)*2.5) calc(var(--u)*3);display:grid;grid-template-columns:1fr auto;gap:calc(var(--u)*1);align-items:center}
+:where(.frame[data-screen="orders"]) .refund .sub{display:block;color:var(--muted-fg);font-size:calc(var(--fs)*.86)}
+:where(.frame[data-screen="orders"]) .pane-h .total .st{font-size:var(--fs);font-weight:500;letter-spacing:0}
+:where(.frame[data-screen="orders"]) .op-toast{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(var(--u)*5);z-index:40;background:var(--fg);color:var(--bg);border-radius:var(--r);padding:calc(var(--u)*2.5) calc(var(--u)*4);display:flex;align-items:center;gap:calc(var(--u)*2);animation:drop var(--t) var(--ease);white-space:nowrap}
+:where(.frame[data-screen="orders"]) .op-toast .ck{width:18px;height:18px;border-radius:50%;background:var(--ok);display:inline-flex;align-items:center;justify-content:center}
+:where(.frame[data-screen="orders"]) .op-toast .ck svg{width:11px;height:11px;stroke:#fff;stroke-width:2.5}
+:where(.frame[data-screen="orders"]) .notice{margin:calc(var(--u)*3) calc(var(--u)*4) 0;padding:calc(var(--u)*2.5) calc(var(--u)*3);border:var(--hair) solid color-mix(in oklch,var(--warn) 45%,transparent);border-radius:var(--r);background:var(--warn-bg);display:flex;align-items:center;gap:calc(var(--u)*2);flex:none}
+@keyframes op-progress{from{transform:translateX(-100%)}to{transform:translateX(340%)}}
+@keyframes op-slidein{from{transform:translateX(16px);opacity:0}to{transform:none;opacity:1}}
+:where(.frame[data-screen="orders"]) .btn.dd{background:var(--destructive);color:var(--destructive-fg);border-color:transparent;font-weight:600}
+:where(.frame[data-screen="orders"]) .sheet-f{justify-content:flex-end}
+:where(.frame[data-screen="orders"]) .sheet-context{margin-top:calc(var(--u)*2);font-weight:400;color:var(--muted-fg)}
+.frame:where([data-screen="orders"])[data-w="phone"] .sheet-f{flex-direction:column} .frame:where([data-screen="orders"])[data-w="phone"] .sheet-f .btn{width:100%}
+.frame:where([data-screen="orders"]) .sheet-wrap{align-items:center;padding:calc(var(--u)*3)} .frame:where([data-screen="orders"]) .sheet{border-radius:var(--r);border:var(--hair) solid var(--border)}
+@media(prefers-reduced-motion:reduce){.frame:where([data-screen="orders"]) *{animation:none!important;transition:none!important}}
 </style>
 <script src="iconsets.js"></script>
 </head>
@@ -576,7 +705,7 @@ const OPEN=[
 ];
 
 const Q=new URLSearchParams(location.search);
-const S={ screen:Q.get('screen')==='reports'?'reports':'register', w:'tablet', theme:'light', scale:'regular', scn:'open',
+const S={ screen:['reports','orders'].includes(Q.get('screen'))?Q.get('screen'):'register', w:'tablet', theme:'light', scale:'regular', scn:'open',
   phoneTab:'cart', panel:false, sheet:null, tender:false, view:'keypad', entry:null, method:'cash', settle:null, online:true, long:false,
   pop:null, tabsPos:'bottom', registers:1, counted:'', open:'200.00', reveal:null, edit:null, orders:2, ordlist:false, view2:'grid',
   closePos:'tr', legacy:'header-text',   /* Paul 2026-09-16: decided, switches removed. Void = outlined red, matched (voidStyle 'red'). */ termStep:1, sortCart:'newest-last', tabStyle:'line1',   /* Paul 2026-09-14: amount + dot, with a format setting */
@@ -585,6 +714,7 @@ const S={ screen:Q.get('screen')==='reports'?'reports':'register', w:'tablet', t
   tx:{roll:1,stamp:1,pence:1,badge:1,tear:1,doodle:1}, qx:null, qbuf:'', undoLine:null, plan:'top', upd:'ready', note:'row', vars:'slide', pview:'products', cats:[], tags:[], menu:false, slide:null, stock:null, feat:false, quick:false };   /* Paul 2026-09-17: today's POS lets you pick many categories and a tag on top; a category is a chip, not a crumb */   /* 2026-09-17: filters are chips in the bar, the breadcrumb is the place; the footer says the count */   /* Paul 2026-09-17: variations slide the table left behind a breadcrumb (board 4); inline rows stay as the other style, a POS panel setting */   /* Paul 2026-09-17: the quantity expands in place; edit and delete by swiping the total */   /* Paul 2026-09-17: surface decided, today's; the header stays caps over a hairline */   /* Paul 2026-09-16: Tabler at 1.5 px, for a while; Hugeicons the standing alternative */
 /* Paul 2026-09-16: the voice is out (translations); pence and the tear-off belong to the whimsical themes only; the badge is kept for a property chosen in POS Products settings, stock for now. */
 if(S.screen==='reports'){S.scn='today';S.theme=Q.get('theme')==='dark'?'dark':'light';}
+if(S.screen==='orders')S.scn='default';
 const WHIMSY=['market','paper'];
 const STR=()=>S.long?{
   search:'Produkte suchen',scan:'Scannen',priceCheck:'Nur Preisprüfung, bis die Kasse geöffnet ist.',counting:'Keine Verkäufe, während die Kasse gezählt wird.',
@@ -654,19 +784,20 @@ function renderStrip(){
     <div class="g"><b>Theme</b>${seg('theme',[['light','Default light'],['dark','Default dark'],['paper','Paper till'],['bold','Bold money'],['warm','Warm shop'],['market','Market stall'],['ocean','Ocean'],['sunset','Sunset'],['monochrome','Monochrome']])}</div>
     <div class="g"><b>Scale</b>${seg('scale',[['compact','Compact'],['regular','Regular'],['spacious','Spacious']])}</div>
     ${S.screen==='register'?`<div class="g"><b>Tabs</b>${seg('tabsPos',[['bottom','bottom'],['top','top']])}</div>`:''}
-    <div class="g"><b>Touches</b><span class="seg">${(()=>{const all=Object.values(S.tx).every(Boolean), none=!Object.values(S.tx).some(Boolean); return `<button class="${none?'on':''}" data-txall="0">before</button><button class="${all?'on':''}" data-txall="1">after</button>`;})()}</span><span class="seg">${[['roll','total settles'],['stamp','PAID stamp'],['pence','price-tag pence (whimsical themes)'],['badge','tile badge · stock'],['tear','receipt tears off (whimsical themes)'],['doodle','doodle']].map(([k,l])=>`<button class="${S.tx[k]?'on':''}" data-tx="${k}">${l}</button>`).join('')}</span></div>
+    ${S.screen!=='orders'?`<div class="g"><b>Touches</b><span class="seg">${(()=>{const all=Object.values(S.tx).every(Boolean), none=!Object.values(S.tx).some(Boolean); return `<button class="${none?'on':''}" data-txall="0">before</button><button class="${all?'on':''}" data-txall="1">after</button>`;})()}</span><span class="seg">${[['roll','total settles'],['stamp','PAID stamp'],['pence','price-tag pence (whimsical themes)'],['badge','tile badge · stock'],['tear','receipt tears off (whimsical themes)'],['doodle','doodle']].map(([k,l])=>`<button class="${S.tx[k]?'on':''}" data-tx="${k}">${l}</button>`).join('')}</span></div>`:''}
     ${S.screen==='register'?`<div class="g"><b>Registers</b>${seg('registers',[[1,'1'],[3,'3']])}</div>`:''}
     ${S.screen==='reports'?`<div class="g"><b>Stores</b>${seg('stores',[[1,'1'],[2,'2']],RS)}</div>`:''}
-    <div class="g"><b>State</b><span class="seg">${(S.screen==='reports'?RP.SCENES:SCENES).map(([v,l])=>`<button class="${S.scn===v?'on':''}" data-scn="${v}">${l}</button>`).join('')}</span></div>`;
+    ${S.screen==='orders'?`<div class="g"><b>List style</b>${seg('listStyle',[['bleed','no frame (Linear)'],['grouped','no frame · by day'],['stats','status counts + no frame (Stripe)'],['card','hairline card (cut 1)']],OS)}</div>`:''}
+    <div class="g"><b>State</b><span class="seg">${(S.screen==='reports'?RP.SCENES:S.screen==='orders'?OP.SCENES:SCENES).map(([v,l])=>`<button class="${S.scn===v?'on':''}" data-scn="${v}">${l}</button>`).join('')}</span></div>`;
 }
 /* Paul 2026-09-17: Reports is a page in the app, reached from the rail (the phone's menu sheet), not a switch in the strip */
-const NAV=[['pos','POS','register'],['products','Products'],['orders','Orders'],['customers','Customers'],['coupons','Coupons'],['reports','Reports','reports']];
+const NAV=[['pos','POS','register'],['products','Products'],['orders','Orders','orders'],['customers','Customers'],['coupons','Coupons'],['reports','Reports','reports']];
 const NAV_BOTTOM=[['health','Store health'],['gear','Settings'],['support','Support']];   /* Paul 2026-09-17: the bell moved to the cart bar */
-const navOn=(k)=>k===(S.screen==='reports'?'reports':'pos');
-const SCN_OF={register:'open',reports:'today'};   /* each page keeps its own State while you move between them */
+const navOn=(k)=>k===(S.screen==='register'?'pos':S.screen);
+const SCN_OF={register:'open',reports:'today',orders:'default'};   /* each page keeps its own State while you move between them */
 function nav(screen){
-  if(screen===S.screen){ S.sheet=null; RS.sheet=null; render(); return; }
-  clearTimeout(termTimer); SCN_OF[S.screen]=S.scn; S.screen=screen; S.scn=SCN_OF[screen]; S.sheet=null; RS.sheet=null; render();
+  if(screen===S.screen){ S.sheet=null; RS.sheet=null; OS.sheet=null; render(); return; }
+  clearTimeout(termTimer); SCN_OF[S.screen]=S.scn; S.screen=screen; S.scn=SCN_OF[screen]; S.sheet=null; RS.sheet=null; OS.sheet=null; render();
 }
 function renderRail(){
   const it=([k,l,screen])=>`<button class="it press ${navOn(k)?'on':''}" aria-label="${l}" title="${l}"${navOn(k)?' aria-current="page"':''}${screen?` data-nav="${screen}"`:''}>${I[k]}</button>`;
@@ -1055,7 +1186,9 @@ function render(){
   Object.assign(I, I0, ICONSETS[['market','warm'].includes(S.theme)?'hugeicons':['paper','bold','ocean','sunset'].includes(S.theme)?'ph':'tabler-15']||{});
   renderStrip();
   const f=document.getElementById('frame'); f.className='frame'; f.dataset.w=S.w; f.dataset.theme=S.theme; f.dataset.scale=S.scale; f.dataset.screen=S.screen;
+  if(S.screen!=='orders')delete f.dataset.list;
   if(S.screen==='reports'){RP.render();return;}
+  if(S.screen==='orders'){OP.render();return;}
   const oldPane=S.slide&&f.querySelector('.pane:not(.exit-l):not(.exit-r)'); const oldHtml=oldPane?oldPane.outerHTML:null;
 
   f.innerHTML=`${S.plan==='top'&&!S.nostrip?renderUpgradeStrip('top'):''}<div class="body">${S.w==='phone'?'':renderRail()}<div class="main">${renderPOS()}${renderSide()}${renderPanel()}${renderSheet()}</div></div>${S.plan==='bottom'&&!S.nostrip?renderUpgradeStrip('bottom'):''}`;
@@ -1074,15 +1207,17 @@ function stepTerminal(){ clearTimeout(termTimer); if(S.view!=='terminal') return
 document.addEventListener('click',e=>{
   const control=e.target.closest('[data-set],[data-scn],[data-tx],[data-txall],[data-nav]');
   if(S.screen==='reports'&&!control){RP.click(e);return;}
+  if(S.screen==='orders'&&!control){OP.click(e);return;}
   const b=e.target.closest('[data-set],[data-scn],[data-act],[data-tx],[data-txall],[data-nav]');
   if(S.dragged){ S.dragged=false; return; }   /* the click that follows a swipe must not close what the swipe opened */
   if(!b){ if(!e.target.closest('[data-stop]') && (S.pop||S.ordlist||S.reveal!=null||S.edit!=null||S.qx!=null||S.menu)){ S.pop=null; S.menu=false; S.ordlist=false; S.reveal=null; S.edit=null; S.qx=null; S.qbuf=''; render(); } return; }
   if(b.dataset.nav){ nav(b.dataset.nav); return; }
+  if(b.dataset.set==='listStyle'){OS.listStyle=b.dataset.v;render();return;}
   if(b.dataset.set==='stores'){RS.stores=+b.dataset.v;render();return;}
   if(b.dataset.set){ const v=b.dataset.v; S[b.dataset.set]=(v==='1'||v==='3')?+v:v; if(b.dataset.set==='plan') S.nostrip=false; render(); return; }
   if(b.dataset.tx){ S.tx[b.dataset.tx]=S.tx[b.dataset.tx]?0:1; render(); return; }
   if(b.dataset.txall!==undefined){ const v=+b.dataset.txall; Object.keys(S.tx).forEach(k=>S.tx[k]=v); render(); return; }
-  if(b.dataset.scn && !b.dataset.act){ (S.screen==='reports'?RP.jump:jump)(b.dataset.scn); return; }
+  if(b.dataset.scn && !b.dataset.act){ (S.screen==='reports'?RP.jump:S.screen==='orders'?OP.jump:jump)(b.dataset.scn); return; }
   const a=b.dataset.act;
   switch(a){
     case 'noop': break;
@@ -1141,7 +1276,7 @@ document.addEventListener('click',e=>{
   render();
 });
 document.addEventListener('change',e=>{if(S.screen==='reports')RP.change(e);});
-document.addEventListener('input',e=>{ if(S.screen==='reports'){RP.input(e);return;} if(e.target.dataset.count){ S.counted=e.target.value; const pos=e.target.selectionStart; render(); const n=document.querySelector('[data-count]'); if(n){n.focus(); n.setSelectionRange(pos,pos);} } });
+document.addEventListener('input',e=>{ if(S.screen==='reports'){RP.input(e);return;} if(S.screen==='orders')return; if(e.target.dataset.count){ S.counted=e.target.value; const pos=e.target.selectionStart; render(); const n=document.querySelector('[data-count]'); if(n){n.focus(); n.setSelectionRange(pos,pos);} } });
 document.addEventListener('pointerdown',e=>{
   const tot=e.target.closest('.line .tot[data-tot]'); if(!tot||S.edit!=null) return; const ln=tot.closest('.line'); const lb=ln.querySelector('.lb'); const i=+ln.dataset.i;
   const x0=e.clientX; let dx=0, moved=false; const open=S.reveal===i; const w=ln.querySelector('.acts').getBoundingClientRect().width||160;
@@ -1156,6 +1291,7 @@ document.addEventListener('pointerdown',e=>{
 });
 document.addEventListener('keydown',e=>{
   if(S.screen==='reports'){RP.keydown(e);return;}
+  if(S.screen==='orders'){OP.keydown(e);return;}
   if (S.qx!=null && S.w!=='phone'){ if(/^[0-9]$/.test(e.key)) { document.querySelector(`.qx [data-act="qkey"][data-k="${e.key}"]`)?.click(); return; } if(e.key==='Backspace'){ document.querySelector('.qx [data-act="qkey"][data-k="bs"]')?.click(); return; } if(e.key==='Enter'||e.key==='Escape'){ S.qx=null; S.qbuf=''; render(); return; } }
   if (S.edit!=null && (e.key==='Enter'||e.key==='Escape')){ S.edit=null; render(); return; }
   if (!S.tender || S.view!=='keypad') return;
@@ -1686,6 +1822,249 @@ function exportReport(){
 function change(e){if(e.target.id==='template'){RS.tpl=e.target.value;render();}}
 function input(e){if(!['recount-total','recount-reason'].includes(e.target.id))return;RS[e.target.id==='recount-total'?'counted':'reason']=e.target.value;if(e.target.id==='recount-total')RS.pieces={};document.getElementById('save-recount').disabled=!RS.online||!RS.reason.trim()||RS.counted===''||!Number.isFinite(+RS.counted)||+RS.counted<0;}
 return {render:renderReports, click, keydown, change, input, jump, SCENES};
+})();
+
+/* Orders: private fixtures and helpers; only OS and OP enter the shared page. Folded in 2026-09-17 (Paul: the rail toggles POS, Orders, Reports). */
+const OS={ cols:{}, sub:{billing:false,shipping:false,paymethod:false}, open:null, pop:null, menu:null, sheet:null, focus:null, filters:{}, online:true, long:false, toast:null, sort:'date_created_gmt', listStyle:'bleed', tog:{} };
+const OP=(()=>{
+const OI={
+  up:'<svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
+  down:'<svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg>',
+  wp:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M6 8l4 10 2-6 2 6 4-10M9 8h2M13 8h2"/></svg>',
+  warn:'<svg viewBox="0 0 24 24"><path d="M12 3l10 18H2zM12 10v4M12 17h.01"/></svg>',
+  inbox:'<svg viewBox="0 0 24 24"><path d="M4 13l2-8h12l2 8v6H4zM4 13h5l1 2h4l1-2h5"/></svg>',
+};
+const CUR='£'; const ofmt=n=>`${n<0?'−':''}${CUR}${Math.abs(n).toFixed(2)}`;
+/* the fixed semantic status set — same colour in every theme (§3 of the direction) */
+const STATUS={
+  completed:['Completed','ok'], processing:['Processing','info'], pending:['Pending payment','warn'], 'on-hold':['On hold','warn'],
+  cancelled:['Cancelled',''], refunded:['Refunded',''], failed:['Failed','bad'], 'pos-open':['POS open','info'], 'pos-partial':['POS partial','warn'], 'partially-refunded':['Partially refunded','warn'],
+};
+const ORDERS=[
+  {n:102476,s:'completed',c:'Guest',d:'2 hours ago',dl:'Sun 14 Sep 2026 · 10:42',t:22.60,pm:'Cash',via:'pos',cash:'Demo Cashier',bill:'',note:''},
+  {n:102475,s:'processing',c:'Amy Okafor',d:'3 hours ago',dl:'Sun 14 Sep 2026 · 09:58',t:48.00,pm:'SumUp',via:'pos',cash:'Demo Cashier',bill:'14 Bridge St, Bristol BS1 4QA',note:'Ring the bell twice'},
+  {n:102474,s:'partially-refunded',c:'Sam Reilly',d:'Yesterday',dl:'Sat 13 Sep 2026 · 17:20',t:96.40,ref:12.00,pm:'Card',via:'pos',cash:'Amy Okafor',bill:'2 Park Row, Bath BA1 2LE',note:''},
+  {n:102473,s:'pos-open',c:'Guest',d:'Yesterday',dl:'Sat 13 Sep 2026 · 16:05',t:8.40,pm:'',via:'pos',cash:'Amy Okafor',bill:'',note:''},
+  {n:102472,s:'on-hold',c:'Priya Nair',d:'Yesterday',dl:'Sat 13 Sep 2026 · 12:31',t:130.00,pm:'Bank transfer',via:'web',cash:'',bill:'88 High St, Wells BA5 2AJ',note:'Collect Tuesday'},
+  {n:102471,s:'pending',c:'Guest',d:'Yesterday',dl:'Sat 13 Sep 2026 · 11:02',t:15.20,pm:'PayPal',via:'web',cash:'',bill:'',note:''},
+  {n:102470,s:'refunded',c:'Tom Baird',d:'September 12, 2026',dl:'Fri 12 Sep 2026 · 15:48',t:32.00,ref:32.00,pm:'Cash',via:'pos',cash:'Demo Cashier',bill:'',note:''},
+  {n:102469,s:'cancelled',c:'Guest',d:'September 12, 2026',dl:'Fri 12 Sep 2026 · 14:10',t:5.00,pm:'Cash',via:'pos',cash:'Sam Reilly',bill:'',note:''},
+  {n:102468,s:'failed',c:'Jo Lindqvist',d:'September 12, 2026',dl:'Fri 12 Sep 2026 · 13:27',t:64.90,pm:'Stripe',via:'web',cash:'',bill:'Storgatan 5, 114 51 Stockholm',note:''},
+  {n:102467,s:'completed',c:'Guest',d:'September 12, 2026',dl:'Fri 12 Sep 2026 · 12:05',t:11.80,pm:'Card',via:'pos',cash:'Demo Cashier',bill:'',note:''},
+  {n:102466,s:'completed',c:'Marta Kowalczyk',d:'September 11, 2026',dl:'Thu 11 Sep 2026 · 18:40',t:27.50,pm:'Cash',via:'admin',cash:'',bill:'ul. Długa 12, 80-827 Gdańsk',note:''},
+  {n:102465,s:'pos-partial',c:'Guest',d:'September 11, 2026',dl:'Thu 11 Sep 2026 · 16:12',t:200.00,pm:'Cash',via:'pos',cash:'Amy Okafor',bill:'',note:''},
+];
+const COLS=[ // key, header, width, align, sortable, default on
+  ['status','Status','172px','l',true,true],['number','Order','92px','l',true,true],['customer_id','Customer','1.2fr','l',true,true],['billing','Billing address','1.6fr','l',false,true],
+  ['customer_note','Note','40px','c',false,true],['date_created_gmt','Date','168px','l',true,true],['created_via','Via','44px','c',false,true],['cashier','Cashier','1fr','l',false,true],
+  ['payment_method','Payment','1fr','l',true,true],['total','Total','110px','r',true,true],['actions','','44px','c',false,true],
+  ['shipping','Shipping address','1.6fr','l',false,false],['date_modified_gmt','Date modified','1fr','l',false,false],['date_paid_gmt','Date paid','1fr','l',false,false],['register','Register','1fr','l',false,false],['receipt','Receipt','44px','c',false,false],
+];
+OS.cols=Object.fromEntries(COLS.map(c=>[c[0],c[5]]));
+const SCENES=[['default','Default'],['keyboard','Hover + keyboard focus'],['open','Order open'],['open-refund','Refunded order open'],['rowmenu','Row actions'],['columns','Columns (anchored)'],['filter-status','Status filter'],['filter-date','Date range'],['filtered','Filtered'],['loading','Loading'],['searching','Searching'],['empty','No orders yet'],['noresults','No results'],['error','Error'],['syncing','Syncing'],['offline','Offline'],['delete','Delete confirm'],['long','German strings']];
+const T=()=>OS.long?{title:'Bestellungen',search:'Bestellungen suchen',status:'Status',customer:'Kunde',cashier:'Kassierer',via:'Erstellt über',register:'Kasse',date:'Zeitraum',showing:'Zeige',of:'von',sync:'Synchronisieren',noOrders:'Noch keine Bestellungen',noOrdersS:'Verkäufe, die Sie annehmen, erscheinen hier.',noMatch:'Keine Bestellung passt zu diesen Filtern',clear:'Filter zurücksetzen',err:'Bestellungen konnten nicht geladen werden',retry:'Erneut versuchen',docs:'Hilfe',print:'Beleg drucken',refund:'Erstatten',items:'Artikel',totals:'Summen',subtotal:'Zwischensumme',tax:'MwSt.',total:'Gesamt',net:'Nettozahlung',refunds:'Erstattungen',cust:'Kunde',payment:'Zahlung',meta:'Metadaten',offline:'Offline',syncing:'Synchronisiert…',searching:'Suche…',view:'Ansehen',edit:'Bearbeiten',reopen:'Wieder öffnen',receipt:'Beleg',del:'Löschen',cols:['Status','Bestellung','Kunde','Rechnungsadresse','Notiz','Datum','Über','Kassierer','Zahlung','Gesamt','']}
+ :{title:'Orders',search:'Search orders',status:'Status',customer:'Customer',cashier:'Cashier',via:'Created via',register:'Register',date:'Date range',showing:'Showing',of:'of',sync:'Sync',noOrders:'No orders yet',noOrdersS:'Sales you take will appear here.',noMatch:'No orders match these filters',clear:'Clear filters',err:'Orders could not be loaded',retry:'Retry',docs:'Help',print:'Print receipt',refund:'Refund',items:'Items',totals:'Totals',subtotal:'Subtotal',tax:'VAT 20%',total:'Total',net:'Net payment',refunds:'Refunds',cust:'Customer',payment:'Payment',meta:'Metadata',offline:'Offline',syncing:'Syncing…',searching:'Searching…',view:'View',edit:'Edit',reopen:'Re-open',receipt:'Receipt',del:'Delete',cols:COLS.slice(0,11).map(c=>c[1])};
+
+function jump(scn){
+  S.scn=scn;
+  Object.assign(OS,{open:null,pop:null,menu:null,sheet:null,focus:null,filters:{},online:true,long:false,toast:null,tog:{}});
+  if (scn==='filtered'||scn==='noresults') OS.tog={unpaid:false,today:true,mine:false};
+  switch(scn){
+    case 'keyboard': OS.focus=1; break;
+    case 'open': OS.open=102475; break;
+    case 'open-refund': OS.open=102474; break;
+    case 'rowmenu': OS.menu=102475; break;
+    case 'columns': OS.pop='columns'; break;
+    case 'filter-status': OS.pop='status'; break;
+    case 'filter-date': OS.pop='date'; break;
+    case 'filtered': case 'noresults': OS.filters={status:'completed',date:'Today'}; break;
+    case 'offline': OS.online=false; break;
+    case 'delete': OS.sheet='delete'; break;
+    case 'long': OS.long=true; break;
+  }
+  render();
+}
+/* with an order open beside it the list keeps its core columns; the rest return when the pane closes */
+const CORE=['status','number','customer_id','date_created_gmt','total','actions'];
+const visible = () => COLS.filter(c=>OS.cols[c[0]] && (!(OS.open&&S.w==='desktop') || CORE.includes(c[0])));
+const rows = () => S.scn==='noresults'||S.scn==='empty' ? [] : ORDERS.filter(o => (!OS.filters.status || OS.filters.status==='all' || o.s===OS.filters.status) && (!OS.tog.unpaid || ['pending','on-hold','pos-open','pos-partial','failed'].includes(o.s)) && (!OS.tog.today || /ago/.test(o.d)) && (!OS.tog.mine || o.cash==='Demo Cashier'));
+const st = k => { const [l,c]=STATUS[k]||[k,'']; return `<span class="st ${c}"><i></i>${l}</span>`; };
+const via = v => v==='pos'?I.pos:v==='web'?I.globe:OI.wp;
+
+function renderBar(){
+  const t=T(); const phone=S.w==='phone';
+  const searchVal = S.scn==='searching' ? 'okaf' : S.scn==='noresults' ? '' : '';
+  const focus = ['default','filtered','offline','long'].includes(S.scn) && S.w==='desktop' ? 'ring' : '';
+  return `<div class="pagebar">${phone?`<button class="ibtn press" data-act="openSheet" data-sheet="menu" aria-label="Menu">${I.menu}</button>`:''}<h1>${t.title}</h1>
+    <div class="op-search">${I.search}<input class="in ${focus}" placeholder="${t.search}" value="${searchVal}" aria-label="${t.search}"></div>
+    <span class="grow"></span>${!OS.online?`<span class="pill warn">${I.cloudoff}${t.offline}</span>`:''}
+    <button class="ibtn press ${OS.pop==='columns'?'on':''}" data-act="pop" data-pop="columns" aria-label="Display options">${I.sliders}</button></div>`;
+}
+function renderFilters(){
+  const t=T(); const f=OS.filters;
+  const chip=(k,label,val)=>`<button class="op-chip press ${val?'on':''}" data-act="pop" data-pop="${k}">${val?`<span class="st ${k==='status'?(STATUS[val]||[])[1]:''}">${k==='status'?'<i></i>':''}${k==='status'?STATUS[val][0]:val}</span>`:label}${val?`<span class="x" data-act="clearFilter" data-k="${k}" aria-label="Remove">${I.x}</span>`:I.chevd}</button>`;
+  /* toggles: two states, no chevron, filled when on (Stripe's status tabs, Linear's Active/Backlog) */
+  const tog=(k,label)=>`<button class="op-chip tog press ${OS.tog[k]?'on':''}" data-act="tog" data-k="${k}" role="switch" aria-checked="${!!OS.tog[k]}">${OS.tog[k]?I.check:''}${label}</button>`;
+  const toggles = `${tog('unpaid','Unpaid')}${tog('today','Today')}${tog('mine','My sales')}`;
+  const statusSel = OS.listStyle==='stats' ? '' : chip('status',t.status,f.status);
+  const stats = OS.listStyle==='stats' ? `<div class="stats">${[['all','All','1,248',''],['completed','Completed','812','ok'],['processing','Processing','6','info'],['on-hold','On hold','2','warn'],['refunded','Refunded','12',''],['failed','Failed','3','bad']].map(([k,l,n,c])=>`<button class="stat press ${(f.status||'all')===k?'on':''}" data-act="setFilter" data-k="status" data-v="${k}"><span class="l">${c||k==='all'?`<span class="st ${c}">${k==='all'?'':'<i></i>'}${l}</span>`:l}</span><span class="v">${n}</span></button>`).join('')}</div>` : '';
+  return `${stats}<div class="filters">${toggles}<span style="width:var(--hair);background:var(--border);flex:none;margin:calc(var(--u)*2) calc(var(--u)*1)"></span>${statusSel}${chip('customer',t.customer,f.customer)}${chip('cashier',t.cashier,f.cashier)}${chip('via',t.via,f.via)}${chip('register',t.register,f.register)}${chip('date',t.date,f.date)}</div>`;
+}
+
+/* ---- desktop: a real table ---- */
+function renderTable(){
+  const t=T(); const cols=visible(); const rs=rows();
+  const grid=cols.map(c=>c[2]).join(' ');
+  const head=`<div class="thead" style="grid-template-columns:${grid}">${cols.map(c=>`<div class="th ${c[3]} ${c[0]===OS.sort?'sorted':''}">${c[1]&&c[0]!=='customer_note'&&c[0]!=='created_via'&&c[0]!=='actions'&&c[0]!=='receipt'?c[1]:''}${c[4]?`<span class="sort">${c[0]===OS.sort?OI.down:OI.up}</span>`:''}${c[0]!=='actions'?'<span class="rz"></span>':''}</div>`).join('')}</div>`;
+  let body='';
+  if (S.scn==='loading') body=Array.from({length:8},()=>`<div class="tr sk" style="grid-template-columns:${grid}">${cols.map(()=>`<div class="td"><span></span></div>`).join('')}</div>`).join('');
+  else if (S.scn==='error') body=`<div class="empty">${OI.warn}<div class="t">${t.err}</div><div class="row"><button class="btn press">${t.retry}</button><a href="#">${t.docs}</a></div></div>`;
+  else if (!rs.length) body= S.scn==='empty' ? `<div class="empty">${OI.inbox}<div class="t">${t.noOrders}</div><div>${t.noOrdersS}</div></div>`
+    : `<div class="empty">${I.search}<div class="t">${t.noMatch}</div><button class="btn q press" data-act="clearAll">${t.clear}</button></div>`;
+  else if (OS.listStyle==='grouped'){
+    const groups=[['Today',rs.filter(o=>/ago/.test(o.d))],['Yesterday',rs.filter(o=>o.d==='Yesterday')],['September 12, 2026',rs.filter(o=>o.d==='September 12, 2026')],['September 11, 2026',rs.filter(o=>o.d==='September 11, 2026')]];
+    body=groups.filter(([,g])=>g.length).map(([l,g])=>`<div class="grp">${I.chevd}<b>${l}</b><span class="n">${g.length}</span><span class="grow"></span><span class="n money">${ofmt(g.reduce((a,o)=>a+o.t,0))}</span></div>`+g.map(o=>{const i=rs.indexOf(o);return `<div class="tr ${OS.open===o.n?'sel':''} ${OS.focus===i?'focus':''}" style="grid-template-columns:${grid}" data-act="openOrder" data-n="${o.n}">${cols.map(c=>cell(c,o)).join('')}</div>`;}).join('')).join('');
+  }
+  else body=rs.map((o,i)=>`<div class="tr ${OS.open===o.n?'sel':''} ${OS.focus===i?'focus':''}" style="grid-template-columns:${grid}" data-act="openOrder" data-n="${o.n}">${cols.map(c=>cell(c,o)).join('')}</div>`).join('');
+  const foot = S.scn==='loading' ? '' : `<div class="tfoot"><span class="grow">${S.scn==='searching'?t.searching:S.scn==='empty'?'':`${t.showing} ${rs.length} ${t.of} ${S.scn==='filtered'?'312':'1,248'}`}</span>${S.scn==='syncing'?`<span class="xs">${t.syncing}</span>`:''}<button class="ibtn press ${S.scn==='syncing'?'on':''}" aria-label="${t.sync}"><span class="${S.scn==='syncing'?'spin':''}" style="display:inline-flex">${I.sync}</span></button></div>`;
+  return `<div class="card ${S.scn==='searching'?'dim':''}">${S.scn==='searching'?'<div class="progress" style="margin:0;border-radius:0"></div>':''}${head}<div class="tbody">${body}</div>${foot}</div>`;
+}
+function cell(c,o){
+  const k=c[0]; const cls=`td ${c[3]}`;
+  switch(k){
+    case 'status': return `<div class="${cls}"><button class="press" data-act="filterStatus" data-s="${o.s}" style="color:inherit">${st(o.s)}</button></div>`;
+    case 'number': return `<div class="${cls} b">${o.n}</div>`;
+    case 'customer_id': return `<div class="${cls}">${o.c}${OS.sub.billing&&o.bill?`<span class="sub">${o.bill}</span>`:''}</div>`;
+    case 'billing': return `<div class="${cls} mut">${o.bill}</div>`;
+    case 'shipping': return `<div class="${cls} mut">${o.bill}</div>`;
+    case 'customer_note': return `<div class="${cls}">${o.note?`<span class="mut" title="${o.note}">${I.note}</span>`:''}</div>`;
+    case 'date_created_gmt': case 'date_modified_gmt': case 'date_paid_gmt': return `<div class="${cls}">${o.d}</div>`;
+    case 'created_via': return `<div class="${cls} mut">${via(o.via)}</div>`;
+    case 'cashier': return `<div class="${cls}">${o.cash}</div>`;
+    case 'register': return `<div class="${cls}">Front counter</div>`;
+    case 'payment_method': return `<div class="${cls}">${o.pm}${OS.sub.paymethod?'':''}</div>`;
+    case 'total': return `<div class="${cls} money b">${ofmt(o.t)}${o.ref?`<span class="sub neg">${ofmt(-o.ref)}</span>`:''}</div>`;
+    case 'receipt': return `<div class="${cls} mut">${I.print}</div>`;
+    case 'actions': return `<div class="${cls}"><button class="ibtn press ${OS.menu===o.n?'on':''}" data-act="menu" data-n="${o.n}" aria-label="Actions" style="width:36px;height:36px">${I.dots}</button></div>`;
+  }
+  return `<div class="${cls}"></div>`;
+}
+/* ---- touch: rows ---- */
+function renderRows(){
+  const t=T(); const rs=rows();
+  let body='';
+  if (S.scn==='loading') body=Array.from({length:8},()=>`<div class="op-orow"><span><span style="display:inline-block;width:55%;height:14px;border-radius:4px;background:var(--muted)"></span><span style="display:block;width:35%;height:12px;border-radius:4px;background:var(--muted);margin-top:8px"></span></span><span style="display:inline-block;width:64px;height:14px;border-radius:4px;background:var(--muted)"></span><span></span></div>`).join('');
+  else if (S.scn==='error') body=`<div class="empty">${OI.warn}<div class="t">${t.err}</div><div class="row"><button class="btn press">${t.retry}</button><a href="#">${t.docs}</a></div></div>`;
+  else if (!rs.length) body= S.scn==='empty' ? `<div class="empty">${OI.inbox}<div class="t">${t.noOrders}</div><div>${t.noOrdersS}</div></div>` : `<div class="empty">${I.search}<div class="t">${t.noMatch}</div><button class="btn q press" data-act="clearAll">${t.clear}</button></div>`;
+  else body=rs.map(o=>`<button class="op-orow press ${OS.open===o.n?'sel':''}" data-act="openOrder" data-n="${o.n}">
+      <span style="min-width:0"><span class="l1"><span class="b">#${o.n}</span><span class="ell">${o.c}</span>${o.note?`<span class="mut">${I.note}</span>`:''}</span><span class="l2">${st(o.s)}<span>·</span><span class="ell">${o.d}${o.pm?` · ${o.pm}`:''}</span></span></span>
+      <span class="amt money">${ofmt(o.t)}${o.ref?`<span class="sub neg">${ofmt(-o.ref)}</span>`:''}</span>${I.chev.replace('<svg','<svg class="chev"')}</button>`).join('');
+  const foot = S.scn==='loading' ? '' : `<div class="tfoot"><span class="grow">${S.scn==='searching'?t.searching:S.scn==='empty'?'':`${t.showing} ${rs.length} ${t.of} ${S.scn==='filtered'?'312':'1,248'}`}</span>${S.scn==='syncing'?`<span class="xs">${t.syncing}</span>`:''}<button class="ibtn press" aria-label="${t.sync}"><span class="${S.scn==='syncing'?'spin':''}" style="display:inline-flex">${I.sync}</span></button></div>`;
+  return `<div class="card ${S.scn==='searching'?'dim':''}">${S.scn==='searching'?'<div class="progress" style="margin:0;border-radius:0"></div>':''}<div class="tbody">${body}</div>${foot}</div>`;
+}
+
+/* ---- the open order ---- */
+function renderPane(){
+  if(!OS.open) return ''; const t=T(); const o=ORDERS.find(x=>x.n===OS.open); const items=[['Flat white',2,3.2,'Oat milk'],['Sourdough loaf',1,4.2,''],['Tote bag · Natural · L',1,12,'']];
+  const sub=o.t/1.2, tax=o.t-sub; const net=o.t-(o.ref||0);
+  return `<div class="op-pane">
+    <div class="pane-h"><div class="eyebrow"><span>Order <b style="color:var(--fg)">#${o.n}</b></span><span class="pill">${via(o.via)} ${o.via==='pos'?'POS':o.via==='web'?'Online store':'WP Admin'}</span><span class="grow"></span><button class="ibtn press" data-act="menu" data-n="${o.n}" aria-label="More">${I.dots}</button><button class="ibtn press" data-act="closeOrder" aria-label="Close">${I.x}</button></div>
+      <div class="total money">${ofmt(o.t)}${st(o.s)}</div>
+      <div class="mut" style="margin-top:calc(var(--u)*1.5)">${o.dl}${o.cash?` · ${o.cash}`:''}${o.pm?` · ${o.pm}`:''}</div></div>
+    <div class="pane-b">
+      <div class="sec"><div class="sh">${t.items}</div>${items.map(([n,q,p,s])=>`<div class="item"><span class="img"></span><span><span>${n}</span><span class="sub">${q} × ${ofmt(p)}${s?` · ${s}`:''}</span></span><span class="money">${ofmt(q*p)}</span></div>`).join('')}</div>
+      <div class="sec"><div class="sh">${t.totals}</div><div class="kv"><span class="mut">${t.subtotal}</span><span class="v money">${ofmt(sub)}</span></div><div class="kv"><span class="mut">${t.tax}</span><span class="v money">${ofmt(tax)}</span></div>${o.ref?`<div class="kv"><span class="mut">${t.refunds}</span><span class="v money neg">${ofmt(-o.ref)}</span></div>`:''}<div class="kv big"><span>${o.ref?t.net:t.total}</span><span class="v money">${ofmt(net)}</span></div></div>
+      ${o.ref?`<div class="sec"><div class="sh">${t.refunds} · 1</div><div class="refund"><span>${ofmt(-o.ref)} <span class="mut">· Card</span><span class="sub">Sat 13 Sep 2026 · 17:31 · Amy Okafor · “Damaged tote bag”</span></span><button class="btn q press" style="height:36px">${I.print}${t.receipt}</button></div></div>`:''}
+      ${o.note?`<div class="sec"><div class="sh">Customer note</div><div>“${o.note}”</div></div>`:''}
+      <div class="sec"><div class="sh">${t.cust}</div><div class="dl"><div><div class="op-k">${t.cust}</div><div class="v">${o.c}${o.c!=='Guest'?`\n${o.c.toLowerCase().replace(' ','.')}@example.com`:''}</div></div>${o.bill?`<div><div class="op-k">Billing address</div><div class="v">${o.bill.replace(', ',',\n')}</div></div>`:''}</div></div>
+      ${o.pm?`<div class="sec"><div class="sh">${t.payment}</div><div class="dl"><div><div class="op-k">Method</div><div class="v">${o.pm}</div></div><div><div class="op-k">Captured</div><div class="v">${o.dl}</div></div>${o.pm!=='Cash'?`<div><div class="op-k">Transaction ID</div><div class="v">txn_8f2k…41</div></div>`:''}</div></div>`:''}
+      <div class="sec" style="border-bottom:0"><div class="sh">${t.meta}</div><div class="dl"><div><div class="op-k">Order ID</div><div class="v">${o.n}</div></div><div><div class="op-k">Store</div><div class="v">UK Store</div></div>${o.cash?`<div><div class="op-k">${t.cashier}</div><div class="v">${o.cash}</div></div><div><div class="op-k">${t.register}</div><div class="v">Front counter</div></div>`:''}</div></div>
+    </div>
+    <div class="pane-f">${['completed','processing','on-hold','partially-refunded'].includes(o.s)?`<button class="btn press">${t.refund}</button>`:''}<button class="btn p press">${I.print}${t.print}</button></div>
+  </div>`;
+}
+
+/* ---- popovers ---- */
+function renderPop(){
+  const t=T(); if(!OS.pop && !OS.menu) return '';
+  const phone=S.w==='phone';
+  if (OS.menu){ const o=ORDERS.find(x=>x.n===OS.menu); const saved=o.s!=='pos-open';
+    return `<div class="pop" style="right:calc(var(--u)*6);top:${OS.open?'calc(var(--u)*14)':'calc(var(--u)*30)'};width:220px" data-stop="1"><button class="opt press">${t.view}</button><button class="opt press">${t.edit}</button><button class="opt press">${t.reopen}</button>${saved?`<button class="opt press">${t.receipt}</button><button class="opt press">${t.sync}</button>`:''}${['completed','processing','on-hold'].includes(o.s)?`<button class="opt press">${t.refund}</button>`:''}<div class="sep"></div><button class="opt press d" data-act="openSheet" data-sheet="delete">${t.del}</button></div>`; }
+  if (OS.pop==='columns'){
+    const sub=(k,label)=>`<div class="opt nest"><span class="cb ${OS.sub[k]?'on':''}" data-act="sub" data-k="${k}">${I.check}</span>${label}</div>`;
+    return `<div class="pop" style="right:calc(var(--u)*4);top:calc(var(--u)*14);width:320px;max-height:78%;overflow:auto" data-stop="1"><div class="h">Display options<span class="grow"></span><button class="btn q press xs" style="height:32px;padding:0 8px" data-act="restore">Restore defaults</button></div>
+      ${COLS.map(c=>`<div class="opt"><span class="grip">${I.grip}</span><span class="cb ${OS.cols[c[0]]?'on':''}" data-act="col" data-k="${c[0]}">${I.check}</span><span class="grow">${c[1]||'Actions'}</span></div>${c[0]==='customer_id'&&OS.cols[c[0]]?sub('billing','Billing address')+sub('shipping','Shipping address'):''}${c[0]==='total'&&OS.cols[c[0]]?sub('paymethod','Payment method'):''}`).join('')}</div>`;
+  }
+  if (OS.pop==='status'){
+    return `<div class="pop" style="left:calc(var(--u)*4);top:calc(var(--u)*29);width:260px" data-stop="1">${Object.keys(STATUS).filter(k=>k!=='partially-refunded').map(k=>`<button class="opt press ${OS.filters.status===k?'on':''}" data-act="setFilter" data-k="status" data-v="${k}">${st(k)}${OS.filters.status===k?`<span class="ck">${I.check}</span>`:''}</button>`).join('')}</div>`;
+  }
+  if (OS.pop==='date'){
+    const days=[...Array(30).keys()].map(i=>i+1);
+    return `<div class="pop" style="left:calc(var(--u)*4);top:calc(var(--u)*29);width:320px" data-stop="1">
+      <div class="presets">${['Today','Yesterday','This week','Last week','This month','Last month'].map(p=>`<button class="op-chip press ${p==='This week'?'on':''}" data-act="setFilter" data-k="date" data-v="${p}">${p}</button>`).join('')}</div>
+      <div class="h" style="justify-content:space-between"><button class="ibtn press" style="width:32px;height:32px" aria-label="Previous month">${I.chev.replace('M9 6l6 6-6 6','M15 6l-6 6 6 6')}</button>September 2026<button class="ibtn press" style="width:32px;height:32px" aria-label="Next month">${I.chev}</button></div>
+      <div class="cal">${['M','T','W','T','F','S','S'].map(d=>`<span class="d m">${d}</span>`).join('')}<span></span><span></span>${days.map(d=>`<span class="d ${d>=8&&d<=14?(d===8||d===14?'e':'op-range'):''} ${d>14?'mut':''}">${d}</span>`).join('')}</div>
+      <div class="row" style="justify-content:flex-end;padding:calc(var(--u)*2)"><button class="btn p press" data-act="setFilter" data-k="date" data-v="8 Sep – 14 Sep">Done</button></div></div>`;
+  }
+  return '';
+}
+function renderSheet(){
+  if(!OS.sheet) return ''; const t=T();
+  const wrap=(title,body,foot='',context='')=>`<div class="sheet-wrap" data-act="closeSheet"><section class="sheet" data-stop="1" role="dialog" aria-label="${title}"><div class="sheet-h"><div class="grow"><div class="t">${title}</div>${context?`<div class="sheet-context">${context}</div>`:''}</div><button class="ibtn press" data-act="closeSheet" aria-label="Close">${I.x}</button></div><div class="sheet-b">${body}</div>${foot?`<div class="sheet-f">${foot}</div>`:''}</section></div>`;
+  if(OS.sheet==='user')return wrap('Demo Cashier','<span class="mut">Cashier · UK Store</span>', '<button class="btn press" data-act="closeSheet">Close</button>');
+  if(OS.sheet==='menu')return wrap('UK Store',menuList(),'','Front counter');
+  const o=ORDERS.find(x=>x.n===(OS.menu||OS.open||102475));
+  return wrap(`Delete order #${o.n}?`, '<span class="mut">Deleted orders are placed in the Trash on the server.</span>', `<button class="btn press" data-act="closeSheet">Cancel</button><button class="btn dd press" data-act="closeSheet">${t.del}</button>`);
+}
+function renderNotes(){
+  const rows=[['Scale step',S.scale,{compact:'unit 3.5 · base 13 · control 40 · row 36 (44 on touch) · radius 6',regular:'unit 4 · base 14 · control 44 · row 44 · radius 8',spacious:'unit 5 · base 16 · control 52 · row 52 · radius 10'}[S.scale]],
+    ['Platform', S.w==='desktop'?'web · fine pointer':'native · touch', S.w==='desktop'?'a real table: sortable headers, resize handles on hover, hover row, ↑↓ focus, Enter opens, Esc closes the pane':'rows; tap opens the order beside the list (tablet) or full screen (phone)'],
+    ['Focus','', S.w==='desktop'?'search on open; scanner input lands in search from anywhere; ↑↓ move the focused row':'no field focused on open (touch); scanner input lands in search']];
+  document.getElementById('notes').innerHTML=`<b>Prototype for wcpos/roadmap#287.</b> The dark strip is not part of the design. `+rows.map(([k,v,d])=>`<span style="display:inline-block;margin-right:16px"><b>${k}:</b> ${v} <span style="color:#6b7280">${d}</span></span>`).join('');
+}
+function renderOrders(){
+  const f=document.getElementById('frame'); f.dataset.list=OS.listStyle;
+  const t=T(); const phone=S.w==='phone';
+  const list = S.w==='desktop' ? renderTable() : renderRows();
+  const page=`<div class="page">${renderBar()}${renderFilters()}<div class="listwrap">${phone&&OS.open?'':list}${renderPane()}</div></div>`;
+  f.innerHTML=`${S.plan==='top'&&!S.nostrip?renderUpgradeStrip('top'):''}<div class="body">${phone?'':renderRail()}<div class="main">${page}${renderPop()}${renderSheet()}${OS.toast?`<div class="op-toast"><span class="ck">${I.check}</span>${OS.toast}</div>`:''}</div></div>${S.plan==='bottom'&&!S.nostrip?renderUpgradeStrip('bottom'):''}`;
+  /* 2026-09-17: the row menu stays under the ellipsis that opened it. */
+  const anchor=f.querySelector('[data-act="menu"].on'), pop=OS.menu&&f.querySelector('.pop');
+  if (anchor && pop && !phone){ const m=f.querySelector('.main').getBoundingClientRect(), a=anchor.getBoundingClientRect(); pop.style.top=(a.bottom-m.top+4)+'px'; pop.style.right=(m.right-a.right)+'px'; }
+  renderNotes();
+}
+function click(e){
+  const b=e.target.closest('[data-act]');
+  if(!b){ if(!e.target.closest('[data-stop]') && (OS.pop||OS.menu)){ OS.pop=null; OS.menu=null; render(); } return; }
+  const a=b.dataset.act;
+  switch(a){
+    case 'pop': OS.pop = OS.pop===b.dataset.pop?null:b.dataset.pop; OS.menu=null; break;
+    case 'menu': OS.menu = OS.menu===+b.dataset.n?null:+b.dataset.n; OS.pop=null; break;
+    case 'openOrder': if(e.target.closest('[data-act="menu"],[data-act="filterStatus"]')) return; OS.open=+b.dataset.n; OS.pop=null; OS.menu=null; break;
+    case 'closeOrder': OS.open=null; break;
+    case 'col': OS.cols[b.dataset.k]=!OS.cols[b.dataset.k]; break;
+    case 'sub': OS.sub[b.dataset.k]=!OS.sub[b.dataset.k]; break;
+    case 'restore': OS.cols=Object.fromEntries(COLS.map(c=>[c[0],c[5]])); OS.sub={billing:false,shipping:false,paymethod:false}; break;
+    case 'setFilter': if(b.dataset.v==='all'){ delete OS.filters.status; if(!Object.keys(OS.filters).length && !Object.values(OS.tog).some(Boolean)) S.scn='default'; break; } OS.filters[b.dataset.k]=b.dataset.v; OS.pop=null; if(S.scn==='default') S.scn='filtered'; break;
+    case 'tog': OS.tog[b.dataset.k]=!OS.tog[b.dataset.k]; if(Object.values(OS.tog).some(Boolean)){ if(S.scn==='default') S.scn='filtered'; } else if(!Object.keys(OS.filters).length) S.scn='default'; break;
+    case 'filterStatus': OS.filters.status=b.dataset.s; S.scn='filtered'; break;
+    case 'clearFilter': delete OS.filters[b.dataset.k]; if(!Object.keys(OS.filters).length) S.scn='default'; e.stopPropagation(); break;
+    case 'clearAll': OS.filters={}; S.scn='default'; break;
+    case 'dismissStrip': S.nostrip=true; break;
+    case 'openSheet': OS.sheet=b.dataset.sheet; break;
+    case 'closeSheet': if(e.target.closest('[data-stop]') && !b.matches('button')) return; OS.sheet=null; OS.menu=null; OS.toast = b.classList.contains('dd') ? 'Order deleted' : null; if(OS.toast) setTimeout(()=>{OS.toast=null;render();},2200); break;
+  }
+  render();
+}
+function keydown(e){
+  if(e.key==='Escape'&&OS.sheet){OS.sheet=null;render();return;}
+  if (S.w!=='desktop') return; const rs=rows(); if(!rs.length) return;
+  if (e.key==='ArrowDown'){ OS.focus = OS.focus==null?0:Math.min(rs.length-1,OS.focus+1); render(); e.preventDefault(); }
+  else if (e.key==='ArrowUp'){ OS.focus = Math.max(0,(OS.focus??1)-1); render(); e.preventDefault(); }
+  else if (e.key==='Enter' && OS.focus!=null){ OS.open=rs[OS.focus].n; render(); }
+  else if (e.key==='Escape'){ if(OS.pop||OS.menu){OS.pop=null;OS.menu=null;} else OS.open=null; render(); }
+}
+return {render:renderOrders, click, keydown, jump, SCENES};
 })();
 
 render();

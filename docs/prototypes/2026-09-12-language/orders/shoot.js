@@ -4,6 +4,7 @@
 //   node …/shoot.js --quick                                              (desktop light regular only)
 const { chromium } = require('/Users/kilbot/Projects/monorepo-v2/node_modules/playwright');
 const path = require('path');
+const { pathToFileURL } = require('url');
 const fs = require('fs');
 const DIR = __dirname;
 const OUT = path.join(DIR, 'screens');
@@ -19,13 +20,13 @@ const SCALES = QUICK ? ['regular'] : ['regular','compact'];
 
 (async () => {
   const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 1500, height: 1000 }, reducedMotion: 'reduce' });
+  const page = await browser.newPage({ viewport: { width: 1500, height: 1400 }, reducedMotion: 'reduce' });
   const errors = [];
   page.on('pageerror', e => errors.push('pageerror: ' + e.message));
   page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
-  await page.goto('file://' + path.join(DIR, 'index.html'));
-  const set = (k, v) => page.click(`.strip button[data-set="${k}"][data-v="${v}"]`);
-  const scn = (v) => page.click(`.strip button[data-scn="${v}"]`);
+  await page.goto(pathToFileURL(path.join(DIR, '../pos-register/index.html')).href + '?screen=orders');
+  const set = (k, v) => page.click(`.strip [data-set="${k}"][data-v="${v}"]`);
+  const scn = (v) => page.click(`.strip [data-scn="${v}"]`);
   let n = 0;
   for (const w of WIDTHS) for (const theme of THEMES) for (const scale of SCALES) {
     await set('w', w); await set('theme', theme); await set('scale', scale);
@@ -38,9 +39,9 @@ const SCALES = QUICK ? ['regular'] : ['regular','compact'];
   // interaction assertions: keyboard opens and closes an order; a column toggle changes the table live
   await set('w','desktop'); await set('theme','light'); await set('scale','regular'); await scn('default');
   await page.keyboard.press('ArrowDown'); await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter');
-  if (!(await page.locator('.pane').count())) throw new Error('Enter did not open the focused order');
+  if (!(await page.locator('.op-pane').count())) throw new Error('Enter did not open the focused order');
   await page.keyboard.press('Escape');
-  if (await page.locator('.pane').count()) throw new Error('Escape did not close the pane');
+  if (await page.locator('.op-pane').count()) throw new Error('Escape did not close the pane');
   await scn('columns');
   const before = await page.locator('.thead .th').count();
   await page.click('.pop [data-act="col"][data-k="billing"]');

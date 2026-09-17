@@ -14,7 +14,7 @@ Playwright and fails on any page or console error (`--quick` for one width).
 | Screen | Ticket | Status |
 |---|---|---|
 | [`pos-register/`](pos-register/) | [#287](https://github.com/wcpos/roadmap/issues/287) | drawn, waiting on Paul |
-| [`orders/`](orders/) | [#287](https://github.com/wcpos/roadmap/issues/287) | drawn, waiting on Paul |
+| [`orders/`](orders/) → `pos-register/index.html?screen=orders` | [#287](https://github.com/wcpos/roadmap/issues/287) | drawn, waiting on Paul; a page of the register since 2026-09-17 |
 | settings tab, connect, receipt, products, tokens | [#288](https://github.com/wcpos/roadmap/issues/288) | not started — the language may move after #287 |
 
 ## The tokens, as drawn
@@ -226,6 +226,20 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     the register. The Reports design is not signed off (Paul, the same day: it "sucks"); it is
     being reworked component by component in the sibling session, so this entry names the
     page, not its current state.
+
+48. **Orders inside the register; the rail toggles the pages (Paul, 2026-09-17).** Paul: put
+    the Orders mock-up into `pos-register/index.html` and toggle between the POS page, the
+    Orders page and the Reports page from the sidebar icons. Done on the Reports pattern: the
+    Orders code is a private module (`OS` state, `OP` page) whose CSS is scoped to
+    `data-screen="orders"`; the rail's POS, Orders and Reports items carry the page, the phone's
+    Menu sheet lists the same three, each page keeps its own State while you move, and
+    `?screen=orders` lands on Orders directly. `orders/index.html` is a redirect stub;
+    `orders/shoot.js` and `orders/shoot-variants.js` drive the register page and write to
+    `orders/screens/` as before; `orders/shoot-pages.js` adds every theme, the rail round trip
+    and the phone menu to `orders/screens/pages/`. Classes that the register already styles
+    unscoped (`pane`, `toast`, `search`, `chip`, `k`) were renamed `op-*` on the Orders page so
+    the register's personality themes cannot leak into it. The Orders design itself is
+    unchanged; its open decisions stay where they were.
     (c) **chips** — pills, the current one filled; reads as a filter row rather than tabs;
     (d) **cards** — small cards with amount, customer and status, current with a primary top
     edge; the most information, the tallest;
