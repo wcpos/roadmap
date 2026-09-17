@@ -559,6 +559,11 @@ body:has(#strip[hidden]) .notes{display:none}
 :where(.frame[data-screen="reports"]) .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(var(--u)*3) calc(var(--u)*4)} :where(.frame[data-screen="reports"]) .stats .l{color:var(--muted-fg);font-size:calc(var(--fs)*.86)} :where(.frame[data-screen="reports"]) .stats .n{font-size:calc(var(--fs)*1.35);font-weight:600;font-variant-numeric:tabular-nums}
 :where(.frame[data-screen="reports"]) .hbar{display:flex;height:12px;border-radius:6px;overflow:hidden;gap:2px;margin-top:var(--u)} :where(.frame[data-screen="reports"]) .hbar i{display:block;height:100%} :where(.frame[data-screen="reports"]) .leg{display:flex;flex-wrap:wrap;gap:var(--u) calc(var(--u)*4);font-size:calc(var(--fs)*.9)} :where(.frame[data-screen="reports"]) .leg span{display:inline-flex;align-items:center;gap:calc(var(--u)*1.5)} :where(.frame[data-screen="reports"]) .leg i{width:10px;height:10px;border-radius:3px;display:inline-block} :where(.frame[data-screen="reports"]) .leg b{font-weight:600}
 :where(.frame[data-screen="reports"]) .rp-panel .pf-more .st{font-size:calc(var(--fs)*.9)}
+:where(.frame[data-screen="reports"]) .till{display:grid;grid-template-columns:1fr auto auto;grid-template-areas:"tl eq tr";align-items:center;column-gap:calc(var(--u)*5);row-gap:calc(var(--u)*3);padding:calc(var(--u)*3) calc(var(--u)*4);margin-bottom:calc(var(--u)*3)} :where(.frame[data-screen="reports"]) .till .tl{grid-area:tl;display:flex;flex-direction:column;gap:2px;min-width:0} :where(.frame[data-screen="reports"]) .till .eq{grid-area:eq} :where(.frame[data-screen="reports"]) .till .tr{grid-area:tr;display:flex;align-items:center;gap:calc(var(--u)*2);justify-self:end} :where(.frame[data-screen="reports"]) .till .who{display:flex;align-items:center;gap:calc(var(--u)*1.5);white-space:nowrap}
+.frame:where([data-screen="reports"])[data-w="tablet"] .till{grid-template-columns:1fr auto;grid-template-areas:"tl tr" "eq eq"} .frame:where([data-screen="reports"])[data-w="phone"] .till{grid-template-columns:1fr;grid-template-areas:"tl" "eq" "tr";row-gap:calc(var(--u)*2.5)} .frame:where([data-screen="reports"])[data-w="phone"] .till .tr{justify-self:stretch;justify-content:space-between}
+:where(.frame[data-screen="reports"]) .eq{display:flex;align-items:center;gap:calc(var(--u)*2)} :where(.frame[data-screen="reports"]) .eq .term{display:flex;flex-direction:column;gap:1px;padding:var(--u) calc(var(--u)*2.5);border-radius:var(--r);background:var(--muted);min-width:0;overflow:hidden} .frame:where([data-screen="reports"])[data-w="phone"] .eq .term{flex:1 1 0;padding:var(--u) calc(var(--u)*1.5)} .frame:where([data-screen="reports"])[data-w="phone"] .eq .term .l,.frame:where([data-screen="reports"])[data-w="phone"] .eq .term .v{overflow:hidden;text-overflow:ellipsis} .frame:where([data-screen="reports"])[data-w="phone"] .eq .term .v{font-size:calc(var(--fs)*.93)} .frame:where([data-screen="reports"])[data-w="phone"] .eq{gap:var(--u)} :where(.frame[data-screen="reports"]) .eq .term .l{color:var(--muted-fg);font-size:calc(var(--fs)*.8);white-space:nowrap} :where(.frame[data-screen="reports"]) .eq .term .v{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap} :where(.frame[data-screen="reports"]) .eq .term:last-child{background:var(--primary);color:var(--primary-fg)} :where(.frame[data-screen="reports"]) .eq .term:last-child .l{color:var(--primary-fg);opacity:.85} :where(.frame[data-screen="reports"]) .eq .op{color:var(--muted-fg);font-weight:600;font-size:calc(var(--fs)*1.1)}
+:where(.frame[data-screen="reports"]) .till .btn{height:36px;padding:0 calc(var(--u)*3);flex:none} :where(.frame[data-screen="reports"]) .till .btn svg{width:16px;height:16px} :where(.frame[data-screen="reports"]) .till .ibtn{width:36px;height:36px}
+.frame:where([data-screen="reports"])[data-w="phone"] .till .who{white-space:nowrap;min-width:0} .frame:where([data-screen="reports"])[data-w="phone"] .till .who .mut{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 :where(.frame[data-screen="reports"]) .ladder{display:flex;flex-direction:column;gap:var(--u)} :where(.frame[data-screen="reports"]) .ladder .or{min-height:24px} :where(.frame[data-screen="reports"]) .ladder .tot{border-top:var(--hair) solid var(--border);padding-top:calc(var(--u)*1.5);margin-top:2px;font-weight:600} :where(.frame[data-screen="reports"]) .rp-panel .or .btn{height:36px;padding:0 calc(var(--u)*3);flex:none} :where(.frame[data-screen="reports"]) .rp-panel .or .btn svg{width:16px;height:16px} :where(.frame[data-screen="reports"]) .crs{flex:1;min-width:0;display:flex;flex-direction:column;gap:calc(var(--u)*1.5)}
 :where(.frame[data-screen="reports"]) .cr{display:grid;grid-template-columns:12px 1fr auto auto;align-items:center;gap:calc(var(--u)*2.5)} :where(.frame[data-screen="reports"]) .cr .cs{width:12px;height:12px;border-radius:4px;background:var(--primary);display:block}
 .frame:where([data-screen="reports"])[data-w="phone"] .cr .l .xs{display:none} :where(.frame[data-screen="reports"]) .cr .l{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} :where(.frame[data-screen="reports"]) .cr .r{font-weight:600;font-variant-numeric:tabular-nums} :where(.frame[data-screen="reports"]) .cr .s{color:var(--muted-fg);font-size:calc(var(--fs)*.86);min-width:3ch;text-align:right}
@@ -1813,7 +1818,7 @@ function panelTitle() {
 /* ---- Sales room ---- */
 function sales() {
   const m = model();
-  return `<div class="pad">${hero(m)}${RS.layout==='panels'?reportPanels(m):RS.layout==='list'?reportList(m):tiles(m)}</div>`;
+  return `<div class="pad">${RS.layout==='panels'?tillStrip():''}${hero(m)}${RS.layout==='panels'?reportPanels(m):RS.layout==='list'?reportList(m):tiles(m)}</div>`;
 }
 function periodDates(gran, off) {
   const m3 = d => MON[d.getMonth()].slice(0, 3);
@@ -1912,6 +1917,18 @@ function reportRows(m) {
    the payments split (to reconcile the till and the card batch), the till's closures, then the accountant's and the owner's reports. */
 /* panels: what the good dashboards put under the chart (Vercel, Framer, Featurebase, Lovable on the web; Lloyds, Revolut, YNAB, Starling on the phone):
    each report's first rows in view with a share bar, the figure at the head, the head opens the whole report. Order: the jobs. */
+/* the till now, above the chart (Paul 2026-09-17): a strip with the drawer equation, float + cash sales − paid out = expected, the last closure and the X-report; outside the date */
+function tillStrip() {
+  const last = CLOSURES.find(c => c.reg === REGISTERS[0].name), open = RS.regOpen && RS.register !== 'back';
+  const term = (l, v, op = '') => `${op ? `<span class="op">${op}</span>` : ''}<span class="term"><span class="l">${l}</span><span class="v">${v}</span></span>`;
+  const cashSales = r2(OPEN_SESSION.expected - OPEN_SESSION.float + 150), paidOut = 150;
+  const eq = open
+    ? `<div class="eq">${term(phone() ? 'Float' : 'Opening float', fmt(OPEN_SESSION.float))}${term(phone() ? 'Cash sales' : 'Cash sales · 6', fmt(cashSales), '+')}${term(phone() ? 'Paid out' : 'Paid out · to bank', fmt(paidOut), '−')}${term(phone() ? 'Expected' : 'Expected in drawer', fmt(OPEN_SESSION.expected), '=')}</div>`
+    : `<div class="eq">${term('Expected', fmt(last.counted - last.variance))}${term('Counted', fmt(last.counted), '·')}${term('Drawer result', last.variance ? fmt(Math.abs(last.variance)) + (last.variance < 0 ? ' short' : ' over') : 'Exact', '=')}</div>`;
+  const who = open ? `<b>${esc(OPEN_SESSION.reg)}</b> ${status('ok', 'Open')}<span class="mut"> · since ${OPEN_SESSION.open} · ${esc(OPEN_SESSION.by)}</span>` : `<b>${esc(REGISTERS[0].name)}</b> ${status('neutral', 'Closed')}<span class="mut"> · at ${last.close} · ${esc(last.by)}</span>`;
+  const lastLine = RS.empty ? 'No closures yet' : last ? `Last closure ${last.num} · ${last.dayLabel} ${last.close} · ${last.variance ? fmt(Math.abs(last.variance)) + (last.variance < 0 ? ' short' : ' over') : 'exact'}` : '';
+  return `<section class="card till" data-k="closures"><div class="tl"><div class="who">${who}</div><div class="mut sm">${lastLine}</div></div>${eq}<div class="tr">${open ? `<button class="btn press" data-act="xreport" data-testid="card-xreport">${I.print}X-report</button>` : `<button class="btn press" data-act="reprint" data-v="${last.id}">${I.print}Reprint</button>`}<button class="ibtn press" data-act="detail" data-v="closures" aria-label="Closures">${I.chev}</button></div></section>`;
+}
 function reportPanels(m) {
   const T = m.total || 1;
   const bar = (label, val, share, sub = '', extra = '') => `<div class="br"><span class="l">${label}</span><span class="r">${val}</span><i class="sh"><b style="width:${Math.max(2, Math.round(share * 100))}%"></b></i><span class="s">${pct(share)}${sub ? ' · ' + sub : ''}</span>${extra}</div>`;
@@ -1933,20 +1950,6 @@ function reportPanels(m) {
   /* Payments: the till and the card batch */
   { const ks = Object.keys(m.byMethod).sort((a, b) => m.byMethod[b] - m.byMethod[a]);
     out.push(panel('payments', 'Payments', fmt(m.total), ks.length ? donut(ks.map(k => [esc(k), m.byMethod[k], `${m.cntMethod[k]} order${m.cntMethod[k] === 1 ? '' : 's'}`]), `${ks.length} way${ks.length === 1 ? '' : 's'}`) : '<div class="mut sm">No payments yet</div>')); }
-  /* Closures: the till NOW, outside the date (Paul 2026-09-17: the date is for the figures; closures by date get complicated). Square's
-     drawer ladder (C2 in closures-variants.html): float + cash sales − paid out = expected, the X-report beside it, the last closure as the footer.
-     The Closures room behind the head keeps its own date for looking back. */
-  { const last = CLOSURES.find(c => c.reg === REGISTERS[0].name), open = RS.regOpen && RS.register !== 'back';
-    const row = (l, v, cls = '') => `<div class="or ${cls}"><span class="l ${cls ? '' : 'mut'}">${l}</span><span class="r">${v}</span></div>`;
-    const cashSales = r2(OPEN_SESSION.expected - OPEN_SESSION.float + 150), paidOut = 150;
-    const head = open
-      ? `<div class="or wrap"><span class="l"><b>${esc(OPEN_SESSION.reg)}</b> ${status('ok', 'Open')}<span class="mut"> · since ${OPEN_SESSION.open} · ${esc(OPEN_SESSION.by)}</span></span><button class="btn press" data-act="xreport" data-testid="card-xreport">${I.print}X-report</button></div>`
-      : `<div class="or wrap"><span class="l"><b>${esc(REGISTERS[0].name)}</b> ${status('neutral', 'Closed')}<span class="mut"> · at ${last.close} · ${esc(last.by)}</span></span><button class="btn press" data-act="reprint" data-v="${last.id}">${I.print}Reprint</button></div>`;
-    const ladder = open
-      ? `<div class="ladder">${row('Opening float', fmt(OPEN_SESSION.float))}${row('Cash sales · 6', fmt(cashSales, true))}${row('Paid out · to bank 15:40', fmt(-paidOut, true))}${row('Expected in drawer', fmt(OPEN_SESSION.expected), 'tot')}</div>`
-      : `<div class="ladder">${row('Expected', fmt(last.counted - last.variance))}${row('Counted', fmt(last.counted))}${row('Drawer result', last.variance ? fmt(Math.abs(last.variance)) + (last.variance < 0 ? ' short' : ' over') : 'Exact', 'tot')}</div>`;
-    const foot = RS.empty ? `<div class="pf-more mut sm">No closures yet</div>` : last ? `<div class="pf-more mut sm">Last closure ${last.num} · ${last.dayLabel} ${last.close} · ${last.by} · ${last.variance ? fmt(Math.abs(last.variance)) + (last.variance < 0 ? ' short' : ' over') : 'exact'}</div>` : '';
-    out.push(panel('closures', 'Closures', open ? 'Open' : 'Closed', head + ladder, foot)); }
   /* What sold: products and categories are one panel with two views (audit 2026-09-17: both are merchandise groupings); categories draw a donut (Paul) */
   { const cats = [['Coffee', .41], ['Bakery', .29], ['Retail', .18], ['Uncategorised', .12]], tone = [1, .62, .38, .2];
     const seg = `<span class="segt mini" role="tablist" aria-label="What sold"><button role="tab" aria-selected="${RS.merch !== 'categories'}" class="press ${RS.merch !== 'categories' ? 'on' : ''}" data-act="merch" data-v="products">Products</button><button role="tab" aria-selected="${RS.merch === 'categories'}" class="press ${RS.merch === 'categories' ? 'on' : ''}" data-act="merch" data-v="categories">Categories</button></span>`;
@@ -1971,9 +1974,9 @@ function reportPanels(m) {
     out.push(panel('refunds', 'Refunds', fmt(refunded), `<div class="stats">${stat('Refunded', fmt(refunded))}${stat('Orders', `${nRef} of ${m.orders}`)}${stat('Kept', pct(m.total ? (m.total - refunded) / m.total : 1))}</div><div class="hbar"><i style="flex:${Math.max(1, m.total - refunded)};background:var(--c1)"></i>${refunded ? `<i style="flex:${refunded};background:var(--bad)"></i>` : ''}</div><div class="leg"><span><i style="background:var(--c1)"></i>Kept <b>${fmt(m.total - refunded)}</b></span><span><i style="background:var(--bad)"></i>Refunded <b>${fmt(refunded)}</b></span></div>`, nRef ? '' : `<div class="pf-more mut sm">None in the period</div>`)); }
   const more = '';
   /* Paul 2026-09-17: say which cards follow the date and which do not. Two sections: Right now (the till), then the period, headed by the same words as the hero's date. */
-  const now = out.filter(h => h.includes('data-k="closures"')), dated = out.filter(h => !h.includes('data-k="closures"'));
+  /* Paul 2026-09-17, later: the till goes above the chart as a strip, so the date, the chart and the cards are one block; the cards keep the period as their heading */
   const d = periodDates(RS.gran, RS.off), t = periodTitle(RS.gran, RS.off);
-  return `<section class="rp-sec"><h3 class="rp-h">Right now<span class="mut"> · ${esc(regName())}</span></h3><div class="rp-panels">${now.join('')}</div></section><section class="rp-sec dated"><h3 class="rp-h">${esc(t)}${RS.gran !== 'custom' && d !== t ? `<span class="mut"> · ${esc(d)}</span>` : ''}<span class="mut rp-note-text">follows the date above</span></h3><div class="rp-panels">${dated.join('')}</div></section>`;
+  return `<section class="rp-sec dated"><h3 class="rp-h">${esc(t)}${RS.gran !== 'custom' && d !== t ? `<span class="mut"> · ${esc(d)}</span>` : ''}</h3><div class="rp-panels">${out.join('')}</div></section>`;
 }
 function reportList(m) {
   const order=['orders','payments','closures','taxes','refunds','products','cashiers','categories','registers','cash','deposits'];

@@ -153,6 +153,13 @@ Then: "I don't mind if the cards update with the date range but it needs to be m
 explicit." Done: two labelled sections under the hero. **Right now · Front till** holds the
 Closures card; **Today · Mon 14 Sep** (the hero's own words, changing with the date, with
 "follows the date above" at its right) holds the seven cards that do.
+Then: "Maybe closures go up to the top now, above the chart, in a small infographic", so the
+chart, the date and the cards read as one block. Done: the till is a slim full-width strip
+above the hero, outside the date: register · Open since 13:00 · Dylan, the last closure
+under it, the drawer equation as chips (Opening float £100.00 + Cash sales £343.70 − Paid out
+£150.00 = Expected in drawer £293.70, the result chip filled), X-report and a chevron into the
+Closures room; when closed, Expected · Counted = Drawer result with Reprint. The seven cards
+keep the period as their heading; the "Right now" section is gone.
 
 ## What changed from 2026-09-14
 

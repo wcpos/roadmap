@@ -55,14 +55,14 @@ const checks = {
           assert.equal(await page.locator('.hero .kpi .delta').count(), 3, 'companions carry deltas');
           assert((await page.locator('.hero .datebtn:not(.scope)').textContent()).startsWith(s === 'today' ? 'Today' : 'Last week'), 'the date is the chart title');
           assert.equal(await page.locator('.scope-row').count(), 0, 'Sales has no scope row');
-          assert.equal(await page.locator('.rp-panel').count(), 8, 'eight cards under the chart');
-          assert.equal(await page.locator('.rp-sec').count(), 2, 'two sections: Right now, and the period');
-          assert.equal(await page.locator('.rp-sec:not(.dated) .rp-panel[data-k="closures"]').count(), 1, 'Closures sits in Right now');
+          assert.equal(await page.locator('.rp-panel').count(), 7, 'seven cards under the chart');
+          assert.equal(await page.locator('.till').count(), 1, 'the till strip sits above the chart (Paul 2026-09-17)');
+          assert(await page.locator('.till').evaluate(t => t.getBoundingClientRect().bottom <= document.querySelector('.hero').getBoundingClientRect().top + 1), 'the till strip is above the hero');
           assert((await page.locator('.rp-sec.dated .rp-h').textContent()).startsWith(s === 'today' ? 'Today' : 'Last week'), 'the period section is headed by the date');
           assert.equal(await page.locator('.rp-panel[data-k="deposits"], .rp-panel[data-k="cash"]').count(), 0, 'deposits and cash movements have no card (audit 2026-09-17)');
-          assert.equal(await page.locator('.rp-panel[data-k="closures"] .ladder .or').count(), 4, 'the Closures card is the drawer ladder, outside the date (Paul 2026-09-17)');
-          assert.equal(await page.locator('.rp-panel[data-k="closures"] [data-testid="card-xreport"]').count(), s === 'closed' ? 0 : 1, 'X-report on the card while the till is open');
-          assert.equal(await page.locator('.rp-panel[data-k="closures"]').count(), 1, 'Closures is a panel like the others');
+          assert.equal(await page.locator('.till .eq .term').count(), s === 'closed' ? 3 : 4, 'the drawer equation in the till strip');
+          assert.equal(await page.locator('.till [data-testid="card-xreport"]').count(), s === 'closed' ? 0 : 1, 'X-report on the strip while the till is open');
+          assert.equal(await page.locator('.till[data-k="closures"]').count(), 1, 'the till strip carries the closures (Paul 2026-09-17)');
           assert(await page.locator('.rp-panel .br .sh b').count() >= 4, 'bars on the ranked panel (Top products)');
           assert.equal(await page.locator('.rp-panel[data-k="orders"] .stats .n').count(), 6, 'orders as six figures');
           assert.equal(await page.locator('.rp-panel[data-k="orders"] .hbar').count(), 1, 'orders status bar');
@@ -137,7 +137,7 @@ const checks = {
     assert.equal(await page.locator('.chart-mode button.on').textContent(), 'Running total');
     await page.click('[data-act="chart"][data-v="hour"]');
     assert.equal(await page.locator('.cur-bar').count(), 9, 'hour bars did not come back');
-    await page.click('.rp-panel[data-k="closures"] .ph');   // Closures opens like the others (Paul 2026-09-17)
+    await page.click('.till [data-act="detail"][data-v="closures"]');   // the till strip opens the Closures room
     assert.equal(await page.locator('.detail [data-testid="session-expected"]').count(), 1, 'closures panel did not open');
     await page.locator('.detail [data-act="closure"]').first().click();
     assert.equal(await page.locator('.detail [data-act="backClosures"]').count(), 1, 'a closure from the list has no way back');
