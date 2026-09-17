@@ -15,10 +15,9 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
   const scn = (v) => page.click(`.strip button[data-scn="${v}"]`);
   const shot = async (name) => { await page.evaluate(() => window.scrollTo(0, 0)); await page.locator('#frame').screenshot({ path: path.join(OUT, name + '.jpg'), type: 'jpeg', quality: 82, animations: 'disabled' }); };
   await set('w', 'tablet'); await set('theme', 'light'); await set('scale', 'regular');
-  // the two tab styles left, 12 orders, tablet and phone
-  for (const w of ['tablet', 'phone']) { await set('w', w);
-    for (const s of ['line1', 'lines2']) { await set('tabStyle', s); await scn('many-orders'); await page.click('.ordlist [data-act="ordlist"]'); await shot(`tabs-${s}-${w}`); } }
-  await set('w', 'tablet'); await set('tabStyle', 'line1');
+  // the tabs: amount over status on large screens, amount + dot on the phone (decided 2026-09-17), 12 orders
+  for (const w of ['tablet', 'phone']) { await set('w', w); await scn('many-orders'); await page.click('.ordlist [data-act="ordlist"]'); await shot(`tabs-${w}`); }
+  await set('w', 'tablet');
   // the personality themes, session open
   for (const th of ['paper', 'bold', 'warm', 'market', 'stage']) { await set('theme', th); await scn('open'); await page.waitForTimeout(300); await shot(`theme-${th}`); }
   await set('theme', 'light');

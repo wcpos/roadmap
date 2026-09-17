@@ -571,7 +571,6 @@ function renderStrip(){
     <div class="g"><b>Icons</b>${seg('icons',[['tabler-15','Tabler · 1.5 px (decided)'],['hugeicons','Hugeicons'],['lucide','Lucide (before)']])}</div>
     <div class="g"><b>Touches</b><span class="seg">${(()=>{const all=Object.values(S.tx).every(Boolean), none=!Object.values(S.tx).some(Boolean); return `<button class="${none?'on':''}" data-txall="0">before</button><button class="${all?'on':''}" data-txall="1">after</button>`;})()}</span><span class="seg">${[['roll','total settles'],['stamp','PAID stamp'],['pence','price-tag pence (whimsical themes)'],['badge','tile badge · stock'],['tear','receipt tears off (whimsical themes)'],['doodle','doodle']].map(([k,l])=>`<button class="${S.tx[k]?'on':''}" data-tx="${k}">${l}</button>`).join('')}</span></div>
     <div class="g"><b>Registers</b>${seg('registers',[[1,'1'],[3,'3']])}</div>
-    <div class="g"><b>Tab style</b>${seg('tabStyle',[['line1','amount + dot'],['lines2','amount over status']])}</div>
     <div class="g"><b>State</b><span class="seg">${SCENES.map(([v,l])=>`<button class="${S.scn===v?'on':''}" data-scn="${v}">${l}</button>`).join('')}</span></div>`;
 }
 function renderRail(){
@@ -673,8 +672,7 @@ function renderSide(){
         ${[['Qty',1],['Image',0],['Item',1],['SKU',0],['Price',1],['Regular price',0],['Total',1],['Tax',0]].map(([l,on])=>`<div class="opt"><span class="grip">${I.grip}</span><span class="cb ${on?'on':''}">${I.check}</span>${l}</div>`).join('')}
         <div class="opt h2">Open orders</div>
         <div class="opt"><span>Tabs</span><span class="grow"></span><span class="segt" style="height:36px"><button class="${S.tabsPos==='top'?'on':''}" data-set="tabsPos" data-v="top">Top</button><button class="${S.tabsPos==='bottom'?'on':''}" data-set="tabsPos" data-v="bottom">Bottom</button></span></div>
-        <div class="opt xs mut" style="min-height:auto;padding-bottom:calc(var(--u)*1)">Tab shows</div>
-        ${[['line1','Amount and status dot'],['amountcust','Amount and customer'],['lines2','Amount over status'],['cust','Customer, or amount for guests'],['numbered','Number and amount']].map(([v,l])=>`<button class="opt press" data-set="tabStyle" data-v="${v}"><span class="radio ${S.tabStyle===v?'on':''}"></span>${l}</button>`).join('')}
+        <div class="opt xs mut" style="min-height:auto;padding-bottom:calc(var(--u)*1)">Tabs show the amount over the status; on a phone, the amount and a status dot.</div>
         <div class="opt xs mut" style="min-height:auto;padding-bottom:calc(var(--u)*2)">Custom titles (table number, name) come with the restaurant extension.</div>
         <div class="opt h2">After checkout</div>
         <div class="opt"><span>Show receipt</span><span class="sw on"></span></div><div class="opt"><span>Print receipt</span><span class="sw"></span></div>
@@ -739,7 +737,7 @@ function tabHtml(o,i,style,t){
 function renderTabs(pos){
   const t=T(); const open=OPEN.slice(0,S.orders);
   const shown=open; const rest=0;
-  const tab=(o,i)=>tabHtml(o,i,S.tabStyle,t);
+  const tab=(o,i)=>tabHtml(o,i,S.w==='phone'?'line1':'lines2',t);   /* Paul 2026-09-17: amount over status on large screens, amount + dot on the phone */
   const more=open.length>3?`<button class="ov press" data-act="ordlist" aria-label="${t.openOrders}" title="${t.openOrders}"><b>${open.length}</b>${I.chevu}</button>`:'';
   const list=S.ordlist?`<div class="ordlist" data-stop="1"><div class="hh">${t.openOrders}<span class="mut" style="font-weight:400">· ${open.length}</span><span class="grow"></span><button class="ibtn press" data-act="ordlist" aria-label="Close" style="width:36px;height:36px">${I.x}</button></div>
       ${open.map((o,i)=>`<button class="orow press ${i===0?'on':''}" data-act="selOrder" data-id="${o.id}"><span><span class="l1"><b class="money">${fmt(o.t)}</b><span>${o.c}</span></span><span class="l2">${o.chip?`<span class="c ${o.chip[1]} st"><i></i>${o.chip[0]}</span>`:`<span>${o.age==='now'?'This cart':`Started ${o.age} ago`}</span>`}</span></span>${I.chev}</button>`).join('')}</div>`:'';

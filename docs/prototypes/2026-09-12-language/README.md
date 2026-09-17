@@ -116,6 +116,8 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     right, with a fade at the scroll edge:
     (a) **amount over status** — two lines, the chip text readable without opening anything;
     (b) **amount + dot** — one line, densest, status by colour only (needs the list for the word);
+    **Decided (Paul, 2026-09-17): (a) amount over status on tablet and desktop, (b) amount + dot on
+    the phone. A rule of the width, not a setting; the switch is out of the register.**
     (c) **chips** — pills, the current one filled; reads as a filter row rather than tabs;
     (d) **cards** — small cards with amount, customer and status, current with a primary top
     edge; the most information, the tallest;
