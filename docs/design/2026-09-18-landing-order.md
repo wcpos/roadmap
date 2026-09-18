@@ -120,7 +120,9 @@ and the results commit that follows it.
 **Measured on `next`, 2026-09-18.** The morning dispatch (run 35327301946) read **first row 8,489 ms**
 on the free store and stopped the other shards. That is read as a defect on `next` to be found, not
 a reason to move the ceiling. A second dispatch (run 35361489738; an earlier one, 35360735268, was cancelled by mistake seven
-minutes in) was started for this page; its numbers are appended below when it lands. The web tap-to-line number is not recoverable from past
+minutes in) was started for this page; its numbers are appended below when it lands.
+
+**Run [35361489738](https://github.com/wcpos/monorepo/actions/runs/35361489738) (head 157f13f458, 2026-09-18 15:17–16:20 UTC), two of four shards completed, two cancelled by the gate:** tile tap to cart line (web, DOM intent to quantity in DOM) **368 ms** on free-authenticated and **313 ms** on pro-authenticated against the 300 ms ceiling, both misses; keystroke to first row **6,089 ms** on free-authenticated against 3,000 ms, a miss, with 32 of the expected 48 rows rendered inside the five-second window. Not a clean day: GitHub's cache service answered 400 and "services aren't available" through the run, and the pro store's post-failure probe read 3,987 ms median (healthy is under 3,000), so every number here carries the host's slowness. Two dispatches, two misses on first row (8,489 then 6,089 ms) and a fresh miss on cart-add: the reading is a defect on `next` to find with `search-responsiveness` promoted and a quiet-day rerun first, never a gate move. The web tap-to-line number is not recoverable from past
 reports (the merged report drops the attachment); the gate has passed at 300 ms on every trunk run
 since it landed.
 
