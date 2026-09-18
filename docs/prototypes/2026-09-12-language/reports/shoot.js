@@ -54,14 +54,13 @@ const checks = {
           assert(/ vs /.test(await page.locator('.hero .prev .delta').textContent()), 'delta chip must name the comparison');
           assert.equal(await page.locator('.hero .kpi .delta').count(), 3, 'companions carry deltas');
           assert((await page.locator('.hero .datebtn:not(.scope)').textContent()).startsWith(s === 'today' ? 'Today' : 'Last week'), 'the date is the chart title');
-          assert.equal(await page.locator('.scope-row').count(), 0, 'Sales has no scope row');
           assert.equal(await page.locator('.rp-panel').count(), 8, 'eight cards under the chart (Top products and Categories are two, Paul 2026-09-18)');
           assert.equal(await page.locator('.till').count(), 1, 'the till strip sits above the chart (Paul 2026-09-17)');
           assert(await page.locator('.till').evaluate(t => t.getBoundingClientRect().bottom <= document.querySelector('.hero').getBoundingClientRect().top + 1), 'the till strip is above the hero');
           assert((await page.locator('.rp-sec.dated .rp-h').textContent()).startsWith(s === 'today' ? 'Today' : 'Last week'), 'the period section is headed by the date');
           assert.equal(await page.locator('.rp-panel[data-k="deposits"], .rp-panel[data-k="cash"]').count(), 0, 'deposits and cash movements have no card (audit 2026-09-17)');
-          assert.equal(await page.locator('.till .eq').count(), 1, 'the equation chips in the till strip (Paul 2026-09-18: the chips, decided; C3 stays behind the switch)');
-          assert.equal(await page.locator('.till svg.lvl').count(), 0, 'the cash level line is not the default');
+          assert.equal(await page.locator('.till .eq').count(), 1, 'the equation chips in the till strip (Paul 2026-09-18: decided, the switch retired)');
+          assert.equal(await page.locator('.till svg.lvl, .rlist, .tiles').count(), 0, 'the cash-level line, the list and the tiles are gone with their switches');
           assert.equal(await page.locator('.till .eq .term.res, .till .eq.ledger .lr.res').count(), 1, 'the result chip');
           if (w !== 'phone') assert.equal(await page.locator('.till .eq .keep .term.res').count(), 1, '"= Expected" is one unbreakable piece');
           assert.equal(await page.locator('.till [data-testid="card-xreport"]').count(), s === 'closed' ? 0 : 1, 'X-report on the strip while the till is open');
@@ -84,7 +83,6 @@ const checks = {
           assert.equal(await page.locator('.bar [data-p="scope"]').count(), 1, 'register and store are the bar title');
           assert.equal(await page.locator('.pad [data-p="overflow"]').count(), 0);
         }
-        if (s === 'today') assert.equal(await page.locator('.scope-row [data-p="overflow"]').count(), 0);
         if (s === 'busy') assert(await page.locator('.till .eq .term, .till .eq.ledger .lr').count() >= 6, 'float, sales, paid in, paid out, refunds, expected');
         if (s === 'busy' && w !== 'phone') assert(await page.locator('.till').evaluate(t => getComputedStyle(t).gridTemplateAreas.includes('"eq eq"')), 'a busy day: the chips take the whole row, X-report on the title row');
         if (s === 'today' && w === 'tablet') assert(await page.locator('.till').evaluate(t => getComputedStyle(t).gridTemplateAreas.includes('"eq eq"')), 'tablet: the chips take the whole row');
@@ -164,9 +162,7 @@ const checks = {
     assert.equal(await page.locator('.chart-mode button.on').textContent(), 'Running total');
     await page.click('[data-act="chart"][data-v="hour"]');
     assert.equal(await page.locator('.cur-bar').count(), 9, 'hour bars did not come back');
-    await set('till', 'level'); assert.equal(await page.locator('.till svg.lvl .line').count(), 1, 'the cash level line (C3) is still there behind the switch');
-    assert.equal(await page.locator('.till svg.lvl circle.ev').count(), 1, 'the paid-out marked on the line');
-    await set('till', 'chips'); assert.equal(await page.locator('.till svg.lvl').count(), 0);
+    assert.equal(await page.locator('.strip [data-set="till"], .strip [data-set="layout"]').count(), 0, 'the Till and Below-the-chart switches are retired (Paul 2026-09-18)');
     await page.click('.till [data-act="detail"][data-v="closures"]');   // the till strip opens the Closures room
     assert.equal(await page.locator('.detail [data-testid="session-expected"]').count(), 1, 'closures panel did not open');
     await page.locator('.detail [data-act="closure"]').first().click();

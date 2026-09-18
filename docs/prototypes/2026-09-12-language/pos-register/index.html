@@ -591,9 +591,7 @@ body:has(#strip[hidden]) .notes{display:none}
 :where(.frame[data-screen="reports"]) .sheet-context{margin-top:calc(var(--u)*2);font-weight:400;color:var(--muted-fg)}
 .frame:where([data-screen="reports"])[data-w="phone"] .sheet-f{flex-direction:column} .frame:where([data-screen="reports"])[data-w="phone"] .sheet-f .btn{width:100%}
 :where(.frame[data-screen="reports"]) .page{flex:1;min-width:0;display:flex;flex-direction:column}
-:where(.frame[data-screen="reports"]) .scope-row{display:flex;flex-wrap:wrap;align-items:center;gap:calc(var(--u)*2);padding:calc(var(--u)*3) calc(var(--u)*4);border-bottom:var(--hair) solid var(--border);flex:none}
 :where(.frame[data-screen="reports"]) .pbar{display:flex;align-items:center;gap:var(--u)} :where(.frame[data-screen="reports"]) .datebtn{display:flex;align-items:center;gap:var(--u);min-height:max(var(--ctl),var(--floor));font-weight:600;font-size:calc(var(--fs)*1.2)}
-:where(.frame[data-screen="reports"]) .phone-tabs{display:flex;padding:calc(var(--u)*2) calc(var(--u)*3);border-bottom:var(--hair) solid var(--border)} :where(.frame[data-screen="reports"]) .phone-tabs .segt{width:100%} :where(.frame[data-screen="reports"]) .phone-tabs button{flex:1;justify-content:center}
 :where(.frame[data-screen="reports"]) .pad{padding:calc(var(--u)*4);overflow:auto;min-height:0;flex:1} :where(.frame[data-screen="reports"]) .card{background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r)}
 :where(.frame[data-screen="reports"]) .hero{padding:calc(var(--u)*5);position:relative} :where(.frame[data-screen="reports"]) .hero-top{display:flex;justify-content:space-between;gap:calc(var(--u)*6)}
 :where(.frame[data-screen="reports"]) .lbl,:where(.frame[data-screen="reports"]) .kpi .l{color:var(--muted-fg)} :where(.frame[data-screen="reports"]) .big{font-size:var(--amt);font-family:var(--display);font-weight:700;letter-spacing:-.03em}
@@ -615,7 +613,6 @@ body:has(#strip[hidden]) .notes{display:none}
 :where(.frame[data-screen="reports"]) .rp-panel .pb{padding:calc(var(--u)*2) calc(var(--u)*4) calc(var(--u)*3);display:flex;flex-direction:column;gap:calc(var(--u)*2.5);flex:1} :where(.frame[data-screen="reports"]) .rp-panel .pf-more{padding:0 calc(var(--u)*4) calc(var(--u)*3)}
 :where(.frame[data-screen="reports"]) .br{display:grid;grid-template-columns:1fr auto;grid-template-areas:"l r" "sh sh" "s s";column-gap:calc(var(--u)*3);row-gap:3px;align-items:center;min-width:0} :where(.frame[data-screen="reports"]) .br .l{grid-area:l;display:flex;align-items:center;gap:calc(var(--u)*2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} :where(.frame[data-screen="reports"]) .br .r{grid-area:r;font-weight:600;font-variant-numeric:tabular-nums} :where(.frame[data-screen="reports"]) .br .sh{grid-area:sh;display:block;height:4px;border-radius:2px;background:var(--muted);overflow:hidden} :where(.frame[data-screen="reports"]) .br .sh b{display:block;height:100%;background:var(--primary);border-radius:2px} :where(.frame[data-screen="reports"]) .br .s{grid-area:s;color:var(--muted-fg);font-size:calc(var(--fs)*.86)}
 :where(.frame[data-screen="reports"]) .or{display:flex;align-items:center;justify-content:space-between;gap:calc(var(--u)*3);min-height:calc(var(--fs)*1.9)} :where(.frame[data-screen="reports"]) .or .l{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} :where(.frame[data-screen="reports"]) .or .r{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap} :where(.frame[data-screen="reports"]) .or .st{margin-left:var(--u)}
-:where(.frame[data-screen="reports"]) .rlist.more{margin-top:calc(var(--u)*3)}
 :where(.frame[data-screen="reports"]){--c1:var(--primary);--c2:oklch(0.62 0.15 160);--c3:oklch(0.72 0.15 70);--c4:oklch(0.58 0.16 320);--c5:oklch(0.70 0.02 250)} .frame[data-screen="reports"][data-theme="dark"]{--c2:oklch(0.75 0.14 160);--c3:oklch(0.80 0.14 75);--c4:oklch(0.72 0.15 320);--c5:oklch(0.60 0.02 250)}   /* parts of a whole: the primary, hues turned away from it, a neutral (Paul 2026-09-17) */
 :where(.frame[data-screen="reports"]) .cats{display:flex;align-items:center;gap:calc(var(--u)*4)} .frame:where([data-screen="reports"]) svg.donut{width:120px;height:120px;flex:none;stroke:none}
 :where(.frame[data-screen="reports"]) .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(var(--u)*3) calc(var(--u)*4)} :where(.frame[data-screen="reports"]) .stats .l{color:var(--muted-fg);font-size:calc(var(--fs)*.86)} :where(.frame[data-screen="reports"]) .stats .n{font-size:calc(var(--fs)*1.35);font-weight:600;font-variant-numeric:tabular-nums}
@@ -625,7 +622,6 @@ body:has(#strip[hidden]) .notes{display:none}
 .frame:where([data-screen="reports"])[data-w="tablet"] .till{grid-template-columns:1fr auto;grid-template-areas:"tl tr" "eq eq"}   /* Paul 2026-09-18: when the chips take their own row they get the whole width; X-report sits on the title row */ .frame:where([data-screen="reports"])[data-w="phone"] .till{grid-template-columns:1fr;grid-template-areas:"tl" "eq" "tr";row-gap:calc(var(--u)*2.5)} .frame:where([data-screen="reports"])[data-w="phone"] .till .tacts{justify-self:stretch;justify-content:space-between}
 :where(.frame[data-screen="reports"]) .eq{display:flex;align-items:center;gap:calc(var(--u)*2)} :where(.frame[data-screen="reports"]) .eq .keep{display:flex;align-items:center;gap:calc(var(--u)*2)}   /* "= Expected in drawer" never splits across a wrap */ :where(.frame[data-screen="reports"]) .eq .term{display:flex;flex-direction:column;gap:1px;padding:var(--u) calc(var(--u)*2.5);border-radius:var(--r);background:var(--muted);flex:none}   /* Paul 2026-09-17: chips never stretch; the row reads as an equation, not a table of boxes */ :where(.frame[data-screen="reports"]) .eq .term .l{color:var(--muted-fg);font-size:calc(var(--fs)*.8);white-space:nowrap} :where(.frame[data-screen="reports"]) .eq .term .v{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap} :where(.frame[data-screen="reports"]) .eq .term.res{background:var(--primary);color:var(--primary-fg)} :where(.frame[data-screen="reports"]) .eq .term.res .l{color:var(--primary-fg);opacity:.85} :where(.frame[data-screen="reports"]) .eq .note{color:var(--muted-fg);font-size:calc(var(--fs)*.86);margin-left:var(--u)} :where(.frame[data-screen="reports"]) .eq{flex-wrap:wrap}
 :where(.frame[data-screen="reports"]) .till.busy{grid-template-columns:1fr auto;grid-template-areas:"tl tr" "eq eq"}
-:where(.frame[data-screen="reports"]) .till svg.lvl{grid-area:eq;width:620px;max-width:100%;height:auto;display:block;overflow:visible;stroke:none} :where(.frame[data-screen="reports"]) .till svg.lvl text{font-family:var(--font)} .frame:where([data-screen="reports"])[data-w="tablet"] .till.level{grid-template-columns:1fr auto;grid-template-areas:"tl tr" "eq tr"} .frame:where([data-screen="reports"])[data-w="tablet"] .till.level svg.lvl{width:100%} .frame:where([data-screen="reports"])[data-w="phone"] .till.level svg.lvl{width:100%}
 :where(.frame[data-screen="reports"]) .eq.ledger{display:flex;flex-direction:column;gap:2px;width:100%} :where(.frame[data-screen="reports"]) .eq.ledger .lr{display:grid;grid-template-columns:16px 1fr auto;align-items:center;gap:calc(var(--u)*2);min-height:26px;padding:0 var(--u);border-radius:calc(var(--r) - 2px)} :where(.frame[data-screen="reports"]) .eq.ledger .lr .op{color:var(--muted-fg);font-weight:600;text-align:center} :where(.frame[data-screen="reports"]) .eq.ledger .lr .l{color:var(--muted-fg)} :where(.frame[data-screen="reports"]) .eq.ledger .lr .v{font-weight:600;font-variant-numeric:tabular-nums} :where(.frame[data-screen="reports"]) .eq.ledger .lr.res{background:var(--primary);color:var(--primary-fg);margin-top:var(--u);min-height:32px} :where(.frame[data-screen="reports"]) .eq.ledger .lr.res .l,:where(.frame[data-screen="reports"]) .eq.ledger .lr.res .op{color:var(--primary-fg);font-weight:600} :where(.frame[data-screen="reports"]) .eq .op{color:var(--muted-fg);font-weight:600;font-size:calc(var(--fs)*1.1)}
 :where(.frame[data-screen="reports"]) .till .btn{height:36px;padding:0 calc(var(--u)*3);flex:none} :where(.frame[data-screen="reports"]) .till .btn svg{width:16px;height:16px} :where(.frame[data-screen="reports"]) .till .ibtn{width:36px;height:36px}
 .frame:where([data-screen="reports"])[data-w="phone"] .till .who{white-space:nowrap;min-width:0} .frame:where([data-screen="reports"])[data-w="phone"] .till .who .mut{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
@@ -634,9 +630,6 @@ body:has(#strip[hidden]) .notes{display:none}
 .frame:where([data-screen="reports"])[data-w="phone"] .cr .l .xs{display:none} :where(.frame[data-screen="reports"]) .cr .l{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} :where(.frame[data-screen="reports"]) .cr .r{font-weight:600;font-variant-numeric:tabular-nums} :where(.frame[data-screen="reports"]) .cr .s{color:var(--muted-fg);font-size:calc(var(--fs)*.86);min-width:3ch;text-align:right}
 :where(.frame[data-screen="reports"]) .br .avi{width:22px;height:22px;border-radius:50%;background:var(--muted);color:var(--fg);display:inline-flex;align-items:center;justify-content:center;font-size:calc(var(--fs)*.8);font-weight:600;flex:none}
 .frame:where([data-screen="reports"])[data-w="phone"] .or.wrap{flex-wrap:wrap;row-gap:2px} .frame:where([data-screen="reports"])[data-w="phone"] .or.wrap .l{white-space:normal;flex:1 1 100%}
-:where(.frame[data-screen="reports"]) .rlist{margin-top:calc(var(--u)*4);border-top:var(--hair) solid var(--border)} :where(.frame[data-screen="reports"]) .rrow{display:grid;grid-template-columns:minmax(140px,1fr) 2fr auto 20px;align-items:center;gap:calc(var(--u)*3);width:100%;text-align:left;min-height:max(var(--row),var(--floor));padding:0 var(--u);border-bottom:var(--hair) solid var(--border)} :where(.frame[data-screen="reports"]) .rrow:hover{background:var(--muted)} :where(.frame[data-screen="reports"]) .rrow:disabled{opacity:.6}
-:where(.frame[data-screen="reports"]) .rrow .rn{font-weight:500} :where(.frame[data-screen="reports"]) .rrow .rs{color:var(--muted-fg);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} :where(.frame[data-screen="reports"]) .rrow .rv{font-weight:600;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap} :where(.frame[data-screen="reports"]) .rrow>svg{width:16px;height:16px;color:var(--muted-fg)}
-.frame:where([data-screen="reports"])[data-w="phone"] .rrow{grid-template-columns:1fr auto 20px;grid-template-areas:"n v c" "s v c";row-gap:2px;padding:calc(var(--u)*2) var(--u)} .frame:where([data-screen="reports"])[data-w="phone"] .rrow .rn{grid-area:n} .frame:where([data-screen="reports"])[data-w="phone"] .rrow .rs{grid-area:s;font-size:calc(var(--fs)*.9)} .frame:where([data-screen="reports"])[data-w="phone"] .rrow .rv{grid-area:v} .frame:where([data-screen="reports"])[data-w="phone"] .rrow>svg{grid-area:c}
 :where(.frame[data-screen="reports"]) .detail .pad.inpanel{padding:0;overflow:visible;flex:none} :where(.frame[data-screen="reports"]) .detail .ft:empty{display:none} :where(.frame[data-screen="reports"]) .detail .h>.ibtn:first-child{margin-left:calc(var(--u)*-2)}
 :where(.frame[data-screen="reports"]) .hero-chips{display:flex;flex-wrap:wrap;gap:var(--u);margin:0 0 calc(var(--u)*4)}   /* Paul 2026-09-18: the chart's filters are the app's filter chips — the register's pills as the Orders page draws them (.op-chip, kept in step by hand; lift both into one .chip when the language settles) */
 :where(.frame[data-screen="reports"]) .fchip{display:inline-flex;align-items:center;gap:calc(var(--u)*1.25);height:max(calc(var(--ctl) - 12px),32px);padding:0 calc(var(--u)*2.5) 0 calc(var(--u)*3);border-radius:999px;border:var(--hair) solid var(--border);background:var(--card);white-space:nowrap;color:var(--fg);font-size:calc(var(--fs)*.93);flex:none} :where(.frame[data-screen="reports"]) .fchip svg{width:14px;height:14px;color:var(--muted-fg)} :where(.frame[data-screen="reports"]) .fchip.on{background:var(--fg);color:var(--bg);border-color:var(--fg);font-weight:600} :where(.frame[data-screen="reports"]) .fchip.on svg{color:inherit} :where(.frame[data-screen="reports"]) .fchip.on:active{background:var(--fg);filter:brightness(1.3)} :where(.frame[data-screen="reports"]) .fchip.split{padding:0;overflow:hidden} :where(.frame[data-screen="reports"]) .fchip.split>button{height:100%;display:inline-flex;align-items:center;gap:calc(var(--u)*1.25);padding:0 calc(var(--u)*2) 0 calc(var(--u)*3);color:inherit;font-weight:inherit} :where(.frame[data-screen="reports"]) .fchip.split>button.x{padding:0 calc(var(--u)*2.5) 0 calc(var(--u)*2);border-left:var(--hair) solid color-mix(in srgb,var(--bg) 30%,transparent)} :where(.frame[data-screen="reports"]) .fchip .x svg{width:12px;height:12px}
@@ -647,9 +640,6 @@ body:has(#strip[hidden]) .notes{display:none}
 :where(.frame[data-screen="reports"]) .cap{display:flex;gap:calc(var(--u)*3);flex-wrap:wrap;font-size:calc(var(--fs)*.9);color:var(--muted-fg);padding-top:calc(var(--u)*2)} :where(.frame[data-screen="reports"]) .cap b{color:var(--fg);font-weight:500}
 :where(.frame[data-screen="reports"]) .lg{display:inline-flex;gap:var(--u);align-items:center} :where(.frame[data-screen="reports"]) .lg i{width:calc(var(--u)*2);height:calc(var(--u)*2);border-radius:var(--r)}
 :where(.frame[data-screen="reports"]) .tip{position:absolute;z-index:1;background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);padding:calc(var(--u)*2);max-width:100%}
-:where(.frame[data-screen="reports"]) .tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:calc(var(--u)*3);margin-top:calc(var(--u)*4)}
-:where(.frame[data-screen="reports"]) .tile{min-width:0;text-align:left;background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);padding:calc(var(--u)*4);display:flex;flex-direction:column;gap:calc(var(--u)*2)} :where(.frame[data-screen="reports"]) .tile .l{display:flex;align-items:center;justify-content:space-between;gap:var(--u)} :where(.frame[data-screen="reports"]) .tile .n{font-size:calc(var(--fs)*1.5);font-family:var(--display);font-weight:600} :where(.frame[data-screen="reports"]) .tile .line{color:var(--muted-fg);font-size:calc(var(--fs)*.9)} :where(.frame[data-screen="reports"]) .tile:disabled{opacity:.6;cursor:default}
-.frame:where([data-screen="reports"])[data-w="tablet"] .tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
 :where(.frame[data-screen="reports"]) .sess{padding:calc(var(--u)*4);display:flex;gap:calc(var(--u)*3);align-items:center;justify-content:space-between;margin-bottom:calc(var(--u)*4)} :where(.frame[data-screen="reports"]) .sess .big{font-size:calc(var(--amt)*.75)} :where(.frame[data-screen="reports"]) .who{color:var(--muted-fg);margin:calc(var(--u)*2) 0}
 :where(.frame[data-screen="reports"]) .closures-list{width:100%;border-collapse:collapse} :where(.frame[data-screen="reports"]) .closures-list th{text-align:left;font-weight:500;color:var(--muted-fg)} :where(.frame[data-screen="reports"]) .closures-list td,:where(.frame[data-screen="reports"]) .closures-list th{padding:calc(var(--u)*3);border-bottom:var(--hair) solid var(--border)}
 :where(.frame[data-screen="reports"]) .closure-row{width:100%;text-align:left;display:flex;align-items:center;gap:calc(var(--u)*3);padding:calc(var(--u)*3);min-height:max(var(--tile),var(--floor));border-bottom:var(--hair) solid var(--border)!important}
@@ -678,10 +668,8 @@ body:has(#strip[hidden]) .notes{display:none}
 :where(.frame[data-screen="reports"]) .empty{display:grid;place-content:center;gap:calc(var(--u)*3);padding:calc(var(--u)*8);text-align:center;min-height:calc(var(--tile)*3)}
 :where(.frame[data-screen="reports"]) .skeleton{height:max(var(--row),var(--floor));margin:calc(var(--u)*3) 0;border-radius:var(--r);background:var(--muted)}
 :where(.frame[data-screen="reports"]) .crumb{display:flex;align-items:center;min-height:max(var(--ctl),var(--floor));padding:0 calc(var(--u)*3);border-bottom:var(--hair) solid var(--border);flex:none}
-.frame:where([data-screen="reports"])[data-w="phone"] .scope-row{gap:var(--u);padding:calc(var(--u)*2) calc(var(--u)*3)} .frame:where([data-screen="reports"])[data-w="phone"] .scope-row .pbar{width:100%} .frame:where([data-screen="reports"])[data-w="phone"] .scope-row>.chip{max-width:100%;font-size:calc(var(--fs)*.9)}
 .frame:where([data-screen="reports"])[data-w="phone"] .hero-chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 calc(var(--u)*-3) calc(var(--u)*3);padding:0 calc(var(--u)*3);mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent)}   /* the chips scroll sideways on the phone, as the plan chips do on the register */
 .frame:where([data-screen="reports"])[data-w="phone"] .pad{padding:calc(var(--u)*3)} .frame:where([data-screen="reports"])[data-w="phone"] .hero{padding:calc(var(--u)*3)} .frame:where([data-screen="reports"])[data-w="phone"] .hero-top{flex-direction:column;gap:calc(var(--u)*3)} .frame:where([data-screen="reports"])[data-w="phone"] .kpis{margin:0;gap:calc(var(--u)*2)} .frame:where([data-screen="reports"])[data-w="phone"] .kpi .n{font-size:calc(var(--fs)*1.3)}
-.frame:where([data-screen="reports"])[data-w="phone"] .tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:calc(var(--u)*2)} .frame:where([data-screen="reports"])[data-w="phone"] .tile{padding:calc(var(--u)*3)} .frame:where([data-screen="reports"])[data-w="phone"] .tile .n{font-size:calc(var(--fs)*1.3)} .frame:where([data-screen="reports"])[data-w="phone"] .tile .l{font-size:calc(var(--fs)*.9)}
 .frame:where([data-screen="reports"])[data-w="phone"] .sess{align-items:flex-start;flex-direction:column} .frame:where([data-screen="reports"])[data-w="phone"] .detail.sidepanel{height:100%;max-height:100%;border:0;border-radius:0} .frame:where([data-screen="reports"])[data-w="phone"] .detail .bd{padding:calc(var(--u)*3)}
 .frame:where([data-screen="reports"])[data-w="phone"] .closure-row{gap:calc(var(--u)*2);padding:calc(var(--u)*3) 0} .frame:where([data-screen="reports"])[data-w="phone"] .closure-row .mut{font-size:calc(var(--fs)*.86)}
 .frame:where([data-screen="reports"])[data-w="phone"] .popwrap{background:var(--scrim);display:flex;align-items:flex-end} .frame:where([data-screen="reports"])[data-w="phone"] .pop:not([data-menu="hint"]){position:relative!important;left:auto!important;top:auto!important;width:100%;max-height:92%!important;border-radius:var(--r) var(--r) 0 0}
@@ -998,7 +986,7 @@ function renderStrip(){
     ${S.screen==='register'?`<div class="g"><b>Tabs</b>${seg('tabsPos',[['bottom','bottom'],['top','top']])}</div>`:''}
     ${S.screen!=='orders'?`<div class="g"><b>Touches</b><span class="seg">${(()=>{const all=Object.values(S.tx).every(Boolean), none=!Object.values(S.tx).some(Boolean); return `<button class="${none?'on':''}" data-txall="0">before</button><button class="${all?'on':''}" data-txall="1">after</button>`;})()}</span><span class="seg">${[['roll','total settles'],['stamp','PAID stamp'],['pence','price-tag pence (whimsical themes)'],['badge','tile badge · stock'],['tear','receipt tears off (whimsical themes)']].map(([k,l])=>`<button class="${S.tx[k]?'on':''}" data-tx="${k}">${l}</button>`).join('')}</span></div>`:''}
     ${S.screen==='register'?`<div class="g"><b>Registers</b>${seg('registers',[[1,'1'],[3,'3']])}</div>`:''}
-    ${S.screen==='reports'?`<div class="g"><b>Stores</b>${seg('stores',[[1,'1'],[2,'2']],RS)}</div><div class="g"><b>Till</b>${seg('till',[['level','cash level through the session'],['chips','equation chips (backup)']],RS)}</div><div class="g"><b>Below the chart</b>${seg('layout',[['panels','panels: each report’s top rows, with bars'],['list','one list, Closures a row'],['tiles','Sales | Closures tabs + tiles (as drawn)']],RS)}</div>`:''}
+    ${S.screen==='reports'?`<div class="g"><b>Stores</b>${seg('stores',[[1,'1'],[2,'2']],RS)}</div>`:''}
     ${S.screen==='orders'?`<div class="g"><b>List style</b>${seg('listStyle',[['bleed','no frame (Linear)'],['grouped','no frame · by day'],['stats','status counts + no frame (Stripe)'],['card','hairline card (cut 1)']],OS)}</div>`:''}
     <div class="g"><b>State</b><span class="seg">${(S.screen==='reports'?RP.SCENES:S.screen==='orders'?OP.SCENES:SCENES).map(([v,l])=>`<button class="${S.scn===v?'on':''}" data-scn="${v}">${l}</button>`).join('')}</span></div>`;
 }
@@ -1681,8 +1669,6 @@ document.addEventListener('click',e=>{
   if(b.dataset.nav){ nav(b.dataset.nav); return; }
   if(b.dataset.set==='listStyle'){OS.listStyle=b.dataset.v;render();return;}
   if(b.dataset.set==='stores'){RS.stores=+b.dataset.v;render();return;}
-  if(b.dataset.set==='till'){RS.till=b.dataset.v;render();return;}
-  if(b.dataset.set==='layout'){RS.layout=b.dataset.v;RS.detail=null;RS.closure=null;RS.view='sales';render();return;}
   if(b.dataset.set){ const v=b.dataset.v; S[b.dataset.set]=(v==='1'||v==='3')?+v:v; if(b.dataset.set==='plan') S.nostrip=false; render(); return; }
   if(b.dataset.tx){ S.tx[b.dataset.tx]=S.tx[b.dataset.tx]?0:1; render(); return; }
   if(b.dataset.txall!==undefined){ const v=+b.dataset.txall; Object.keys(S.tx).forEach(k=>S.tx[k]=v); render(); return; }
@@ -1800,8 +1786,9 @@ const RS = {
   cmp: ['lastweek','yesterday'].includes(Q.get('cmp')) ? Q.get('cmp') : 'yesterday',
   register:'front', store:'uk', cashier:'all',
   unticked: new Set(), detail: null, closure: null, xreport: false, tpl:'default', chart:'hour',   /* 'hour' | 'run' (Paul 2026-09-17: an easy toggle) */
-  pop: null, hint: null, tip: null, frameH: 780, calMonth: 0, pickStart: null, where: 'channels', busy: false, till: 'chips',   /* Paul 2026-09-18: the chips, decided; the cash-level line (C3) stays behind the switch */
-  layout: 'panels',   /* Paul 2026-09-17 ("surely we can do better", Mobbin: Vercel, Framer, Lloyds, Revolut): the content of each report inline, a few rows deep, with share bars; 'list' and 'tiles' kept to compare. Closures is one more kind of information, not a different room; the tiles go, one list of reports under the chart */
+  pop: null, hint: null, tip: null, frameH: 780, calMonth: 0, pickStart: null, where: 'channels', busy: false,
+  /* Paul 2026-09-18: the strip's Till and Below-the-chart switches are retired. The till strip is the equation chips (the cash-level line lives
+     in reports/till-concepts.html) and under the chart are the panels (the list and the tiles are in the README's history). */
 };
 
 const RP=(()=>{
@@ -1973,7 +1960,7 @@ function renderReports() {
   if (RS.register !== 'all' && RS.detail === 'registers') RS.detail=null;
   const hintScroll=RS.pop?.kind==='hint'?(F.querySelector('.page>.pad')?.scrollTop||0):0;
   const previousOverlay=F.querySelector('.sheet,.pop,.sidepanel'); const focusId=document.activeElement?.id;
-  F.innerHTML=`${S.plan==='top'&&!S.nostrip?renderUpgradeStrip('top',true):''}<div class="body">${phone()?'':renderRail()}<div class="main"><div class="page">${pagebar()}${scopeRow()}${RS.loading?'<div class="pad" aria-label="Loading reports">'+Array.from({length:7},()=>'<div class="skeleton"></div>').join('')+'</div>':RS.view==='sales'||RS.layout!=='tiles'?sales():closures()}</div>${panel()}${popover()}${renderSheet()}</div></div>`;
+  F.innerHTML=`${S.plan==='top'&&!S.nostrip?renderUpgradeStrip('top',true):''}<div class="body">${phone()?'':renderRail()}<div class="main"><div class="page">${pagebar()}${RS.loading?'<div class="pad" aria-label="Loading reports">'+Array.from({length:7},()=>'<div class="skeleton"></div>').join('')+'</div>':sales()}</div>${panel()}${popover()}${renderSheet()}</div></div>`;
   document.getElementById('notes').innerHTML='Reports · the decided content, in the register’s language. Prototype figures are fixed to 14 September 2026. Print uses the selected template; recounts stay in this page and reset on reload.';
   if(RS.pop?.kind==='hint')F.querySelector('.page>.pad').scrollTop=hintScroll;
   const svg=F.querySelector('svg.bars');
@@ -2001,13 +1988,10 @@ function renderReports() {
 function pagebar() {
   /* Paul 2026-09-17: "Front till · UK Store" is a title, so it is the bar's place, as UK Store is above the cart; the filter is an icon there too */
   const phone=S.w==='phone';
-  const tabs=`<span class="segt" role="tablist" aria-label="Report room">${['sales','closures'].map(v=>`<button role="tab" aria-selected="${RS.view===v}" class="${RS.view===v?'on':''}" data-act="view" data-v="${v}">${v==='sales'?'Sales':'Closures'}</button>`).join('')}</span>`;
   const place=`<button class="place press ell" data-act="pop" data-p="scope" title="Register and store"><span class="ell">${esc(regName())} · ${esc(STORES.find(x=>x.id===RS.store).name)}</span>${RS.pro?'':`<span class="lk">${I.lock}</span>`}<span class="car">${I.chevd}</span></button>`;
   const filter='';   /* Paul 2026-09-17: the filter is the scope of the figures, so it sits with the date in the hero, not in the bar */
-  const tabbed=RS.layout==='tiles';
-  return `<div class="bar">${phone?`<button class="ibtn press" data-act="openSheet" data-sheet="menu" aria-label="Menu" style="margin-left:calc(var(--u)*-3)">${I.menu}</button>`:''}${place}${phone||!tabbed?'':tabs}${RS.online?'':status('warn','Offline')}<span class="grow"></span>${filter}${renderBell()}${phone?`<button class="avbtn press" data-act="openSheet" data-sheet="user" aria-label="Demo Cashier"><span class="av">DC</span></button>`:''}</div>${phone&&tabbed?`<div class="phone-tabs">${tabs}</div>`:''}`;
+  return `<div class="bar">${phone?`<button class="ibtn press" data-act="openSheet" data-sheet="menu" aria-label="Menu" style="margin-left:calc(var(--u)*-3)">${I.menu}</button>`:''}${place}${RS.online?'':status('warn','Offline')}<span class="grow"></span>${filter}${renderBell()}${phone?`<button class="avbtn press" data-act="openSheet" data-sheet="user" aria-label="Demo Cashier"><span class="av">DC</span></button>`:''}</div>`;
 }
-function scopeRow(){ return RS.view==='sales'||RS.layout!=='tiles' ? '' : `<div class="scope-row">${dateBtn()}<span class="grow"></span><button class="ibtn press" aria-label="More" data-act="pop" data-p="overflow">${I.dots}</button></div>`; }
 const status=(kind,label)=>`<span class="st ${kind}"><i></i>${label}</span>`;
 
 function panelTitle() {
@@ -2019,7 +2003,7 @@ function panelTitle() {
 /* ---- Sales room ---- */
 function sales() {
   const m = model();
-  return `<div class="pad">${RS.layout==='panels'?tillStrip():''}${hero(m)}${RS.layout==='panels'?reportPanels(m):RS.layout==='list'?reportList(m):tiles(m)}</div>`;
+  return `<div class="pad">${tillStrip()}${hero(m)}${reportPanels(m)}</div>`;
 }
 function periodDates(gran, off) {
   const m3 = d => MON[d.getMonth()].slice(0, 3);
@@ -2135,28 +2119,6 @@ function reportRows(m) {
 /* Paul 2026-09-17: C3 from till-concepts.html, "the most interesting": how the drawer filled. A step line from the float at open to now,
    up with every cash sale, down where cash left (paid out, refunds), the paid-in and paid-out named; when the till is closed the line ends at
    the count with the drawer result. The equation chips stay as the backup (strip switch Till: cash level | chips). */
-function tillEvents(open) {
-  if (!open) return { t0: '09:02', t1: '12:30', ev: [{ t: '09:02', k: 'float', amt: 100 }, { t: '09:12', k: 'sale', amt: 24.50 }, { t: '10:31', k: 'sale', amt: 72.40 }, { t: '11:02', k: 'sale', amt: 15 }] };
-  const ev = [{ t: '13:00', k: 'float', amt: 100 }, { t: '13:20', k: 'sale', amt: 49 }, { t: '15:15', k: 'sale', amt: 88.20 }, { t: '15:40', k: 'out', amt: -150, l: 'to bank' }, { t: '16:02', k: 'sale', amt: 134.70 }, { t: '16:44', k: 'sale', amt: 12.80 }, { t: '17:10', k: 'sale', amt: 59 }];
-  if (RS.busy) ev.push({ t: '13:20', k: 'in', amt: 20, l: 'from safe' }, { t: '16:05', k: 'out', amt: -30, l: 'milk' }, { t: '16:20', k: 'refund', amt: -12.50, l: 'refund' });
-  ev.sort((a, b) => a.t.localeCompare(b.t));
-  return { t0: '13:00', t1: '17:30', ev };
-}
-function cashLevel(open, last) {
-  const { t0, t1, ev } = tillEvents(open), mins = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
-  const W = phone() ? 342 : 620, H = phone() ? 120 : 96, a = mins(t0), z = mins(t1), X = t => 16 + (W - 32) * (mins(t) - a) / (z - a), pts = []; let bal = 0;   /* the phone gets its own viewBox so the type stays readable */
-  ev.forEach(x => { const b0 = bal; bal += x.amt; pts.push({ t: x.t, b0, b1: bal, x }); });
-  const max = Math.max(1, ...pts.map(p => Math.max(p.b0, p.b1))) * 1.12, Y = v => 12 + (H - 34) * (1 - v / max);
-  let d = `M${X(t0)},${Y(0)}`, cur = 0; pts.forEach(p => { d += ` L${X(p.t)},${Y(p.b0)} L${X(p.t)},${Y(p.b1)}`; cur = p.b1; }); d += ` L${X(t1)},${Y(cur)}`;
-  let svg = `<svg class="lvl" viewBox="0 0 ${W} ${H}" aria-label="Cash in the drawer through the session"><path d="${d} L${X(t1)},${Y(0)} L${X(t0)},${Y(0)} Z" fill="var(--primary)" fill-opacity=".1"/><path class="line" d="${d}" fill="none" stroke="var(--primary)" stroke-width="2"/>`;
-  svg += `<line x1="${X(t0)}" x2="${X(t1)}" y1="${Y(100)}" y2="${Y(100)}" stroke="var(--border)" stroke-dasharray="3 3"/><text x="${X(t0) + 4}" y="${Y(100) + 12}" font-size="10" fill="var(--muted-fg)">float £100</text>`;
-  let k = 0; pts.filter(p => ['out', 'in', 'refund'].includes(p.x.k)).forEach(p => { const up = p.x.amt > 0, dy = up ? -10 - (k % 2) * 13 : 14 + (k % 2) * 14; k++; svg += `<circle class="ev" cx="${X(p.t)}" cy="${Y(p.b1)}" r="4" fill="${up ? 'var(--c2)' : 'var(--warn)'}"/>${phone() ? '' : `<text x="${X(p.t)}" y="${Y(p.b1) + dy}" text-anchor="middle" font-size="10.5" fill="var(--fg)">${fmt(p.x.amt, true)} <tspan fill="var(--muted-fg)">${p.x.l}</tspan></text>`}`; });
-  if (open) svg += `<circle cx="${X(t1)}" cy="${Y(cur)}" r="4" fill="var(--primary)"/><text class="now" x="${X(t1) - 8}" y="${Y(cur) - 9}" text-anchor="end" font-size="12" font-weight="600" fill="var(--fg)">${fmt(cur)} now</text>`;
-  else svg += `<circle cx="${X(t1)}" cy="${Y(last.counted)}" r="5" fill="${last.variance ? 'var(--warn)' : 'var(--ok)'}"/><text class="now" x="${X(t1) - 10}" y="${Y(cur) - 9}" text-anchor="end" font-size="12" font-weight="600" fill="var(--fg)">counted ${fmt(last.counted)} <tspan fill="${last.variance ? 'var(--warn)' : 'var(--ok)'}">${last.variance ? fmt(Math.abs(last.variance)) + (last.variance < 0 ? ' short' : ' over') : 'exact'}</tspan></text>`;
-  const ticks = open ? ['13:00', '14:00', '15:00', '16:00', '17:00'] : ['09:00', '10:00', '11:00', '12:00'];
-  ticks.forEach(t => svg += `<text x="${X(t)}" y="${H - 4}" text-anchor="middle" font-size="10" fill="var(--muted-fg)">${t}</text>`);
-  return svg + '</svg>';
-}
 function tillStrip() {
   /* Paul 2026-09-17: V1 from till-variants.html, the equation as chips, "but it really sucks on smaller screens": so chips in a row on tablet
      and desktop (wrapping when the day is busy), and on the phone the same terms stack into a ledger, one line per term, the result filled.
@@ -2174,14 +2136,12 @@ function tillStrip() {
        ['Expected in drawer', fmt(expected), '=']]
     : [['Expected', fmt(last.counted - last.variance), ''], ['Counted', fmt(last.counted), '·'], ['Drawer result', last.variance ? fmt(Math.abs(last.variance)) + (last.variance < 0 ? ' short' : ' over') : 'Exact', '=']];
   const note = open && sess.quiet.length ? `<span class="note">· ${sess.quiet.join(', ')}</span>` : '';
-  const eq = RS.till !== 'chips'
-    ? cashLevel(open, last)
-    : phone()
+  const eq = phone()
     ? `<div class="eq ledger">${terms.map(([l, v, op], i) => `<div class="lr ${i === terms.length - 1 ? 'res' : ''}"><span class="op">${op || ' '}</span><span class="l">${l}</span><span class="v">${v}</span></div>`).join('')}${note ? `<div class="lr"><span class="op"></span><span class="l mut">${sess.quiet.join(', ')}</span></div>` : ''}</div>`
     : `<div class="eq">${terms.map(([l, v, op], i) => { const chip = `${op ? `<span class="op">${op}</span>` : ''}<span class="term ${i === terms.length - 1 ? 'res' : ''}"><span class="l">${l}</span><span class="v">${v}</span></span>`; return i === terms.length - 1 ? `<span class="keep">${chip}</span>` : chip; }).join('')}${note}</div>`;
   const who = open ? `<b>${esc(OPEN_SESSION.reg)}</b> ${status('ok', 'Open')}<span class="mut"> · since ${OPEN_SESSION.open} · ${esc(OPEN_SESSION.by)}</span>` : `<b>${esc(REGISTERS[0].name)}</b> ${status('neutral', 'Closed')}<span class="mut"> · at ${last.close} · ${esc(last.by)}</span>`;
   const lastLine = RS.empty ? 'No closures yet' : last ? `Last closure ${last.num} · ${last.dayLabel} ${last.close} · ${last.variance ? fmt(Math.abs(last.variance)) + (last.variance < 0 ? ' short' : ' over') : 'exact'}` : '';
-  return `<section class="card till ${RS.till !== 'chips' ? 'level' : open && terms.length > 4 ? 'busy' : ''}" data-k="closures"><div class="tl"><div class="who">${who}</div><div class="mut sm">${lastLine}</div></div>${eq}<div class="tacts">${open ? `<button class="btn press" data-act="xreport" data-testid="card-xreport">${I.print}X-report</button>` : `<button class="btn press" data-act="reprint" data-v="${last.id}">${I.print}Reprint</button>`}<button class="ibtn press" data-act="detail" data-v="closures" aria-label="Closures">${I.chev}</button></div></section>`;
+  return `<section class="card till ${open && terms.length > 4 ? 'busy' : ''}" data-k="closures"><div class="tl"><div class="who">${who}</div><div class="mut sm">${lastLine}</div></div>${eq}<div class="tacts">${open ? `<button class="btn press" data-act="xreport" data-testid="card-xreport">${I.print}X-report</button>` : `<button class="btn press" data-act="reprint" data-v="${last.id}">${I.print}Reprint</button>`}<button class="ibtn press" data-act="detail" data-v="closures" aria-label="Closures">${I.chev}</button></div></section>`;
 }
 function reportPanels(m) {
   const T = m.total || 1;
@@ -2228,21 +2188,6 @@ function reportPanels(m) {
   const d = periodDates(RS.gran, RS.off), t = periodTitle(RS.gran, RS.off);
   return `<section class="rp-sec dated"><h3 class="rp-h">${esc(t)}${RS.gran !== 'custom' && d !== t ? `<span class="mut"> · ${esc(d)}</span>` : ''}</h3><div class="rp-panels">${out.join('')}</div></section>`;
 }
-function reportList(m) {
-  const order=['orders','payments','closures','taxes','refunds','products','cashiers','categories','registers','cash','deposits'];
-  const rows=reportRows(m); const byK=Object.fromEntries(rows.map(r=>[r[0],r]));
-  const cl=closureRows(), last=cl[0], open=RS.regOpen&&(RS.register!=='back');
-  const clLine=open?`${REGISTERS[0].name} open since ${OPEN_SESSION.open} · expected ${fmt(OPEN_SESSION.expected)}`:`${REGISTERS[0].name} closed at ${last?last.close:'—'}`;
-  const clVal=RS.empty?'None yet':last?status(last.variance?'warn':'ok',last.variance?fmt(Math.abs(last.variance))+(last.variance<0?' short':' over'):'Exact'):'—';
-  byK.closures=['closures','Closures',clVal,`${cl.length} closure${cl.length===1?'':'s'} · ${clLine}`];
-  const row=([k,l,n,line])=>`<button class="rrow press" data-act="detail" data-v="${k}" ${k==='deposits'&&!RS.online?'disabled':''}><span class="rn">${l}</span><span class="rs">${line}</span><span class="rv">${n}</span>${I.chev}</button>`;
-  return `<div class="rlist">${order.filter(k=>byK[k]).map(k=>row(byK[k])).join('')}</div>`;
-}
-function tiles(m) {
-  const rows=reportRows(m);
-  return `<div class="tiles">${rows.map(([k,l,n,line])=>`<button class="tile press" data-act="detail" data-v="${k}" ${k==='deposits'&&!RS.online?'disabled':''}><span class="l">${l}${I.chev}</span><span class="n">${n}</span><span class="line">${line}</span></button>`).join('')}</div>`;
-}
-
 function closureRows(){
   const days=RS.gran==='day'?[RS.off]:buckets(RS.gran,RS.off).filter(b=>b.past).map(b=>b.off);
   return CLOSURES.filter(c=>(RS.register==='all'||c.reg===regName())&&(RS.cashier==='all'||c.by===RS.cashier)&&(!RS.pro||days.includes(c.day)));
@@ -2327,7 +2272,7 @@ function wrapPanel(title, sub, hdrExtra, body, foot) {
   const actions=RS.xreport?'':(isClosure||isList)?`<button class="ibtn press" aria-label="More" data-act="pop" data-p="overflow">${I.dots}</button>`:`<button class="btn press" data-act="export">Export CSV</button><button class="btn p press" data-act="print">${I.print}Print</button>`;
   if(!isClosure&&!isList) foot=`<span class="status">${RS.detail==='orders'?model().orders+' of '+model().all.length:model().orders+' of '+model().all.length}</span>`;
   const back=fromList?`<button class="ibtn press" data-act="backClosures" aria-label="Back to closures">${I.chevl}</button>`:'';
-  return `<div class="sidewrap right" data-act="closePanel"><section class="sidepanel detail" data-stop="1" role="dialog" aria-label="${esc(title)}">${phone()?(fromList?`<button class="crumb" data-act="backClosures">‹ Closures</button>`:`<button class="crumb" data-act="closePanel">‹ Reports${RS.layout==='tiles'?' › '+(RS.view==='closures'?'Closures':'Sales'):''}</button>`):''}<div class="h">${back}<div class="title"><div>${esc(title)}</div><div class="mut sm">${esc(sub)}</div></div>${isList?actions:''}${phone()?'':`<button class="ibtn press" data-act="closePanel" aria-label="Close">${I.x}</button>`}${isList?'':`<div class="toolbar">${hdrExtra}${actions}</div>`}</div><div class="bd">${body}</div><div class="ft">${foot}</div></section></div>`;
+  return `<div class="sidewrap right" data-act="closePanel"><section class="sidepanel detail" data-stop="1" role="dialog" aria-label="${esc(title)}">${phone()?(fromList?`<button class="crumb" data-act="backClosures">‹ Closures</button>`:`<button class="crumb" data-act="closePanel">‹ Reports</button>`):''}<div class="h">${back}<div class="title"><div>${esc(title)}</div><div class="mut sm">${esc(sub)}</div></div>${isList?actions:''}${phone()?'':`<button class="ibtn press" data-act="closePanel" aria-label="Close">${I.x}</button>`}${isList?'':`<div class="toolbar">${hdrExtra}${actions}</div>`}</div><div class="bd">${body}</div><div class="ft">${foot}</div></section></div>`;
 }
 
 function closureDoc(c) {
@@ -2433,7 +2378,6 @@ function click(e) {
     case 'print': window.print(); return;
     case 'export': exportReport(); RS.pop=null; break;
 
-    case 'view': RS.sheet=null; RS.detail=null; RS.closure=null; RS.xreport=false; RS.empty=false; RS.loading=false; RS.view = v; RS.pop = null; RS.tip = null; break;
     case 'preset': { const [g, o] = v.split(':'); RS.gran = g; RS.off = +o; RS.tip = null; RS.rangeErr = null; RS.pickStart = null; RS.calMonth = monthOffsetOf(selectedOffs()[0]); break; }
     case 'calMonth': RS.calMonth = Math.max(0, RS.calMonth + +v); break;
     case 'calDay': { const o = +v;
@@ -2482,7 +2426,7 @@ function jump(scn){
   Object.assign(RS,{view:'sales',online:true,regOpen:true,gran:'day',off:0,register:'front',store:'uk',cashier:'all',status:'done',unticked:new Set(),detail:null,closure:null,xreport:false,tpl:'default',chart:'hour',where:'channels',busy:false,calMonth:0,pickStart:null,pop:null,hint:null,tip:null,sheet:null,loading:false,empty:false,error:false,reason:'',counted:'',pieces:{},denominations:false});
   Object.keys(ORD_CACHE).forEach(k=>delete ORD_CACHE[k]);
   if(['last-week','closure','recount','offline-recount','error'].includes(scn))S.plan='pro';
-  if(['session','closed','closure','recount','empty','free-closures','offline-recount','error'].includes(scn)){if(RS.layout!=='tiles')RS.detail='closures';else RS.view='closures';}
+  if(['session','closed','closure','recount','empty','free-closures','offline-recount','error'].includes(scn))RS.detail='closures';
   if(scn==='last-week'){RS.gran='week';RS.off=1;}
   if(scn==='excluded')RS.unticked.add('day:0:1227');
   if(['payments','orders'].includes(scn))RS.detail=scn;
@@ -2510,7 +2454,7 @@ function renderSheet(){
   return wrap('Prototype',esc(RS.result||''),'<button class="btn press" data-act="closeSheet">Close</button>');
 }
 function exportReport(){
-  const cells=RS.closure?[CLOSURES.find(c=>c.id===RS.closure)]:RS.view==='closures'?closureRows().filter(c=>RS.pro||c.day===0):null;
+  const cells=RS.closure?[CLOSURES.find(c=>c.id===RS.closure)]:null;
   const data=cells?[['Business day','Closure','Register','Store','Opened','Closed','Closed by','Expected (cash)','Counted (cash)','Variance (cash)','Status'],...cells.map(c=>[isoOf(c.day),c.num,c.reg,'UK Store',c.open,c.close,c.by,fmt(c.float+c.cash-c.cashOut),fmt(c.counted),fmt(Math.abs(c.variance))+' '+(c.variance<0?'short':c.variance>0?'over':'Exact'),c.unsynced?'Unsynced':c.corrected?'Corrected':''])]:[RS.spec.head,...RS.spec.rows.filter(r=>typeof r!=='string'&&!r.off),...(RS.spec.tot?[RS.spec.tot]:[])];
   const csv=data.map(row=>row.map(v=>'"'+String(v).replace(/<[^>]+>/g,' ').replace(/"/g,'""')+'"').join(',')).join('\r\n');
   const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})), a=document.createElement('a');a.href=url;a.download=(RS.closure?'closure':RS.detail||'closures')+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);

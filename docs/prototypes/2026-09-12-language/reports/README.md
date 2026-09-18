@@ -241,6 +241,19 @@ theme's call, not this page's. The comparison is no longer chosen on the delta l
 delta only states it. Register and store stay in the bar (they scope the whole page, not the
 chart). On the phone the row scrolls sideways under a fade, as the register's plan chips do.
 
+**Six decisions closed (nineteenth pass, same day).** Asked what was not settled, Paul ruled:
+(1) the parts-of-a-whole cards are thick donuts in distinct hues, confirmed, so the five
+colours (`--c1..--c5`, reports block) go to the shared tokens for every page; (2) the strip's
+*Till* and *Below the chart* switches are retired: the till strip is the equation chips and
+under the chart are the panels; the cash-level line lives on in `till-concepts.html`, the
+list and the tiles only in this history (their code, the Sales | Closures tabs and the scope
+row are gone from the prototype); (3) a set filter chip is filled in the foreground, as the
+Orders page draws it, not the 1.10 primary, since primary is already the accent for the
+Expected chip, the busiest bar and the upgrade button; (4) the register's Free plan stays the
+default, so Reports opens with the strip and locked dates, which is what most merchants see;
+(5) the detail panel opens on the right; (6) the free strip sits at the top. The two open
+questions below were (5) and (6); they are closed.
+
 ## What changed from 2026-09-14
 
 - Copied the register's tokens, controls, rail, page bar, notification panel, side-panel and
@@ -276,7 +289,8 @@ The shared language files and the reference `_content/` tree were not modified.
 
 Width: phone 390 / tablet 1024 / desktop 1440. Scale: compact / regular / spacious.
 Theme: light, dark, paper, bold, warm, market, ocean, sunset, monochrome.
-Plan: Free strip at top (initial), bottom, or Pro without it. Stores: one or two.
+Plan: Free strip at top (initial), bottom, or Pro without it. Stores: one or two. (The *Till*
+and *Below the chart* switches were retired on 2026-09-18; both were decided.)
 
 The State row draws all nineteen cases:
 
@@ -296,10 +310,8 @@ not the visual template. Recounts only change this page's fixture in memory; rel
 
 ## Open questions
 
-1. **Detail-panel side:** left, right, or a pane beside the list. **Pick: right**, matching the
-   shipped Closures room and prior Reports prototype; there is no cart to return to here.
-2. **Free strip position:** top or bottom. **Pick: top**, the register owner's recommendation;
-   both remain available in Plan. No new Reports-specific banner placement is proposed.
+None. The detail panel's side (right) and the free strip's position (top) were the last two,
+decided by Paul on 2026-09-18 (nineteenth pass).
 
 ## Rejected
 
