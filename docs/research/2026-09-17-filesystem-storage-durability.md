@@ -33,6 +33,13 @@ against the easy fix in either direction: on macOS and iOS, Chrome's OPFS `flush
 close the gap on most of WCPOS's tills anyway — which is an argument for an engine that is designed
 to survive reordered and torn writes, not merely one that calls flush.
 
+**Update (2026-09-18).** The web half of that recommendation is superseded by the later sections and
+by the map's rulings (wayfinder map [monorepo#2137](https://github.com/wcpos/monorepo/issues/2137)):
+speed on the POS workload is the first criterion, §17 makes premium IndexedDB a viable web candidate
+and control, §19 proves the rxdb + wasm SQLite + OPFS path feasible end to end, and §20 measures the
+query patch that must ship with it. Read §1 as the durability verdict on the incumbent, which stands;
+read the web plan from §17–§20 and the map, not from the paragraph above.
+
 ## 2. What WCPOS actually hit
 
 Class key: **(a)** upstream logic bug any engine could ship · **(b)** consequence of the design
@@ -867,9 +874,13 @@ working code; keep it in the spike only as a fallback if sahpool's single-connec
 with something we cannot restructure. Treat **WAL as unproven, not as a given** — §11 took
 "`journal_mode=wal` allowed" from wa-sqlite's README table, and LiveStore's docs say the opposite from
 production; run the spike both ways and let the harness decide. At the VFS layer specifically the
-harness must exercise, on Chrome, Firefox and Safari: **kill mid-transaction with WAL** (SIGKILL the
-worker between `xWrite` and `xSync`, and again between the WAL append and the checkpoint — the "slight
-performance boost from WAL" claim in the official docs carries no crash-safety claim at all);
+harness must exercise, on Chrome, Firefox and Safari: **kill mid-transaction with WAL** (a worker is
+not a process: it cannot take a signal, and `worker.terminate()` only lands between tasks, never
+between the synchronous `xWrite` and `xSync` inside one — so instrument the VFS instead, wrapping
+sahpool's `xWrite`/`xSync` to throw or hang at a named boundary, once between `xWrite` and `xSync`
+and once between the WAL append and the checkpoint, and kill the whole browser process for
+process-level crashes — the "slight performance boost from WAL" claim in the official docs carries no
+crash-safety claim at all);
 **page-cache spill** (`cache_size` below the working set so the journal actually reaches OPFS instead
 of living in memory — that is how #320's WAL-boundary bug surfaced); **reopen after quota
 exhaustion** (wa-sqlite #336 shows this layer can report an opaque I/O error instead of
@@ -1089,9 +1100,11 @@ because the reporter says the docs imply otherwise, but **it does not apply to W
 replicateRxCollection origin/main` returns **zero files**, and nothing imports `rxdb/plugins/replication`.
 WCPOS runs its own sync engine, so RxDB's replication checkpoint semantics are not on our path.
 
-**4. `wa-sqlite` and `sahpool`: zero hits. This is the most informative result of the sweep.** A null
-result is normally weak evidence, but here it converges with four independent findings and the
-conclusion is hard to avoid.
+**4. `wa-sqlite` and `sahpool`: no hits in what was swept — read with the caveat above.** Only
+`shared worker` was searched, so these terms have not had a direct search and this is not a null
+result from one; it is an absence in the threads that search surfaced. What makes the absence
+informative anyway is that it converges with four independent findings, and the conclusion is hard
+to avoid.
 
 - RxDB's premium SQLite users are demonstrably active in that Discord — threads 2 and 3 above are
   both production SQLite deployments — so the channel is not simply empty of SQLite traffic. It is
@@ -1466,11 +1479,14 @@ barely mentioned the other, which is a bias worth naming rather than quietly fix
 | Known defect | integration unproven end-to-end | premium-issues #21/#22: SharedWorker + IndexedDB `TransactionInactiveError` |
 | Speed | fastest OPFS option | slower on RxDB's published benchmarks |
 
-The asymmetry that matters: **IndexedDB is the option that makes §11's original topology legal.**
-Its APIs are async, so one connection really can live in a SharedWorker — the thing §13 proved SQLite
-cannot do. Choosing SQLite means also building leader election, follower routing and failover;
-choosing IndexedDB does not. That is a large hidden cost on the SQLite side that no durability
-comparison surfaces.
+The asymmetry that matters is **multi-instance, not the SharedWorker.** §15 records that SharedWorker
+is unavailable on Chrome/WebView for Android, a primary POS platform, so §11's original topology is
+not legal for IndexedDB either: its async API would let one connection live in a SharedWorker where
+one exists, but that is not platform support. What IndexedDB does have is native per-tab
+multi-instance — every tab opens its own connection and the browser serialises them, so RxDB's
+`multiInstance: true` works with no leader election, follower routing or failover. Choosing SQLite
+means building all three (§13); choosing IndexedDB does not. That is a large hidden cost on the
+SQLite side that no durability comparison surfaces.
 
 **Does a spike earn its keep?** Not as a bake-off — Paul's instinct is right about that, and #2091's
 framing as a three-way comparison is the wrong shape for web. But three questions remain that cannot
@@ -1547,24 +1563,33 @@ increment [the version]"*. A version bump means a schema migration of every user
 So the task splits:
 
 - **In the benchmark harness — free.** Throwaway schemas, no installed base.
-- **Shipped on its own — a migration event** across seven collections, for no user-visible benefit.
+- **Shipped on its own — a migration event** across nine collections (the seven that declare no
+  indexes, plus `products` and `orders`, which gain `remoteId`), for no user-visible benefit.
 - **Shipped with the engine change — free**, because swapping storage is already a cold-resync event
   (cf. #672, "delete the dead storage migration — cold-resync boots clean").
 
 **Therefore: declare the indexes inside the engine migration, never before it.** The only place they
 are needed earlier is the benchmark harness, where they cost nothing.
 
-### Windows is not required to decide
+### Windows is not required to decide (the speed decision; crash coverage is separate)
 
-`F_FULLFSYNC` is a Chrome-on-Apple behaviour, not a Mac behaviour: rhashimoto measured **24.3 tx/s in
+Chrome's Apple-only flush cost (§4: `F_BARRIERFSYNC` today, `F_FULLFSYNC` before Chromium changed it;
+which one rhashimoto's figures were taken under is not recorded, so re-measure before leaning on
+them) is a Chrome-on-Apple behaviour, not a Mac behaviour: rhashimoto measured **24.3 tx/s in
 Chrome vs 434 in Firefox vs 818 in Safari on the same Mac mini**. So running the harness in all three
 browsers on a Mac **brackets** the answer — Chrome-on-Mac is the pessimistic bound for SQLite writes,
 Firefox and Safari the optimistic one. If the winner is the same at both ends, no Windows machine is
 needed. Escalate to a GitHub Actions `windows-latest` job (Chrome preinstalled, driven headless by
 Playwright; the repo has 29 ubuntu jobs and 1 macos-15 but no Windows runner yet) only if the bracket
 straddles the decision. Note also that the POS-critical gaps in birchill's data — startup 46 ms vs
-535 ms, single write 0.17 ms vs 3.17 ms — are **not fsync-bound**, so `F_FULLFSYNC` cannot explain
-them away in either direction.
+535 ms, single write 0.17 ms vs 3.17 ms — are **not fsync-bound**, so Chrome's Apple flush cost
+cannot explain them away in either direction.
+
+**Scope of this ruling: the speed decision only.** Crash survival cannot be bracketed from a Mac.
+Windows has a different filesystem and flush path (`FlushFileBuffers()`, §4), and §2 places almost
+all of WCPOS's measured storage failures and the NUL-filled-range incidents there. The crash harness
+(wayfinder [monorepo#2144](https://github.com/wcpos/monorepo/issues/2144)) therefore keeps a Windows
+leg on the `windows-latest` runner above, whatever the speed bracket says.
 
 ## §19 — Feasibility build result (2026-09-17, late; wayfinder ticket #2138)
 
