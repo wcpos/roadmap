@@ -552,12 +552,12 @@ to — which is consistent with §2's finding that the Expo storage's `flush` is
 | **LMDB** | No | Yes (`lmdb-js`) | No RN binding found | No | Full | No — KV | No |
 | **MMKV** | No | No | Yes | Yes | Partial — CRC + generations, no fsync, discard-on-mismatch | No — KV | No |
 | **Realm** | No | No | Yes (deprecated) | Yes (deprecated) | Full | Yes | No |
-| **Raw files + own framing** | Yes (OPFS) | Yes (Node fs) | Yes (expo-file-system) | Yes | **None, and the platform only half-provides it**: the WHATWG File System spec has no `move`/`rename` (0 occurrences; whatwg/fs#10 and #180 are still open PRs), but Chromium ships `FileSystemFileHandle.move()` unflagged for files (`file_system_file_handle.idl`, `MeasureAs=FileSystemAccessMoveRename`; directory moves stay behind `FileSystemAccessAPIExperimental`), so atomic file replacement exists on Chrome, Edge and Electron and not on Safari or Firefox; and expo-file-system exposes no flush at all | Only what you write | rxdb-premium only |
+| **Raw files + own framing** | Yes (OPFS) | Yes (Node fs) | Yes (expo-file-system) | Yes | **None, and the platform only half-provides it**: the WHATWG File System spec has no `move`/`rename` (0 occurrences; whatwg/fs#10 and #180 are still open PRs), but Chromium ships `FileSystemFileHandle.move()` unflagged for files (`file_system_file_handle.idl`, `MeasureAs=FileSystemAccessMoveRename`; directory moves stay behind `FileSystemAccessAPIExperimental`), so a *rename primitive* exists on Chrome, Edge and Electron and not on Safari or Firefox — but exposure is not a commit guarantee: whether `move()` onto an existing target is atomic across a crash (what §10.1 needs) is **unverified** and is the crash harness's to measure (monorepo#2144); and expo-file-system exposes no flush at all | Only what you write | rxdb-premium only |
 
 The expected shape holds, with one correction and one sharpening. The correction: raw-files-plus-own-framing
-is *not* uniformly available — it is available as a byte store everywhere, but atomic replacement
-is Chromium-only on web (fine for Electron and most of WCPOS's web tills, absent on Safari and
-Firefox) and flush is absent on Expo, so "build the toolkit yourself" is not merely expensive on web
+is *not* uniformly available — it is available as a byte store everywhere, but a rename primitive
+is Chromium-only on web (absent on Safari and Firefox), its crash atomicity onto an existing target
+is unverified even there, and flush is absent on Expo, so "build the toolkit yourself" is not merely expensive on web
 and native, it is partly impossible on the platforms where it is not Chromium. The sharpening: SQLite
 is the only row that is durable-by-design, present on all four targets, queryable, and already has
 an RxDB storage. IndexedDB is web-only but is, underneath, the same toolkit maintained by Google,
