@@ -93,7 +93,10 @@ at 20k**, against the 2 MB of *renderer heap* the blob costs today (`catalogue-s
 Disk is the right place for it; the write multiplier is the price. **The three STORED generated
 columns are nearly free on their own**, so the column half of the migration is cheap and the FTS5 half
 is what costs. (`detail=column`/`none` shrink the index to +2.2 / +1.0 MB, but the docs cap full-text
-queries there at three-character tokens — useless for us.)
+queries there at three-character tokens. That is not fatal: a longer term can be decomposed into
+overlapping three-code-point tokens joined by `AND` and the superset verified with `LIKE` on the
+folded columns the short-term fallback already needs. Unevaluated here, so the +2.9 MB is the
+measured ceiling, not the floor.)
 
 **A second constraint nobody has recorded: premium's tables are `WITHOUT ROWID`** — every collection
 is `CREATE TABLE "<collection>-<version>"(id TEXT … PRIMARY KEY …, data json) WITHOUT ROWID`
@@ -191,7 +194,11 @@ table. It is unindexed — a two-character pattern has no trigram to look up, an
 disables indexed LIKE/GLOB outright ("Unless the remove_diacritics option is set"; plans: `INDEX 0:L0`
 with the default tokenizer, bare `INDEX 0:` with it). But it scans ~52 characters per row, **not**
 catalogue bytes, so it is nowhere near the `$regex` shape `catalogue-search-blob.ts`'s header rejected
-(265 ms at 20k) and sits far under the 250 ms debounce.
+(265 ms at 20k). One caveat before calling it far under the 250 ms debounce: in the external-content
+and contentless designs the folded columns sit in the same records as the ~1.9 KB JSON payload, so
+an unindexed scan still walks the pages of the whole table; 6.4 ms is a warm native page cache, not
+OPFS cold. A plain covering index on each folded column (or the self-owned table's compact text)
+keeps the scan off the payload pages, unmeasured here.
 
 **Two escaping contracts, and no trap covers either.** `LIKE` must be emitted as
 `LIKE ? ESCAPE '\'` with `%`, `_` and `\` escaped in the term (as #2143's translator already does for
@@ -358,8 +365,8 @@ and ticket, but three separate table rebuilds — two catalogue tables plus orde
 | Query seam | **a custom storage read** (§5(b)) — premium's wrapper needs a full `data` column, so `find()` cannot project | **the same custom path plus a `MATCH` handler in it.** The §5(a) sentinel-selector/`queryModifier` route is an *alternative*, not an addition — take it only if the raw-SQL path is not built |
 | Storage settings | none | `withoutRowId: false` **only** for external content bound *directly* to the base table (then re-take #2143's numbers). External content over a filtered view, self-owned and contentless all keep `WITHOUT ROWID` and all keep the `LIKE` fallback |
 | Schema | **two catalogue rebuilds** (products *and* variations), under #2150's migration | **the same two rebuilds** (external content, or contentless leaning on them); none for a self-owned table |
-| Write cost | 0.19 ms per upsert — unchanged within noise | 0.38 ms per upsert (~2×), resync ~7× |
-| Disk | no measurable growth at 20k | ~+3 MB at 20k |
+| Write cost | 0.19 ms per upsert — unchanged within noise | direct external content 0.38 ms per upsert (~2×), resync ~7×; self-owned 0.72 ms; contentless and filtered-view unmeasured |
+| Disk | no measurable growth at 20k | direct external content ~+3 MB at 20k; self-owned +5.5 MB; contentless and filtered-view unmeasured |
 | Crash surface | none | three triggers per collection, the exact workload behind wa-sqlite #258/#320; must go in the #2144 harness |
 | Engine-independent? | no — the shipped engine (89 ms) and IndexedDB (285 ms) do not need it | no |
 | Deletions earned | none | the **catalogue blob** and the #2073 sizing question — but only for products/variations, the two collections that opt out of FlexSearch. `search.ts`, the FlexSearch pipeline and its #2070/#2020 history bounds still serve every other searchable collection and survive unless all of them are migrated, a cost not analysed here |
