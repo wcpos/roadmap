@@ -108,7 +108,10 @@ half is what costs — but **on disk they are not free on the production shape**
 `$.payload.*` paths the same three columns took 20k products from 41.3 to **56.5 MB (+15.2 MB)**,
 where the root-level fixture showed none. That is the page-packing cliff again (~1.9 KB rows crossing
 two-per-page at 4 KB), now landing on the shape we actually persist — size it against a real
-catalogue before quoting either number. (`detail=column`/`none` shrink the index to +2.2 / +1.0 MB, but the docs cap full-text
+catalogue before quoting either number. The projection read does not need STORED: a `VIRTUAL`
+generated column costs nothing on disk and is computed on read (the 33.0 ms `json_extract` row in §6,
+still ~70× under SQLite's whole-document read), and SQLite can index a VIRTUAL column, so STORED is
+an FTS5-side choice, not the migration's. (`detail=column`/`none` shrink the index to +2.2 / +1.0 MB, but the docs cap full-text
 queries there at three-character tokens. That is not fatal: a longer term can be decomposed into
 overlapping three-code-point tokens joined by `AND` and the superset verified with `LIKE` on the
 folded columns the short-term fallback already needs. Unevaluated here, so the +2.9 MB is the
