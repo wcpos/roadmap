@@ -187,7 +187,8 @@ gallery should reach the same states.
 - Rules: `docs/design/ui-design-guidelines.md` (this repo) and the monorepo's
   `.claude/rules/design.mdc`.
 
-## 9. Unassigned, decided
+## 9. Decided, filed on the map (roadmap#282)
 
-- Lift `--c1..--c5` from the reports block into the shared tokens.
-- One shared filter chip for Orders and Reports.
+- Lift `--c1..--c5` from the reports block into the shared tokens: a comment on the token
+  sheet, roadmap#288.
+- One shared filter chip for Orders and Reports: a comment on the component map, roadmap#291.
