@@ -236,7 +236,7 @@ One contract per line; the landing order (#292) sequences them. Restyles of a wh
 
 ## 10. What this page fixes for later tickets
 
-- **The landing order (#292):** the token pass carries `text`, `icon` and the control core; the new eight land in the primitives pass; the screen order is free to choose, and each screen's switch PR names its rebuilt pieces from §6 and its removal PRs from §7.
+- **The landing order (#292, decided 2026-09-18: [the landing order page](2026-09-18-landing-order.md)):** the token pass carries `text`, `icon` and the control core; the new eight land in the primitives pass; the screen order is free to choose, and each screen's switch PR names its rebuilt pieces from §6 and its removal PRs from §7.
 - **The contract template (map fog):** "focus" is mandatory, with §8's defaults.
 - **The gallery (map fog):** one cell per new folder in §5 and per restyled control in §3, across the six scale cells and #308's state cells.
 - **T1 ([#350](https://github.com/wcpos/roadmap/issues/350), task, AFK):** refresh every `LEDGER.md` against `next` since 2026-09-12, appending misses under new numbers and listing candidate strikes on the relevant removal ticket; seed `settings/**` and `auth/**` from their inventories' §5.
