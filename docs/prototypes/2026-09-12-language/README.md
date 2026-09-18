@@ -13,8 +13,8 @@ Playwright and fails on any page or console error (`--quick` for one width).
 
 | Screen | Ticket | Status |
 |---|---|---|
-| [`pos-register/`](pos-register/) | [#287](https://github.com/wcpos/roadmap/issues/287) | drawn, waiting on Paul |
-| [`orders/`](orders/) → `pos-register/index.html?screen=orders` | [#287](https://github.com/wcpos/roadmap/issues/287) | drawn, waiting on Paul; a page of the register since 2026-09-17 |
+| [`pos-register/`](pos-register/) | [#287](https://github.com/wcpos/roadmap/issues/287) | decided (Paul, 2026-09-18); the ticket is closed |
+| [`orders/`](orders/) → `pos-register/index.html?screen=orders` | [#287](https://github.com/wcpos/roadmap/issues/287) | decided (Paul, 2026-09-18); a page of the register since 2026-09-17 |
 | settings tab, connect, receipt, products, tokens | [#288](https://github.com/wcpos/roadmap/issues/288) | not started — the language may move after #287 |
 
 ## The tokens, as drawn
@@ -51,15 +51,24 @@ list is rows; at desktop it is a table with hover, resize handles, and keyboard 
 
 Each with the options and my pick. Answer in order; the first two move everything else.
 
+**2026-09-18: every register and orders decision below is ruled and
+[#287](https://github.com/wcpos/roadmap/issues/287) is closed.** What is still open here belongs to
+other tickets: scale semantics (3) to [#289](https://github.com/wcpos/roadmap/issues/289), skeleton
+loading (11) to [#308](https://github.com/wcpos/roadmap/issues/308), the default theme and what
+personality is still missing (25, 26) to the token sheet on
+[#288](https://github.com/wcpos/roadmap/issues/288).
+
 1. **Does the language read right?** The captures to judge: `pos-register/screens/tablet-light-regular-open.jpg`,
    `…-tender.jpg`, `…-panel.jpg`; `orders/screens/desktop-light-regular-default.jpg`,
    `…-open-refund.jpg`, `tablet-light-regular-open.jpg`; and the dark twins. Options: (a) this is
    the direction, refine from here; (b) right bones, wrong temperature (say which way); (c) wrong.
    **Pick: (a)** — it is the direction note built, with nothing added.
+   **Decided (Paul, 2026-09-18): (a).**
 2. **The rail.** (a) *Drawn:* a pale tinted rail (`--rail` at chroma 0.014), active item on a
    white tile, primary icon. (b) Today's navy block. Pro of (a): nothing on screen is louder than
    the thing about to be pressed; the theme still shows at a glance. Pro of (b): a hard "where am
-   I" anchor and eight years of habit. **Pick: (a).**
+   I" anchor and eight years of habit. **Pick: (a).** **Decided (Paul, 2026-09-18): (a), the pale
+   rail.**
 3. **Scale semantics.** The direction's diagram labelled the counter "compact" with 56 pt rows and
    the desk "spacious" with 36; the program defines compact as *smaller* (phone) and spacious as
    *larger* (32-inch). They contradict. *Drawn:* the program's definition, with posture coming
@@ -67,12 +76,15 @@ Each with the options and my pick. Answer in order; the first two move everythin
    touch at every step because of the floor, not because of the step's name. Feeds #289.
 4. **Status in the orders list: dot + label** (drawn) or the icon-only cell with a tooltip (today).
    Costs a 172 px column; gains a status you can read at arm's length and one treatment shared
-   with the open order and the receipt. **Pick: dot + label.**
+   with the open order and the receipt. **Pick: dot + label.** **Decided (Paul, 2026-09-18): dot +
+   label; the status badge changes shape under its call sites rather than gaining a sibling
+   (answers a [#291](https://github.com/wcpos/roadmap/issues/291) question).**
 5. **Rows: hairlines** (drawn) or zebra striping (today's `table-row-alt`). Hairlines keep one
    surface colour; zebra helps tracking on wide desktop tables. **Pick: hairlines** — the desktop
    table also gets a hover row, which does the tracking job.
 6. **Orders on a tablet: rows** (drawn) or the same table as the web (today). Rows are the
    direction's platform split for a touch surface; the table is one less component. **Pick: rows.**
+   **Decided (Paul, 2026-09-18): rows.**
 7. **The open order: a pane beside the list** (drawn, 560 / 440 px, list keeps its core columns)
    or the 800 px right-side modal with its own two columns (today). The pane keeps the list live
    and the row selected; the modal shows more at once. **Pick: the pane** — it is the Linear /
@@ -84,13 +96,14 @@ Each with the options and my pick. Answer in order; the first two move everythin
    on 2026-09-11. **Pick: calm** — the out-list rules out a coloured surface; the stamp-in disc is
    the beat.
 10. **Line added: settle highlight + quantity focus, no toast** (drawn). A toast on every scan is
-    a hundred toasts a day. **Pick: no toast.**
+    a hundred toasts a day. **Pick: no toast.** **Decided (Paul, 2026-09-18): no toast.**
 11. **Loading: skeleton rows** (drawn) versus headers plus a central spinner (today). This is
     [#308](https://github.com/wcpos/roadmap/issues/308)'s call; the prototype draws the proposal so it
     can be judged there rather than argued. **Pick: skeleton, still, no shimmer.**
 12. **Copy: sentence case everywhere** — "Search orders", "Billing address", "Print receipt" — the
     app today mixes title case ("Search Orders", "Print Receipt"). One rule for the language pass.
-    **Pick: sentence case.**
+    **Pick: sentence case.** **Decided (Paul, 2026-09-18): sentence case; table headers stay caps
+    over a hairline (34), a header style, not a copy rule.**
 
 Added in cut 2 of the register (2026-09-14, after Paul's nine points):
 
@@ -165,7 +178,7 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     **Paul (2026-09-17, later): the notifications look good; the banner looks good, it just
     needs an × so users can dismiss it.** Decided: the bell panel as drawn. The strip gains an ×
     at its right end: dismissed for the session, back on the next launch. Top is what he approved
-    on the register; the bottom option stays on the switch until he names one.
+    on the register. **Decided (Paul, 2026-09-18): top; the bottom option is gone from the switch.**
 
 44. **The order note (2026-09-17).** Paul: today a note sits under the totals with a bubble
     glyph; how do we show it? Three homes on the register's `Order note` switch: a row above the
@@ -173,6 +186,8 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     customer; a tap on any opens the details slide-out where it is edited. Recommendation: the
     row. Not decided.
     **Paul (2026-09-17, later): the row is fine for the moment. Parked, not closed; the switch stays.**
+    **Decided (Paul, 2026-09-18): the row above the totals; a tap opens the order sheet. The switch,
+    the line and chip homes and their captures are gone.**
 
 45. **Dark Stage out; icons follow the theme (Paul, 2026-09-17).** Dark Stage is gone from the
     register, too close to the default dark. The icon set is a rule of the theme now, not a
@@ -778,10 +793,12 @@ Orders, after Paul's first thoughts (2026-09-14):
     status counts as two-state chips above (a), replacing the Status select (Stripe's
     transactions tabs); (d) the hairline card from cut 1. **Pick: (a)** as the base, with (b) as
     the default grouping for the *Date* sort (most orders are read by day) and (c) as the day the
-    counts endpoint exists; the card is the one to drop.
+    counts endpoint exists; the card is the one to drop. **Decided (Paul, 2026-09-18): no frame,
+    grouped by day on the Date sort from the start; the status counts the day the endpoint exists.**
 21. **Toggle versus select.** A two-state filter (*Unpaid · Today · My sales*) is a chip with no
     chevron that fills when on and shows a check; a select (*Customer ▾ · Date range ▾*) carries a
     value, a chevron, and an × when set; a hairline separates the two groups. **Pick: as drawn.**
+    **Decided (Paul, 2026-09-18): as drawn in cut 3, the register's pills; only the fill says on.**
 22. **The product table reuses the orders table.** Drawn in the register (*Products · table
     view*): the same header row, hairline rows, resize handles and footer, with Name + SKU,
     Price, Stock as a dot-plus-number when low or out, and a + per row (a chevron for a variable

@@ -116,9 +116,8 @@ async function auditSplitFlows(page, w, shot) {
   // the tabs: amount over status on large screens, amount + dot on the phone (decided 2026-09-17), 12 orders
   for (const w of ['tablet', 'phone']) { await set('w', w); await scn('many-orders'); await page.click('.ordlist [data-act="ordlist"]'); await shot(`tabs-${w}`); }
   await set('w', 'tablet');
-  // the order note: three homes (Paul 2026-09-17)
-  for (const n of ['row', 'line', 'chip']) { await set('note', n); await scn('open'); await shot(`note-${n}`); if (!(await page.locator('.onote, .nline, .chip.notechip').count())) throw new Error('note not drawn: ' + n); }
-  await set('note', 'row');
+  // the order note: the row above the totals, decided (Paul 2026-09-18); the line and chip homes went
+  await scn('open'); await shot('note-row'); if (!(await page.locator('.onote').count())) throw new Error('note row not drawn');
   // the personality themes, session open
   for (const th of ['paper', 'bold', 'warm', 'market', 'ocean', 'sunset', 'monochrome']) { await set('theme', th); await scn('open'); await page.waitForTimeout(300); await shot(`theme-${th}`); }
   await set('theme', 'light');

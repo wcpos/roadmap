@@ -68,6 +68,9 @@ The real screen, so the drawing is not a straw man:
 
 In [`../README.md`](../README.md): status dot + label (4), hairline rows (5), rows on tablet (6),
 the pane beside the list (7), loading as skeleton (11, owned by #308), sentence case (12).
+**All decided by Paul on 2026-09-18** (with grouping by day on the Date sort, 20, and the cut 3
+chips, 21); skeleton loading stays with [#308](https://github.com/wcpos/roadmap/issues/308).
+[#287](https://github.com/wcpos/roadmap/issues/287) is closed.
 
 ## Rejected
 
