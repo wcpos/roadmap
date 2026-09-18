@@ -65,7 +65,8 @@ const STAGES = ['Finding your store…', 'Checking WordPress…', 'Checking WooC
     await shot('discovery-complete');
     await action('signin'); assert(await page.locator('[data-cp="open"]').isEnabled());
     await scene('one-site'); assert.equal(await page.evaluate(() => document.activeElement.dataset.cp), 'open', 'ready saved site focuses Open POS');
-    await scene('one-site'); await set('field', 'always'); assert(await page.locator('#cp-address').isVisible()); await shot('field-always'); await set('field', 'folded');
+    assert.equal(await page.locator('.strip [data-set="field"]').count(), 0, 'Field comparison is retired');
+    assert.equal(await page.locator('#cp-address').count(), 0, 'saved site keeps the address folded');
     await action('unfold'); await page.locator('#cp-address').fill('mystore.com'); await action('connect');
     await page.locator('.strip [data-scn="one-site"].on').waitFor();
     assert.equal(await frame.locator('.cp-site').count(), 1, 'reconnect updates rather than duplicates');

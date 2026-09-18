@@ -32,31 +32,40 @@ All 20 brief states are captured; `index` is phone-only. Long sections and panel
 
 ## Decisions for Paul
 
+**All decided by Paul on 2026-09-18 ("as you recommend"); [#288](https://github.com/wcpos/roadmap/issues/288) is closed.**
+
 1. **Page shape.** (a) A left section list and quiet rows; phone index and a back bar
    (drawn). (b) One long page. (a) keeps the app’s learned navigation and shows where you
    are; (b) makes browsing everything easier but puts every field in the way.
    **Pick: (a)** — navigation-area’s ledger already makes this rule.
+   **Decided (Paul, 2026-09-18): as drawn, the pick.**
 2. **Saved.** (a) Check + Saved beside the changed control for 1.2 s (drawn).
    (b) Saved · just now in the header. (c) Nothing, today. (a) answers where the hand is;
    (b) is quieter when several fields change; (c) leaves instant saving invisible.
-   **Pick: (a)** — opacity only, no toast, no Save button. The strip compares all three.
+   **Pick: (a)** — opacity only, no toast, no Save button. The strip compared all three; the header and none homes were deleted on sign-off.
+   **Decided (Paul, 2026-09-18): as drawn, the pick.**
 3. **The four address rows.** (a) Values, “Set in WooCommerce, mirrored here.” and
    Open WooCommerce settings (drawn). (b) Disabled inputs, today. (a) says why the values
    cannot be edited and where to go; (b) preserves the form shape but not the explanation.
    **Pick: (a)** — the Tax page’s existing treatment, not a second rule.
+   **Decided (Paul, 2026-09-18): as drawn, the pick.**
 4. **Restore and Delete printer.** (a) Confirm sheets (drawn). (b) Execute immediately,
    today. (a) costs a tap on rare destructive actions; (b) is faster but can erase local
    changes or a printer setup by accident. **Pick: (a)** — parity with Forget display.
    Restore finishes at its row with Restored; failure is “Couldn't reach the store · Try again”.
+   **Decided (Paul, 2026-09-18): as drawn, the pick.**
 5. **The printer wizard.** (a) The register’s right slide-out, full page on a phone (drawn).
    (b) A centred dialog. (a) leaves the printer list as context and gives the form room;
    (b) feels smaller but makes the phone a cramped form. **Pick: (a)**. Editing shares the
    panel, with Advanced closed as this brief asks (today editing opens it).
+   **Decided (Paul, 2026-09-18): as drawn, the pick.**
 6. **Scale lives under Theme.** (a) Compact / Regular / Spacious plus Auto (drawn).
    (b) Leave scale solely to the device. (a) gives the counter a discoverable override;
    (b) removes a decision but cannot accommodate a particular screen or cashier.
    **Pick: (a)**, with Auto’s device mapping spelled out. This is placement, not a ruling
    on #289’s production mechanism.
+   **Decided (Paul, 2026-09-18): as drawn, the pick.**
+
 
 ## Verification and boundaries
 

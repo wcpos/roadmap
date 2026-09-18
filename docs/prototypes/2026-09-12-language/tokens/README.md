@@ -29,20 +29,26 @@ the shared categories, Scale, Play, reduced motion and the phone's local matrix 
 
 ## Decisions for Paul
 
+**All decided by Paul on 2026-09-18 ("as you recommend"); [#288](https://github.com/wcpos/roadmap/issues/288) is closed.**
+
 1. **Default light, following the system to Default dark** (pick), or a personality theme
    as the first-run default. The defaults leave the work first and fit system appearance;
    a personality theme makes the till recognisable sooner. **Pick: defaults follow the
    system; personality is opt-in.** This sheet compares themes; it does not implement the
    system-following mechanism.
+   **Decided (Paul, 2026-09-18): as drawn, the pick.**
 2. **Five shared categorical colours** (drawn), or categories derived from each theme.
    Shared colours keep the same category recognisable between shops and pages; theme-derived
    colours coordinate more closely with the controls. **Pick: shared.** `--c1` through `--c5`
    now live in the shared token block; Reports consumes them without its former overrides.
+   **Decided (Paul, 2026-09-18): as drawn, the pick.**
 3. **What personality is still missing?** Decision 26 is still Paul's question: are the
    theme-led icons, money faces and completion touches enough, or is there a specific moment
    that still feels anonymous? Keeping these costs no more attention; adding a touch can make
    that moment recognisable but spends attention on every sale. **Pick: leave the question
    open for Paul**, not a new decoration or a reopening of the signed-off register.
+   **Decided (Paul, 2026-09-18): nothing named as missing; the question closes with what is drawn.**
+
 
 ## Behavior changes / regressions
 

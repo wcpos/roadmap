@@ -27,24 +27,30 @@ All 18 brief states are captured at all 12 combinations. Where content needs scr
 
 ## Decisions for Paul
 
+**All decided by Paul on 2026-09-18 ("as you recommend"); [#288](https://github.com/wcpos/roadmap/issues/288) is closed.**
+
 1. **The address on a return visit.** (a) Fold it below “Connect another store” (drawn).
    (b) Always show it. (a) puts the saved shop and Open POS first; (b) saves a tap when
-   connecting another address. **Pick: (a)** — returning is the common case. The Field
-   switch compares visibility; even “Always” keeps saved sites first, unlike today’s
-   address-first order.
+   connecting another address. **Pick: (a)** — returning is the common case. The Field switch compared both; the always-visible home was deleted on sign-off. Even
+   that home kept saved sites first, unlike today’s address-first order.
+   **Decided (Paul, 2026-09-18): as drawn, the pick.**
 2. **Discovery says where it is.** (a) Finding your store → Checking WordPress → Checking
    WooCommerce POS → Saving (drawn). (b) The spinner alone, today. (a) gives a slow store
    a visible next step; (b) is quieter but makes every wait look the same.
    **Pick: (a)** — one changing line, then the site arrives once; no success toast.
+   **Decided (Paul, 2026-09-18): as drawn, the pick.**
 3. **Stores are radio cards.** (a) Show the choices inline (drawn). (b) Put them in a
    select. (a) exposes the shop names before Open POS; (b) saves height for long lists.
    **Pick: (a)** — this preserves today’s radio-card behaviour, not a new replacement for
    a select. A lone store is selected; several stores require a choice.
+   **Decided (Paul, 2026-09-18): as drawn, the pick.**
 4. **An incompatible saved site.** (a) “Update the WooCommerce POS plugin on this site to
    continue” and a docs link (drawn). (b) Today’s “Please update your WCPOS plugin”.
    (a) names the site and explains why its accounts are absent; (b) is shorter.
    **Pick: (a)** — one sentence, not a disabled set of controls. The discovery error
    retains today’s exact “Please update your WCPOS plugin” copy.
+   **Decided (Paul, 2026-09-18): as drawn, the pick.**
+
 
 ## Verification and boundaries
 

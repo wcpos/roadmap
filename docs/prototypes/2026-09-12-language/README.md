@@ -15,11 +15,11 @@ Playwright and fails on any page or console error (`--quick` for one width).
 |---|---|---|
 | [`pos-register/`](pos-register/) | [#287](https://github.com/wcpos/roadmap/issues/287) | decided (Paul, 2026-09-18); the ticket is closed |
 | [`orders/`](orders/) → `pos-register/index.html?screen=orders` | [#287](https://github.com/wcpos/roadmap/issues/287) | decided (Paul, 2026-09-18); a page of the register since 2026-09-17 |
-| [`settings/`](settings/) → `pos-register/index.html?screen=settings` | [#288](https://github.com/wcpos/roadmap/issues/288) | drawn; six decisions for Paul in the folder README |
-| [`connect/`](connect/) → `pos-register/index.html?screen=connect` | [#288](https://github.com/wcpos/roadmap/issues/288) | drawn; four decisions for Paul in the folder README |
-| [`receipt/`](receipt/) → `pos-register/index.html?screen=register&scn=paid` | [#288](https://github.com/wcpos/roadmap/issues/288) | drawn; four decisions for Paul in the folder README; captures in `pos-register/screens/` |
-| [`products/`](products/) → `pos-register/index.html?screen=register&scn=var-popover` | [#288](https://github.com/wcpos/roadmap/issues/288) | drawn; four decisions for Paul in the folder README; captures in `pos-register/screens/` |
-| [`tokens/`](tokens/) → `pos-register/index.html?screen=tokens` | [#288](https://github.com/wcpos/roadmap/issues/288) | drawn; three decisions for Paul in the folder README; live computed sheet across nine themes |
+| [`settings/`](settings/) → `pos-register/index.html?screen=settings` | [#288](https://github.com/wcpos/roadmap/issues/288) | decided (Paul, 2026-09-18); the ticket is closed|
+| [`connect/`](connect/) → `pos-register/index.html?screen=connect` | [#288](https://github.com/wcpos/roadmap/issues/288) | decided (Paul, 2026-09-18); the ticket is closed|
+| [`receipt/`](receipt/) → `pos-register/index.html?screen=register&scn=paid` | [#288](https://github.com/wcpos/roadmap/issues/288) | decided (Paul, 2026-09-18); the ticket is closed|
+| [`products/`](products/) → `pos-register/index.html?screen=register&scn=var-popover` | [#288](https://github.com/wcpos/roadmap/issues/288) | decided (Paul, 2026-09-18); the ticket is closed|
+| [`tokens/`](tokens/) → `pos-register/index.html?screen=tokens` | [#288](https://github.com/wcpos/roadmap/issues/288) | decided (Paul, 2026-09-18); the ticket is closed|
 
 ## The tokens, as drawn
 
@@ -537,8 +537,8 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     drawing.**
     Paul (2026-09-16): likes the Market Stall theme and some of the touches, but the raised
     pence are too much for the default themes. **Ruled: price-tag pence only when the theme is
-    Market Stall; the default themes keep plain numbers and the system typeface.** What personality
-    is still missing is open.
+    Market Stall; the default themes keep plain numbers and the system typeface.** **Decided (Paul, 2026-09-18, on #288): nothing more is missing for now; the
+    default is Default light following the system to Default dark, personality themes opt-in.**
 27. **Signature layouts.** Asked which lever to pull next (layout, motion, brand layer, copy),
     Paul chose layout. `layouts/board.html` (captures `layouts/screens/board/`): five shapes for
     the same register, same sale: (1) **the till roll** — catalogue | a strip of receipt paper the

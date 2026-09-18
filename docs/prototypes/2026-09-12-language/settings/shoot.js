@@ -68,11 +68,9 @@ const STATES = ['index', 'general', 'general-saved', 'general-restore', 'general
     await shot('saved-interaction');
     await page.waitForTimeout(1350);
     assert.equal(await page.locator('[data-saved="name"]').evaluate(el => getComputedStyle(el).opacity), '0', 'Saved fades after 1.2 s');
-    await set('saved', 'header'); await scene('general-saved'); await shot('saved-header');
-    assert.equal(await page.locator('[data-saved="header"]').innerText(), 'Saved · just now');
-    await set('saved', 'none'); await scene('general-saved'); await shot('saved-none');
-    assert.equal(await page.locator('[data-saved].on').count(), 0);
-    await set('saved', 'row'); await scene('general');
+    assert.equal(await page.locator('.strip [data-set="saved"]').count(), 0, 'Saved comparison is retired');
+    assert.equal(await page.locator('[data-saved="header"]').count(), 0, 'Saved is row-only');
+    await scene('general');
     await action('toggle', 'cashier'); assert(await page.locator('#sp-customer').isDisabled());
     await action('toggle', 'cashier'); assert(await page.locator('#sp-customer').isEnabled());
     await scene('general-restore'); await action('destroy', 'restore');

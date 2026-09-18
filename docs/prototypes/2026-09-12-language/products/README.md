@@ -37,26 +37,33 @@ Natural, presses Add and checks the settled cart line without a toast.
 
 ## Decisions for Paul
 
+**All decided by Paul on 2026-09-18 ("as you recommend"); [#288](https://github.com/wcpos/roadmap/issues/288) is closed.**
+
 1. **Sheet on the phone, popover elsewhere** (drawn), or popover everywhere (today).
    The sheet gives touch choices room and leaves one familiar exit; the popover keeps the
    tile beside its options and avoids a platform split. **Pick: sheet on the phone.**
    The strip's Picker switch draws both; `var-sheet` selects the sheet rule, not a wide-screen
    modal. Feeds #290. Buttons up to four options, select for five to twelve, combobox above
    twelve follow the brief's proposed thresholds, not today's text-length/ten-option rule.
+   **Decided (Paul, 2026-09-18): sheet on the phone, popover elsewhere; the Picker switch stays for #290's split rule.**
 2. **Scan feedback under the search field** (drawn), or today's scan toast.
    One place joins the code to the outcome without a message covering products; the toast
    is easier to notice away from search. **Pick: under search**, with the settled cart line
    for success and a chooser sheet only when the code has several matches. No success toast.
+   **Decided (Paul, 2026-09-18): as drawn, the pick.**
 3. **The camera band inline** (drawn, preserving today's placement), or a separate scanner
    screen. Inline keeps the catalogue usable while scanning and the height adjustable; a
    separate screen gives the viewfinder more room but hides selling. **Pick: inline.**
    Allow camera draws Starting camera… then scanning. The dark strip's Camera demo controls
    draw offline, storage and starting-sync notes and a 350 ms detection flash.
+   **Decided (Paul, 2026-09-18): as drawn, the pick.**
 4. **Filter editor as a side panel** (drawn), or today's routed modal.
    Over the cart keeps the products it configures in sight; the modal offers more editor
    width. **Pick: side panel**, full height on the phone, with the list and editor in one
    scroll. Visibility/order changes are immediate; Save closes the quick-filter editor;
    zero matches do not block Save. Only Delete asks for confirmation.
+   **Decided (Paul, 2026-09-18): as drawn, the pick.**
+
 
 ## Behavior changes / regressions
 

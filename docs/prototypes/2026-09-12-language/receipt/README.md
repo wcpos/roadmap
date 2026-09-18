@@ -31,23 +31,30 @@ this receipt-only build.
 
 ## Decisions for Paul
 
+**All decided by Paul on 2026-09-18 ("as you recommend"); [#288](https://github.com/wcpos/roadmap/issues/288) is closed.**
+
 1. **Auto-print on, with Print spinning** (drawn), or off until pressed (today's default).
    On removes a tap at every sale and says where the receipt went; off avoids unwanted paper.
    Both finish actions stay disabled through dispatch. **Pick: on** — the direction's
    “Print → no dialog, the receipt goes.” Printed means dispatched, not confirmed paper delivery.
+   **Decided (Paul, 2026-09-18): as drawn, the pick.**
 2. **Draw the receipt paper** (drawn), or a blank preview placeholder. Paper makes the amount of
    chrome and the viewport's proportions judgeable; a placeholder makes no promises about a
    merchant's template. **Pick: drawn paper** — an 80 mm shape, not a new receipt template.
    Server-owned layouts, logos, fiscal fields and live content are not specified here.
+   **Decided (Paul, 2026-09-18): as drawn, the pick.**
 3. **Next sale first, then Print · Email · PDF, with No receipt quiet** (drawn), or today's
    New sale · Email · PDF · Print order. The drawn order keeps the next customer first and paper
    closest among the secondary actions; today's keeps the learned secondary order. **Pick: drawn.**
    Print and Email do not finish a sale. No receipt returns to selling; it does not cancel a
    print that has already dispatched.
+   **Decided (Paul, 2026-09-18): as drawn, the pick.**
 4. **Email in a centred dialog** (drawn, also today's app), or the side panel. Centre keeps the
    two-field task separate and lets the receipt stay underneath; a side panel matches the
    larger editors but hides more work. **Pick: centred**, including on the phone. Focus goes to
    the address; Enter submits a valid address; Escape or Cancel returns to Email on the receipt.
+   **Decided (Paul, 2026-09-18): as drawn, the pick.**
+
 
 ## Prototype boundaries / behavior changes
 

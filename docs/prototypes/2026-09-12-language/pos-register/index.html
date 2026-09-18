@@ -2858,14 +2858,14 @@ const SCENES=['index','general','general-saved','general-restore','general-resto
 const defaults={name:'UK Store',locale:'English (UK)',customer:'Guest',cashier:false,currency:'GBP — Pound sterling',position:'Right with space',decimal:',',decimals:2,thousand:'.',group:'Thousand',basis:'Shop base address',totals:'Itemised',shop:'Excluding tax',checkout:'Excluding tax',suffix:'',threshold:24,length:8,prefix:'',suffixScan:'',sound:false,soundTheme:'Classic',volume:.6,success:true,failure:true,vibration:true,printerName:'Epson TM-m30',connection:'Network',ip:'192.168.1.42',port:'8043',vendor:'Epson',language:'ESC/POS',textWidth:'48 columns · 80 mm',codepage:'Western European',raster:false,drawer:'Drawer 1',cut:true,autoDrawer:false,defaultPrinter:true};
 const printerFixtures=()=>[{id:'epson',name:'Epson TM-m30',connection:'Network · 192.168.1.42:8043',status:'Ready',kind:'ok',default:true},{id:'star',name:'Star mC-Print3',connection:'USB · Front counter',status:'Not reachable',kind:'neutral'},{id:'dialog',name:'Print dialog',connection:'Managed by WCPOS',status:'Built in',kind:'neutral',built:true}];
 const scannerFixtures=()=>[{name:'Counter scanner',status:'Registered',transport:'Keyboard'},{name:'Socket S700',status:'Connected',transport:'Bluetooth'},{name:'Stockroom scanner',status:'Not in range',transport:'Bluetooth serial'},{name:'Honeywell Voyager',status:'Not plugged in',transport:'USB'},{name:'Spare scanner',status:'Not connected',transport:'Serial'}];
-const st={section:'general',saved:'row',beat:null,beatText:'Saved',values:{...defaults},printers:printerFixtures(),scanners:scannerFixtures(),displays:['Counter display','Window display'],panel:null,sheet:null,menu:null,test:null,testResult:null,themeChoice:'system',scaleChoice:'regular',registering:false,candidate:false,code:null};
+const st={section:'general',beat:null,beatText:'Saved',values:{...defaults},printers:printerFixtures(),scanners:scannerFixtures(),displays:['Counter display','Window display'],panel:null,sheet:null,menu:null,test:null,testResult:null,themeChoice:'system',scaleChoice:'regular',registering:false,candidate:false,code:null};
 let beatTimer,printTimer,resultTimer,returnFocus=null,focusNext=null;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const btn=(label,action,value='',cls='')=>`<button class="btn press ${cls}" data-sp="${action}" data-v="${esc(value)}" data-testid="settings-${action}${value?'-'+esc(value):''}">${label}</button>`;
 const status=(word,kind='neutral')=>`<span class="st ${kind}"><i></i>${word}</span>`;
 const link=(label,url)=>`<a href="${url}" target="_blank" rel="noopener">${label}</a>`;
 const docs=(label='Having trouble?',page='hardware/printers')=>link(label,'https://docs.wcpos.com/'+page);
-const beat=(id)=>`<span class="sp-saved ${st.beat===id&&st.saved==='row'?'on':''}" data-saved="${id}" role="status">${I.check}<span>${esc(st.beat===id?st.beatText:'Saved')}</span></span>`;
+const beat=(id)=>`<span class="sp-saved ${st.beat===id?'on':''}" data-saved="${id}" role="status">${I.check}<span>${esc(st.beat===id?st.beatText:'Saved')}</span></span>`;
 const row=(label,control,id='',hint='')=>`<div class="sp-row" ${id?`data-row="${id}"`:''}><div class="sp-label"><label ${id?`id="sp-label-${id}" for="sp-${id}"`:''}>${label}</label>${hint?`<small>${hint}</small>`:''}</div><div class="sp-control">${control}${id?beat(id):''}</div></div>`;
 const input=(id,type='text',extra='')=>`<input id="sp-${id}" data-sp-field="${id}" data-testid="settings-${id}" class="in" type="${type}" value="${esc(st.values[id])}" ${extra}>`;
 const field=(label,id,type='text',hint='',extra='')=>row(label,input(id,type,extra),id,hint);
@@ -2922,14 +2922,14 @@ function sheet(){
 function strip(seg){
   const group=(label,html)=>`<div class="g"><b>${label}</b>${html}</div>`;
   document.getElementById('strip').hidden=Q.get('board')==='1';
-  document.getElementById('strip').innerHTML=group('Width',seg('w',[['phone','Phone 390'],['tablet','Tablet 1024'],['desktop','Desktop 1440']]))+group('Plan',seg('plan',[['top','Free · strip at the top'],['pro','Pro · no strip']]))+group('Update',seg('upd',[['ready','Ready · in the bell'],['none','None']]))+group('Theme',seg('theme',themes))+group('Scale',seg('scale',[['compact','Compact'],['regular','Regular'],['spacious','Spacious']]))+group('Saved',seg('saved',[['row','Row'],['header','Header'],['none','None']],st))+group('State',`<span class="seg">${SCENES.filter(([v])=>v!=='index'||S.w==='phone').map(([v,l])=>`<button data-scn="${v}" class="${S.scn===v?'on':''}">${l}</button>`).join('')}</span>`);
+  document.getElementById('strip').innerHTML=group('Width',seg('w',[['phone','Phone 390'],['tablet','Tablet 1024'],['desktop','Desktop 1440']]))+group('Plan',seg('plan',[['top','Free · strip at the top'],['pro','Pro · no strip']]))+group('Update',seg('upd',[['ready','Ready · in the bell'],['none','None']]))+group('Theme',seg('theme',themes))+group('Scale',seg('scale',[['compact','Compact'],['regular','Regular'],['spacious','Spacious']]))+group('State',`<span class="seg">${SCENES.filter(([v])=>v!=='index'||S.w==='phone').map(([v,l])=>`<button data-scn="${v}" class="${S.scn===v?'on':''}">${l}</button>`).join('')}</span>`);
 }
 function renderSettings(){
   const f=document.getElementById('frame'),phone=S.w==='phone',index=phone&&S.scn==='index',title=sections.find(([v])=>v===st.section)[1];
   const oldScroll=f.querySelector('.sp-scroll')?.scrollTop||0,oldPanel=f.querySelector('.panel-b')?.scrollTop||0,active=document.activeElement?.id,open=[...f.querySelectorAll('details[open]')].map(d=>d.querySelector('summary').textContent);
   const list=`<nav class="sp-nav" aria-label="Settings sections">${sections.map(([id,label])=>`<button class="opt ${!index&&st.section===id?'on':''}" data-sp="section" data-v="${id}" ${!index&&st.section===id?'aria-current="page"':''} data-testid="settings-nav-${id}"><span class="grow">${label}</span>${phone?I.chev:''}</button>`).join('')}</nav>`;
   const header=`<div class="bar">${phone?index?`<button class="ibtn" data-act="openSheet" data-sheet="menu" aria-label="Menu">${I.menu}</button>`:`<button class="btn q" data-sp="section" data-v="index" aria-label="Back to Settings">${I.chevl}Settings</button>`:''}<b class="grow">${phone&&!index?title:'Settings'}</b>${renderBell()}</div>`;
-  const body=index?list:`${phone?'':list}<div class="sp-scroll"><div class="sp-content" data-testid="screen-settings-${st.section}"><h1 tabindex="-1">${title}</h1><div class="sp-intro">Changes save as you make them.${st.saved==='header'?`<span class="sp-saved ${st.beat?'on':''}" data-saved="header" role="status">${I.check}<span>${st.beatText} · just now</span></span>`:''}</div>${S.scn==='loading'?'':({general,tax,printing,theme,display,scanning}[st.section])()}</div></div>`;
+  const body=index?list:`${phone?'':list}<div class="sp-scroll"><div class="sp-content" data-testid="screen-settings-${st.section}"><h1 tabindex="-1">${title}</h1><div class="sp-intro">Changes save as you make them.</div>${S.scn==='loading'?'':({general,tax,printing,theme,display,scanning}[st.section])()}</div></div>`;
   f.innerHTML=`${S.plan==='top'&&!S.nostrip?renderUpgradeStrip('top'):''}<div class="body">${phone?'':renderRail()}<div class="main"><div class="sp-page">${header}<div class="sp-layout">${body}</div></div>${panel()}${sheet()}</div></div>`;
   f.querySelectorAll('[data-nav="settings"]').forEach(b=>{b.classList.add('on');b.setAttribute('aria-current','page');});
   f.querySelectorAll('details').forEach(d=>{if(open.includes(d.querySelector('summary').textContent))d.open=true;});
@@ -2939,11 +2939,11 @@ function renderSettings(){
   if(focusNext){f.querySelector(focusNext)?.focus({preventScroll:true});focusNext=null;}
   f.querySelectorAll('.sp-testing svg').forEach(n=>n.classList.add('sp-spinner'));
   f.querySelectorAll('[data-sp="preview"]').forEach(b=>b.setAttribute('aria-label','Preview '+b.dataset.v.replace(':',' ')));
-  document.getElementById('notes').textContent='Settings · local drawing data only. Values reset on reload; hardware, pairing and restore are simulated. State selects the fixtures; Saved compares the completion beat.';
+  document.getElementById('notes').textContent='Settings · local drawing data only. Values reset on reload; hardware, pairing and restore are simulated. State selects the fixtures.';
 }
 function saved(id,text='Saved'){
   clearTimeout(beatTimer);st.beat=id;st.beatText=text;
-  document.querySelectorAll('[data-saved]').forEach(n=>{n.classList.toggle('on',(st.saved==='row'&&n.dataset.saved===id)||(st.saved==='header'&&n.dataset.saved==='header'));n.querySelector('span').textContent=text+(n.dataset.saved==='header'?' · just now':'');});
+  document.querySelectorAll('[data-saved]').forEach(n=>{n.classList.toggle('on',n.dataset.saved===id);n.querySelector('span').textContent=text;});
   beatTimer=setTimeout(()=>{st.beat=null;document.querySelectorAll('[data-saved]').forEach(n=>n.classList.remove('on'));},1200);
 }
 function jump(scn){
@@ -2961,7 +2961,7 @@ function test(id){
 }
 function closeOverlay(){st.sheet=null;st.panel=null;st.menu=null;S.sheet=null;focusNext=returnFocus;}
 function click(e){
-  const set=e.target.closest('[data-set]');if(set?.dataset.set==='saved'){st.saved=set.dataset.v;render();return true;}
+  const set=e.target.closest('[data-set]');
   if(set?.dataset.set==='scale')st.scaleChoice=set.dataset.v;
   if(set?.dataset.set==='theme')st.themeChoice=set.dataset.v;
   if(set?.dataset.set==='w'&&st.scaleChoice==='auto')S.scale=({phone:'compact',tablet:'regular',desktop:'spacious'})[set.dataset.v];
@@ -3033,7 +3033,7 @@ const errors={'error-wp':['Site does not seem to be a WordPress site',''], 'erro
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const users=()=>[{id:'sam',name:'Sam Reilly',role:'Shop manager',status:'Signed in'},{id:'amy',name:'Amy Okafor',role:'Cashier',status:'Signed in'}];
 const site=(id='main',name='Market Street',url='https://mystore.com')=>({id,name,url,users:users(),selected:'sam',store:'front',stores:[['front','Front counter','1']],compatible:true});
-const st={field:Q.get('field')==='always'?'always':'folded',address:'',sites:[],expanded:'main',unfold:false,phase:null,error:null,sheet:null,beat:false};
+const st={address:'',sites:[],expanded:'main',unfold:false,phase:null,error:null,sheet:null,beat:false};
 let timer,focusNext=null,returnFocus=null;
 const button=(label,action,value='',cls='',extra='')=>`<button class="btn press ${cls}" data-cp="${action}" data-v="${esc(value)}" data-testid="connect-${action}${value?'-'+esc(value):''}" ${extra}>${label}</button>`;
 const icon=(label,action,value,glyph='x')=>`<button class="ibtn press" aria-label="${esc(label)}" data-cp="${action}" data-v="${esc(value)}" data-testid="connect-${action}-${esc(value)}">${I[glyph]}</button>`;
@@ -3064,16 +3064,16 @@ function sheet(){
 function strip(seg){
   const group=(label,html)=>`<div class="g"><b>${label}</b>${html}</div>`;
   document.getElementById('strip').hidden=Q.get('board')==='1';
-  document.getElementById('strip').innerHTML=group('Width',seg('w',[['phone','Phone 390'],['tablet','Tablet 1024'],['desktop','Desktop 1440']]))+group('Theme',seg('theme',themes))+group('Scale',seg('scale',[['compact','Compact'],['regular','Regular'],['spacious','Spacious']]))+group('Field',seg('field',[['folded','Folded'],['always','Always']],st))+group('State',`<span class="seg">${SCENES.map(([v,l])=>`<button data-scn="${v}" class="${S.scn===v?'on':''}">${l}</button>`).join('')}</span>`);
+  document.getElementById('strip').innerHTML=group('Width',seg('w',[['phone','Phone 390'],['tablet','Tablet 1024'],['desktop','Desktop 1440']]))+group('Theme',seg('theme',themes))+group('Scale',seg('scale',[['compact','Compact'],['regular','Regular'],['spacious','Spacious']]))+group('State',`<span class="seg">${SCENES.map(([v,l])=>`<button data-scn="${v}" class="${S.scn===v?'on':''}">${l}</button>`).join('')}</span>`);
 }
 function renderConnect(){
-  const f=document.getElementById('frame'),scroll=f.querySelector('.cp-scroll')?.scrollTop||0,focused=document.activeElement?.dataset,showField=!st.sites.length||st.unfold||st.field==='always';
+  const f=document.getElementById('frame'),scroll=f.querySelector('.cp-scroll')?.scrollTop||0,focused=document.activeElement?.dataset,showField=!st.sites.length||st.unfold;
   f.innerHTML=`<main class="cp-scroll" ${st.sheet?'inert':''}><div class="cp-column">${logo()}${st.sites.length?`<div class="cp-sites ${st.beat?'cp-beat':''}">${st.sites.length>1?'<b>Your sites</b>':''}${st.sites.map(card).join('')}</div>`:''}${st.sites.length?button('Connect another store','unfold','','q',`aria-expanded="${showField}"`):''}${showField?form():''}${button('Try the demo store','demo','','q',st.phase!==null?'disabled':'')}</div></main>${sheet()}`;
   st.beat=false;f.querySelector('.cp-scroll').scrollTop=scroll;
   f.querySelectorAll('button').forEach(b=>b.type='button');
   if(focusNext){focusNext.split(',').map(selector=>f.querySelector(selector)).find(Boolean)?.focus({preventScroll:!!st.sheet});focusNext=null;}
   else if(focused?.cp)f.querySelector(`[data-cp="${focused.cp}"][data-v="${CSS.escape(focused.v||'')}"]`)?.focus({preventScroll:true});
-  document.getElementById('notes').textContent='Connect · local drawing only. Discovery, sign-in and removal are simulated; nothing is sent to a store. Enter connects; completion focuses the saved site’s next action. Field compares folded and always visible.';
+  document.getElementById('notes').textContent='Connect · local drawing only. Discovery, sign-in and removal are simulated; nothing is sent to a store. Enter connects; completion focuses the saved site’s next action.';
 }
 function jump(scn){
   clearTimeout(timer);S.scn=scn;S.sheet=null;Object.assign(st,{address:'',sites:[],expanded:'main',unfold:false,phase:null,error:null,sheet:null,beat:false});
@@ -3098,7 +3098,7 @@ function discover(demo=false){
 }
 function open(){const visited=SCN_OF.connect;nav('connect');if(!visited)jump('one-site');}
 function click(e){
-  const set=e.target.closest('[data-set]');if(set){if(set.dataset.set==='field'){st.field=set.dataset.v;render();return true;}return false;}
+  if(e.target.closest('[data-set]'))return false;
   const scene=e.target.closest('[data-scn]');if(scene){jump(scene.dataset.scn);return true;}
   const b=e.target.closest('[data-cp]');if(!b||b.disabled)return true;const a=b.dataset.cp,v=b.dataset.v,s=active();
   switch(a){
@@ -3242,6 +3242,7 @@ function valid(){return !!st.draft?.name.trim()&&st.draft.conditions.every(([f,v
 function editor(){const d=st.draft;return `<div class="panel-wrap pp-overlay" data-pp="close-editor"><section class="panel pp-editor" data-stop="1" role="dialog" aria-modal="true" aria-label="Customise filter bar"><div class="bar"><b class="grow">Customise filter bar</b>${btn(I.x,'close-editor','','q','aria-label="Close filter editor"')}</div><div class="panel-b pp-form"><div>${bar.map((f,i)=>`<div class="pp-filter-row" data-pp-row="${i}"><button class="ibtn grip" draggable="true" data-pp-drag="${i}" aria-label="Move ${f.name}; use arrow keys">${I.grip}</button><button class="opt" data-pp="visibility" data-v="${i}" role="switch" aria-checked="${f.show}">${f.name}<span class="sw ${f.show?'on':''}"></span></button></div>`).join('')}${preset?`<div class="pp-filter-row" data-pp-row="quick"><button class="ibtn grip" draggable="true" data-pp-drag="quick" aria-label="Move quick filter; use arrow keys">${I.grip}</button>${btn(esc(preset.name),'edit-filter','','q')}${btn(I.trash||I.x,'delete-filter','','q d','aria-label="Delete quick filter"')}</div>`:''}${btn('Add quick filter','new-filter','','q')}</div>${d?`<h3>Quick filter</h3><label>Button name<input class="in" data-pp-field="name" value="${esc(d.name)}" placeholder="e.g. Sale wines"></label><h3>Show products where</h3>${d.conditions.map(condition).join('')}<label>Add condition<select class="in" data-pp-field="add-condition" ${d.conditions.length===fields.length?'disabled':''}><option value="">Choose a field</option>${fields.filter(f=>!d.conditions.some(([v])=>v===f)).map(f=>`<option>${f}</option>`).join('')}</select></label>${select('Order by','sort',['Default order','Name','SKU','Barcode','Type','Price','Date created','Date modified','Popularity','Stock quantity','Stock status','Menu order'],d.sort)}${select('Sort direction','direction',['Ascending','Descending'],d.direction)}<div class="mut" data-pp-preview>${st.empty?'No products match right now. You can still save this button.':'23 products · Tote bag, Mug, …'}</div>`:'<span class="mut">Select a quick filter to edit it, or add a new one.</span>'}</div><div class="panel-f">${btn('Cancel','close-editor')}${d?btn('Save','save-filter','','p',valid()?'':'disabled'):''}</div></section></div>`;}
 function sheet(title,body){return `<div class="sheet-wrap pp-overlay" data-pp="close-sheet"><section class="sheet pp-sheet" role="dialog" aria-modal="true" aria-label="${title}" data-stop="1"><div class="sheet-h"><b class="grow">${title}</b>${btn(I.x,'close-sheet','','q','aria-label="Close"')}</div><div class="sheet-b pp-form">${body}</div></section></div>`;}
 function renderProducts(f){
+  // Keep the picker comparison: platform-split ticket #290 still uses sheet on phone / popover.
   const strip=document.getElementById('strip');strip.insertAdjacentHTML('beforeend',`<div class="g"><b>Picker</b><span class="seg">${['sheet','popover'].map(v=>`<button data-set="picker" data-v="${v}" class="${(S.picker||'sheet')===v?'on':''}">${v==='sheet'?'Sheet on phone':'Popover everywhere'}</button>`).join('')}</span></div>${st.camera?`<div class="g"><b>Camera demo</b><span class="seg">${['online','offline','storage','starting'].map(v=>`<button data-pp="note" data-v="${v}" class="${st.note===v?'on':''}">${v}</button>`).join('')}<button data-pp="detect">Detect barcode</button></span></div>`:''}<div class="g"><b>Scan demo</b><span class="seg"><button data-pp="scan-demo" data-v="added">Added</button><button data-pp="scan-demo" data-v="short">Too short</button><button data-pp="end">No more products</button></span></div>`);
   const col=f.querySelector('.prodcol'),main=f.querySelector('.main');if(!col)return;
   const scan=col.querySelector('.toolbar button[aria-label="'+T().scan+'"]');if(scan){scan.dataset.pp='camera-toggle';scan.setAttribute('aria-label',st.camera?'Close barcode scanner':'Scan barcode with camera');}
