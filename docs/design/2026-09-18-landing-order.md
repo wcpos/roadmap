@@ -89,7 +89,7 @@ Paul signs off **live** (the PR's web preview or dev-next) on the **pilot** and 
 
 ## 7. What this page fixes for later tickets
 
-- **The gallery ticket (graduated from the map's fog):** the minimal route (1a) is fixed here; the ticket decides the full shape (cells, the route's URL and how it selects step, floor, theme and state), the baseline home (monorepo at 1× versus a sibling repo), and the diff tolerance.
+- **The gallery ticket (graduated from the map's fog):** the minimal route (1a) is fixed here; the ticket decides the full shape (cells, the route's URL and how it selects step, floor, theme and state), the baseline home (monorepo at 1× versus a sibling repo), and the diff tolerance. **Decided 2026-09-18: [the gallery page](2026-09-18-gallery.md)** (a route in `apps/main` in a gallery build, shot by its own Playwright project as a Test job; page per component, cells in one tree, theme by query; baselines in the monorepo, Linux only, CI-written, zero pixels; captures as PR artifacts only).
 - **The performance budgets ticket (graduated):** the rows are pressed state, tile tap to cart line, transitions, scroll at 1,000 products, search per keystroke; the ticket measures today's `next` from `apps/main/e2e/cart-add-timing.ts` and sets the values and the CI script. DoD F records until it lands, gates after.
 - **`/to-spec`:** one contract per line of the component map's §9, in the order of §1 and §3 here, each with §5's fields and closed by §4.
 - **The contract template** is §5; the fog line on the map is cleared by this page.
