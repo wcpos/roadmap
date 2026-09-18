@@ -13,13 +13,13 @@ which raised the question; this file answers its five items and adds the numbers
    (#2143); a **projection read** — `SELECT id, name, sku, barcode` — cuts the marshalled bytes 38× at
    no extra time and feeds today's blob unchanged, all 17 traps passing.
    Not free of plumbing: premium's wrapper needs a full `data` column, so it takes a custom storage
-   read (§5(b)); it rides #2150's migration as a **second, products-table rebuild**; and it fixes a
-   SQLite-specific regression, not every engine.
+   read (§5(b)); it rides #2150's migration as **two further rebuilds, products and variations**; and
+   it fixes a SQLite-specific regression, not every engine.
 3. FTS5 **can** serve all 17 traps — `MATCH` with `remove_diacritics 1` at three characters or more
    (15/17) plus `LIKE` over **folded** stored columns below that (`k2`, `MY საბარგული`), 6.4 ms at
-   20k — so it could retire the blob completely. Two of the three designs reach that: external
-   content over a rowid table (the layout change plus folded generated columns), or a self-owned FTS
-   table that duplicates the text (+5.5 MB, no layout change). Contentless cannot.
+   20k — so it could retire the blob completely. All three designs can reach that: external content
+   over a rowid table (layout change + folded columns), a self-owned table (+5.5 MB of duplicated
+   text, no layout change), or contentless leaning on the base table's folded columns.
 4. Its cost: upsert 0.19 → 0.38 ms (~2×), resync ~7×, ~+3 MB disk at 20k; the generated columns alone
    are near-free, so the FTS5 half is what costs. On premium's shipped columns FTS5 still answers
    `MATCH` from the index and returns rowids — what it loses is **column-value reads, `LIKE`, and
@@ -55,6 +55,12 @@ building the search index from whole documents" one of three conditions on its s
 by three triggers — `AFTER INSERT`, `AFTER DELETE`, `AFTER UPDATE` (the last a `'delete'` command with
 the **original** values, then an insert). FTS5's docs make that consistency the application's job
 (<https://sqlite.org/fts5.html#external_content_tables>).
+
+**The triggers must know about soft deletes.** RxDB deletes by setting the `deleted` flag, hard-
+deleting only later in `cleanup()`, so an unconditional `AFTER UPDATE` re-indexes a tombstone's text
+and leaves deleted products matching. The insert arm must be skipped when `new.deleted != 0` (or every
+read path must join `deleted = 0`), and `'rebuild'` needs the same exclusion — a content **view**
+filtered on `deleted = 0`, or a delete pass afterwards — since it repopulates from the whole table.
 
 **But the content table needs columns FTS5 can read by name, and premium's has none.** The table I
 first measured is premium's shipped shape — `id, revision, deleted, lastWriteTime, data json` — with
@@ -104,7 +110,7 @@ direct external-content design only — so **the two constraints above together 
 | Design | Base table | Traps | Measured cost at 20k |
 |---|---|---|---|
 | **External content over a rowid table** + folded generated columns | `withoutRowId: false` — layout and primary-key path change, so **#2143's numbers need re-taking** | **17/17** (`'rebuild'`, column reads and `LIKE` all verified working) | +2.9 MB; upsert 0.19 → 0.38 ms; `LIKE` 6.4 ms |
-| **Contentless** (`content=''`, `contentless_delete=1`) | `WITHOUT ROWID` kept — **#2143's numbers stand** | **15/17** — no column values, so **no `LIKE`: the short-term traps die here** | not measured |
+| **Contentless** (`content=''`, `contentless_delete=1`) + base-table folded columns | `WITHOUT ROWID` kept — **#2143's numbers stand** | **17/17** — `MATCH` for long terms, and short terms by `LIKE` on the base table's folded columns, joined through the id↔rowid map | unmeasured; costs the mapping table and a join per short query |
 | **Regular, self-owned FTS5 table** (own rowids, `docid UNINDEXED`, text duplicated) | `WITHOUT ROWID` kept — **#2143's numbers stand** | **17/17** — `LIKE` runs over its own stored text | +5.5 MB (92.2 → 97.7); upsert 0.30 → 0.72 ms; `LIKE` **2.2 ms** |
 
 `contentless_delete=1` (3.43.0+, now preferred by the docs) is better than §16 implied: verified on
@@ -115,9 +121,11 @@ document id to an integer FTS rowid (the self-owned measurement uses an auxiliar
 `map(rid INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT UNIQUE)`), since a `WITHOUT ROWID` table offers a
 trigger no `new.rowid`.
 
-So it is not "FTS5 forces `withoutRowId: false`". **Two designs reach 17/17 — external content, which
-needs the layout change and the generated columns the projection read also needs (§6); and a
-self-owned table, which needs neither but duplicates the text at roughly double the index size.**
+So it is not "FTS5 forces `withoutRowId: false`". **All three designs can reach 17/17**: external
+content (needs the layout change plus the folded generated columns §6 wants anyway); a self-owned
+table (needs neither, but duplicates the text at roughly double the index size); and contentless
+(keeps the layout and adds no duplicate text, but leans on the base table's folded columns for every
+short term). Contentless is only short-term blind if those columns are absent.
 
 **The traps.** `searchFixtureCatalogue.ts` enshrines 17 (`SEARCH_FIXTURE_TRAPS`) that every search
 layer must satisfy; `foldSearchText` is lowercase + NFD + strip U+0300–U+036F
@@ -175,10 +183,12 @@ with the default tokenizer, bare `INDEX 0:` with it). But it scans ~52 character
 catalogue bytes, so it is nowhere near the `$regex` shape `catalogue-search-blob.ts`'s header rejected
 (265 ms at 20k) and sits far under the 250 ms debounce.
 
-**One gap before anyone claims parity.** The fallback must emit `LIKE ? ESCAPE '\'` with `%`, `_` and
-`\` escaped in the term — as #2143's translator already does for `$regex` — and **the trap set has no
-metacharacter case**, so nothing would catch a regression. A trap with a `%` or `_` in a name or SKU
-must be added to `SEARCH_FIXTURE_TRAPS` before the `LIKE` path is trusted.
+**Two escaping contracts, and no trap covers either.** `LIKE` must be emitted as
+`LIKE ? ESCAPE '\'` with `%`, `_` and `\` escaped in the term (as #2143's translator already does for
+`$regex`); and a literal `"` in a term (`12" ruler`) terminates the quoted FTS phrase, so **embedded
+quotes must be doubled** — binding the MATCH string as a parameter does *not* escape FTS query
+grammar, since the parameter is the whole query expression. **`SEARCH_FIXTURE_TRAPS` covers neither**,
+so traps carrying a `%`/`_` and a `"` must be added before either path is trusted.
 
 **What that means for the prize.** The earlier reading — short terms keeping a JS structure and the
 full read alive — is withdrawn: **FTS5 can retire the blob completely**, so §16's hoped-for deletion
@@ -316,11 +326,11 @@ earlier draft claimed.
 It reads three STORED generated columns (`name`, `sku`, `barcode` as
 `GENERATED ALWAYS AS (json_extract(data,'$.…')) STORED`); leave any JSON-extracted and its parse cost
 stays. SQLite refuses to add a STORED column to a populated table (verified: `cannot add a STORED
-column`), so it needs a table rebuild. Premium creates one `<collection>-<version>` table per
-collection, and #2150's `_pos_user`/`_pos_store` promotion rebuilds the **orders** table while these
-columns go on the **products** table — so this is **the same migration mechanism and the same ticket,
-but a second, separate rebuild**, not one rebuild serving both. It is also the schema §1 shows FTS5
-needs. The columns measured at 0.19 ms per upsert with no disk growth, so the rebuild is the cost.
+column`), so it needs a table rebuild — and premium creates one `<collection>-<version>` table per
+collection. The blob covers **products *and* variations** (§16 of the 2026-09-17 doc), so the folded
+columns are needed on both, while #2150's `_pos_user`/`_pos_store` promotion rebuilds **orders**:
+**the same migration mechanism and ticket, but three separate table rebuilds — two catalogue tables
+plus orders**, not one rebuild serving all. It is also the schema §1 shows FTS5 needs.
 
 **Cost comparison, in work rather than money:**
 
@@ -328,8 +338,8 @@ needs. The columns measured at 0.19 ms per upsert with no disk growth, so the re
 |---|---|---|
 | Search semantics | unchanged — the blob and its 17 traps keep passing | **17/17**: `MATCH` (`remove_diacritics 1`) ≥3 chars, `LIKE` below it — 6.4 ms at 20k |
 | Query seam | **a custom storage read** (§5(b)) — premium's wrapper needs a full `data` column, so `find()` cannot project | **the same custom path plus a `MATCH` handler in it.** The §5(a) sentinel-selector/`queryModifier` route is an *alternative*, not an addition — take it only if the raw-SQL path is not built |
-| Storage settings | none | `withoutRowId: false` **if** the `LIKE` fallback is kept (then re-take #2143's numbers); a contentless design keeps `WITHOUT ROWID` but loses the fallback |
-| Schema | a products-table rebuild, under #2150's migration | **the same products-table rebuild** (external-content design), or none (self-owned table) |
+| Storage settings | none | `withoutRowId: false` **only** for the external-content design (then re-take #2143's numbers); self-owned and contentless keep `WITHOUT ROWID` and both keep the `LIKE` fallback — self-owned over its duplicated text, contentless over the base table's folded columns |
+| Schema | **two catalogue rebuilds** (products *and* variations), under #2150's migration | **the same two rebuilds** (external content, or contentless leaning on them); none for a self-owned table |
 | Write cost | 0.19 ms per upsert — unchanged within noise | 0.38 ms per upsert (~2×), resync ~7× |
 | Disk | no measurable growth at 20k | ~+3 MB at 20k |
 | Crash surface | none | three triggers per collection, the exact workload behind wa-sqlite #258/#320; must go in the #2144 harness |
@@ -342,8 +352,16 @@ already made, collectable later.
 **Recommendation.** Weight FTS5 at zero in the engine choice: it is a consequence of choosing SQLite,
 not an input. **If SQLite wins on durability (#2144) and topology (#2146), satisfy #2143's
 search-index condition with a projection read through a custom storage read (§5(b)), on folded
-generated columns added by a products-table rebuild under #2150's migration** — cheap, measured, and
-it leaves today's blob and all 17 traps untouched. Revisit
+generated columns added to the products and variations tables under #2150's migration** — it leaves
+today's blob and all 17 traps untouched. **The 0.19 ms / no-growth figures above are for plain
+`json_extract` columns, not the folded ones the schema actually needs**, so call the raw-column cost
+measured and the folded-column cost provisional. Natively (Python UDF, *not* wasm): folded columns via
+a registered `wcpos_fold` cost seed 0.09 → 0.12 s, upsert 0.20 → 0.21 ms and **no disk growth**, so
+the folding itself is nearly free — but three UDF calls per row cross the wasm↔JS boundary on our
+stack and that crossing is **unmeasured**. The alternative, folded fields the app writes into the
+document, needs no UDF but grew this fixture 41.3 → 77.4 MB: a **page-packing cliff** (~1.9 KB rows
+crossing two-per-page at a 4 KB page), not a linear cost, so it must be sized against a real
+catalogue before it is chosen. Revisit
 FTS5 after that on the same schema, as a deletion project: it now looks able to retire the blob
 completely, so the prize is real — but it doubles the write, needs §1's rowid decision, and its
 triggers must go through the crash harness first.
@@ -352,7 +370,7 @@ triggers must go through the crash harness first.
 
 - **The projection read's wasm cost** — extrapolated from #2143's per-byte marshalling; one cell in
   the existing harness would settle it. I re-ran no benchmark, per the ticket.
-- **The contentless design's disk and write cost** — unmeasured; it is ruled out on traps anyway.
+- **The contentless design**, and the wasm cost of the `wcpos_fold` UDF per write — both unmeasured.
 - **FTS5 under wasm/OPFS.** All local measurements are native SQLite 3.53.4 via Python (M4 Pro,
   default unix VFS). The version matches `@sqlite.org/sqlite-wasm` 3.53.4-build1 and FTS5 semantics
   are identical, so trap results and query plans transfer; timings and file sizes are indicative only,
