@@ -53,7 +53,7 @@ One list, three shapes. A **component PR** (rebuild in `v2/` or restyle in place
 - **C. Gallery cells shot and reviewed.** Six scale cells (Compact / Regular / Spacious × coarse / fine floor), two per idiom-split key (fine/coarse or phone/wide), one per applicable #308 state, in both themes; the Playwright diff against the baseline is reviewed and the new baseline committed where the gallery ticket puts it.
 - **D. Uniwind contract kept.** No banned construct; the lint allowlist shrank by the component's sites and did not grow.
 - **E. Motion within contract.** Every beat named in `motion.ts`, none over 400 ms on a waiting path, none non-interruptible; a `web:animate-*` class names a real token.
-- **F. Budget row recorded.** The component's relevant budget rows (pressed state, transition, the tap-to-line where it applies) measured and written in the PR body. Until the budgets ticket (§7) sets values and the CI script, the row records; after it, the row gates.
+- **F. Budget rows kept.** The component's relevant budget rows from §8 (pressed state and transitions for every component; tap-to-line, the search rows and scroll where §8 assigns them) are written in the PR body with their measured value. The PR-tier rows gate on the PR; the trunk-tier rows gate on the Deploy dispatch the reviewer checks. *(Decided 2026-09-18; until then the row only recorded.)*
 - **G. Screen captures.** The switched screen at tablet and phone, light and dark, all three steps, in every state the screen has under #308: twelve captures per state, attached to the PR as its artifact and, once the gallery ticket decides the home, committed there.
 - **H. E2E contract untouched.** Every `testID` the specs select survives (the `data-table-count` / `data-table-loaded-count` contract named on the map), and the native and web suites that cover the screen are green on the PR; the switch is one PR, no runtime flag, no half-switched screen.
 - **I. One removal, one ruling.** The PR deletes exactly what its R line rules, names #351 and the ruling comment, and nothing else changes.
@@ -81,7 +81,7 @@ The fields a rebuild, restyle or new-component contract carries, for `/to-spec`.
 | testIDs (the stable ids, existing ones kept) | mandatory | E2E policy |
 | Gallery cells (the cell list from DoD C) | mandatory | this page |
 | Density (the size prop's values, if it takes one) | optional | #289 |
-| Budget rows (which budget rows apply) | optional until the budgets ticket, then mandatory | §7 |
+| Budget rows (which §8 rows apply, with their values) | mandatory | §8 |
 
 ## 6. The review gate (decided on this ticket)
 
@@ -90,6 +90,48 @@ Paul signs off **live** (the PR's web preview or dev-next) on the **pilot** and 
 ## 7. What this page fixes for later tickets
 
 - **The gallery ticket (graduated from the map's fog):** the minimal route (1a) is fixed here; the ticket decides the full shape (cells, the route's URL and how it selects step, floor, theme and state), the baseline home (monorepo at 1× versus a sibling repo), and the diff tolerance. **Decided 2026-09-18: [the gallery page](2026-09-18-gallery.md)** (a route in `apps/main` in a gallery build, shot by its own Playwright project as a Test job; page per component, cells in one tree, theme by query; baselines in the monorepo, Linux only, CI-written, zero pixels; captures as PR artifacts only).
-- **The performance budgets ticket (graduated):** the rows are pressed state, tile tap to cart line, transitions, scroll at 1,000 products, search per keystroke; the ticket measures today's `next` from `apps/main/e2e/cart-add-timing.ts` and sets the values and the CI script. DoD F records until it lands, gates after.
+- **The performance budgets ticket (graduated):** the rows are pressed state, tile tap to cart line, transitions, scroll at 1,000 products, search per keystroke; the ticket measures today's `next` from `apps/main/e2e/cart-add-timing.ts` and sets the values and the CI script. DoD F records until it lands, gates after. **Decided 2026-09-18: §8 below** (two columns per row, a device verdict on a release build and a CI ceiling fixed at the instrument; six rows, transitions static and search split; existing gates unchanged at 300 / 3,000 / 3,000 ms, two rows record-only until their instruments land; three tiers: PR, the `lane=next` dispatch, E2E Native).
 - **`/to-spec`:** one contract per line of the component map's §9, in the order of §1 and §3 here, each with §5's fields and closed by §4.
 - **The contract template** is §5; the fog line on the map is cleared by this page.
+
+## 8. The performance budgets (decided 2026-09-18 on [the budgets ticket](https://github.com/wcpos/roadmap/issues/353))
+
+**A budget row has two columns.** The **device verdict** is the budget: a felt pass/fail on
+Paul's iPad on a **release build** of `next`, never the dev client, whose magnitudes are inflated
+by on-device compilation. The **CI ceiling** is an alarm on the runner: set from the measured band
+with headroom, and when it trips it is fixed at the **instrument** (window, fixture, where the
+clock starts), never at the number. Either column may be empty. This is the 2026-09-10 ruling that
+the felt-latency budget is checked by Paul himself, plus a mechanical tripwire between his checks.
+
+**Six rows.** The survey's five, with transitions made static (a transition's length is a constant
+in code, so the instrument is lint on the motion tokens, not a stopwatch) and search split into the
+two different things the 2026-09-16 measurement showed: typing, which costs 0.2–1.3 ms per key,
+and the results commit that follows it.
+
+| Row | Device verdict (release build) | CI ceiling | Instrument | Where it runs | A miss lands as |
+|---|---|---|---|---|---|
+| **Pressed state** | visible before the finger lifts | 100 ms from tap to the painted pressed style | new: a Playwright probe on the gallery build's button cell, click → first frame carrying the pressed style | every PR, the gallery job in the Test workflow | failed check |
+| **Transitions** | none | durations only from the motion tokens; 400 ms cap on a waiting path | lint: every `withTiming` duration and `web:duration-*` / `web:animate-*` class resolves to a token | every PR, the Test workflow | failed check |
+| **Tile tap to cart line** | the line is there when the eye reaches the cart | web **300 ms** add intent → quantity in the DOM (as today, `apps/main/e2e/pos-cart.spec.ts`); native **3,000 ms** handler entry → cart-table commit (as today, Maestro flow 04) | existing, unchanged; neither includes paint and they are not one metric | web: the Deploy dispatch with `lane=next` every screen PR already needs before merge, and every push to `main`; native: E2E Native on `main` pushes, native-touching PRs and dispatch | failed check / failed flow |
+| **Scroll at 1,000 products** | no hitch through the grid and the cart | record only until the instrument lands; then the worst of its first ten trunk runs plus the observed day-to-day runner drift, written here when set | new: a 1,000-product fixture and a scripted scroll over grid and cart counting long tasks over 50 ms and rendered rows (frame counts on a shared runner flake and are not gated) | the same Deploy dispatch and `main` pushes | annotation plus a line in the PR comment while record-only; failed check once the ceiling is written |
+| **Typing never blocks** | typing never stutters | no long task over 50 ms while typing | existing `search-responsiveness` probe's long-task assertion, promoted from local-only to the Deploy run; its frame smoothness stays reported, never gated | the same Deploy dispatch and `main` pushes | failed check |
+| **Keystroke to first row** | the first row lands within a beat | **3,000 ms** as today (`search-latency.spec.ts`, target 1,500 annotated) | existing; the instrument must start its clock after boot pulls have drained, since the gate sits at zero headroom on trunk (1.8 s local, 2.4–3.0 s on CI) | the same Deploy dispatch and `main` pushes | failed check |
+
+**Measured on `next`, 2026-09-18.** The morning dispatch (run 35327301946) read **first row 8,489 ms**
+on the free store and stopped the other shards. That is read as a defect on `next` to be found, not
+a reason to move the ceiling. A second dispatch (run 35360735268) was started for this page; its
+numbers are appended below when it lands. The web tap-to-line number is not recoverable from past
+reports (the merged report drops the attachment); the gate has passed at 300 ms on every trunk run
+since it landed.
+
+**What this fixes for DoD F.** A component PR records the rows that apply to it (pressed state
+and transitions for every component; tap-to-line for the tile, the cart and the tender; the search
+rows for the search field and the products surfaces; scroll for the grid, the table and the cart).
+The PR-tier rows gate now; the trunk-tier rows gate on the dispatch the review gate already checks,
+and the reviewer follows the run link. The device verdict is taken at the pilot, the register
+switch, the token pass and each release, and is written as one line per row on that PR or the
+release record. Rejected: making CI numbers the budget (simulators and the dev client lie), a
+device-only budget (regressions land silently between checks), the survey's unmeasured 150 ms and
+100 ms values (the first PR after would be red for a reason nobody can read), a push-to-`next`
+Deploy trigger (a CI change that collides with dispatches on the lane's one store), and a store on
+every PR's Test job.
