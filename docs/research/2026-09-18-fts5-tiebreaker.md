@@ -34,8 +34,9 @@ which raised the question; this file answers its five items and adds the numbers
    fixed, #258 is still open and unconfirmed; neither implicates the official build or `opfs-sahpool`.
 
 Recommendation: **if SQLite wins on durability, satisfy #2143's search-index condition with a
-projection read through a custom storage read, over plain `json_extract(data,'$.payload.*')` columns
-added by #2150's migration; revisit FTS5 after the engine is decided.**
+projection read through a custom storage read that issues `json_extract(data,'$.payload.*')`
+directly against the existing products and variations tables — no columns, no migration; revisit
+FTS5 after the engine is decided.**
 
 ## 1. The avoided full read, and what replaces it
 
@@ -148,12 +149,15 @@ text.
 `contentless_delete=1` (3.43.0+, now preferred by the docs) is better than §16 implied: verified on
 3.53.4, ordinary `DELETE … WHERE rowid=?` and `UPDATE` both work and need **no** original values —
 that contract binds only *legacy* contentless tables, where both statements are refused outright. Its
-real cost is the missing column values. The external-content and contentless designs must map our
-TEXT document id to an integer FTS rowid, since a `WITHOUT ROWID` table offers a trigger no
-`new.rowid`; for the self-owned table the map is an optimisation, not a requirement — FTS5 assigns
-the rowid on insert, `docid UNINDEXED` reads back, and triggers can `DELETE`/`UPDATE` by `docid`
-(a virtual-table scan, which is why the measurement used an auxiliary
-`map(rid INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT UNIQUE)`).
+real cost is the missing column values. The external-content design must map our TEXT document id
+to an integer FTS rowid, since a `WITHOUT ROWID` table offers a trigger no `new.rowid`. For the
+self-owned table the map is an optimisation, not a requirement — FTS5 assigns the rowid on insert,
+`docid UNINDEXED` reads back, and triggers can `DELETE`/`UPDATE` by `docid` (a virtual-table scan,
+which is why the measurement used an auxiliary
+`map(rid INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT UNIQUE)`). The same holds for contentless on
+3.47+: `contentless_unindexed=1` persists `UNINDEXED` columns so a `docid` reads back from `MATCH`,
+and with `contentless_delete=1` the triggers can act by that id, so its map too is optional
+(unverified here; the 3.53.4 target supports the option).
 
 So it is not "FTS5 forces `withoutRowId: false`" — **every design here can reach 17/17**, and only
 external content bound *directly* to the base table needs the layout change.
