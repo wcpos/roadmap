@@ -284,7 +284,9 @@ prepared query before sending it to SQLite … replace a regex with %LIKE% expre
 `query()` (both branches) and `count()`, **not** `findDocumentsById`. It may rewrite SQL and params
 wholesale, but the caller wraps the result in `SELECT COALESCE('[' || group_concat(data, ',') || ']',
 '[]') FROM (<your query>)`, so the rewrite must still yield a `data` column — a
-`… WHERE id IN (SELECT c.id FROM fts JOIN "<tbl>" c ON c.rowid = fts.rowid WHERE fts MATCH ?)` fits.
+`… WHERE id IN (SELECT c.id FROM fts JOIN "<tbl>" c ON c.rowid = fts.rowid WHERE fts MATCH ?)` fits
+for external content bound directly to a rowid table; the three designs that keep `WITHOUT ROWID`
+join through the id↔rowid mapping instead (`… JOIN map m ON m.rowid = fts.rowid` and `c.id = m.id`).
 The catch is upstream: the selector must *translate*, or `prepareSQLiteQuery` sets
 `nonImplementedOperator` and `query()` takes the 50-row paging branch that discards the WHERE and
 re-matches with `getQueryMatcher` (§16) — mingo will not match a synthetic `$fts` operator, so that
@@ -315,8 +317,8 @@ the existing folded blob. Locally at 20k (3.53.4, native; same caveat as §1):
 | Read | Time | Bytes returned |
 |---|---:|---:|
 | `SELECT data … WHERE deleted=0` (today's shape) | 13.6 ms | 38.50 MB |
-| `SELECT id, json_extract(…)×3 …` (no generated columns) | 33.0 ms | 1.02 MB |
-| **`SELECT id, name, sku, barcode`** (STORED generated columns) | **13.7 ms** | **1.02 MB** |
+| `SELECT id, json_extract(…)×3 … WHERE deleted=0` (no generated columns) | 33.0 ms | 1.02 MB |
+| **`SELECT id, name, sku, barcode … WHERE deleted=0`** (STORED generated columns) | **13.7 ms** | **1.02 MB** |
 
 With the generated columns the projection is as fast as reading whole documents *and* returns **38×
 fewer bytes**; without them `json_extract` costs 2.4× more. #2143 attributes the whole-table penalty
