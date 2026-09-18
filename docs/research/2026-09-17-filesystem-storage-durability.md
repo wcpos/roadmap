@@ -1534,7 +1534,16 @@ be answered by reading, and two of them can fail:
 **Recommended shape:** drop the comparison, keep the de-risking. One feasibility build on the SQLite
 path with the crash harness attached and §16's two query paths exercised — **with premium IndexedDB
 run against the same harness as the control**. IndexedDB costs almost nothing to include (no adapter,
-already installed) and it is the answer if SQLite's integration risk bites. Native is the one place a
+already installed) and it is the answer if SQLite's integration risk bites. But "the same harness" is
+not equivalent for it, and the control is only a control if two things are true. First, its transaction
+durability is user-agent-selected and rxdb-premium hardcodes `durability: "relaxed"` (found resolving
+wayfinder [monorepo#2139](https://github.com/wcpos/monorepo/issues/2139)), so a transaction can
+report complete and still be lost across an OS or power failure while the store stays structurally
+consistent — durability must be verified or configured `strict` for the control run. Second, §12's
+`xWrite`/`xSync` barrier and file-corruption injections cannot be installed inside the browser's
+IndexedDB backend, so worker and browser kills prove nothing about the Windows power-loss failure that
+motivates this research; the control needs a system-level power-loss leg (a hard reset on the Windows
+runner or a VM) or it reads as perfect under exactly the failure being tested. Native is the one place a
 real comparison still applies, because `expo-sqlite` is a supported adapter and §5 records RxDB's own
 numbers showing SQLite as a latency downgrade against filesystem — that tradeoff is measurable and
 could genuinely go either way.
