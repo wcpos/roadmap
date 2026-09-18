@@ -136,8 +136,8 @@ direct external-content design only — so **the two constraints above together 
 
 | Design | Base table | Traps | Measured cost at 20k |
 |---|---|---|---|
-| **External content over a rowid table** + folded generated columns | `withoutRowId: false` — layout and primary-key path change, so **#2143's numbers need re-taking** | **17/17** (`'rebuild'`, column reads and `LIKE` all verified working) | +2.9 MB; upsert 0.19 → 0.38 ms; `LIKE` 6.4 ms |
-| **Contentless** (`content=''`, `contentless_delete=1`) + base-table folded columns | `WITHOUT ROWID` kept — **#2143's numbers stand** | **17/17** — `MATCH` for long terms, and short terms by `LIKE` on the base table's folded columns, joined through the id↔rowid map | unmeasured; costs the mapping table and a join on every query that involves `MATCH` (long or mixed terms) — contentless columns, `UNINDEXED` id included, read back `NULL`, so `MATCH` returns only the FTS rowid; a pure short-term `LIKE` reads the base table, which carries the text `id`, and needs no join |
+| **External content over a rowid table** + folded generated columns | `withoutRowId: false` — layout and primary-key path change, so **#2143's numbers need re-taking** | **17/17** (`'rebuild'`, column reads and `LIKE` all verified working) | index +2.9 MB, upsert 0.19 → 0.38 ms, `LIKE` 6.4 ms as measured with STORED folded columns, which add +15.2 MB on the production shape; with VIRTUAL UDF-backed columns instead, no column disk cost but the read and `LIKE` costs are unmeasured |
+| **Contentless** (`content=''`, `contentless_delete=1`) + base-table folded columns | `WITHOUT ROWID` kept — **#2143's numbers stand** | **17/17** — `MATCH` for long terms, and short terms by `LIKE` on the base table's folded columns, which return the text `id` directly | unmeasured; costs the mapping table and a join on every query that involves `MATCH` (long or mixed terms) — contentless columns, `UNINDEXED` id included, read back `NULL`, so `MATCH` returns only the FTS rowid; a pure short-term `LIKE` reads the base table, which carries the text `id`, and needs no join |
 | **Regular, self-owned FTS5 table** (own rowids, `docid UNINDEXED`, text duplicated) | `WITHOUT ROWID` kept — **#2143's numbers stand** | **17/17** — `LIKE` runs over its own stored text | +5.5 MB (92.2 → 97.7); upsert 0.30 → 0.72 ms; `LIKE` **2.2 ms** |
 
 **A fourth variant sidesteps the layout change entirely:** bind external content to a **view**
@@ -229,7 +229,8 @@ table — a per-collection figure, like every number in this section: variations
 trigger set and fallback scan, so a catalogue-wide total is the sum over both. A two-character pattern has no trigram to look up either way, and the indexed LIKE/GLOB path
 that `remove_diacritics` would disable is unavailable regardless: the literal-safe `LIKE ? ESCAPE '\'`
 the contract below requires takes the bare `INDEX 0:` scan even with the default tokenizer, so neither
-the short-term fallback nor a reduced-detail verification scan is indexed. But it scans ~52 characters per row, **not**
+the short-term fallback nor a reduced-detail verification scan is indexed. But with materialised (STORED or
+self-owned) folded columns it scans ~52 characters per row, **not**
 catalogue bytes, so it is nowhere near the `$regex` shape `catalogue-search-blob.ts`'s header rejected
 (265 ms at 20k). One caveat before calling it far under the 250 ms debounce: in the external-content
 and contentless designs the folded columns sit in the same records as the ~1.9 KB JSON payload, so
@@ -332,8 +333,9 @@ prepared query before sending it to SQLite … replace a regex with %LIKE% expre
 wholesale, but the caller wraps the result in `SELECT COALESCE('[' || group_concat(data, ',') || ']',
 '[]') FROM (<your query>)`, so the rewrite must still yield a `data` column — a
 `… WHERE id IN (SELECT c.id FROM fts JOIN "<tbl>" c ON c.rowid = fts.rowid WHERE fts MATCH ?)` fits
-for external content bound directly to a rowid table; the three designs that keep `WITHOUT ROWID`
-join through the id↔rowid mapping instead (`… JOIN map m ON m.rowid = fts.rowid` and `c.id = m.id`).
+for external content bound directly to a rowid table; the contentless and filtered-view designs join
+through the id↔rowid mapping instead (`… JOIN map m ON m.rowid = fts.rowid` and `c.id = m.id`), and a
+self-owned table joins its readable `docid` straight to `c.id`.
 The catch is upstream: the selector must *translate*, or `prepareSQLiteQuery` sets
 `nonImplementedOperator` and `query()` takes the 50-row paging branch that discards the WHERE and
 re-matches with `getQueryMatcher` (§16) — mingo will not match a synthetic `$fts` operator, so that
@@ -398,8 +400,9 @@ VIRTUAL column can be indexed. So the projection read's columns land on the exis
 variations tables (the blob covers both, §16 of the 2026-09-17 doc) with **no catalogue rebuild and no
 disk cost**; the read is the 33.0 ms row above rather than 13.7 ms — a 2.4× native SQL-side regression
 against 13.6 ms for whole documents, with the net wasm speedup an extrapolation from the 38× byte
-reduction until the harness cell exists. STORED, with its rebuild and +15.2 MB, is needed only for FTS5's external-content
-or contentless designs. #2150's `_pos_user`/`_pos_store` promotion is the one rebuild left, on
+reduction until the harness cell exists. STORED, with its rebuild and +15.2 MB, enters only with FTS5's
+external-content or contentless designs, and even there UDF-backed VIRTUAL folded columns are the
+alternative (unmeasured read cost, §1). #2150's `_pos_user`/`_pos_store` promotion is the one rebuild left, on
 **orders** — and the same VIRTUAL-plus-index trick is worth testing there before committing to it.
 
 **Cost comparison, in work rather than money:**
@@ -410,7 +413,7 @@ or contentless designs. #2150's `_pos_user`/`_pos_store` promotion is the one re
 | Query seam | **a custom storage read** (§5(b)) — premium's wrapper needs a full `data` column, so `find()` cannot project | **the same custom path plus a `MATCH` handler in it.** The §5(a) sentinel-selector/`queryModifier` route is an *alternative*, not an addition — take it only if the raw-SQL path is not built |
 | Storage settings | none | `withoutRowId: false` **only** for external content bound *directly* to the base table (then re-take #2143's numbers). External content over a filtered view, self-owned and contentless all keep `WITHOUT ROWID` and all keep the `LIKE` fallback |
 | Schema | **none** — VIRTUAL columns by `ADD COLUMN` on products and variations, under #2150's migration | **two catalogue rebuilds** for STORED folded columns (external content, or contentless leaning on them), or none with UDF-backed VIRTUAL folded columns, which the triggers and the base-table `LIKE` can read (verified callable; read cost unmeasured); none for a self-owned table |
-| Write cost | nothing on write (VIRTUAL); 0.21 ms per upsert if STORED | direct external content 0.38 ms per upsert (~2×), resync ~7×; self-owned 0.72 ms; contentless and filtered-view unmeasured |
+| Write cost | VIRTUAL: the two or three `json_extract` expressions are still evaluated on write, unmeasured (STORED measured 0.21 ms per upsert) | direct external content 0.38 ms per upsert (~2×), resync ~7×; self-owned 0.72 ms; contentless and filtered-view unmeasured |
 | Disk | none (VIRTUAL); **+15.2 MB at 20k** if STORED on the production document shape (none on the root-level fixture — a packing cliff) | direct external content ~+3 MB of index at 20k **plus +15.2 MB if its folded columns are STORED** on the production shape (none if VIRTUAL, at an unmeasured UDF read cost); self-owned +5.5 MB; contentless and filtered-view unmeasured (same STORED-or-VIRTUAL choice). All per collection: variations add a second index |
 | Crash surface | none | three triggers per collection, the exact workload behind wa-sqlite #258/#320; must go in the #2144 harness |
 | Engine-independent? | no — the shipped engine (89 ms) and IndexedDB (285 ms) do not need it | no |
@@ -423,7 +426,8 @@ real; retiring the FlexSearch subsystem is not, unless every searchable collecti
 not an input. **If SQLite wins on durability (#2144) and topology (#2146), satisfy #2143's
 search-index condition with a projection read through a custom storage read (§5(b)), over plain
 `json_extract` VIRTUAL generated columns added to the products and variations tables by
-`ADD COLUMN` under #2150's migration** — no rebuild, nothing on write or disk, a 33 ms native read
+`ADD COLUMN` under #2150's migration** — no rebuild, nothing on disk, an unmeasured expression
+evaluation on write, a 33 ms native read
 for 1 MB (wasm unmeasured), semantics untouched because the
 blob folds what it is handed, and all 17 traps keep passing. Revisit FTS5 afterwards, as a scoped
 deletion project: it retires the catalogue blob but not the FlexSearch subsystem, it doubles the
