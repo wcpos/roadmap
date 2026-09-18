@@ -58,7 +58,7 @@ Each with the options and my pick. Answer in order; the first two move everythin
 **2026-09-18: every register and orders decision below is ruled and
 [#287](https://github.com/wcpos/roadmap/issues/287) is closed.** What is still open here belongs to
 other tickets: scale semantics (3) to [#289](https://github.com/wcpos/roadmap/issues/289), skeleton
-loading (11) to [#308](https://github.com/wcpos/roadmap/issues/308), the default theme and what
+loading (11) to [#308](https://github.com/wcpos/roadmap/issues/308) (ruled the same day; the page is [feedback states](../../design/2026-09-18-feedback-states.md)), the default theme and what
 personality is still missing (25, 26) to the token sheet on
 [#288](https://github.com/wcpos/roadmap/issues/288).
 
@@ -104,6 +104,8 @@ personality is still missing (25, 26) to the token sheet on
 11. **Loading: skeleton rows** (drawn) versus headers plus a central spinner (today). This is
     [#308](https://github.com/wcpos/roadmap/issues/308)'s call; the prototype draws the proposal so it
     can be judged there rather than argued. **Pick: skeleton, still, no shimmer.**
+    **Decided (Paul, 2026-09-18, on #308): skeleton in the content's shape, still, hard swap;
+    the page is [feedback states](../../design/2026-09-18-feedback-states.md).**
 12. **Copy: sentence case everywhere** — "Search orders", "Billing address", "Print receipt" — the
     app today mixes title case ("Search Orders", "Print Receipt"). One rule for the language pass.
     **Pick: sentence case.** **Decided (Paul, 2026-09-18): sentence case; table headers stay caps

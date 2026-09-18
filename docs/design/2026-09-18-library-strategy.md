@@ -54,7 +54,7 @@ Rejected: a sibling package (six resolver edits including `apps/main/package.jso
 | `outline` as a focus ring | no RN outline | border or `boxShadow` that does not change layout |
 | `data-[…]` for theme, scale or pointer | those axes ride the root's `ScopedVariables` (#284, #289) | tokens |
 
-**Enforcement, a ratchet:** a lint test over class strings in `packages/components` and `packages/core` fails on the banned prefixes. Today's offending sites (3 bare `hover:`, 47 `group-*`, 31 `web:animate-*` without a twin, and the rest) go into an allowlist file that **may only shrink**; the test fails if it grows, and a site leaves the list when its component is rebuilt.
+**Enforcement, a ratchet:** a lint test over class strings in `packages/components` and `packages/core` fails on the banned prefixes. Today's offending sites (3 bare `hover:`, 47 `group-*`, 31 `web:animate-*` without a twin, and the rest) go into an allowlist file that **may only shrink**; the test fails if it grows, and a site leaves the list when its component is rebuilt. The same lint fails on a bare `Suspense` in a screen index file under `screens/**`: every screen root supplies its surface's skeleton (per [the feedback states page](2026-09-18-feedback-states.md), #308).
 
 ## 5. The motion contract
 
