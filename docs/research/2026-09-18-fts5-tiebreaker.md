@@ -11,12 +11,11 @@ which raised the question; this file answers its five items and adds the numbers
    input to it.
 2. Most of the prize is purchasable without it. The avoided read is worth 2,410 / 1,440 / 10,713 ms
    (#2143); a **projection read** — `SELECT id, name, sku, barcode` — cuts the marshalled bytes 38×
-   for 2.4× more SQL time natively (33.0 vs 13.6 ms with VIRTUAL columns; the net wasm win is an
-   extrapolation until a harness cell measures it) and feeds today's blob unchanged, all 17 traps passing.
+   for 2.4× more SQL time natively (33.0 vs 13.6 ms; the net wasm win is an extrapolation until a
+   harness cell measures it) and feeds today's blob unchanged, all 17 traps passing.
    Not free of plumbing: premium's wrapper needs a full `data` column, so it takes a custom storage
-   read (§5(b)); its columns are `VIRTUAL`, added by `ALTER TABLE … ADD COLUMN` under #2150's
-   migration with **no catalogue rebuild** (the read then costs the 33 ms `json_extract` row of §6); and
-   it fixes a SQLite-specific regression, not every engine.
+   read (§5(b)) — which issues the `json_extract` expressions directly, so the catalogue tables need
+   **no schema change at all**; and it fixes a SQLite-specific regression, not every engine.
 3. FTS5 **can** serve all 17 traps — `MATCH` over **folded** columns with a **folded query** at three
    characters or more (15/17; `remove_diacritics` is then unnecessary, and worse, since it does not
    strip Greek tonos) plus `LIKE` below that (`k2`, `MY საბარგული`), 6.4 ms at
@@ -24,8 +23,9 @@ which raised the question; this file answers its five items and adds the numbers
    base table (layout change), or to a filtered **view** (no layout change), a self-owned table
    (+5.5 MB of duplicated text), or contentless. **Folded storage is FTS5's cost, not the projection
    read's** — the blob folds what it is handed.
-4. Its cost: upsert 0.19 → 0.38 ms (~2×), resync ~7×, ~+3 MB disk at 20k; the generated columns alone
-   are near-free, so the FTS5 half is what costs. On premium's shipped columns FTS5 still answers
+4. Its cost, for the direct external-content design as measured: upsert 0.19 → 0.38 ms (~2×), resync
+   ~7×, ~+3 MB of index at 20k plus +15.2 MB for its STORED folded columns on the production shape
+   (the other designs cost differently or are unmeasured, §1). On premium's shipped columns FTS5 still answers
    `MATCH` from the index and returns rowids — what it loses is **column-value reads, `LIKE`, and
    `'rebuild'`, so with an id↔rowid mapping it remains queryable and short-term blind; repair is a
    manual drop-and-repopulate rather than the built-in command.**
@@ -113,10 +113,10 @@ half is what costs — but **on disk they are not free on the production shape**
 `$.payload.*` paths the same three columns took 20k products from 41.3 to **56.5 MB (+15.2 MB)**,
 where the root-level fixture showed none. That is the page-packing cliff again (~1.9 KB rows crossing
 two-per-page at 4 KB), now landing on the shape we actually persist — size it against a real
-catalogue before quoting either number. The projection read does not need STORED: a `VIRTUAL`
-generated column costs nothing on disk and is computed on read (the 33.0 ms `json_extract` row in §6,
-2.4× the native whole-document SQL time; its wasm cost is unmeasured), and SQLite can index a VIRTUAL column, so STORED is
-an FTS5-side choice, not the migration's. (`detail=column`/`none` shrink the index to +2.2 / +1.0 MB, but the docs cap full-text
+catalogue before quoting either number. The projection read needs no generated column at all: the
+custom read issues the `json_extract` expressions directly (the 33.0 ms row in §6, 2.4× the native
+whole-document SQL time; its wasm cost is unmeasured), so STORED columns are an FTS5-side choice, not
+the migration's, and even FTS5 can use `VIRTUAL` ones (indexable, UDF-callable) instead. (`detail=column`/`none` shrink the index to +2.2 / +1.0 MB, but the docs cap full-text
 queries there at three-character tokens. That is not fatal: a longer term can be decomposed into
 overlapping three-code-point tokens joined by `AND` and the superset verified with `LIKE` on the
 folded columns the short-term fallback already needs. Unevaluated here, so the +2.9 MB is the
@@ -366,7 +366,7 @@ the existing folded blob. Locally at 20k (3.53.4, native; same caveat as §1):
 | Read | Time | Bytes returned |
 |---|---:|---:|
 | `SELECT data … WHERE deleted=0` (today's shape) | 13.6 ms | 38.50 MB |
-| `SELECT id, json_extract(data,'$.payload.…')×3 … WHERE deleted=0` (VIRTUAL generated columns, or none) | 33.0 ms | 1.02 MB |
+| `SELECT id, json_extract(data,'$.payload.…')×3 … WHERE deleted=0` (direct expressions; a VIRTUAL column reads the same) | 33.0 ms | 1.02 MB |
 | **`SELECT id, name, sku, barcode … WHERE deleted=0`** (STORED generated columns) | **13.7 ms** | **1.02 MB** |
 
 With the generated columns the projection is as fast as reading whole documents *and* returns **38×
@@ -388,22 +388,22 @@ engine — the shipped engine already does this read in 89 ms, IndexedDB in 285 
 read is the SQLite-specific fix for a SQLite-specific regression**, not a free win everywhere as an
 earlier draft claimed.
 
-It reads three generated columns (`name`, `sku`, `barcode` as
-`GENERATED ALWAYS AS (json_extract(data,'$.payload.…')) VIRTUAL` — variations need only `sku` and
-`barcode`), and **they do not need to be folded**:
-`catalogue-search-blob.ts` applies `foldSearchText` to whatever fields it receives, so plain
-`json_extract` columns — the near-free ones measured above — preserve today's semantics exactly.
-Folded *storage* is only required if FTS5's short-term `LIKE` fallback is later adopted (§1). **They
-do not need to be STORED either.** SQLite's `ALTER TABLE … ADD COLUMN` accepts a VIRTUAL generated
-column on a populated table and refuses only STORED (verified: `cannot add a STORED column`), and a
-VIRTUAL column can be indexed. So the projection read's columns land on the existing products and
-variations tables (the blob covers both, §16 of the 2026-09-17 doc) with **no catalogue rebuild and no
-disk cost**; the read is the 33.0 ms row above rather than 13.7 ms — a 2.4× native SQL-side regression
-against 13.6 ms for whole documents, with the net wasm speedup an extrapolation from the 38× byte
-reduction until the harness cell exists. STORED, with its rebuild and +15.2 MB, enters only with FTS5's
-external-content or contentless designs, and even there UDF-backed VIRTUAL folded columns are the
-alternative (unmeasured read cost, §1). #2150's `_pos_user`/`_pos_store` promotion is the one rebuild left, on
-**orders** — and the same VIRTUAL-plus-index trick is worth testing there before committing to it.
+It reads `id, json_extract(data,'$.payload.name'), json_extract(data,'$.payload.sku'),
+json_extract(data,'$.payload.barcode')` (variations: `sku` and `barcode` only) straight off the
+existing products and variations tables (the blob covers both, §16 of the 2026-09-17 doc). **No
+generated column is needed**: the raw-SQL path evaluates the expressions itself, and the benchmark row
+above shows a VIRTUAL column reads no faster, so adding columns would buy a schema migration and an
+expression evaluation on every write for nothing. **The values do not need to be folded either**:
+`catalogue-search-blob.ts` applies `foldSearchText` to whatever fields it receives, so today's
+semantics are preserved exactly. The read is the 33.0 ms row rather than 13.7 ms — a 2.4× native
+SQL-side regression against 13.6 ms for whole documents, with the net wasm speedup an extrapolation
+from the 38× byte reduction until the harness cell exists. Generated columns enter only if an index or
+FTS5 wants a named column: `ALTER TABLE … ADD COLUMN` accepts a VIRTUAL one on a populated table and
+refuses STORED (verified: `cannot add a STORED column`), so STORED, with its rebuild and +15.2 MB, is
+confined to FTS5's external-content or contentless designs, and even there UDF-backed VIRTUAL folded
+columns are the alternative (unmeasured read cost, §1). #2150's `_pos_user`/`_pos_store` promotion is
+the one rebuild left, on **orders** — and a VIRTUAL-plus-index column is worth testing there before
+committing to it.
 
 **Cost comparison, in work rather than money:**
 
@@ -412,9 +412,9 @@ alternative (unmeasured read cost, §1). #2150's `_pos_user`/`_pos_store` promot
 | Search semantics | unchanged — the blob and its 17 traps keep passing | **17/17**: `MATCH` over folded columns with a folded query ≥3 chars, `LIKE` below it — 6.4 ms at 20k |
 | Query seam | **a custom storage read** (§5(b)) — premium's wrapper needs a full `data` column, so `find()` cannot project | **the same custom path plus a `MATCH` handler in it.** The §5(a) sentinel-selector/`queryModifier` route is an *alternative*, not an addition — take it only if the raw-SQL path is not built |
 | Storage settings | none | `withoutRowId: false` **only** for external content bound *directly* to the base table (then re-take #2143's numbers). External content over a filtered view, self-owned and contentless all keep `WITHOUT ROWID` and all keep the `LIKE` fallback |
-| Schema | **none** — VIRTUAL columns by `ADD COLUMN` on products and variations, under #2150's migration | **two catalogue rebuilds** for STORED folded columns (external content, or contentless leaning on them), or none with UDF-backed VIRTUAL folded columns, which the triggers and the base-table `LIKE` can read (verified callable; read cost unmeasured); none for a self-owned table |
-| Write cost | VIRTUAL: the two or three `json_extract` expressions are still evaluated on write, unmeasured (STORED measured 0.21 ms per upsert) | direct external content 0.38 ms per upsert (~2×), resync ~7×; self-owned 0.72 ms; contentless and filtered-view unmeasured |
-| Disk | none (VIRTUAL); **+15.2 MB at 20k** if STORED on the production document shape (none on the root-level fixture — a packing cliff) | direct external content ~+3 MB of index at 20k **plus +15.2 MB if its folded columns are STORED** on the production shape (none if VIRTUAL, at an unmeasured UDF read cost); self-owned +5.5 MB; contentless and filtered-view unmeasured (same STORED-or-VIRTUAL choice). All per collection: variations add a second index |
+| Schema | **none** — direct `json_extract` expressions in the custom read; no columns, no migration | **two catalogue rebuilds** for STORED folded columns (external content, or contentless leaning on them), or none with UDF-backed VIRTUAL folded columns, which the triggers and the base-table `LIKE` can read (verified callable; read cost unmeasured); none for a self-owned table |
+| Write cost | none — no columns to maintain (a STORED column would measure 0.21 ms per upsert) | direct external content 0.38 ms per upsert (~2×), resync ~7×; self-owned 0.72 ms; contentless and filtered-view unmeasured |
+| Disk | none (a STORED column would add **+15.2 MB at 20k** on the production shape; none on the root-level fixture — a packing cliff) | direct external content ~+3 MB of index at 20k **plus +15.2 MB if its folded columns are STORED** on the production shape (none if VIRTUAL, at an unmeasured UDF read cost); self-owned +5.5 MB; contentless and filtered-view unmeasured (same STORED-or-VIRTUAL choice). All per collection: variations add a second index |
 | Crash surface | none | three triggers per collection, the exact workload behind wa-sqlite #258/#320; must go in the #2144 harness |
 | Engine-independent? | no — the shipped engine (89 ms) and IndexedDB (285 ms) do not need it | no |
 | Deletions earned | none | the **catalogue blob** and the #2073 sizing question — but only for products/variations, the two collections that opt out of FlexSearch. `search.ts`, the FlexSearch pipeline and its #2070/#2020 history bounds still serve every other searchable collection and survive unless all of them are migrated, a cost not analysed here |
@@ -424,11 +424,9 @@ real; retiring the FlexSearch subsystem is not, unless every searchable collecti
 
 **Recommendation.** Weight FTS5 at zero in the engine choice: it is a consequence of choosing SQLite,
 not an input. **If SQLite wins on durability (#2144) and topology (#2146), satisfy #2143's
-search-index condition with a projection read through a custom storage read (§5(b)), over plain
-`json_extract` VIRTUAL generated columns added to the products and variations tables by
-`ADD COLUMN` under #2150's migration** — no rebuild, nothing on disk, an unmeasured expression
-evaluation on write, a 33 ms native read
-for 1 MB (wasm unmeasured), semantics untouched because the
+search-index condition with a projection read through a custom storage read (§5(b)) that issues
+the `json_extract` expressions directly** — no columns, no migration, nothing on write or disk, a
+33 ms native read for 1 MB (wasm unmeasured), semantics untouched because the
 blob folds what it is handed, and all 17 traps keep passing. Revisit FTS5 afterwards, as a scoped
 deletion project: it retires the catalogue blob but not the FlexSearch subsystem, it doubles the
 write, it needs §1's design decision, its `LIKE` fallback is what forces folded storage (with the
