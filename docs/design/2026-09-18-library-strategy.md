@@ -78,7 +78,7 @@ A **removal** is the deletion of any of: a component, a variant, a prop, a platf
 
 ## 7. How a judgement call is raised
 
-Every two-candidate or no-home row in the concordance becomes **one question on the component map (#291)**, answered by Paul before the component is specced, never inside an implementation PR. The 31 questions from the concordance and the 16 from the script reading are already filed there. Adding a new component beside an old one removes nothing and needs no ruling; the concordance question is still filed so the map records the choice.
+Every two-candidate or no-home row in the concordance becomes **one question on the component map (#291)**, answered by Paul before the component is specced, never inside an implementation PR. The 31 questions from the concordance and the 16 from the script reading are already filed there. **Answered 2026-09-18: [the component map](component-map.md) §8; its §7 is the removal list.** Adding a new component beside an old one removes nothing and needs no ruling; the concordance question is still filed so the map records the choice.
 
 ## 8. Pre-work and where it goes
 

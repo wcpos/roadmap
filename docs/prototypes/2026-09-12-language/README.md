@@ -688,7 +688,8 @@ Added in cut 2 of the register (2026-09-14, after Paul's nine points):
     **Paul (2026-09-17): with that. The table has the last column anyway for the variable products'
     chevron, so the + sits there and becomes the quantity; whether the whole row or only the icon
     is the button he leaves to me. Ruled by that: the whole row is the button, the + stays as the
-    affordance and becomes the count.**
+    affordance and becomes the count.** **Confirmed (Paul, 2026-09-18, on #291): no hold and no stepper on the
+    product panel; the stepper is the cart quantity's only. The page is [the component map](../../design/component-map.md).**
 36. **The cart line: quantity, edit, remove, on touch and on mouse (2026-09-17).** Paul: the
     stepper is right for cart quantity but takes too much room, so only on the active line; the
     swipe is really intuitive on a tablet but a row sliding on mouse-over would confuse desktop
