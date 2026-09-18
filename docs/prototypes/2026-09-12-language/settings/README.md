@@ -65,6 +65,9 @@ All 20 brief states are captured; `index` is phone-only. Long sections and panel
    **Pick: (a)**, with Auto’s device mapping spelled out. This is placement, not a ruling
    on #289’s production mechanism.
    **Decided (Paul, 2026-09-18): as drawn, the pick.**
+   The mapping was then decided on #289 the same day: Auto reads width (under 640 Compact, to 1599
+   Regular, 1600 and wider Spacious), so the 1440 desktop frame is Regular under Auto; see
+   [scale and density](../../../design/2026-09-18-scale-and-density.md).
 
 
 ## Verification and boundaries

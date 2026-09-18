@@ -2883,7 +2883,7 @@ function printing(){
   const options=['Auto — Epson TM-m30','Auto — Print dialog',...st.printers.map(p=>p.name),'Unavailable printer'];
   return section('Printers',st.printers.some(p=>!p.built)?st.printers.map(printer).join('')+`<div class="sp-actions">${btn('Add printer','wizard')}${docs()}</div>`:empty)+section('Templates',select('Receipt · thermal','receiptTemplate',options)+select('Invoice','invoiceTemplate',options));
 }
-function theme(){return section('Appearance',`<div class="sp-themes">${[['system','System'],...themes].map(([id,label])=>`<button class="sp-theme" data-sp="theme" data-v="${id}" aria-pressed="${st.themeChoice===id}" data-testid="settings-theme-${id}"><span class="frame sp-preview" data-theme="${id==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):id}"><span class="sp-mini-card">Front counter</span><span class="sp-mini-button">Pay</span><span>A calm working day</span></span><span>${label}</span></button>`).join('')}</div>${beat('theme')}<div class="mut sm">${st.themeChoice==='system'?'Following system theme':'Current theme: '+themes.find(([id])=>id===st.themeChoice)?.[1]}</div>`)+section('Scale',row('Scale',`<div class="segt" role="group" aria-label="Scale">${['auto','compact','regular','spacious'].map(v=>`<button class="${st.scaleChoice===v?'on':''}" aria-pressed="${st.scaleChoice===v}" data-sp="scale" data-v="${v}">${v[0].toUpperCase()+v.slice(1)}</button>`).join('')}</div>`,'scale')+`<div class="mut sm">Auto picks by device: phones compact, counters regular, large screens spacious.</div>`);}
+function theme(){return section('Appearance',`<div class="sp-themes">${[['system','System'],...themes].map(([id,label])=>`<button class="sp-theme" data-sp="theme" data-v="${id}" aria-pressed="${st.themeChoice===id}" data-testid="settings-theme-${id}"><span class="frame sp-preview" data-theme="${id==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):id}"><span class="sp-mini-card">Front counter</span><span class="sp-mini-button">Pay</span><span>A calm working day</span></span><span>${label}</span></button>`).join('')}</div>${beat('theme')}<div class="mut sm">${st.themeChoice==='system'?'Following system theme':'Current theme: '+themes.find(([id])=>id===st.themeChoice)?.[1]}</div>`)+section('Scale',row('Scale',`<div class="segt" role="group" aria-label="Scale">${['auto','compact','regular','spacious'].map(v=>`<button class="${st.scaleChoice===v?'on':''}" aria-pressed="${st.scaleChoice===v}" data-sp="scale" data-v="${v}">${v[0].toUpperCase()+v.slice(1)}</button>`).join('')}</div>`,'scale')+`<div class="mut sm">Auto picks by width: phones compact, counters and laptops regular, large screens spacious.</div>`);}
 function display(){
   if(S.scn==='display-locked')return section('Customer display',`<div class="mut">Customer displays are a Pro feature.</div>${docs('Customer display guide','customer-display')}`);
   return section('Pair a display',row('Pairing code',btn('Generate pairing code','pair'),'pair')+(st.code?`<div class="sp-mono">${st.code} · expires in 5 min</div>`:'')+`<div class="sp-mono mut">https://uk-store.example/customer-display</div><div class="sp-actions">${btn('Copy URL','copy-url','','q')}${btn('Open in browser','external','display','q')}</div>`)+section('Paired displays',st.displays.length?st.displays.map((name,i)=>`<div class="sp-printer"><div class="sp-printer-head"><div class="grow"><b>${name}</b><div class="mut sm">Last seen 2 min ago</div></div>${status(i?'Disconnected':'Connected',i?'neutral':'ok')}</div>${btn('Forget','confirm','forget:'+name,'q')}</div>`).join(''):'<div class="mut">No displays are paired with this device.</div>');
@@ -2964,7 +2964,7 @@ function click(e){
   const set=e.target.closest('[data-set]');
   if(set?.dataset.set==='scale')st.scaleChoice=set.dataset.v;
   if(set?.dataset.set==='theme')st.themeChoice=set.dataset.v;
-  if(set?.dataset.set==='w'&&st.scaleChoice==='auto')S.scale=({phone:'compact',tablet:'regular',desktop:'spacious'})[set.dataset.v];
+  if(set?.dataset.set==='w'&&st.scaleChoice==='auto')S.scale=({phone:'compact',tablet:'regular',desktop:'regular'})   /* #289: Auto reads width; Spacious starts at 1600 */[set.dataset.v];
   const scene=e.target.closest('[data-scn]');if(scene){jump(scene.dataset.scn);return true;}
   if(e.target.closest('[data-nav]')){st.sheet=null;st.panel=null;return false;}
   const b=e.target.closest('[data-sp],[data-act]');if(!b)return !set;
@@ -2975,7 +2975,7 @@ function click(e){
     case 'toggle': st.values[v]=!st.values[v];saved(v);break;
     case 'radio': st.values[b.dataset.k]=v;saved(b.dataset.k);break;
     case 'theme': st.themeChoice=v;S.theme=v==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):v;saved('theme');break;
-    case 'scale': st.scaleChoice=v;S.scale=v==='auto'?({phone:'compact',tablet:'regular',desktop:'spacious'})[S.w]:v;saved('scale');break;
+    case 'scale': st.scaleChoice=v;S.scale=v==='auto'?({phone:'compact',tablet:'regular',desktop:'regular'})   /* #289: Auto reads width; Spacious starts at 1600 */[S.w]:v;saved('scale');break;
     case 'confirm': st.sheet=v;st.menu=null;focusNext='.sheet button';break;
     case 'close-sheet': st.sheet=null;focusNext=returnFocus;break;
     case 'close-panel': closeOverlay();break;

@@ -35,7 +35,7 @@ Rejected: a sibling package (six resolver edits including `apps/main/package.jso
 
 ## 4. The Uniwind contract for a rebuilt component
 
-**May use:** semantic utility classes; `@theme` token names (`bg-card`, `text-muted-foreground`, `h-ctl`, …); `web:` / `native:` / `ios:` / `android:` variants; `active:`, `focus:`, `disabled:`; width breakpoints; `transition-*`; `max()` / `min()`; `color-mix()` (knowing native mixes in RGB, so tonal surfaces are precomputed tokens); `tabular-nums`; `gap`; the `*-safe` utilities for safe areas. `useCSSVariable` only to feed a third-party API that takes a colour value. Never a hex or `oklch()` in a component. Scale, theme and the pointer floor are set through `Uniwind.updateCSSVariables` at the app root; a component never reads the scale step.
+**May use:** semantic utility classes; `@theme` token names (`bg-card`, `text-muted-foreground`, `h-ctl`, …); `web:` / `native:` / `ios:` / `android:` variants; `active:`, `focus:`, `disabled:`; width breakpoints; `transition-*`; `max()` / `min()`; `color-mix()` (knowing native mixes in RGB, so tonal surfaces are precomputed tokens); `tabular-nums`; `gap`; the `*-safe` utilities for safe areas. `useCSSVariable` only to feed a third-party API that takes a colour value. Never a hex or `oklch()` in a component. Scale, theme and the pointer floor are set at the app root through Uniwind's runtime variables (`ScopedVariables`, per [the scale and density page](2026-09-18-scale-and-density.md), #289); a component never reads the scale step.
 
 **Banned on shared or native code, with the replacement:**
 
@@ -52,7 +52,7 @@ Rejected: a sibling package (six resolver edits including `apps/main/package.jso
 | `truncate`, `whitespace-nowrap`, `text-ellipsis` | inert as CSS | `numberOfLines` + `ellipsizeMode` |
 | CSS grid | not yet in RN | flex-wrap with a computed column count, or `numColumns` |
 | `outline` as a focus ring | no RN outline | border or `boxShadow` that does not change layout |
-| `data-[…]` for theme, scale or pointer | those axes ride `updateCSSVariables` (#284) | tokens |
+| `data-[…]` for theme, scale or pointer | those axes ride the root's `ScopedVariables` (#284, #289) | tokens |
 
 **Enforcement, a ratchet:** a lint test over class strings in `packages/components` and `packages/core` fails on the banned prefixes. Today's offending sites (3 bare `hover:`, 47 `group-*`, 31 `web:animate-*` without a twin, and the rest) go into an allowlist file that **may only shrink**; the test fails if it grows, and a site leaves the list when its component is rebuilt.
 

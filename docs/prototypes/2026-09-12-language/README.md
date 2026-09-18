@@ -26,7 +26,7 @@ Playwright and fails on any page or console error (`--quick` for one width).
 Both files carry the same token block at the top of their `<style>`; it is the design, everything
 below it reads tokens. Three axes:
 
-**Scale step** (the numbers are proposals for [#289](https://github.com/wcpos/roadmap/issues/289)):
+**Scale step** (decided by Paul on [#289](https://github.com/wcpos/roadmap/issues/289), 2026-09-18; the page is [scale and density](../../design/2026-09-18-scale-and-density.md)):
 
 | | compact | regular | spacious |
 |---|---|---|---|
