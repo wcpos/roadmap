@@ -13,13 +13,15 @@ which raised the question; this file answers its five items and adds the numbers
    (#2143); a **projection read** — `SELECT` name/sku/barcode instead of whole documents — cuts the
    marshalled bytes 38× and feeds today's folded blob unchanged, with all 17 search traps still
    passing. It costs one generated column in a migration we are already doing for #2150.
-3. FTS5 cannot serve two of the enshrined traps. Measured below on SQLite 3.53.4: a trigram index
-   passes **15 of 17** and fails `short-term-substring` (`k2`) and `short-qualifier-counts`
-   (`MY საბარგული`) — and on an *external-content* table the documented LIKE/GLOB fallback for those
-   two **does not exist**, because the index stores no column values.
+3. FTS5 can serve all 17 enshrined traps, but not on its own and not on premium's schema. Measured
+   below on SQLite 3.53.4: `MATCH` on a trigram index passes **15 of 17**, failing both short-term
+   traps (`k2`; `MY საბარგული`, the #2037 report) because trigrams need three characters. A `LIKE`
+   fallback covers those two — but only on a content table carrying **stored generated**
+   name/sku/barcode columns, which is the same #2150 rebuild the projection read needs.
 4. Adopting it is cheap on disk (+2.9 MB at 20k products) and not cheap on writes (upsert 0.23 →
-   0.57 ms, a 20k resync 0.09 → 0.45 s) — and it forces `withoutRowId: false` on every collection,
-   which changes the on-disk layout #2143 measured.
+   0.57 ms, a 20k resync 0.09 → 0.45 s); it forces `withoutRowId: false` on every collection, which
+   changes the on-disk layout #2143 measured; and on premium's shipped columns it can only be a
+   write-only index — no `'rebuild'`, no column reads, no `LIKE`.
 5. The risk named in §16 survives inspection but is not an FTS5 defect: wa-sqlite #258 and #320 are
    bugs in wa-sqlite's own VFSes that an FTS5-with-triggers write pattern exposed. Neither touches
    the official build or `opfs-sahpool`.
@@ -51,6 +53,34 @@ by triggers: FTS5's docs make consistency the application's job and name trigger
 (<https://sqlite.org/fts5.html#external_content_tables>), three of them — `AFTER INSERT`,
 `AFTER DELETE`, `AFTER UPDATE` (the last a `'delete'` command with the **original** values, then an
 insert).
+
+**The content table needs columns FTS5 can read by name, and premium's has none.** The table I
+measured is premium's shipped shape — `id, revision, deleted, lastWriteTime, data json` and nothing
+else — with `content='p'` and triggers supplying `json_extract(new.data,'$.name')` and friends. That
+indexes and MATCHes correctly, and it is what the cost table below measures. But an external-content
+FTS5 table resolves its declared columns *against the content table* whenever it reads them, and on
+that schema every such path fails (verified, 3.53.4):
+
+```
+SELECT rowid FROM fts WHERE fts MATCH '"board"'  -> ok        (index only)
+SELECT name  FROM fts WHERE fts MATCH '"board"'  -> ERROR: no such column: T.name
+SELECT rowid FROM fts WHERE name LIKE '%board%'  -> ERROR: no such column: T.name
+INSERT INTO fts(fts) VALUES('rebuild')           -> ERROR: no such column: T.name
+```
+
+So **premium as shipped can carry a write-only FTS5 index — no rebuild, no column reads, no
+LIKE/GLOB.** Losing `'rebuild'` matters on its own: it is the documented repair for an index that has
+drifted from its content, and without it the only repair is a resync. The two ways out:
+
+- **Stored generated columns on the content table** — `name`, `sku`, `barcode` as
+  `GENERATED ALWAYS AS (json_extract(data,'$.…')) STORED`. Verified: `rebuild`, column reads and
+  indexed LIKE all work. This is **exactly the #2150 table rebuild the projection read needs** (§6),
+  so FTS5's viable form is built on top of the cheaper alternative, not instead of it.
+- **A contentless table** (`content=''`). Verified: MATCH works, reading any column returns `NULL`,
+  and plain `DELETE` is refused (`cannot DELETE from contentless fts5 table`) unless
+  `contentless_delete=1` is set, which SQLite added in 3.43.0 and the docs now recommend over plain
+  contentless. Either way the delete trigger must supply the original values, and there is still no
+  column read and so no LIKE fallback.
 
 **Measured cost** (local, SQLite 3.53.4 via Python on an M4 Pro, default unix VFS — the same SQLite
 version as `@sqlite.org/sqlite-wasm` 3.53.4-build1, but *not* wasm and *not* OPFS, so read the ratios
@@ -106,25 +136,26 @@ consisting of fewer than 3 unicode characters do not match any rows when used wi
 - `short-qualifier-counts` — query `MY საბარგული`, must find id 3013 and not 3014. This is the
   Georgian report behind #2037; the two-character qualifier is what separates the two rows.
 
-The docs' answer is indexed LIKE/GLOB on a trigram table — **and that answer is unavailable to us
-twice over.** First, `remove_diacritics` and indexed LIKE/GLOB are mutually exclusive: "Unless the
-remove_diacritics option is set" trigram tables support indexed GLOB and LIKE. Confirmed by query
-plan: `SCAN … VIRTUAL TABLE INDEX 0:L0` with the default tokenizer, `INDEX 0:` (no L/G) with
-`remove_diacritics 1`. Second, and decisively, on an **external-content** table there are no column
-values in the index to match against:
+The docs' answer is LIKE/GLOB on a trigram table, and **it does work — but only on the
+generated-column content table above, and it does not fold.** Verified on that schema: `name LIKE
+'%k2%'` finds "K2 Skis", and `name LIKE '%my%' AND name LIKE '%საბარგული%'` returns 3013 and not
+3014, so both traps are served. Two qualifications:
 
-```
-SELECT rowid FROM fts WHERE name LIKE '%adget%';  -> ERROR: no such column: T.name
-SELECT rowid FROM fts WHERE fts MATCH '"adget"';  -> 4609 rows
-```
+- **The index does not serve a two-character pattern.** Trigram indexing needs three characters, and
+  `remove_diacritics` disables indexed LIKE/GLOB entirely ("Unless the remove_diacritics option is
+  set"). Query plans: `INDEX 0:L0` with the default tokenizer, bare `INDEX 0:` with
+  `remove_diacritics 1`. So the short-term path is a linear scan either way — but over the narrow
+  `name`/`sku`/`barcode` columns (~52 chars per row, ~1 MB at 20k), **not** over catalogue bytes, so
+  it is not the `$regex`-scan shape `catalogue-search-blob.ts`'s header rejected.
+- **LIKE reads the stored text, so it never accent-folds.** `name LIKE '%creme%'` misses
+  "Crème Brûlée Kit" under both tokenizers, because `remove_diacritics` affects the FTS index and
+  MATCH, not LIKE. Our traps do not contain a term that is both short and accented, so all 17 pass
+  with MATCH over ≥3 characters and LIKE under it — but a folded *stored* column would be needed to
+  close that gap, and SQLite cannot compute an NFD fold in a generated column without ICU or a
+  registered UDF (premium's fixed five-column `INSERT` cannot write one from JS).
 
-So a one- or two-character term under FTS5 falls back to `JSON_EXTRACT(data,'$.name') LIKE ?` on the
-content table — an unindexed scan linear in catalogue *bytes*, exactly the shape
-`catalogue-search-blob.ts`'s header already rejected ("a storage-side `$regex` scan is the other wrong
-shape — linear in catalogue BYTES, 265 ms at 20k on filesystem-node, over the debounce"). Retiring the
-blob therefore needs either a three-character UI minimum — contradicting `short-qualifier-counts` and
-the report that produced it — or a JS structure kept alive for short terms, which keeps the full read
-and forfeits the prize.
+Net: FTS5 can satisfy every trap, at the price of the generated-column rebuild plus a scan for short
+terms — not the price §16 assumed, and not free.
 
 ## 2. The platform asymmetry
 
@@ -154,12 +185,15 @@ shows that is purchasable more cheaply.
   (SQLite 3.53.4, `ENABLE_FTS5`, `MAX_VARIABLE_NUMBER=32766`, `THREADSAFE=0`)" —
   `spikes/2138-rxdb-sqlite-wasm/RESULTS.md:3-5` on `origin/next`. (The package is installed in no local
   tree — the main clone cannot install — so the spike record is the citation.)
-- **wa-sqlite: no.** Its `WASQLITE_DEFINES` block (Makefile:101-115) carries `DEFAULT_MEMSTATUS`,
+- **wa-sqlite: not in the stock build; reachable only by compiling your own.** Its `WASQLITE_DEFINES`
+  block (Makefile:101-115) carries `DEFAULT_MEMSTATUS`,
   `DEFAULT_WAL_SYNCHRONOUS`, `DQS`, `LIKE_DOESNT_MATCH_BLOBS`, `MAX_EXPR_DEPTH`, four `OMIT`s,
-  `THREADSAFE`, `USE_ALLOCA`, `ENABLE_BATCH_ATOMIC_WRITE`, then `$(WASQLITE_EXTRA_DEFINES)` — no FTS5.
-  Both corruption reporters added it by hand: #320's ran `make WASQLITE_EXTRA_DEFINES="-DSQLITE_ENABLE_FTS5
-  -DSQLITE_ENABLE_GEOPOLY=1 -DSQLITE_ENABLE_RTREE=1"`, #258's "compil[ed] a separate build that included
-  the FTS5 extension".
+  `THREADSAFE`, `USE_ALLOCA`, `ENABLE_BATCH_ATOMIC_WRITE`, then the `$(WASQLITE_EXTRA_DEFINES)` escape
+  hatch — no FTS5 in the distributed artifacts, but any user can add it there, and both corruption
+  reporters did: #320's ran `make WASQLITE_EXTRA_DEFINES="-DSQLITE_ENABLE_FTS5 -DSQLITE_ENABLE_GEOPOLY=1
+  -DSQLITE_ENABLE_RTREE=1"`, #258's "compil[ed] a separate build that included the FTS5 extension"
+  (and confirmed the corruption "went away" on "the default artifacts distributed by wa-sqlite (i.e.
+  without FTS5)").
 
 That is one more item on the official build's side of §12 — a tiebreaker between the two wasm
 packages, which §12 already decided, not between engines.
@@ -188,10 +222,15 @@ page-1 header, which is what raises `SQLITE_CORRUPT` via `xFileSize()` — fixed
 size from page 1; (b) pages from the first transaction after a WAL rollover were read from the
 *previous* WAL file, "poor state management where the WAL file identifier was stale".
 
-**Does it apply to the official build with sahpool?** No: every named defect is in a wa-sqlite VFS
-(`IDBBatchAtomicVFS`, `IDBMirrorVFS`, `OPFSWriteAheadVFS`) — hand-written IndexedDB/OPFS journalling
-layers outside SQLite's own test matrix. `opfs-sahpool` is written and tested by the SQLite authors,
-and #2138 verified WAL really is WAL on it. The transferable lesson is narrower but real:
+**Does it apply to the official build with sahpool?** Stated carefully: **no FTS5 defect has been
+isolated in either report; both are FTS5-with-triggers workloads; #320 was root-caused to two bugs in
+wa-sqlite's own VFS and fixed, while #258 remains open with its root cause unconfirmed; and neither
+report implicates the official build or `opfs-sahpool`.** Every defect actually named is in a
+wa-sqlite VFS (`IDBBatchAtomicVFS`, `IDBMirrorVFS`, `OPFSWriteAheadVFS`) — hand-written IndexedDB/OPFS
+journalling layers outside SQLite's own test matrix — whereas `opfs-sahpool` is written and tested by
+the SQLite authors, and #2138 verified WAL really is WAL on it. But #258's open state means we cannot
+say the FTS5 workload itself has been cleared, only that nothing points at our VFS. The transferable
+lesson is narrower and real:
 **FTS5-with-triggers is a heavier, less usual write pattern than plain upserts, and it was the
 workload that exposed two latent VFS bugs.** If FTS5 is adopted, the #2144 crash harness must run
 *with* the triggers in place — §16 says this already and it holds.
@@ -257,19 +296,29 @@ pays wasm-to-JS marshalling per byte returned, and the Windows runner pays it ha
 the same band as the shipped engine's 89 ms, **but that is an extrapolation and belongs in the #2143
 harness as one added cell before anyone relies on it.**
 
-The parse cost disappears with a stored generated column
-(`name TEXT GENERATED ALWAYS AS (json_extract(data,'$.name')) STORED`), making the read
-`SELECT id, name, sku, barcode`. SQLite refuses to add a STORED column to a populated table (verified:
-`cannot add a STORED column`), so it needs a table rebuild — exactly the migration #2150 already
-proposes for promoting `_pos_user`/`_pos_store`. One rebuild, two payoffs.
+The parse cost disappears if all three searchable fields become stored generated columns, making the
+read `SELECT id, name, sku, barcode`:
+
+```sql
+name    TEXT GENERATED ALWAYS AS (json_extract(data,'$.name'))             STORED,
+sku     TEXT GENERATED ALWAYS AS (json_extract(data,'$.sku'))              STORED,
+barcode TEXT GENERATED ALWAYS AS (json_extract(data,'$.global_unique_id')) STORED
+```
+
+Leave any of the three JSON-extracted and its parse cost stays, since `json_extract` parses the whole
+document once per call. SQLite refuses to add a STORED column to a populated table (verified:
+`cannot add a STORED column`), so this needs a table rebuild — exactly the migration #2150 already
+proposes for promoting `_pos_user`/`_pos_store`, and exactly the schema §1 shows FTS5 needs before it
+can rebuild its index or answer a short term. One rebuild, three payoffs.
 
 **Cost comparison, in work rather than money:**
 
 | | Projection read | FTS5 |
 |---|---|---|
-| Search semantics | unchanged — the blob and its 17 traps keep passing, today, on every engine | 15/17; two short-term traps need a JSON scan fallback or a UI minimum that contradicts #2037 |
+| Search semantics | unchanged — the blob and its 17 traps keep passing, today, on every engine | 15/17 on `MATCH`; the two short-term traps need a `LIKE` scan over generated columns, which does not accent-fold |
 | Query seam | none — it is a `find()` with a field projection | a private sentinel-selector protocol through `queryModifier`, plus residual-matcher changes, plus `findDocumentsById` is not covered |
 | Storage settings | none | `withoutRowId: false` on every collection; re-take #2143's numbers |
+| Schema | the #2150 rebuild | **the same #2150 rebuild**, or a write-only index with no `'rebuild'` and no short-term path |
 | Write cost | none | +0.34 ms per upsert (~2.5×), resync ~5× |
 | Disk | none | ~+3 MB at 20k |
 | Crash surface | none | three triggers per collection, the exact workload behind wa-sqlite #258/#320; must go in the #2144 harness |
@@ -278,8 +327,8 @@ proposes for promoting `_pos_user`/`_pos_store`. One rebuild, two payoffs.
 
 The deletion row is the only one FTS5 wins, and §16 is right that it is substantial — a subsystem
 patched at least four times. But it is a reward for a decision already made, collectable later, and
-not collectable *completely*: short terms keep a JS fallback alive unless Paul rules a three-character
-minimum acceptable, which would reverse #2037.
+not collectable *completely*: short terms keep a `LIKE` scan (and an unfolded one) on the path unless
+Paul rules a three-character minimum acceptable, which would reverse #2037.
 
 **Recommendation.** Weight FTS5 at zero in the engine choice. Put the projection read on the map for
 the #2091/#2143 follow-up regardless of engine, bundled with #2150's table rebuild. If SQLite wins on
