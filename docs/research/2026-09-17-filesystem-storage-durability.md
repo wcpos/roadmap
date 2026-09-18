@@ -28,9 +28,10 @@ stack as a permanent cost, not a temporary one. Caveat in the other direction: S
 magic (it publishes its own corruption list), and `rxdb-premium/storage-sqlite` is a thin,
 much younger layer over it with its own bug history, including silent-wrong-answer query bugs —
 you get SQLite's durability, not SQLite's maturity, for the query layer. And one finding cuts
-against the easy fix in either direction: on macOS and iOS, Chrome's OPFS `flush()` is
-`F_BARRIERFSYNC`, an ordering barrier rather than a real sync, so "just add fsync" would not fully
-close the gap on most of WCPOS's tills anyway — which is an argument for an engine that is designed
+against the easy fix in either direction: on macOS, Chrome's OPFS `flush()` is
+`F_BARRIERFSYNC`, an ordering barrier rather than a real sync (iOS Chrome is WebKit, whose flush
+guarantee is undocumented — a separate unknown, §4), so "just add fsync" would not fully
+close the gap on the Mac tills and is unproven on the iPad ones — which is an argument for an engine that is designed
 to survive reordered and torn writes, not merely one that calls flush.
 
 **Update (2026-09-18).** The web half of that recommendation is superseded by the later sections and
@@ -53,7 +54,7 @@ integration choice (multi-tab, worker, Electron IPC).
 | `changelog-identity` — peer changelog ops applied by array **position**; a late delete removes a healthy neighbour | b + c | **Yes.** SQLite addresses rows by key/rowid and coordinates writers with file locks, never by replaying positions into another process's in-memory array. |
 | `cleanup-compaction-batch` — 50 docs/call, every index file rewritten in full between batches; 30% idle CPU | b | **Yes.** Space reuse is internal (free-list / `VACUUM`), incremental, and does not hold a cross-tab lock or broadcast byte positions. |
 | `resurrection-leak` — index row leaked on delete→re-insert, drifts into garbage byte ranges after compaction | a + b | **Yes.** The missing `previousDocumentData` is (a), but the *corruption* is (b): the app-visible index is a byte-range map the caller maintains. SQLite maintains its own indexes at 100% MC/DC coverage. |
-| `task-queue-containment` — one throwing write skips `cleanupAfterRun`, leaks OPFS access handles, poisons the promise queue forever | a + c | **Partly.** The promise-chain poisoning is plain (a) and you would still own your own queue. But there is no exclusive-access-handle leak to be permanent about, and a failed statement does not wedge a connection. |
+| `task-queue-containment` — one throwing write skips `cleanupAfterRun`, leaks OPFS access handles, poisons the promise queue forever | a + c | **Partly.** The promise-chain poisoning is plain (a) and you would still own your own queue. But the access-handle leak is platform-dependent, not gone: §19 measured that when premium replaces a worker without terminating the old one, the old `opfs-sahpool` VFS keeps its exclusive OPFS handles and the replacement fails with `NoModificationAllowedError` (hence `mode: 'one'`), and a hung-but-alive worker keeps them too (#891). What SQLite removes is the statement-level wedge: a failed statement does not poison the connection. |
 | 42 GB `documents.json` — compaction built a gap-sized whitespace string past V8's 512 MB cap (electron#429) | b | **Yes.** Upstream `cleanupDocumentJsonFile` literally does `" ".repeat(gap)` (`cleanup.js`). No SQL engine relocates records by writing whitespace over the hole. |
 | Windows power cut leaves NUL-filled ranges in `documents.json` (electron#459, monorepo#1955) | b | **Yes** — this is the canonical case. No fsync, no checksum, no torn-write detection, so zeroed extents read back as a "valid" byte range. SQLite's `synchronous` settings and checksummed journal/WAL frames exist for exactly this, and it recovers from torn pages by design: *"SQLite never assumes that database page writes are atomic… and hence SQLite is always able to automatically recover from torn pages induced by a crash"* (psow.html). |
 | Boot replay rebuilding every index on every reopen since 2026-09-12 (false positive) | c | **N/A.** This defect only exists because WCPOS had to write a recovery pass at all. |
@@ -193,11 +194,14 @@ built on it assumes — including WCPOS's own `__wcposFlushRun` patch.
   *"User agents try to ensure that no partial writes happen"* — attaches **only to
   `FileSystemWritableFileStream`**, which the engine does not use for `documents.json`. So the
   maintainer's "either the full json is stored or nothing" describes the *other* handle type.
-- **On macOS and iOS, Chrome's `flush()` is an ordering barrier, not a sync.** `base::File::Flush()`
+- **On macOS, Chrome's `flush()` is an ordering barrier, not a sync.** `base::File::Flush()`
   is `fdatasync()` on Linux/Android/ChromeOS, `FlushFileBuffers()` on Windows, and on Apple platforms
   `fcntl(F_BARRIERFSYNC)` — with the in-source comment recording that `F_FULLFSYNC` *"used to be"* the
   default and was changed *"for greatly reduced latency… no detectable sign of increased corruption"*.
   Corruption, note — not loss. A barrier preserves ordering; it does not put the bytes on the medium.
+  This establishes **macOS Chrome only**: Chrome on iOS is WebKit, not Chromium's file layer, so iOS
+  inherits WebKit's undocumented flush (next point) and is a separate unknown to measure, not a
+  platform the barrier finding covers.
   **In Incognito, `Flush()` is a literal no-op that returns `true`.** WebKit documents nothing beyond
   a code comment ("Persist changes to disk"), and [whatwg/fs#156](https://github.com/whatwg/fs/issues/156)
   (open, unanswered) records that Safari never used a full sync either.
@@ -355,9 +359,10 @@ and the tail risk is unchanged.
   the slower COOP/COEP `opfs` VFS, where WAL needs exclusive locking anyway). The right framing is
   not "web is fine" but "web carries a hand-written recovery layer indefinitely" — an argument for
   *not* also carrying it on two other platforms.
-- **Two cheap checks worth doing regardless of the spike's outcome.** (1) On Apple platforms Chrome's
-  `flush()` is `F_BARRIERFSYNC`, so `__wcposFlushRun` is weaker than its name implies on most tills —
-  measure whether it actually changes the power-cut outcome before crediting it. (2) Chrome returns a
+- **Two cheap checks worth doing regardless of the spike's outcome.** (1) On macOS Chrome's
+  `flush()` is `F_BARRIERFSYNC` (and iOS Chrome is WebKit, undocumented), so `__wcposFlushRun` is
+  weaker than its name implies on the Mac tills and unknown on the iPad ones — measure whether it
+  actually changes the power-cut outcome before crediting it. (2) Chrome returns a
   byte count *larger than the buffer* when OPFS quota is exhausted, so audit every `write()` return
   check in the engine and in `opfs-targeted-recovery.mjs` for the `written < length` pattern.
 - **Two named risks for the web candidate (added 2026-09-17 evening).** (1) The pool VFS is
@@ -761,7 +766,7 @@ decision to clean up on its own".
 
 `xSync` maps to `flush()` in **both** (official `xSync:` → `file.sah.flush()`; wa-sqlite
 `AccessHandlePoolVFS.js:169` `jSync()` → `file.accessHandle.flush()`), so §1's finding stands: on
-macOS/iOS Chrome `flush()` is `F_BARRIERFSYNC`, giving SQLite ordering rather than a hardware sync —
+macOS Chrome `flush()` is `F_BARRIERFSYNC` (iOS Chrome is WebKit: undocumented), giving SQLite ordering rather than a hardware sync —
 which SQLite is designed to survive and the append-only engine is not.
 
 **Unverified:** I could not source the "252 access handles per origin in Safari" figure first-party.
@@ -881,7 +886,10 @@ boundary first: wrap sahpool's `xWrite`/`xSync` so that at the boundary — once
 `xSync`, once between the WAL append and the checkpoint — the worker signals the page through a
 `SharedArrayBuffer` (`Atomics.store` + `notify`; `postMessage` does not flush from a blocked worker)
 and blocks on `Atomics.wait`, and the page, watching with `Atomics.waitAsync` or a poll, terminates
-it there. Do **not** inject by throwing: SQLite sees a thrown `xWrite` as an I/O error and runs its
+it there. `SharedArrayBuffer` needs cross-origin isolation, which §17's production setup does not
+have, so either serve the harness with test-only COOP/COEP headers (Playwright can add them on the
+route) or block the worker without isolation: a synchronous `XMLHttpRequest` to a harness route that
+never answers is legal in a worker and holds it at the boundary just as well. Do **not** inject by throwing: SQLite sees a thrown `xWrite` as an I/O error and runs its
 rollback path, so a clean reopen proves error handling, not crash durability. Kill the whole browser
 process for process-level crashes — the "slight performance boost from WAL" claim in the official docs carries no
 crash-safety claim at all);
@@ -1501,7 +1509,8 @@ be answered by reading, and two of them can fail:
 2. **The crash harness (can fail).** §1's entire thesis is that the incumbent fails simulated crash
    tests. Swapping to an engine we have only *read* about, without running the same harness, would
    repeat the mistake that got us here — and §1's own finding that Chrome's OPFS `flush()` is
-   `F_BARRIERFSYNC` on macOS/iOS means SQLite-on-OPFS is not automatically safe either.
+   `F_BARRIERFSYNC` on macOS (and WebKit's undocumented flush on iOS) means SQLite-on-OPFS is not
+   automatically safe either.
 3. **Query regressions (already concrete, §16).** The non-implemented-operator fallback *discards the
    WHERE clause*, and it lands on the POS's default orders view (`$elemMatch`) and logs search
    (`$regex`). The `INDEXED BY`-without-WHERE question decides whether logs search is slow or throws.
