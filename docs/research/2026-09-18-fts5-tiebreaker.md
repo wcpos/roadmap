@@ -10,8 +10,9 @@ which raised the question; this file answers its five items and adds the numbers
    in JS, and it can only be had by choosing SQLite first — a *consequence* of the decision, not an
    input to it.
 2. Most of the prize is purchasable without it. The avoided read is worth 2,410 / 1,440 / 10,713 ms
-   (#2143); a **projection read** — `SELECT id, name, sku, barcode` — cuts the marshalled bytes 38× at
-   no extra time and feeds today's blob unchanged, all 17 traps passing.
+   (#2143); a **projection read** — `SELECT id, name, sku, barcode` — cuts the marshalled bytes 38×
+   for 2.4× more SQL time natively (33.0 vs 13.6 ms with VIRTUAL columns; the net wasm win is an
+   extrapolation until a harness cell measures it) and feeds today's blob unchanged, all 17 traps passing.
    Not free of plumbing: premium's wrapper needs a full `data` column, so it takes a custom storage
    read (§5(b)); its columns are `VIRTUAL`, added by `ALTER TABLE … ADD COLUMN` under #2150's
    migration with **no catalogue rebuild** (the read then costs the 33 ms `json_extract` row of §6); and
@@ -26,8 +27,8 @@ which raised the question; this file answers its five items and adds the numbers
 4. Its cost: upsert 0.19 → 0.38 ms (~2×), resync ~7×, ~+3 MB disk at 20k; the generated columns alone
    are near-free, so the FTS5 half is what costs. On premium's shipped columns FTS5 still answers
    `MATCH` from the index and returns rowids — what it loses is **column-value reads, `LIKE`, and
-   `'rebuild'`, so with an id↔rowid mapping it remains queryable, just unrepairable and short-term
-   blind.**
+   `'rebuild'`, so with an id↔rowid mapping it remains queryable and short-term blind; repair is a
+   manual drop-and-repopulate rather than the built-in command.**
 5. The risk named in §16 is not an FTS5 defect: no FTS5 defect has been isolated in either wa-sqlite
    report; both are FTS5-with-triggers workloads; #320 was root-caused to wa-sqlite's own VFS and
    fixed, #258 is still open and unconfirmed; neither implicates the official build or `opfs-sahpool`.
@@ -74,10 +75,11 @@ first measured is premium's shipped shape — `id, revision, deleted, lastWriteT
 MATCHes, but external content resolves declared columns *against the content table* whenever it reads
 them, so there `SELECT name FROM fts …`, `… WHERE name LIKE ?` and
 `INSERT INTO fts(fts) VALUES('rebuild')` all raise `no such column: T.name` (verified, 3.53.4). So
-**on premium's shipped columns an FTS5 index is queryable but unrepairable**: `MATCH` still answers
-from the index and returns rowids, so with an id↔rowid mapping it serves searches; what is lost is
-column-value reads, `LIKE`, and `'rebuild'` — the documented repair for a drifted index, without
-which the only repair is a resync.
+**on premium's shipped columns an FTS5 index is queryable but loses the built-in repair**: `MATCH`
+still answers from the index and returns rowids, so with an id↔rowid mapping it serves searches; what
+is lost is column-value reads, `LIKE`, and `'rebuild'` — the documented repair for a drifted index.
+A drifted index can still be dropped, recreated and repopulated from the intact base table with the
+triggers' own `json_extract` expressions, so the loss is convenience, not repairability.
 
 **The production JSON paths are nested, and my fixtures' were not.** The persisted document is
 `{uuid, remoteId, <promoted columns>, payload, sync, local}` with the Woo fields under `payload`
@@ -111,7 +113,7 @@ where the root-level fixture showed none. That is the page-packing cliff again (
 two-per-page at 4 KB), now landing on the shape we actually persist — size it against a real
 catalogue before quoting either number. The projection read does not need STORED: a `VIRTUAL`
 generated column costs nothing on disk and is computed on read (the 33.0 ms `json_extract` row in §6,
-still ~70× under SQLite's whole-document read), and SQLite can index a VIRTUAL column, so STORED is
+2.4× the native whole-document SQL time; its wasm cost is unmeasured), and SQLite can index a VIRTUAL column, so STORED is
 an FTS5-side choice, not the migration's. (`detail=column`/`none` shrink the index to +2.2 / +1.0 MB, but the docs cap full-text
 queries there at three-character tokens. That is not fatal: a longer term can be decomposed into
 overlapping three-code-point tokens joined by `AND` and the superset verified with `LIKE` on the
@@ -144,10 +146,12 @@ text.
 `contentless_delete=1` (3.43.0+, now preferred by the docs) is better than §16 implied: verified on
 3.53.4, ordinary `DELETE … WHERE rowid=?` and `UPDATE` both work and need **no** original values —
 that contract binds only *legacy* contentless tables, where both statements are refused outright. Its
-real cost is the missing column values. All three trigger-maintained designs must map our TEXT
-document id to an integer FTS rowid (the self-owned measurement uses an auxiliary
-`map(rid INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT UNIQUE)`), since a `WITHOUT ROWID` table offers a
-trigger no `new.rowid`.
+real cost is the missing column values. The external-content and contentless designs must map our
+TEXT document id to an integer FTS rowid, since a `WITHOUT ROWID` table offers a trigger no
+`new.rowid`; for the self-owned table the map is an optimisation, not a requirement — FTS5 assigns
+the rowid on insert, `docid UNINDEXED` reads back, and triggers can `DELETE`/`UPDATE` by `docid`
+(a virtual-table scan, which is why the measurement used an auxiliary
+`map(rid INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT UNIQUE)`).
 
 So it is not "FTS5 forces `withoutRowId: false`" — **every design here can reach 17/17**, and only
 external content bound *directly* to the base table needs the layout change.
@@ -219,10 +223,10 @@ and that crossing is **unmeasured**. App-written folded fields need no UDF but g
 cost, so that route needs sizing against a real catalogue.
 
 **Cost of that fallback: 6.4 ms at 20,000 products**, scanning `name`/`sku`/`barcode` on the content
-table. A two-character pattern has no trigram to look up either way, but keeping `remove_diacritics`
-off — which folding both sides allows — leaves indexed LIKE/GLOB available for longer patterns, where
-setting it disables them outright ("Unless the remove_diacritics option is set"; plans: `INDEX 0:L0`
-with the default tokenizer, bare `INDEX 0:` with it). But it scans ~52 characters per row, **not**
+table. A two-character pattern has no trigram to look up either way, and the indexed LIKE/GLOB path
+that `remove_diacritics` would disable is unavailable regardless: the literal-safe `LIKE ? ESCAPE '\'`
+the contract below requires takes the bare `INDEX 0:` scan even with the default tokenizer, so neither
+the short-term fallback nor a reduced-detail verification scan is indexed. But it scans ~52 characters per row, **not**
 catalogue bytes, so it is nowhere near the `$regex` shape `catalogue-search-blob.ts`'s header rejected
 (265 ms at 20k). One caveat before calling it far under the 250 ms debounce: in the external-content
 and contentless designs the folded columns sit in the same records as the ~1.9 KB JSON payload, so
@@ -389,8 +393,9 @@ do not need to be STORED either.** SQLite's `ALTER TABLE … ADD COLUMN` accepts
 column on a populated table and refuses only STORED (verified: `cannot add a STORED column`), and a
 VIRTUAL column can be indexed. So the projection read's columns land on the existing products and
 variations tables (the blob covers both, §16 of the 2026-09-17 doc) with **no catalogue rebuild and no
-disk cost**; the read is the 33.0 ms row above rather than 13.7 ms, still ~70× under SQLite's
-whole-document read. STORED, with its rebuild and +15.2 MB, is needed only for FTS5's external-content
+disk cost**; the read is the 33.0 ms row above rather than 13.7 ms — a 2.4× native SQL-side regression
+against 13.6 ms for whole documents, with the net wasm speedup an extrapolation from the 38× byte
+reduction until the harness cell exists. STORED, with its rebuild and +15.2 MB, is needed only for FTS5's external-content
 or contentless designs. #2150's `_pos_user`/`_pos_store` promotion is the one rebuild left, on
 **orders** — and the same VIRTUAL-plus-index trick is worth testing there before committing to it.
 
@@ -403,7 +408,7 @@ or contentless designs. #2150's `_pos_user`/`_pos_store` promotion is the one re
 | Storage settings | none | `withoutRowId: false` **only** for external content bound *directly* to the base table (then re-take #2143's numbers). External content over a filtered view, self-owned and contentless all keep `WITHOUT ROWID` and all keep the `LIKE` fallback |
 | Schema | **none** — VIRTUAL columns by `ADD COLUMN` on products and variations, under #2150's migration | **two catalogue rebuilds** for STORED folded columns (external content, or contentless leaning on them); none for a self-owned table |
 | Write cost | nothing on write (VIRTUAL); 0.21 ms per upsert if STORED | direct external content 0.38 ms per upsert (~2×), resync ~7×; self-owned 0.72 ms; contentless and filtered-view unmeasured |
-| Disk | none (VIRTUAL); **+15.2 MB at 20k** if STORED on the production document shape (none on the root-level fixture — a packing cliff) | direct external content ~+3 MB at 20k; self-owned +5.5 MB; contentless and filtered-view unmeasured |
+| Disk | none (VIRTUAL); **+15.2 MB at 20k** if STORED on the production document shape (none on the root-level fixture — a packing cliff) | direct external content ~+3 MB of index at 20k **plus +15.2 MB for its STORED folded columns on the production shape**; self-owned +5.5 MB; contentless and filtered-view unmeasured (contentless also needs the STORED columns) |
 | Crash surface | none | three triggers per collection, the exact workload behind wa-sqlite #258/#320; must go in the #2144 harness |
 | Engine-independent? | no — the shipped engine (89 ms) and IndexedDB (285 ms) do not need it | no |
 | Deletions earned | none | the **catalogue blob** and the #2073 sizing question — but only for products/variations, the two collections that opt out of FlexSearch. `search.ts`, the FlexSearch pipeline and its #2070/#2020 history bounds still serve every other searchable collection and survive unless all of them are migrated, a cost not analysed here |
