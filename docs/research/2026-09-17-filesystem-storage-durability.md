@@ -1686,9 +1686,12 @@ user-visible figure of a selector change (keystroke, pill) is their sum; a scrol
   loop, so an injected WHERE makes a grid window one statement up to 50 rows and two up to 100 — milliseconds,
   within 1.5–2.5x of the floor. But `count()` still routes through `query()` and pages with `OFFSET`, so it
   issues `matches/50 + 1` full filtered scans (20 × 375 ms on logs = 7.5 s; 51 × 305 ms on orders = 15.5 s),
-  and both screens wait for it. The rewrite itself is sound for ASCII: `GLOB` for the fold-space arm,
-  `LIKE … ESCAPE` for the raw `$options: 'i'` arms, `EXISTS (SELECT 1 FROM json_each(…))` per stamp, the
-  regex literal unescaped first — verified against the shipped matcher on a punctuation-bearing term. It is
+  and both screens wait for it. The rewrite itself is sound for ASCII: `GLOB` for the fold-space arm with
+  its own metacharacters bracket-escaped (`*` → `[*]`, `?` → `[?]`, `[` → `[[]`, so a term like `a*b` stays
+  literal instead of matching `ab`), `LIKE … ESCAPE` for the raw `$options: 'i'` arms, `EXISTS (SELECT 1
+  FROM json_each(…))` per stamp, the regex literal unescaped first — verified against the shipped matcher on
+  a punctuation-bearing term; the gate adds terms carrying each GLOB metacharacter, since a declared-translated
+  selector has no residual matcher to catch a quoting slip. It is
   **not** the JS matcher for non-ASCII case: SQLite's built-in `LIKE` folds ASCII only, where the regex `i`
   flag pairs `é` with `É`, so a raw-arm search on a non-ASCII term silently loses matches once the selector is
   declared fully translated. The fold arm already carries case-folded text, so the fix is to route non-ASCII
