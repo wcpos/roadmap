@@ -15,7 +15,11 @@ Playwright and fails on any page or console error (`--quick` for one width).
 |---|---|---|
 | [`pos-register/`](pos-register/) | [#287](https://github.com/wcpos/roadmap/issues/287) | decided (Paul, 2026-09-18); the ticket is closed |
 | [`orders/`](orders/) → `pos-register/index.html?screen=orders` | [#287](https://github.com/wcpos/roadmap/issues/287) | decided (Paul, 2026-09-18); a page of the register since 2026-09-17 |
-| settings tab, connect, receipt, products, tokens | [#288](https://github.com/wcpos/roadmap/issues/288) | not started — the language may move after #287 |
+| [`settings/`](settings/) → `pos-register/index.html?screen=settings` | [#288](https://github.com/wcpos/roadmap/issues/288) | drawn; six decisions for Paul in the folder README |
+| [`connect/`](connect/) → `pos-register/index.html?screen=connect` | [#288](https://github.com/wcpos/roadmap/issues/288) | drawn; four decisions for Paul in the folder README |
+| [`receipt/`](receipt/) → `pos-register/index.html?screen=register&scn=paid` | [#288](https://github.com/wcpos/roadmap/issues/288) | drawn; four decisions for Paul in the folder README; captures in `pos-register/screens/` |
+| [`products/`](products/) → `pos-register/index.html?screen=register&scn=var-popover` | [#288](https://github.com/wcpos/roadmap/issues/288) | drawn; four decisions for Paul in the folder README; captures in `pos-register/screens/` |
+| [`tokens/`](tokens/) → `pos-register/index.html?screen=tokens` | [#288](https://github.com/wcpos/roadmap/issues/288) | drawn; three decisions for Paul in the folder README; live computed sheet across nine themes |
 
 ## The tokens, as drawn
 

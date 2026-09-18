@@ -15,6 +15,7 @@
 .frame{
   --u:4px;--fs:14px;--ctl:44px;--row:44px;--tile:64px;--r:8px;--amt:40px;--hair:1px;--floor:44px;
   --ease:cubic-bezier(.2,.7,.2,1);--t:180ms;
+  --c1:oklch(0.50 0.18 240);--c2:oklch(0.62 0.15 160);--c3:oklch(0.72 0.15 70);--c4:oklch(0.58 0.16 320);--c5:oklch(0.70 0.02 250); /* shared categories, not theme accents */
 }
 .frame[data-scale="compact"]{--u:3.5px;--fs:13px;--ctl:40px;--row:36px;--tile:56px;--r:6px;--amt:34px}
 .frame[data-scale="spacious"]{--u:5px;--fs:16px;--ctl:52px;--row:52px;--tile:80px;--r:10px;--amt:48px}
@@ -610,7 +611,7 @@ body:has(#strip[hidden]) .notes{display:none}
 :where(.frame[data-screen="reports"]) .rp-panel .pb{padding:calc(var(--u)*2) calc(var(--u)*4) calc(var(--u)*3);display:flex;flex-direction:column;gap:calc(var(--u)*2.5);flex:1} :where(.frame[data-screen="reports"]) .rp-panel .pf-more{padding:0 calc(var(--u)*4) calc(var(--u)*3)}
 :where(.frame[data-screen="reports"]) .br{display:grid;grid-template-columns:1fr auto;grid-template-areas:"l r" "sh sh" "s s";column-gap:calc(var(--u)*3);row-gap:3px;align-items:center;min-width:0} :where(.frame[data-screen="reports"]) .br .l{grid-area:l;display:flex;align-items:center;gap:calc(var(--u)*2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} :where(.frame[data-screen="reports"]) .br .r{grid-area:r;font-weight:600;font-variant-numeric:tabular-nums} :where(.frame[data-screen="reports"]) .br .sh{grid-area:sh;display:block;height:4px;border-radius:2px;background:var(--muted);overflow:hidden} :where(.frame[data-screen="reports"]) .br .sh b{display:block;height:100%;background:var(--primary);border-radius:2px} :where(.frame[data-screen="reports"]) .br .s{grid-area:s;color:var(--muted-fg);font-size:calc(var(--fs)*.86)}
 :where(.frame[data-screen="reports"]) .or{display:flex;align-items:center;justify-content:space-between;gap:calc(var(--u)*3);min-height:calc(var(--fs)*1.9)} :where(.frame[data-screen="reports"]) .or .l{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} :where(.frame[data-screen="reports"]) .or .r{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap} :where(.frame[data-screen="reports"]) .or .st{margin-left:var(--u)}
-:where(.frame[data-screen="reports"]){--c1:var(--primary);--c2:oklch(0.62 0.15 160);--c3:oklch(0.72 0.15 70);--c4:oklch(0.58 0.16 320);--c5:oklch(0.70 0.02 250)} .frame[data-screen="reports"][data-theme="dark"]{--c2:oklch(0.75 0.14 160);--c3:oklch(0.80 0.14 75);--c4:oklch(0.72 0.15 320);--c5:oklch(0.60 0.02 250)}   /* parts of a whole: the primary, hues turned away from it, a neutral (Paul 2026-09-17) */
+/* Categorical colours are shared frame tokens above; Reports only consumes them. */
 :where(.frame[data-screen="reports"]) .cats{display:flex;align-items:center;gap:calc(var(--u)*4)} .frame:where([data-screen="reports"]) svg.donut{width:120px;height:120px;flex:none;stroke:none}
 :where(.frame[data-screen="reports"]) .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(var(--u)*3) calc(var(--u)*4)} :where(.frame[data-screen="reports"]) .stats .l{color:var(--muted-fg);font-size:calc(var(--fs)*.86)} :where(.frame[data-screen="reports"]) .stats .n{font-size:calc(var(--fs)*1.35);font-weight:600;font-variant-numeric:tabular-nums}
 :where(.frame[data-screen="reports"]) .hbar{display:flex;height:12px;border-radius:6px;overflow:hidden;gap:2px;margin-top:var(--u)} :where(.frame[data-screen="reports"]) .hbar i{display:block;height:100%} :where(.frame[data-screen="reports"]) .leg{display:flex;flex-wrap:wrap;gap:var(--u) calc(var(--u)*4);font-size:calc(var(--fs)*.9)} :where(.frame[data-screen="reports"]) .leg span{display:inline-flex;align-items:center;gap:calc(var(--u)*1.5)} :where(.frame[data-screen="reports"]) .leg i{width:10px;height:10px;border-radius:3px;display:inline-block} :where(.frame[data-screen="reports"]) .leg b{font-weight:600}
@@ -813,6 +814,96 @@ body:has(#strip[hidden]) .notes{display:none}
 .frame:where([data-screen="orders"])[data-w="phone"] .sheet-f{flex-direction:column} .frame:where([data-screen="orders"])[data-w="phone"] .sheet-f .btn{width:100%}
 .frame:where([data-screen="orders"]) .sheet-wrap{align-items:center;padding:calc(var(--u)*3)} .frame:where([data-screen="orders"]) .sheet{border-radius:var(--r);border:var(--hair) solid var(--border)}
 @media(prefers-reduced-motion:reduce){.frame:where([data-screen="orders"]) *{animation:none!important;transition:none!important}}
+/* Receipt: the same document body at checkout and in the Orders pane. */
+.frame{--rc-paper:80mm;--rc-paper-bg:oklch(1 0 0);--rc-paper-fg:oklch(.22 .02 250)}
+.rc-stage{overflow:hidden} .paidwrap.rc-stage-body{min-height:0;align-items:stretch;justify-content:flex-start;padding:calc(var(--u)*4);gap:calc(var(--u)*3)}
+.rc-stage-body.rc-still,.rc-still .disc svg path,.rc-still .stamp{animation:none;stroke-dashoffset:0}
+.rc-beat{flex:none;display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*2)} .rc-beat .disc{width:calc(var(--ctl)*1.15);height:calc(var(--ctl)*1.15)} .rc-beat .disc svg{width:calc(var(--fs)*2);height:calc(var(--fs)*2)} .rc-beat .h{font-size:calc(var(--amt)*1.15)} .rc-beat .stamp{font-size:calc(var(--fs)*1.5)}
+.rc-body{display:flex;flex-direction:column;gap:calc(var(--u)*2);min-height:0;flex:1;text-align:left} .rc-selects{display:grid;grid-template-columns:1fr 1fr;gap:calc(var(--u)*2);flex:none} .rc-selects label{min-width:0;display:flex;flex-direction:column;gap:var(--u);color:var(--muted-fg)} .rc-selects select{font:inherit;color:var(--fg);min-width:0}
+.rc-viewport{background:var(--muted);border:var(--hair) solid var(--border);border-radius:var(--r);display:flex;flex-direction:column;min-height:calc(var(--ctl)*2);flex:1;overflow:hidden} .rc-zoom{display:flex;align-items:center;justify-content:flex-end;flex:none;border-bottom:var(--hair) solid var(--border);gap:var(--u);padding:0 var(--u)} .rc-zoom output{min-width:5ch;text-align:center;color:var(--muted-fg)}
+.rc-scroll{overflow:auto;flex:1;min-height:0;padding:calc(var(--u)*4)} .rc-paper{width:var(--rc-paper);margin:0 auto;padding:calc(var(--u)*5);background:var(--rc-paper-bg);color:var(--rc-paper-fg);font-family:var(--mono);font-size:calc(var(--fs)*.86);text-align:center;transform-origin:top center} .rc-paper h2{font-size:calc(var(--fs)*1.25);margin:0 0 calc(var(--u)*2)} .rc-paper .rc-line{display:flex;justify-content:space-between;gap:calc(var(--u)*3);text-align:left;margin:calc(var(--u)*2) 0} .rc-paper hr{border:0;border-top:var(--hair) dashed currentColor;margin:calc(var(--u)*3) 0} .rc-paper .rc-total{font-weight:700;font-size:calc(var(--fs)*1.15)} .rc-paper footer{margin-top:calc(var(--u)*4)}
+.rc-actions{flex:none;display:flex;flex-wrap:wrap;gap:calc(var(--u)*2);align-items:center} .rc-actions .btn{min-height:max(var(--ctl),var(--floor));height:auto;padding:calc(var(--u)*2) calc(var(--u)*3);white-space:normal} .rc-actions .rc-next,.rc-actions .rc-skip{width:100%} .rc-actions .rc-print{flex:1} .rc-actions .rc-skip{color:var(--muted-fg)} .rc-spin{width:var(--fs);height:var(--fs);border:calc(var(--hair)*2) solid var(--border);border-top-color:currentColor;border-radius:50%;animation:spin 1s linear infinite;flex:none}
+.rc-notice{font-size:calc(var(--fs)*.9);text-align:left;flex:none} .rc-notice.warn{color:var(--warn)} .rc-notice .st{white-space:normal} .rc-notice summary,.rc-notice a{display:flex;align-items:center;min-height:max(var(--ctl),var(--floor));color:inherit} .rc-notice pre{white-space:pre-wrap;font:inherit;color:var(--muted-fg)}
+.rc-order>.rc-body{padding:calc(var(--u)*4)} .rc-order>.rc-actions{padding:calc(var(--u)*3) calc(var(--u)*4);border-top:var(--hair) solid var(--border)} .rc-order .rc-actions .rc-print{flex-basis:100%}
+.frame .rc-email.sheet-wrap{align-items:center;padding:calc(var(--u)*4);z-index:40} .frame .rc-email .sheet{width:min(100%,calc(var(--u)*110));border:var(--hair) solid var(--border);border-radius:var(--r)} .rc-email .sheet-f{flex-direction:row;justify-content:flex-end} .rc-email .rc-save{display:flex;align-items:center;gap:calc(var(--u)*3);text-align:left;min-height:max(var(--ctl),var(--floor));width:100%} .rc-email .rc-save .sw{flex:none;margin-left:auto} .rc-email label{display:flex;flex-direction:column;gap:var(--u)} .rc-email .sheet-f .btn{width:auto}
+.frame[data-w="phone"] .rc-selects{grid-template-columns:1fr} .frame[data-w="phone"] .rc-stage-body{padding:calc(var(--u)*3)} .frame[data-w="phone"] .rc-stage .rc-print{flex-basis:100%} .frame[data-w="phone"] .rc-actions [data-rc="email"],.frame[data-w="phone"] .rc-actions [data-rc="pdf"]{flex:1} .frame[data-w="phone"] .rc-scroll{padding:calc(var(--u)*2)}
+@media(prefers-reduced-motion:reduce){.rc-stage-body,.rc-stage-body *,.rc-email *{animation:none!important;transition:none!important}.rc-beat .disc svg path{stroke-dashoffset:0}}
+
+/* Settings: the app's quiet rows, shared controls, width-led navigation. */
+.frame[data-screen="settings"]{--sp-content:calc(var(--u)*180);--sp-nav:calc(var(--u)*56);--sp-saved:1200ms;--sp-print:3000ms}
+.sp-page{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--card)} .sp-layout{flex:1;min-height:0;display:flex} .sp-nav{width:var(--sp-nav);flex:none;padding:calc(var(--u)*5) calc(var(--u)*3);border-right:var(--hair) solid var(--border);overflow:auto}
+.sp-nav .opt{padding:0 calc(var(--u)*3);min-height:max(var(--ctl),var(--floor));margin-bottom:var(--u)} .sp-nav .on{background:var(--muted);font-weight:600;color:var(--primary)} .sp-scroll{overflow:auto;flex:1;min-width:0;scrollbar-gutter:stable} .sp-content{width:100%;max-width:var(--sp-content);margin:auto;padding:calc(var(--u)*7) calc(var(--u)*8)}
+.sp-content h1{font:700 calc(var(--fs)*1.5)/1.2 var(--display);margin:0 0 calc(var(--u)*2)} .sp-intro{color:var(--muted-fg);margin-bottom:calc(var(--u)*6)} .sp-section{border-top:var(--hair) solid var(--border);padding-top:calc(var(--u)*5);margin-top:calc(var(--u)*5)} .sp-section:first-of-type{border-top:0;padding-top:0;margin-top:0} .sp-section h2{font-size:calc(var(--fs)*.8);font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-fg);margin:0 0 calc(var(--u)*3)}
+.sp-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:calc(var(--u)*5);align-items:center;padding:calc(var(--u)*2) 0} .sp-label small{display:block;color:var(--muted-fg);font-size:calc(var(--fs)*.86);margin-top:var(--u)} .sp-control{position:relative;min-width:0;display:flex;flex-direction:column;gap:var(--u)} .sp-value{padding:calc(var(--u)*2) 0;font-weight:500}
+.sp-page select,.sp-panel select{font:inherit;color:var(--fg)} .sp-control .in{min-width:0} .sp-control .segt{max-width:100%;height:auto;flex-wrap:wrap} .sp-control .segt button{min-height:max(var(--ctl),var(--floor));padding:0 calc(var(--u)*2)} .sp-switch{display:flex;align-items:center;min-height:max(var(--ctl),var(--floor));min-width:max(var(--ctl),var(--floor));align-self:flex-end;padding:0 var(--u)!important}
+.sp-saved{display:inline-flex;gap:var(--u);align-items:center;color:var(--muted-fg);font-size:calc(var(--fs)*.86);min-height:calc(var(--fs)*1.35);opacity:0;transition:opacity var(--t) var(--ease)} .sp-saved svg{width:var(--fs);height:var(--fs)} .sp-saved.on{opacity:1} .sp-row .sp-saved{position:absolute;right:0;top:100%;pointer-events:none}
+.sp-actions{display:flex;gap:calc(var(--u)*2);flex-wrap:wrap;align-items:center} .sp-section>.sp-actions{margin-top:calc(var(--u)*3)} .sp-page a,.sp-panel a{color:var(--primary);min-height:max(var(--ctl),var(--floor));display:inline-flex;align-items:center;text-underline-offset:var(--u)} .sp-danger{border-color:var(--destructive)!important}
+.sp-printer{position:relative;padding:calc(var(--u)*3) 0} .sp-printer-head{display:flex;align-items:flex-start;gap:calc(var(--u)*3);margin-bottom:calc(var(--u)*2)} .sp-printer-head .grow>div{margin-top:var(--u)} .sp-printer .sp-actions{gap:var(--u)} .sp-printer .sp-result{min-height:calc(var(--fs)*1.5);margin-top:var(--u);color:var(--muted-fg)}
+.sp-empty{border:var(--hair) dashed var(--border);border-radius:var(--r);padding:calc(var(--u)*5);display:flex;flex-direction:column;gap:calc(var(--u)*3)} .sp-empty p{margin:0;color:var(--muted-fg)} .sp-pop{position:absolute;right:0;z-index:10;background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);padding:calc(var(--u)*2);min-width:calc(var(--ctl)*4)} .sp-pop .opt{min-height:max(var(--ctl),var(--floor))}
+.sp-themes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(var(--u)*3)} .sp-theme{border:var(--hair) solid var(--border)!important;border-radius:var(--r);padding:calc(var(--u)*2)!important;text-align:left;min-height:max(var(--ctl),var(--floor));min-width:0} .sp-theme[aria-pressed="true"]{outline:var(--hair) solid var(--primary);border-color:var(--primary)!important} .sp-theme>span:last-child{display:block;padding:calc(var(--u)*2) 0 0;min-height:calc(var(--fs)*3)}
+.frame.sp-preview{width:100%;height:calc(var(--tile)*1.5);border:var(--hair) solid var(--border);border-radius:var(--r);padding:calc(var(--u)*2);gap:calc(var(--u)*2);pointer-events:none;background:var(--bg);font-size:calc(var(--fs)*.86)} .sp-preview .sp-mini-card{display:block;background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);padding:var(--u)} .sp-preview .sp-mini-button{display:block;align-self:flex-start;border-radius:var(--r);padding:var(--u) calc(var(--u)*2);background:var(--primary);color:var(--primary-fg)}
+.sp-panel{width:min(100%,calc(var(--u)*140))} .sp-panel .panel-b{gap:calc(var(--u)*3);min-height:0} .sp-panel .sp-row{grid-template-columns:1fr;gap:var(--u)} .sp-panel .sp-result-card{border:var(--hair) solid var(--border);border-radius:var(--r);padding:calc(var(--u)*3);display:flex;flex-direction:column;gap:calc(var(--u)*2)} .sp-panel .panel-h h2{font-size:calc(var(--fs)*1.2);margin:0}
+.sp-fold>summary{cursor:pointer;min-height:max(var(--ctl),var(--floor));display:flex;align-items:center;gap:calc(var(--u)*2);color:var(--muted-fg)} .sp-fold>summary::before{content:'›'} .sp-fold[open]>summary::before{content:'⌄'} .sp-fold>summary::-webkit-details-marker{display:none} .sp-fold .opt{min-height:max(var(--ctl),var(--floor))} .sp-spinner{animation:spin calc(var(--t)*5) linear infinite} .sp-mono{font-family:var(--mono);overflow-wrap:anywhere}
+.frame[data-screen="settings"] :is(button,input,select,summary,a){min-height:max(var(--ctl),var(--floor));min-width:max(var(--ctl),var(--floor))} .frame[data-screen="settings"] .st i{width:calc(var(--u)*2);height:calc(var(--u)*2)} .frame[data-screen="settings"] .in:focus{box-shadow:none} .frame[data-screen="settings"] .bar{background:var(--card)}
+.frame[data-screen="settings"][data-w="phone"] .sp-nav{width:100%;border:0;padding:calc(var(--u)*3)} .frame[data-screen="settings"][data-w="phone"] .sp-content{padding:calc(var(--u)*5) calc(var(--u)*4)} .frame[data-screen="settings"][data-w="phone"] .sp-row{grid-template-columns:1fr;gap:calc(var(--u)*2);padding:calc(var(--u)*3) 0} .frame[data-screen="settings"][data-w="phone"] .sp-switch{align-self:flex-start} .frame[data-screen="settings"][data-w="phone"] .sp-themes{grid-template-columns:repeat(2,minmax(0,1fr))}
+.frame[data-screen="settings"][data-w="phone"] .sp-panel{width:100%;height:100%;max-height:100%;border:0;border-radius:0} .frame[data-screen="settings"] .sp-panel .btn{white-space:normal;height:auto;min-height:max(var(--ctl),var(--floor));padding:calc(var(--u)*2) calc(var(--u)*3)}
+@media(prefers-reduced-motion:reduce){.frame[data-screen="settings"] *{animation:none!important;transition:none!important}}
+/* Connect: before login; one capped column, no rail or plan furniture. */
+.frame[data-screen="connect"]{--cp-width:calc(var(--hair)*460)}
+.cp-scroll{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;padding:calc(var(--u)*6)} .cp-column{width:100%;max-width:var(--cp-width);margin:auto;display:flex;flex-direction:column;gap:calc(var(--u)*5);padding:calc(var(--u)*4) 0}
+.cp-logo{align-self:center;width:calc(var(--u)*30)!important;height:calc(var(--u)*30)!important;stroke:none!important;margin-bottom:calc(var(--u)*2)} .cp-logo .cp-ink{fill:var(--fg)} .cp-logo .cp-paper{fill:var(--card)} .cp-logo .cp-letter{stroke:var(--card);stroke-width:55;fill:none}
+.cp-form{display:flex;flex-direction:column;gap:calc(var(--u)*2)} .cp-input{display:flex;gap:var(--u)} .cp-input .in{flex:1;min-width:0} .cp-progress{color:var(--muted-fg);min-height:calc(var(--fs)*1.35)} .cp-spinner{animation:spin calc(var(--t)*5) linear infinite}
+.cp-site{background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);overflow:hidden} .cp-sites{display:flex;flex-direction:column;gap:calc(var(--u)*3)} .cp-head{display:flex;gap:var(--u);align-items:center;padding:calc(var(--u)*2)} .cp-identity{display:flex;gap:calc(var(--u)*2);align-items:center;flex:1;min-width:0;text-align:left;padding:var(--u)!important} .cp-identity .grow{overflow-wrap:anywhere} .cp-identity small{display:block;color:var(--muted-fg);font-size:calc(var(--fs)*.86)}
+.cp-body{padding:0 calc(var(--u)*3) calc(var(--u)*3);display:flex;flex-direction:column;gap:calc(var(--u)*3)} .cp-users{display:flex;flex-direction:column;gap:var(--u)} .cp-user{display:flex;align-items:center;gap:var(--u);border-radius:var(--r);border:var(--hair) solid transparent} .cp-user.on{border-color:var(--primary)} .cp-user .opt{flex:1;min-width:0;padding:calc(var(--u)*2);gap:calc(var(--u)*2)} .cp-user .grow>span{display:block} .cp-user .cp-status{margin-top:var(--u)} .cp-user-actions{display:flex;flex-direction:column;align-items:flex-end}
+.cp-signin{border:var(--hair) dashed var(--border)!important;justify-content:flex-start} .cp-stores{display:flex;flex-direction:column;gap:calc(var(--u)*2)} .cp-store{border:var(--hair) solid var(--border)!important;padding:calc(var(--u)*3)!important;gap:calc(var(--u)*3)} .cp-store[aria-checked="true"]{border-color:var(--primary)!important;background:var(--muted)} .cp-body h2{font-size:var(--fs);font-weight:600;margin:0} .cp-body p{margin:0}
+.frame[data-screen="connect"] :is(button,input,a){min-height:max(var(--ctl),var(--floor));min-width:max(var(--ctl),var(--floor))} .frame[data-screen="connect"] .btn{white-space:normal;height:auto;padding:calc(var(--u)*2) calc(var(--u)*3)} .frame[data-screen="connect"] .ibtn{flex:none} .frame[data-screen="connect"] .st i{width:calc(var(--u)*2);height:calc(var(--u)*2)} .frame[data-screen="connect"] .radio{width:calc(var(--u)*4.5);height:calc(var(--u)*4.5)} .frame[data-screen="connect"] .radio.on::after{inset:var(--u)} .frame[data-screen="connect"] a{display:inline-flex;align-items:center;color:var(--primary);text-underline-offset:var(--u)} .frame[data-screen="connect"] .in:focus{box-shadow:none}
+.frame[data-screen="connect"] .sheet{width:min(100%,var(--cp-width))} .frame[data-screen="connect"] .sheet-f{justify-content:flex-end} .cp-danger{border-color:var(--destructive)!important} .cp-beat{animation:cp-arrive var(--t) var(--ease)} @keyframes cp-arrive{from{opacity:0}to{opacity:1}}
+.frame[data-screen="connect"][data-w="phone"] .cp-scroll{padding:calc(var(--u)*4)} .frame[data-screen="connect"][data-w="phone"] .cp-logo{width:calc(var(--u)*24)!important;height:calc(var(--u)*24)!important}
+@media(prefers-reduced-motion:reduce){.frame[data-screen="connect"] *{animation:none!important;transition:none!important}}
+/* Products: scoped additions; the existing register and table drawings stay in place. */
+.frame[data-screen="register"]{--pp-picker:calc(var(--hair)*320);--pp-flash:350ms}
+.frame[data-screen="register"] .fbar>[hidden]{display:none}
+.pp-form{display:flex;flex-direction:column;gap:calc(var(--u)*3)} .pp-form label{display:flex;flex-direction:column;gap:var(--u);min-width:0} .pp-form select{font:inherit;color:var(--fg)}
+.pp-form :is(button,input,select),.pp-camera button,.pp-outage button{min-height:max(var(--ctl),var(--floor));min-width:max(var(--ctl),var(--floor))} .pp-form .btn{height:auto;white-space:normal;padding:calc(var(--u)*2) calc(var(--u)*3)} .pp-form .row{flex-wrap:wrap} .pp-form .st{white-space:normal} .pp-form .st i{width:calc(var(--u)*2);height:calc(var(--u)*2)}
+.frame[data-screen="register"] .pp-picker.pop{width:min(var(--pp-picker),calc(100% - var(--u)*4));left:var(--pp-x)!important;top:var(--pp-y)!important;right:auto!important;bottom:auto;max-height:calc(100% - var(--u)*4);padding:calc(var(--u)*3);animation:none}
+.pp-title{display:flex;align-items:center;gap:var(--u);font-weight:600} .pp-combo{max-height:calc(var(--ctl)*3);overflow:auto;border:var(--hair) solid var(--border);border-radius:var(--r)} .pp-combo:empty{display:none} .pp-picker .segt,.pp-sheet .segt{height:auto;display:flex;flex-wrap:wrap} .pp-picker .segt button,.pp-sheet .segt button{flex:1}
+.pp-feedback{margin-top:var(--u);font-size:calc(var(--fs)*.9);color:var(--muted-fg);overflow-wrap:anywhere} .toolbar:has(.pp-feedback){align-items:flex-start} .search:has(.pp-feedback)>svg{top:calc(max(var(--ctl),var(--floor))/2)}
+.pp-camera{margin:0 calc(var(--u)*3) calc(var(--u)*3) calc(var(--u)*4);border:var(--hair) solid var(--border);border-radius:var(--r);background:var(--muted);flex:none;overflow:hidden} .pp-camera-view{height:calc(var(--hair)*var(--pp-height));min-height:calc(var(--hair)*96);max-height:calc(var(--hair)*480);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*2);padding:calc(var(--u)*3);position:relative;text-align:center}
+.pp-camera-view>.ibtn{position:absolute;right:0;top:0} .pp-viewfinder{width:60%;height:60%;border:calc(var(--hair)*2) dashed var(--muted-fg);border-radius:var(--r);display:grid;place-items:center;color:var(--muted-fg)} .pp-camera.pp-detected .pp-viewfinder{border-color:var(--ok);background:var(--ok-bg);color:var(--ok)} .pp-camera-note{padding:0 calc(var(--u)*3) calc(var(--u)*2);color:var(--muted-fg);font-size:calc(var(--fs)*.9)}
+.pp-resize{display:flex;justify-content:center;align-items:center;min-height:max(var(--ctl),var(--floor));width:100%;cursor:ns-resize!important;touch-action:none;border-top:var(--hair) solid var(--border)!important} .pp-resize::after{content:'';width:calc(var(--u)*9);height:var(--hair);background:var(--muted-fg)}
+.pp-foot{display:flex;align-items:center;justify-content:space-between;gap:calc(var(--u)*2);padding:calc(var(--u)*2) calc(var(--u)*4);border-top:var(--hair) solid var(--border);color:var(--muted-fg);font-size:calc(var(--fs)*.9);flex:none} .pp-end{text-align:center;color:var(--muted-fg);padding:calc(var(--u)*3);grid-column:1/-1}
+.pp-outage{background:var(--bad-bg);border:var(--hair) solid var(--bad);margin:0 calc(var(--u)*3) calc(var(--u)*3) calc(var(--u)*4);padding:calc(var(--u)*3);border-radius:var(--r);flex:none} .pp-outage .row{flex-wrap:wrap} .pp-outage .st{white-space:normal;align-items:baseline}
+.pp-editor .panel-b{gap:calc(var(--u)*3);min-height:0} .pp-editor .panel-f{display:flex;gap:calc(var(--u)*2)} .pp-editor .panel-f .btn{width:auto;flex:1} .pp-editor .opt{min-height:max(var(--ctl),var(--floor))} .pp-editor h3{font-size:var(--fs);margin:0} .pp-editor .pp-filter-row{display:flex;align-items:center;gap:var(--u)} .pp-filter-row>.opt{flex:1;min-width:0} .pp-filter-row .grip{cursor:grab;touch-action:none} .pp-condition{display:grid;grid-template-columns:1fr auto;gap:calc(var(--u)*2);align-items:end} .pp-condition .row{grid-column:1/-1} .pp-condition .row>*{flex:1;min-width:0}
+.frame[data-w="phone"] .pp-editor{height:100%;max-height:100%;border-radius:0} .frame[data-w="phone"] .pp-camera{margin-left:calc(var(--u)*3)}
+@media(prefers-reduced-motion:reduce){.pp-picker,.pp-editor,.pp-sheet{animation:none!important;transition:none!important}}
+/* Token sheet: the live frame is the source, never a second token table. */
+.frame[data-screen="tokens"]{height:auto;min-height:calc(var(--tile)*12)}
+.tk-page{padding:calc(var(--u)*5);min-width:0}
+.tk-page h1{font:700 var(--amt)/1.1 var(--display);margin:0 0 calc(var(--u)*2)}
+.tk-page h2{font-size:calc(var(--fs)*1.3);margin:0 0 calc(var(--u)*3)}
+.tk-page section{border-top:var(--hair) solid var(--border);margin-top:calc(var(--u)*7);padding-top:calc(var(--u)*4)}
+.tk-page p{margin:calc(var(--u)*2) 0 calc(var(--u)*4);color:var(--muted-fg)}
+.tk-table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:calc(var(--fs)*.86)}
+.tk-table th,.tk-table td{padding:calc(var(--u)*2);text-align:left;vertical-align:top;border-bottom:var(--hair) solid var(--border);overflow-wrap:anywhere}
+.tk-table th{font-weight:600}.tk-table th:first-child{width:calc(var(--fs)*8)}
+.tk-table .tk-selected{background:var(--muted);box-shadow:inset 0 calc(var(--hair)*2) var(--primary)}
+.tk-swatch{display:block;height:calc(var(--u)*7);border-radius:var(--r);border:var(--hair) solid var(--border);margin-bottom:calc(var(--u)*2)}
+.tk-code{font:inherit;font-family:var(--mono);font-size:calc(var(--fs)*.86);overflow-wrap:anywhere}
+.tk-fail{color:var(--bad);font-weight:600}.tk-pass{color:var(--muted-fg)}
+.tk-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(var(--u)*4)}
+.tk-specimen{padding:calc(var(--u)*3);border:var(--hair) solid var(--border);border-radius:var(--r);min-width:0;overflow-wrap:anywhere}
+.tk-specimen .tk-face{display:block;font-size:calc(var(--fs)*1.7);margin:calc(var(--u)*2) 0}
+.tk-icons{display:flex;flex-wrap:wrap;gap:calc(var(--u)*3);margin:calc(var(--u)*3) 0}
+.tk-motion{display:grid;grid-template-columns:1fr 1fr auto;align-items:center;gap:calc(var(--u)*4);padding:calc(var(--u)*3) 0;border-bottom:var(--hair) solid var(--border)}
+.tk-window{overflow:hidden;min-height:max(var(--ctl),var(--floor));display:flex;align-items:center;padding:calc(var(--u)*2)}
+.tk-sample{display:inline-flex;align-items:center;justify-content:center;padding:calc(var(--u)*2);border:var(--hair) solid var(--border);border-radius:var(--r);background:var(--card);--pull:var(--u);--tilt:0deg;--qdy:var(--u)}
+.tk-sample svg path{stroke-dasharray:30;stroke-dashoffset:0}.tk-motion .btn{min-width:max(var(--ctl),var(--floor))}
+.tk-probes{position:absolute;visibility:hidden;pointer-events:none;contain:layout;inset:0;overflow:hidden}
+.tk-probes .frame{position:absolute}.tk-probes .pop{animation:none!important}
+.frame[data-screen="tokens"][data-w="phone"] .tk-page{padding:calc(var(--u)*3)}
+.frame[data-screen="tokens"][data-w="phone"] .tk-grid{grid-template-columns:1fr}
+.tk-overflow{overflow-x:auto}.frame[data-screen="tokens"][data-w="phone"] .tk-colours{min-width:calc(var(--fs)*65)}
+@media(prefers-reduced-motion:reduce){.tk-page *{animation:none!important;transition:none!important}}
 </style>
 <script src="iconsets.js"></script>
 </head>
@@ -933,8 +1024,12 @@ const SCENES=[['open','Session open · focus on search'],['added','Line just add
 
 let termTimer=null;
 function jump(scn){
+  RC.reset(scn);
+  if(scn==='connect'){CP.open();return;}
   clearTimeout(termTimer);
   Object.assign(S,{scn,payClock:842,splitDetail:null,pays:[],payPlan:null,split:null,leg:0,legMethods:[],pending:null,panel:false,sheet:null,tender:false,view:'keypad',entry:null,method:'cash',settle:null,online:true,long:false,pop:null,phoneTab:'cart',counted:'',open:'200.00',reveal:null,edit:null,orders:2,ordlist:false,termStep:1,view2:'grid',pview:'products',cats:[],tags:[],menu:false,slide:null,stock:null,feat:false,quick:false,nostrip:false});
+  PP.jump(scn);
+  if(scn.startsWith('paid-')){RC.seed(scn);render();return;}
   switch(scn){
     case 'added': S.settle='line'; break;
     case 'line-actions': S.reveal=0; break;
@@ -971,6 +1066,9 @@ const sub=()=>lines().reduce((a,[,q,p])=>a+q*p,0);
 
 function renderStrip(){
   const seg=(k,opts,state=S)=>`<span class="seg">${opts.map(([v,l])=>`<button class="${state[k]===v?'on':''}" data-set="${k}" data-v="${v}">${l}</button>`).join('')}</span>`;
+  if(S.screen==='tokens'){TK.strip(seg);return;}
+  if(S.screen==='connect'){CP.strip(seg);return;}
+  if(S.screen==='settings'){SP.strip(seg);return;}
   document.getElementById('strip').hidden=Q.get('board')==='1';
   document.getElementById('strip').innerHTML=`
     <div class="g"><b>Width</b>${seg('w',[['phone','Phone 390'],['tablet','Tablet 1024'],['desktop','Desktop 1440']])}</div>
@@ -991,6 +1089,7 @@ const NAV_BOTTOM=[['health','Store health'],['gear','Settings'],['support','Supp
 const navOn=(k)=>k===(S.screen==='register'?'pos':S.screen);
 const SCN_OF={register:'open',reports:'today',orders:'default'};   /* each page keeps its own State while you move between them */
 function nav(screen){
+  RC.activate(screen);
   if(screen===S.screen){ S.sheet=null; RS.sheet=null; OS.sheet=null; render(); return; }
   clearTimeout(termTimer); SCN_OF[S.screen]=S.scn; S.screen=screen; S.scn=SCN_OF[screen]; S.sheet=null; RS.sheet=null; OS.sheet=null; render();
 }
@@ -1487,6 +1586,7 @@ function tenderHead(){
   return `<div class="hd" style="padding-left:calc(var(--u)*4)">${toggle}<span class="grow"></span>${cancel}</div>`;
 }
 function renderTender(){
+  if(S.view==='paid')return RC.stage();
   const t=T(); const total=remaining(); const entry=paymentAmount(); const ghost=S.entry===null; const m=METHODS.find(x=>x.id===S.method)||METHODS[0];
   /* Amount and Percent (Paul 2026-09-17: a keypad with quick keys): the typed value is the figure, so the ring stays out; the mode switch is all that scrolls */
   if(S.split){
@@ -1622,8 +1722,11 @@ function render(){
   renderStrip();
   const f=document.getElementById('frame'); f.className='frame'; f.dataset.w=S.w; f.dataset.theme=S.theme; f.dataset.scale=S.scale; f.dataset.screen=S.screen;
   if(S.screen!=='orders')delete f.dataset.list;
+  if(S.screen==='tokens'){TK.render();return;}
+  if(S.screen==='connect'){CP.render();return;}
   if(S.screen==='reports'){RP.render();return;}
   if(S.screen==='orders'){OP.render();return;}
+  if(S.screen==='settings'){SP.render();return;}
   f.toggleAttribute('data-pay-board',Q.get('board')==='1'&&Q.has('payList'));
   f.toggleAttribute('data-xf',S.xf);
   if(S.xf){
@@ -1637,6 +1740,9 @@ function render(){
   const oldSplit=f.querySelector('.amtblock[data-sl-paid]');
   const splitBefore=oldSplit?{paid:+oldSplit.dataset.slPaid,layout:oldSplit.dataset.slLayout}:null;
   f.innerHTML=`${S.plan==='top'&&!S.nostrip?renderUpgradeStrip('top'):''}<div class="body">${S.w==='phone'?'':renderRail()}<div class="main">${renderPOS()}${renderSide()}${renderPanel()}${renderSheet()}</div></div>`;
+  PP.render(f);
+  if(RC.emailOpen()){f.querySelector('.main').insertAdjacentHTML('beforeend',RC.email());f.querySelector('.rc-email input').focus();}
+  if(S.sheet==='user')f.querySelector('.sheet-b')?.insertAdjacentHTML('beforeend','<button class="btn q press" data-cp-enter data-testid="connect-switch-store">Switch store</button>');
   animateSplitLook(f,splitBefore);
   if(S.pays.length>oldPayCount) f.querySelectorAll('.paylist [data-pay-fill]').forEach(el=>{
     if(+el.dataset.payFill<oldPayCount) return;
@@ -1655,7 +1761,13 @@ function render(){
 }
 function stepTerminal(){ clearTimeout(termTimer); if(S.view!=='terminal') return; if(S.termStep<3){ termTimer=setTimeout(()=>{ S.termStep++; render(); stepTerminal(); }, S.termStep===1?2600:900); } else termTimer=setTimeout(()=>{ if(S.view!=='terminal') return; S.method=S.pending?.m||S.method; settle(S.pending?.amount??paymentAmount()); render(); },500); }
 document.addEventListener('click',e=>{
+  if(S.screen==='tokens'&&TK.click(e))return;
+  if(PP.click(e))return;
+  if(RC.click(e))return;
+  if(e.target.closest('[data-cp-enter]')){CP.open();return;}
+  if(S.screen==='connect'&&CP.click(e))return;
   const control=e.target.closest('[data-set],[data-scn],[data-tx],[data-txall],[data-nav]');
+  if(S.screen==='settings'&&SP.click(e))return;
   if(S.screen==='reports'&&!control){RP.click(e);return;}
   if(S.screen==='orders'&&!control){OP.click(e);return;}
   const b=e.target.closest('[data-set],[data-scn],[data-act],[data-tx],[data-txall],[data-nav]');
@@ -1733,6 +1845,7 @@ document.addEventListener('click',e=>{
     case 'key': { const k=b.dataset.k; const cur=S.entry===null?'':String(Math.round(S.entry*100)); const d=k==='C'?'':k==='⌫'?cur.slice(0,-1):(cur+k).slice(0,8); S.entry=d===''?null:+d/100; break; }
     case 'take': { const amount=paymentAmount(); if(amount<=0) break; const m=[...METHODS,...LEGACY].find(x=>x.id===S.method); if(m&&m.k==='terminal'){ S.pending={amount:Math.min(amount,remaining()),m:S.method}; S.split=null; S.view='terminal'; S.termStep=0; render(); termTimer=setTimeout(()=>{S.termStep=1;render();stepTerminal();},700); return; } settle(amount); break; }
     case 'newSale': {
+      RC.reset();
       const done=()=>{ S.pays=[]; S.payPlan=null; S.split=null; S.leg=0; S.legMethods=[]; S.pending=null; S.tender=false; S.view='keypad'; S.entry=null; S.scn='empty'; render(); const c=document.querySelector('.cartcol'); if(c&&S.tx.tear&&WHIMSY.includes(S.theme)){ c.classList.add('rollin'); setTimeout(()=>c.classList.remove('rollin'),500); } };
       const led=document.querySelector('.cartcol.ledger');
       if(S.tx.tear&&WHIMSY.includes(S.theme)&&led){ led.classList.add('tearing'); setTimeout(done,420); return; }
@@ -1755,6 +1868,11 @@ document.addEventListener('pointerdown',e=>{
   ln.addEventListener('pointermove',move); ln.addEventListener('pointerup',up); ln.addEventListener('pointercancel',up);
 });
 document.addEventListener('keydown',e=>{
+  if(PP.keydown(e))return;
+  if(RC.keydown(e))return;
+  if(S.screen==='tokens'){TK.keydown(e);return;}
+  if(S.screen==='connect'){CP.keydown(e);return;}
+  if(S.screen==='settings'){SP.keydown(e);return;}
   if(S.screen==='reports'){RP.keydown(e);return;}
   if(S.screen==='orders'){OP.keydown(e);return;}
   if (S.qx!=null && S.w!=='phone'){ if(/^[0-9]$/.test(e.key)) { document.querySelector(`.qx [data-act="qkey"][data-k="${e.key}"]`)?.click(); return; } if(e.key==='Backspace'){ document.querySelector('.qx [data-act="qkey"][data-k="bs"]')?.click(); return; } if(e.key==='Enter'||e.key==='Escape'){ S.qx=null; S.qbuf=''; render(); return; } }
@@ -2505,10 +2623,12 @@ const T=()=>OS.long?{title:'Bestellungen',search:'Bestellungen suchen',status:'S
  :{title:'Orders',search:'Search orders',status:'Status',customer:'Customer',cashier:'Cashier',via:'Created via',register:'Register',date:'Date range',showing:'Showing',of:'of',sync:'Sync',noOrders:'No orders yet',noOrdersS:'Sales you take will appear here.',noMatch:'No orders match these filters',clear:'Clear filters',err:'Orders could not be loaded',retry:'Retry',docs:'Help',print:'Print receipt',refund:'Refund',items:'Items',totals:'Totals',subtotal:'Subtotal',tax:'VAT 20%',total:'Total',net:'Net payment',refunds:'Refunds',cust:'Customer',payment:'Payment',meta:'Metadata',offline:'Offline',syncing:'Syncing…',searching:'Searching…',view:'View',edit:'Edit',reopen:'Re-open',receipt:'Receipt',del:'Delete',cols:COLS.slice(0,11).map(c=>c[1])};
 
 function jump(scn){
+  OS.receipt=false;RC.reset();
   S.scn=scn;
   Object.assign(OS,{open:null,pop:null,menu:null,sheet:null,focus:null,filters:{},online:true,long:false,toast:null,tog:{}});
   if (scn==='filtered'||scn==='noresults') OS.tog={unpaid:false,today:true,mine:false};
   switch(scn){
+    case 'receipt': OS.open=102476;OS.receipt=true;RC.openOrder(ORDERS[0]);break;
     case 'keyboard': OS.focus=1; break;
     case 'open': OS.open=102475; break;
     case 'open-refund': OS.open=102474; break;
@@ -2617,6 +2737,7 @@ function renderRows(){
 
 /* ---- the open order ---- */
 function renderPane(){
+  if(OS.receipt)return RC.panel();
   if(!OS.open) return ''; const t=T(); const o=ORDERS.find(x=>x.n===OS.open); const items=[['Flat white',2,3.2,'Oat milk'],['Sourdough loaf',1,4.2,''],['Tote bag · Natural · L',1,12,'']];
   const sub=o.t/1.2, tax=o.t-sub; const net=o.t-(o.ref||0);
   return `<div class="op-pane">
@@ -2680,6 +2801,8 @@ function renderOrders(){
   const list = S.w==='desktop' ? renderTable() : renderRows();
   const page=`<div class="page">${renderBar()}${renderFilters()}<div class="listwrap">${phone&&OS.open?'':list}</div></div>${renderPane()}`;
   f.innerHTML=`${S.plan==='top'&&!S.nostrip?renderUpgradeStrip('top'):''}<div class="body">${phone?'':renderRail()}<div class="main">${page}${renderPop()}${renderSheet()}${OS.toast?`<div class="op-toast"><span class="ck">${I.check}</span>${OS.toast}</div>`:''}</div></div>`;
+  const receiptButton=f.querySelector('.op-pane:not(.rc-order) .pane-f .btn.p');if(receiptButton)receiptButton.dataset.act='receiptOpen';
+  if(RC.emailOpen()){f.querySelector('.main').insertAdjacentHTML('beforeend',RC.email());f.querySelector('.rc-email input').focus();}
   /* 2026-09-17: the row menu stays under the ellipsis that opened it; 2026-09-18: so do the display options (right-aligned) and the filter lists (left-aligned) */
   const pop=f.querySelector('.pop');
   if (pop && !phone){
@@ -2694,9 +2817,11 @@ function click(e){
   const b=e.target.closest('[data-act]');
   if(!b){ if(!e.target.closest('[data-stop]') && (OS.pop||OS.menu)){ OS.pop=null; OS.menu=null; render(); } return; }
   const a=b.dataset.act;
+  if(a==='openOrder'&&!e.target.closest('[data-act="menu"],[data-act="filterStatus"]')){OS.receipt=false;RC.reset();}
   switch(a){
     case 'pop': OS.pop = OS.pop===b.dataset.pop?null:b.dataset.pop; OS.menu=null; break;
     case 'menu': OS.menu = OS.menu===+b.dataset.n?null:+b.dataset.n; OS.pop=null; break;
+    case 'receiptOpen': OS.receipt=true;RC.openOrder(ORDERS.find(o=>o.n===OS.open));break;
     case 'openOrder': if(e.target.closest('[data-act="menu"],[data-act="filterStatus"]')) return; OS.open=+b.dataset.n; OS.pop=null; OS.menu=null; break;
     case 'closeOrder': OS.open=null; break;
     case 'col': OS.cols[b.dataset.k]=!OS.cols[b.dataset.k]; break;
@@ -2716,6 +2841,7 @@ function click(e){
 function keydown(e){
   if(e.key==='Escape'&&OS.sheet){OS.sheet=null;render();return;}
   if (S.w!=='desktop') return; const rs=rows(); if(!rs.length) return;
+  if(e.key==='Enter'&&OS.focus!=null){OS.receipt=false;RC.reset();}
   if (e.key==='ArrowDown'){ OS.focus = OS.focus==null?0:Math.min(rs.length-1,OS.focus+1); render(); e.preventDefault(); }
   else if (e.key==='ArrowUp'){ OS.focus = Math.max(0,(OS.focus??1)-1); render(); e.preventDefault(); }
   else if (e.key==='Enter' && OS.focus!=null){ OS.open=rs[OS.focus].n; render(); }
@@ -2724,6 +2850,547 @@ function keydown(e){
 return {render:renderOrders, click, keydown, jump, SCENES};
 })();
 
+/* Settings: local drawing data only; no server writes or hardware calls. */
+const SP=(()=>{
+const sections=[['general','General'],['tax','Tax'],['printing','Printing'],['display','Customer display'],['scanning','Barcode scanning'],['theme','Theme']];
+const themes=[['light','Default light'],['dark','Default dark'],['paper','Paper till'],['bold','Bold money'],['warm','Warm shop'],['market','Market stall'],['ocean','Ocean'],['sunset','Sunset'],['monochrome','Monochrome']];
+const SCENES=['index','general','general-saved','general-restore','general-restore-failed','tax','printing','printing-empty','printing-test','printing-wizard','printing-saved','printing-edit','printing-delete','theme','display','display-locked','scanning','scanning-sound','scanning-register','loading'].map(v=>[v,v.replaceAll('-',' · ')]);
+const defaults={name:'UK Store',locale:'English (UK)',customer:'Guest',cashier:false,currency:'GBP — Pound sterling',position:'Right with space',decimal:',',decimals:2,thousand:'.',group:'Thousand',basis:'Shop base address',totals:'Itemised',shop:'Excluding tax',checkout:'Excluding tax',suffix:'',threshold:24,length:8,prefix:'',suffixScan:'',sound:false,soundTheme:'Classic',volume:.6,success:true,failure:true,vibration:true,printerName:'Epson TM-m30',connection:'Network',ip:'192.168.1.42',port:'8043',vendor:'Epson',language:'ESC/POS',textWidth:'48 columns · 80 mm',codepage:'Western European',raster:false,drawer:'Drawer 1',cut:true,autoDrawer:false,defaultPrinter:true};
+const printerFixtures=()=>[{id:'epson',name:'Epson TM-m30',connection:'Network · 192.168.1.42:8043',status:'Ready',kind:'ok',default:true},{id:'star',name:'Star mC-Print3',connection:'USB · Front counter',status:'Not reachable',kind:'neutral'},{id:'dialog',name:'Print dialog',connection:'Managed by WCPOS',status:'Built in',kind:'neutral',built:true}];
+const scannerFixtures=()=>[{name:'Counter scanner',status:'Registered',transport:'Keyboard'},{name:'Socket S700',status:'Connected',transport:'Bluetooth'},{name:'Stockroom scanner',status:'Not in range',transport:'Bluetooth serial'},{name:'Honeywell Voyager',status:'Not plugged in',transport:'USB'},{name:'Spare scanner',status:'Not connected',transport:'Serial'}];
+const st={section:'general',saved:'row',beat:null,beatText:'Saved',values:{...defaults},printers:printerFixtures(),scanners:scannerFixtures(),displays:['Counter display','Window display'],panel:null,sheet:null,menu:null,test:null,testResult:null,themeChoice:'system',scaleChoice:'regular',registering:false,candidate:false,code:null};
+let beatTimer,printTimer,resultTimer,returnFocus=null,focusNext=null;
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const btn=(label,action,value='',cls='')=>`<button class="btn press ${cls}" data-sp="${action}" data-v="${esc(value)}" data-testid="settings-${action}${value?'-'+esc(value):''}">${label}</button>`;
+const status=(word,kind='neutral')=>`<span class="st ${kind}"><i></i>${word}</span>`;
+const link=(label,url)=>`<a href="${url}" target="_blank" rel="noopener">${label}</a>`;
+const docs=(label='Having trouble?',page='hardware/printers')=>link(label,'https://docs.wcpos.com/'+page);
+const beat=(id)=>`<span class="sp-saved ${st.beat===id&&st.saved==='row'?'on':''}" data-saved="${id}" role="status">${I.check}<span>${esc(st.beat===id?st.beatText:'Saved')}</span></span>`;
+const row=(label,control,id='',hint='')=>`<div class="sp-row" ${id?`data-row="${id}"`:''}><div class="sp-label"><label ${id?`id="sp-label-${id}" for="sp-${id}"`:''}>${label}</label>${hint?`<small>${hint}</small>`:''}</div><div class="sp-control">${control}${id?beat(id):''}</div></div>`;
+const input=(id,type='text',extra='')=>`<input id="sp-${id}" data-sp-field="${id}" data-testid="settings-${id}" class="in" type="${type}" value="${esc(st.values[id])}" ${extra}>`;
+const field=(label,id,type='text',hint='',extra='')=>row(label,input(id,type,extra),id,hint);
+const select=(label,id,options,hint='',extra='')=>row(label,`<select id="sp-${id}" data-sp-field="${id}" data-testid="settings-${id}" class="in" ${extra}>${options.map(v=>`<option ${st.values[id]===v?'selected':''}>${esc(v)}</option>`).join('')}</select>`,id,hint);
+const toggle=(label,id,hint='')=>row(label,`<button id="sp-${id}" class="sp-switch" role="switch" aria-checked="${!!st.values[id]}" aria-labelledby="sp-label-${id}" data-sp="toggle" data-v="${id}" data-testid="settings-${id}"><span class="sw ${st.values[id]?'on':''}"></span></button>`,id,hint);
+const radios=(label,id,options)=>row(label,`<div role="radiogroup" aria-labelledby="sp-label-${id}">${options.map(v=>`<button class="opt" role="radio" aria-checked="${st.values[id]===v}" data-sp="radio" data-k="${id}" data-v="${esc(v)}"><span class="radio ${st.values[id]===v?'on':''}"></span>${esc(v)}</button>`).join('')}</div>`,id);
+const section=(title,body)=>`<section class="sp-section"><h2>${title}</h2>${body}</section>`;
+const mirrored=(label,value)=>row(label,`<span class="sp-value">${value}</span>`);
+const mirrorNote=(tax=false)=>`<div class="mut sm">Set in WooCommerce, mirrored here.</div>${btn(tax?'Open WooCommerce tax settings':'Open WooCommerce settings','external',tax?'tax':'general','q')}`;
+function general(){return section('Store',field('Store name','name')+[['Store base country','United Kingdom'],['Store base state','England'],['Store base city','London'],['Store base postcode','E2 7DJ']].map(([l,v])=>mirrored(l,v)).join('')+mirrorNote())+section('Localisation',select('Language','locale',['English (UK)','Deutsch','Español'])+select('Default customer','customer',['Guest','Amy Okafor','Sam Reilly'],st.values.cashier?'Uses the signed-in cashier.':'Pre-selected on every new cart.',st.values.cashier?'disabled':'')+toggle('Default customer is cashier','cashier'))+section('Currency and numbers',select('Currency','currency',['GBP — Pound sterling','USD — US dollar','EUR — Euro'])+select('Currency position','position',['Left','Right','Left with space','Right with space'])+field('Decimal separator','decimal')+field('Number of decimals','decimals','number','', 'step="1"')+field('Thousand separator','thousand')+select('Thousands group style','group',['Thousand','Lakh','Wan']))+section('Restore',`<div class="mut sm">Replaces local changes with the store’s values.</div>${row('',btn('Restore server settings','confirm','restore','d sp-danger'),'restore')}${S.scn==='general-restore-failed'?`<div class="neg">Couldn't reach the store · ${btn('Try again','retry','','q d')}</div>`:''}`);}
+function tax(){return section('Store tax settings',[['Enable taxes','Yes'],['Prices entered with tax','No'],['Shipping tax class','Based on cart items'],['Round tax at subtotal level','No']].map(([l,v])=>mirrored(l,v)).join('')+mirrorNote(true))+section('Calculation',select('Calculate tax based on','basis',['Shop base address','Customer billing address','Customer shipping address']))+section('Display',radios('Display tax totals','totals',['Itemised','Single total'])+radios('Display prices in the shop','shop',['Including tax','Excluding tax'])+radios('Display prices during cart and checkout','checkout',['Including tax','Excluding tax'])+field('Price display suffix','suffix'))+`<div class="sp-actions">${btn('View all tax rates','rates')}${docs('Tax documentation','settings/tax')}</div>`;}
+function printing(){
+  const printer=p=>`<div class="sp-printer" data-printer="${p.id}"><div class="sp-printer-head"><div class="grow"><b>${esc(p.name)}</b>${p.default?' <span class="pill">Default</span>':''}<div class="mut sm">${p.connection}</div></div>${status(p.status,p.kind)}</div><div class="sp-actions">${btn(st.test===p.id?`${I.sync}Printing…`:'Test print','test',p.id,st.test===p.id?'sp-testing':'')}${p.built?'':btn('Edit','edit',p.id,'q')}<span class="grow"></span><button class="ibtn" data-sp="menu" data-v="${p.id}" aria-label="More for ${esc(p.name)}">${I.dots}</button></div>${st.menu===p.id?`<div class="pop sp-pop">${btn('Copy setup report','copy-report',p.id,'q')}${!p.default&&!p.built?btn('Set default','default',p.id,'q'):''}${!p.built?btn('Delete','confirm','delete:'+p.id,'q d'):''}</div>`:''}<div class="sp-result" role="status">${st.testResult?.id===p.id?esc(st.testResult.text):''}</div></div>`;
+  const empty=`<div class="empty sp-empty"><b>No printers configured</b><p>Add a printer to send receipts straight to your hardware. You can always use the Print dialog without one.</p><div class="sp-actions">${btn('Add printer','wizard')}${docs('Open the printer guide')}</div></div>`;
+  const options=['Auto — Epson TM-m30','Auto — Print dialog',...st.printers.map(p=>p.name),'Unavailable printer'];
+  return section('Printers',st.printers.some(p=>!p.built)?st.printers.map(printer).join('')+`<div class="sp-actions">${btn('Add printer','wizard')}${docs()}</div>`:empty)+section('Templates',select('Receipt · thermal','receiptTemplate',options)+select('Invoice','invoiceTemplate',options));
+}
+function theme(){return section('Appearance',`<div class="sp-themes">${[['system','System'],...themes].map(([id,label])=>`<button class="sp-theme" data-sp="theme" data-v="${id}" aria-pressed="${st.themeChoice===id}" data-testid="settings-theme-${id}"><span class="frame sp-preview" data-theme="${id==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):id}"><span class="sp-mini-card">Front counter</span><span class="sp-mini-button">Pay</span><span>A calm working day</span></span><span>${label}</span></button>`).join('')}</div>${beat('theme')}<div class="mut sm">${st.themeChoice==='system'?'Following system theme':'Current theme: '+themes.find(([id])=>id===st.themeChoice)?.[1]}</div>`)+section('Scale',row('Scale',`<div class="segt" role="group" aria-label="Scale">${['auto','compact','regular','spacious'].map(v=>`<button class="${st.scaleChoice===v?'on':''}" aria-pressed="${st.scaleChoice===v}" data-sp="scale" data-v="${v}">${v[0].toUpperCase()+v.slice(1)}</button>`).join('')}</div>`,'scale')+`<div class="mut sm">Auto picks by device: phones compact, counters regular, large screens spacious.</div>`);}
+function display(){
+  if(S.scn==='display-locked')return section('Customer display',`<div class="mut">Customer displays are a Pro feature.</div>${docs('Customer display guide','customer-display')}`);
+  return section('Pair a display',row('Pairing code',btn('Generate pairing code','pair'),'pair')+(st.code?`<div class="sp-mono">${st.code} · expires in 5 min</div>`:'')+`<div class="sp-mono mut">https://uk-store.example/customer-display</div><div class="sp-actions">${btn('Copy URL','copy-url','','q')}${btn('Open in browser','external','display','q')}</div>`)+section('Paired displays',st.displays.length?st.displays.map((name,i)=>`<div class="sp-printer"><div class="sp-printer-head"><div class="grow"><b>${name}</b><div class="mut sm">Last seen 2 min ago</div></div>${status(i?'Disconnected':'Connected',i?'neutral':'ok')}</div>${btn('Forget','confirm','forget:'+name,'q')}</div>`).join(''):'<div class="mut">No displays are paired with this device.</div>');
+}
+function scanning(){
+  const list=st.registering?`<div class="sp-empty">${st.candidate?field('Scanner name','scannerName')+btn('Save scanner','save-scanner'): `<b>Scan a barcode to register your scanner</b>`}${btn('Cancel','cancel-scanner','','q')}</div>`:st.scanners.map((p,i)=>`<div class="sp-printer-head"><div class="grow"><b>${esc(p.name)}</b><div class="mut sm">${p.transport} · ${status(p.status,p.status==='Connected'?'ok':'neutral')}</div></div>${btn('Remove','remove-scanner',i,'q')}</div>`).join('')+(st.scanners.length?'':'<div class="mut">No setup needed for most scanners.</div>')+`<details class="sp-fold"><summary>Scanner connection options</summary><div class="sp-actions">${['USB','Bluetooth serial','Bluetooth'].map(t=>btn((st.scanners.some(p=>p.transport===t&&p.status==='Connected')?'Disconnect ':'Connect over ')+t+' scanner','transport',t)).join('')}${btn('Register scanner','register-scanner')}</div><details class="sp-fold"><summary>My scanner isn’t in the list</summary>${field('Service UUID','uuid')}<div class="neg" data-uuid-error></div>${btn('Add','uuid')}${docs('Scanner setup guide','hardware/scanner-setup-wizard')}</details></details>`;
+  const sound=st.values.sound?`<div data-testid="scan-sound-options">${section('Scan sounds',radios('Sound theme','soundTheme',['Classic','Checkout','Soft'])+['Classic','Checkout','Soft'].map(v=>row(v,`<div class="sp-actions">${btn('▶','preview',v+':success','q')}${btn('▶×','preview',v+':failure','q')}</div>`)).join('')+row('Volume',`<input id="sp-volume" data-sp-field="volume" type="range" min="0" max="1" step="0.05" value="${st.values.volume}" aria-label="Volume">${btn('Preview volume','preview','volume','q')}`,'volume')+toggle('Success sound','success')+toggle('Failure sound','failure'))}</div>`:'';
+  return section('Scanners',list)+section('Detection',field('Threshold (ms)','threshold','number')+field('Minimum length','length','number')+field('Prefix','prefix')+field('Suffix','suffixScan')+toggle('Play a sound on scan','sound')+sound)+section('Test scanner',row('Keypress event','<input class="in sp-mono" aria-label="Keypress event" readonly placeholder="Tap here, then scan" value="5012345678900 ↵">')+row('Detected barcode','<input class="in sp-mono" aria-label="Detected barcode" readonly value="5012345678900">')+status('Detected as a scan','ok')+'<div class="mut sm">13 characters · 12 ms average gap · Enter received</div>'+docs('Troubleshooting','hardware/scanner-setup-wizard'));
+}
+function editForm(){
+  const v=st.values, connection=row('Connection type',`<div class="segt">${['Network','Bluetooth','USB'].map(t=>`<button class="${v.connection===t?'on':''}" data-sp="connection" data-v="${t}">${t}</button>`).join('')}</div>`,'connection');
+  const fields=v.connection==='Network'?field('IP address','ip')+field('Port','port','number')+btn('Scan network','wizard'):btn('Choose '+v.connection+' printer','printer-device',v.connection);
+  return field('Printer name','printerName')+connection+fields+`<details class="sp-fold"><summary>Advanced · printer settings</summary>${select('Vendor','vendor',['Epson','Star Micronics','Generic'])}${select('Printer language','language',['ESC/POS','StarPRNT'])}${select('Printer text width','textWidth',['32 columns · 58 mm','42 columns','48 columns · 80 mm','64 columns'])}${v.language==='ESC/POS'?select('Receipt language','codepage',['Western European','Greek','Cyrillic']):''}${toggle('Print full receipt as an image','raster','Unicode and RTL · slower than text mode.')}${select('Cash-drawer connector','drawer',['Drawer 1','Drawer 2','None'])}</details>`+toggle('Auto-cut paper','cut')+toggle('Auto-open cash drawer','autoDrawer')+toggle('Set as default','defaultPrinter');
+}
+function panel(){
+  if(!st.panel)return ''; let title='Add printer',body='',foot=btn('Close','close-panel','','q');
+  if(st.panel==='results'){title='Which printer is yours?';body=[['Epson TM-m30','192.168.1.42','Ready','ok'],['Star mC-Print3','192.168.1.43','Test needed','warn'],['Office LaserJet','192.168.1.50','Office printer','neutral'],['192.168.1.80','Network','No connection','neutral']].map(([n,a,s,k])=>`<div class="sp-result-card"><div class="row"><b class="grow">${n}</b><span class="pill">${status(s,k)}</span></div><div class="mut sm">${a}</div>${btn('Print a test page on '+n,'wizard-test',n)}</div>`).join('')+row('Paper width',`<div class="segt">${['58 mm','80 mm'].map(v=>`<button data-sp="paper" data-v="${v}" class="${(st.paper||'80 mm')===v?'on':''}">${v}</button>`).join('')}</div>`)+`<div class="sp-actions">${btn('Find a USB printer','printer-device','USB')}${btn('Find a Bluetooth printer','printer-device','Bluetooth')}${btn('Not this one? Scan again','wizard')}${btn('Enter an IP address','manual')}</div><details class="sp-fold"><summary>More options</summary>${field('Name','printerName')}${select('Vendor','vendor',['Epson','Star Micronics','Generic'])}${select('Text width','textWidth',['32 columns · 58 mm','48 columns · 80 mm'])}${select('Receipt language','codepage',['Western European','Greek'])}</details>`;}
+  if(st.panel==='saved'){title=st.values.printerName+' is set up';body=`<div class="row">${I.check}<b>Ready for the next receipt</b></div><div class="mut">Name, width and cash drawer are under the printer’s row in Settings.</div>${btn('Copy setup report','copy-report','epson','q')}${docs('Open the printer guide')}`;foot=btn('Done','close-panel','','p');}
+  if(st.panel==='edit'||st.panel==='manual'){title=st.panel==='edit'?'Edit printer':'Enter an IP address';body=editForm();foot=`<div class="sp-actions">${btn('Open drawer','drawer','','q')}${btn(st.test?'Printing…':'Test print','test',st.editing||'epson')}${btn('Save','save-printer','','p')}</div>`;}
+  if(st.panel==='asking'){title='Did the test page print?';body=['Yes, and it looks right','Printed, but the ruler is off','Nothing came out'].map((v,i)=>btn(v,'answer',i)).join('');}
+  if(st.panel==='width'){title='Which paper is in the printer?';body=['32','42','48','64'].map(v=>btn(v+' columns','width',v)).join('');}
+  if(st.panel==='trouble'){title='Nothing printed';body=`<div class="neg">Check the printer’s connection and paper.</div>${btn('Try again','wizard-test',st.values.printerName)}${btn('Save without testing','save-printer')}${btn('Start over','wizard','','q')}${docs('Open the printer guide')}`;}
+  return `<div class="panel-wrap"><section class="panel sp-panel" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="panel-h"><h2 class="grow">${esc(title)}</h2><button class="ibtn" data-sp="close-panel" aria-label="Close printer setup">${I.x}</button></div><div class="panel-b">${body}<div class="sp-result" role="status">${esc(st.panelResult||'')}</div></div><div class="panel-f">${foot}</div></section></div>`;
+}
+function sheet(){
+  if(!st.sheet)return S.sheet==='notif'?renderNotifications():renderSheet();
+  let title='',body='',foot=btn('Cancel','close-sheet'); const [kind,value]=st.sheet.split(':');
+  if(kind==='restore'){title='Restore server settings?';body='Local changes will be replaced with the store’s values.';foot+=btn('Restore','destroy','restore','d sp-danger');}
+  if(kind==='delete'){const p=st.printers.find(p=>p.id===value);title='Delete printer?';body=esc(p?.name)+' will be removed from this device.';foot+=btn('Delete','destroy',st.sheet,'d sp-danger');}
+  if(kind==='forget'){title='Forget display?';body=esc(value)+' will need to pair again.';foot+=btn('Forget','destroy',st.sheet,'d sp-danger');}
+  if(kind==='external'){title=value==='display'?'Customer display':'WooCommerce settings';body='Prototype destination · no external store is connected.';foot=btn('Close','close-sheet');}
+  if(kind==='device'){title='Choose a '+value+' printer';body=btn('Epson TM-m30','device-picked',value);foot=btn('Cancel','close-sheet');}
+  if(kind==='rates'){title='Tax rates';body='<div class="lr"><b class="grow">Standard · United Kingdom</b><span>20%</span></div><div class="lr"><span class="grow">Reduced rate</span><span>5%</span></div>';foot=btn('Back to Tax','close-sheet');}
+  return `<div class="sheet-wrap"><section class="sheet" role="dialog" aria-modal="true" aria-label="${title}"><div class="sheet-h"><div class="t grow">${title}</div><button class="ibtn" data-sp="close-sheet" aria-label="Close">${I.x}</button></div><div class="sheet-b">${body}</div><div class="sheet-f">${foot}</div></section></div>`;
+}
+function strip(seg){
+  const group=(label,html)=>`<div class="g"><b>${label}</b>${html}</div>`;
+  document.getElementById('strip').hidden=Q.get('board')==='1';
+  document.getElementById('strip').innerHTML=group('Width',seg('w',[['phone','Phone 390'],['tablet','Tablet 1024'],['desktop','Desktop 1440']]))+group('Plan',seg('plan',[['top','Free · strip at the top'],['pro','Pro · no strip']]))+group('Update',seg('upd',[['ready','Ready · in the bell'],['none','None']]))+group('Theme',seg('theme',themes))+group('Scale',seg('scale',[['compact','Compact'],['regular','Regular'],['spacious','Spacious']]))+group('Saved',seg('saved',[['row','Row'],['header','Header'],['none','None']],st))+group('State',`<span class="seg">${SCENES.filter(([v])=>v!=='index'||S.w==='phone').map(([v,l])=>`<button data-scn="${v}" class="${S.scn===v?'on':''}">${l}</button>`).join('')}</span>`);
+}
+function renderSettings(){
+  const f=document.getElementById('frame'),phone=S.w==='phone',index=phone&&S.scn==='index',title=sections.find(([v])=>v===st.section)[1];
+  const oldScroll=f.querySelector('.sp-scroll')?.scrollTop||0,oldPanel=f.querySelector('.panel-b')?.scrollTop||0,active=document.activeElement?.id,open=[...f.querySelectorAll('details[open]')].map(d=>d.querySelector('summary').textContent);
+  const list=`<nav class="sp-nav" aria-label="Settings sections">${sections.map(([id,label])=>`<button class="opt ${!index&&st.section===id?'on':''}" data-sp="section" data-v="${id}" ${!index&&st.section===id?'aria-current="page"':''} data-testid="settings-nav-${id}"><span class="grow">${label}</span>${phone?I.chev:''}</button>`).join('')}</nav>`;
+  const header=`<div class="bar">${phone?index?`<button class="ibtn" data-act="openSheet" data-sheet="menu" aria-label="Menu">${I.menu}</button>`:`<button class="btn q" data-sp="section" data-v="index" aria-label="Back to Settings">${I.chevl}Settings</button>`:''}<b class="grow">${phone&&!index?title:'Settings'}</b>${renderBell()}</div>`;
+  const body=index?list:`${phone?'':list}<div class="sp-scroll"><div class="sp-content" data-testid="screen-settings-${st.section}"><h1 tabindex="-1">${title}</h1><div class="sp-intro">Changes save as you make them.${st.saved==='header'?`<span class="sp-saved ${st.beat?'on':''}" data-saved="header" role="status">${I.check}<span>${st.beatText} · just now</span></span>`:''}</div>${S.scn==='loading'?'':({general,tax,printing,theme,display,scanning}[st.section])()}</div></div>`;
+  f.innerHTML=`${S.plan==='top'&&!S.nostrip?renderUpgradeStrip('top'):''}<div class="body">${phone?'':renderRail()}<div class="main"><div class="sp-page">${header}<div class="sp-layout">${body}</div></div>${panel()}${sheet()}</div></div>`;
+  f.querySelectorAll('[data-nav="settings"]').forEach(b=>{b.classList.add('on');b.setAttribute('aria-current','page');});
+  f.querySelectorAll('details').forEach(d=>{if(open.includes(d.querySelector('summary').textContent))d.open=true;});
+  if(f.querySelector('.sp-scroll'))f.querySelector('.sp-scroll').scrollTop=st.resetScroll?0:oldScroll;
+  if(f.querySelector('.panel-b'))f.querySelector('.panel-b').scrollTop=st.resetScroll?0:oldPanel;
+  st.resetScroll=false; if(active)document.getElementById(active)?.focus({preventScroll:true});
+  if(focusNext){f.querySelector(focusNext)?.focus({preventScroll:true});focusNext=null;}
+  f.querySelectorAll('.sp-testing svg').forEach(n=>n.classList.add('sp-spinner'));
+  f.querySelectorAll('[data-sp="preview"]').forEach(b=>b.setAttribute('aria-label','Preview '+b.dataset.v.replace(':',' ')));
+  document.getElementById('notes').textContent='Settings · local drawing data only. Values reset on reload; hardware, pairing and restore are simulated. State selects the fixtures; Saved compares the completion beat.';
+}
+function saved(id,text='Saved'){
+  clearTimeout(beatTimer);st.beat=id;st.beatText=text;
+  document.querySelectorAll('[data-saved]').forEach(n=>{n.classList.toggle('on',(st.saved==='row'&&n.dataset.saved===id)||(st.saved==='header'&&n.dataset.saved==='header'));n.querySelector('span').textContent=text+(n.dataset.saved==='header'?' · just now':'');});
+  beatTimer=setTimeout(()=>{st.beat=null;document.querySelectorAll('[data-saved]').forEach(n=>n.classList.remove('on'));},1200);
+}
+function jump(scn){
+  clearTimeout(beatTimer);clearTimeout(printTimer);clearTimeout(resultTimer);S.scn=scn;S.sheet=null;
+  Object.assign(st,{section:['index','loading'].includes(scn)?'general':scn.split('-')[0],sheet:null,panel:null,menu:null,beat:null,test:null,testResult:null,panelResult:null,registering:scn==='scanning-register',candidate:scn==='scanning-register',resetScroll:true,printers:printerFixtures(),scanners:scannerFixtures(),displays:['Counter display','Window display']});
+  st.values.sound=scn==='scanning-sound';st.values.scannerName='Counter scanner';st.values.receiptTemplate='Auto — Epson TM-m30';st.values.invoiceTemplate='Auto — Print dialog';
+  if(scn==='general-saved'){st.beat='name';st.beatText='Saved';} if(scn==='general-restore')st.sheet='restore';
+  if(scn==='printing-empty')st.printers=st.printers.filter(p=>p.built);if(scn==='printing-test')st.test='epson';
+  if(['printing-wizard','printing-saved','printing-edit'].includes(scn))st.panel=({'printing-wizard':'results','printing-saved':'saved','printing-edit':'edit'})[scn];
+  if(scn==='printing-delete')st.sheet='delete:epson';focusNext=st.sheet?'.sheet button':st.panel?'.panel button':'.sp-content h1';render();
+}
+function test(id){
+  if(st.test)return;st.test=id;st.testResult=null;render();clearTimeout(printTimer);
+  printTimer=setTimeout(()=>{st.test=null;const p=st.printers.find(p=>p.id===id);const text=p?.status==='Not reachable'?'Printer not reachable · Check the connection':id==='epson'?'Printed on Epson TM-m30':'Sent to '+(p?.name||st.values.printerName);st.testResult={id,text};if(st.panel)st.panelResult=text;if(S.screen==='settings')render();resultTimer=setTimeout(()=>{st.testResult=null;st.panelResult=null;if(S.screen==='settings')render();},3000);},650);
+}
+function closeOverlay(){st.sheet=null;st.panel=null;st.menu=null;S.sheet=null;focusNext=returnFocus;}
+function click(e){
+  const set=e.target.closest('[data-set]');if(set?.dataset.set==='saved'){st.saved=set.dataset.v;render();return true;}
+  if(set?.dataset.set==='scale')st.scaleChoice=set.dataset.v;
+  if(set?.dataset.set==='theme')st.themeChoice=set.dataset.v;
+  if(set?.dataset.set==='w'&&st.scaleChoice==='auto')S.scale=({phone:'compact',tablet:'regular',desktop:'spacious'})[set.dataset.v];
+  const scene=e.target.closest('[data-scn]');if(scene){jump(scene.dataset.scn);return true;}
+  if(e.target.closest('[data-nav]')){st.sheet=null;st.panel=null;return false;}
+  const b=e.target.closest('[data-sp],[data-act]');if(!b)return !set;
+  const a=b.dataset.sp,v=b.dataset.v; if(a&&['confirm','wizard','edit','manual','printer-device','rates','external'].includes(a)){returnFocus=b.id?'#'+b.id:`[data-sp="${a}"][data-v="${CSS.escape(v||'')}"]`;}
+  if(!a){if(b.dataset.act==='openSheet'){S.sheet=b.dataset.sheet;focusNext='.sheet button, .sidepanel button';}else if(b.dataset.act==='closeSheet'){if(e.target.closest('[data-stop]')&&!b.matches('button'))return true;S.sheet=null;}else if(b.dataset.act==='dismissStrip')S.nostrip=true;render();return true;}
+  switch(a){
+    case 'section': st.section=v==='index'?'general':v;S.scn=v;st.sheet=null;st.panel=null;st.menu=null;st.resetScroll=true;focusNext=v==='index'?'.sp-nav button':'.sp-content h1';break;
+    case 'toggle': st.values[v]=!st.values[v];saved(v);break;
+    case 'radio': st.values[b.dataset.k]=v;saved(b.dataset.k);break;
+    case 'theme': st.themeChoice=v;S.theme=v==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):v;saved('theme');break;
+    case 'scale': st.scaleChoice=v;S.scale=v==='auto'?({phone:'compact',tablet:'regular',desktop:'spacious'})[S.w]:v;saved('scale');break;
+    case 'confirm': st.sheet=v;st.menu=null;focusNext='.sheet button';break;
+    case 'close-sheet': st.sheet=null;focusNext=returnFocus;break;
+    case 'close-panel': closeOverlay();break;
+    case 'destroy': {const [kind,id]=v.split(':');if(kind==='restore'){Object.assign(st.values,defaults);S.scn='general';saved('restore','Restored');}if(kind==='delete')st.printers=st.printers.filter(p=>p.id!==id);if(kind==='forget')st.displays=st.displays.filter(p=>p!==id);st.sheet=null;focusNext=kind==='restore'?'[data-sp="confirm"][data-v="restore"]':'.sp-content h1';break;}
+    case 'retry': S.scn='general';Object.assign(st.values,defaults);saved('restore','Restored');break;
+    case 'test': test(v);return true;
+    case 'menu': st.menu=st.menu===v?null:v;break;
+    case 'default': st.printers.forEach(p=>p.default=p.id===v);st.menu=null;break;
+    case 'copy-report': st.menu=null;st.testResult={id:v,text:'Setup report copied (prototype)'};st.panelResult='Setup report copied (prototype)';break;
+    case 'wizard': st.panel='results';st.resetScroll=true;focusNext='.panel button';break;
+    case 'edit': st.editing=v;st.values.printerName=st.printers.find(p=>p.id===v).name;st.panel='edit';st.resetScroll=true;focusNext='#sp-printerName';break;
+    case 'manual': st.panel='manual';st.resetScroll=true;focusNext='#sp-ip';break;
+    case 'connection': st.values.connection=v;break;
+    case 'paper': st.paper=v;break;
+    case 'printer-device': st.sheet='device:'+v;focusNext='.sheet button';break;
+    case 'device-picked': st.values.connection=v;st.sheet=null;st.panel='edit';break;
+    case 'wizard-test': st.values.printerName=v;st.panel='asking';st.resetScroll=true;focusNext='.panel-b button';break;
+    case 'answer': st.panel=v==='0'?'saved':v==='1'?'width':'trouble';st.resetScroll=true;focusNext='.panel-b button, .panel-f button';break;
+    case 'width': st.values.textWidth=v+' columns';st.panel='asking';break;
+    case 'save-printer': {const p=st.printers.find(p=>p.id===st.editing);if(p)p.name=st.values.printerName;else st.printers.unshift({id:'added',name:st.values.printerName,connection:st.values.connection+' · '+st.values.ip,status:'Ready',kind:'ok'});st.panel='saved';st.resetScroll=true;break;}
+    case 'drawer': st.panelResult='Sent to cash drawer';break;
+    case 'rates': st.sheet='rates';focusNext='.sheet button';break;
+    case 'external': st.sheet='external:'+v;focusNext='.sheet button';break;
+    case 'pair': st.code='483 921';saved('pair','Code ready');break;
+    case 'copy-url': saved('pair','URL copied (prototype)');break;
+    case 'remove-scanner': st.scanners.splice(+v,1);break;
+    case 'register-scanner': st.registering=true;st.candidate=false;st.scanBuffer='';break;
+    case 'capture': st.candidate=true;st.values.scannerName='Counter scanner';focusNext='#sp-scannerName';break;
+    case 'save-scanner': st.scanners.push({name:st.values.scannerName||'Scanner',status:'Registered',transport:'Keyboard'});st.registering=false;break;
+    case 'cancel-scanner': st.registering=false;break;
+    case 'transport': {const i=st.scanners.findIndex(p=>p.transport===v&&p.status==='Connected');if(i>=0)st.scanners.splice(i,1);else st.scanners.push({name:v+' scanner',status:'Connected',transport:v});break;}
+    case 'uuid': if(!/^[\da-f]{8}(-[\da-f]{4}){3}-[\da-f]{12}$/i.test(st.values.uuid||'')){document.querySelector('[data-uuid-error]').textContent='Enter a full 128-bit UUID in 8-4-4-4-12 format.';return true;}st.scanners.push({name:'Custom scanner',status:'Registered',transport:'Bluetooth serial'});break;
+    case 'preview': st.preview=v;saved('volume','Preview selected (prototype)');break;
+  }
+  render();return true;
+}
+function change(e){const id=e.target.dataset.spField;if(!id)return;st.values[id]=e.target.type==='number'||e.target.type==='range'?+e.target.value:e.target.value;if(!st.panel)saved(id);if(id==='language'){render();} }
+function keydown(e){
+  if(st.registering&&!st.candidate&&e.key.length===1){st.scanBuffer=(st.scanBuffer||'')+e.key;return;}
+  if(st.registering&&!st.candidate&&e.key==='Enter'&&st.scanBuffer){e.preventDefault();st.candidate=true;st.values.scannerName='Counter scanner';focusNext='#sp-scannerName';render();return;}
+  if(e.key==='Escape'){e.preventDefault();if(st.sheet||st.panel||S.sheet||st.menu)closeOverlay();else if(S.w==='phone'){S.scn='index';focusNext='.sp-nav button';}render();}
+  const overlay=document.querySelector('#frame .sheet')||document.querySelector('#frame .panel');if(e.key==='Tab'&&overlay){const nodes=[...overlay.querySelectorAll('button:not(:disabled),input:not(:disabled),select,a,summary')].filter(n=>n.getClientRects().length);const first=nodes[0],last=nodes.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}
+}
+document.addEventListener('input',e=>{if(S.screen==='settings'&&e.target.matches('input[data-sp-field]'))change(e);});
+document.addEventListener('change',e=>{if(S.screen==='settings'&&e.target.matches('select[data-sp-field]'))change(e);});
+st.values.receiptTemplate='Auto — Epson TM-m30';st.values.invoiceTemplate='Auto — Print dialog';
+return {SCENES,strip,render:renderSettings,click,keydown,jump};
+})();
+/* Connect: local fixtures, staged discovery and account choices; no authentication requests. */
+const CP=(()=>{
+const SCENES=['first-run','typing','discovering','error-wp','error-timeout','error-host','error-woo','error-update','one-site','many-sites','no-users','checking-user','expired-user','no-stores','many-stores','incompatible','remove-site','demo'].map(v=>[v,v.replaceAll('-',' · ')]);
+const themes=[['light','Default light'],['dark','Default dark'],['paper','Paper till'],['bold','Bold money'],['warm','Warm shop'],['market','Market stall'],['ocean','Ocean'],['sunset','Sunset'],['monochrome','Monochrome']];
+const stages=['Finding your store…','Checking WordPress…','Checking WooCommerce POS…','Saving…'];
+const errors={'error-wp':['Site does not seem to be a WordPress site',''], 'error-timeout':['The site took too long to respond — check the server and try again',''], 'error-host':["This store's hosting setup is blocking the app — the details page names the exact cause and fix.",'HOST121'], 'error-woo':['WooCommerce API not found','AUTH321'], 'error-update':['Please update your WCPOS plugin','AUTH331']};
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const users=()=>[{id:'sam',name:'Sam Reilly',role:'Shop manager',status:'Signed in'},{id:'amy',name:'Amy Okafor',role:'Cashier',status:'Signed in'}];
+const site=(id='main',name='Market Street',url='https://mystore.com')=>({id,name,url,users:users(),selected:'sam',store:'front',stores:[['front','Front counter','1']],compatible:true});
+const st={field:Q.get('field')==='always'?'always':'folded',address:'',sites:[],expanded:'main',unfold:false,phase:null,error:null,sheet:null,beat:false};
+let timer,focusNext=null,returnFocus=null;
+const button=(label,action,value='',cls='',extra='')=>`<button class="btn press ${cls}" data-cp="${action}" data-v="${esc(value)}" data-testid="connect-${action}${value?'-'+esc(value):''}" ${extra}>${label}</button>`;
+const icon=(label,action,value,glyph='x')=>`<button class="ibtn press" aria-label="${esc(label)}" data-cp="${action}" data-v="${esc(value)}" data-testid="connect-${action}-${esc(value)}">${I[glyph]}</button>`;
+const docs=code=>`<a href="https://docs.wcpos.com/${code?'error-codes/'+code:''}" target="_blank" rel="noopener" data-testid="connect-help${code?'-'+code:''}">Learn more${code?' · '+code:''}</a>`;
+const initials=name=>name.split(' ').map(n=>n[0]).slice(0,2).join('');
+const active=()=>st.sites.find(s=>s.id===st.expanded);
+const logo=()=>`<svg class="cp-logo" viewBox="0 0 1260 1260" role="img" aria-label="WCPOS"><path class="cp-ink" d="m0,90q0,-90 90,-90l1080,0q90,0 90,90l0,810q0,90 -90,90l-810,0l-360,270l0,-1170z"/><path class="cp-paper" d="M180,0H360V270A90,90 0 1 1 180,270Z M540,0H720V270A90,90 0 1 1 540,270Z M900,0H1080V270A90,90 0 1 1 900,270Z"/><g class="cp-letter"><path d="M130 923.5V532"/><circle cx="260.5" cy="662.5" r="130.5"/><circle cx="630" cy="662" r="131"/><path d="m1131,565.8c-21.75,-13.05 -65.25,-34.8 -130.5,-34.8q-130.5,0 -130.5,65.25t130.5,65.25t130.5,65.25t-130.5,65.25c-65.25,0 -108.75,-21.75 -130.5,-34.8"/></g></svg>`;
+function form(){
+  const err=st.error,busy=st.phase!==null;
+  return `<form class="cp-form" data-testid="connect-form"><label for="cp-address">Your store's address</label><div class="cp-input"><input class="in" id="cp-address" data-testid="connect-address" placeholder="mystore.com" inputmode="url" autocomplete="url" autocapitalize="none" spellcheck="false" value="${esc(st.address)}" ${busy?'disabled':''} ${err?'aria-invalid="true"':''} aria-describedby="cp-progress cp-error">${st.address&&!busy?icon('Clear text','clear','address'):''}</div><div id="cp-progress" role="status" ${busy?'':'hidden'} class="cp-progress">${busy?stages[st.phase]:''}</div><div id="cp-error" role="alert" ${err?'':'hidden'} class="neg">${err?esc(err[0]):''}</div>${err?docs(err[1]):''}${button((busy?`<span class="cp-spinner">${I.sync}</span>`:'')+'Connect','connect','','p',busy||!st.address.trim()?'disabled':'')}</form>`;
+}
+function body(s){
+  if(!s.compatible)return `<div class="cp-body"><p>Update the WooCommerce POS plugin on this site to continue</p>${docs('AUTH331')}</div>`;
+  const u=s.users.find(u=>u.id===s.selected),valid=u?.status==='Signed in';
+  const rows=s.users.map(u=>`<div class="cp-user ${s.selected===u.id?'on':''}"><button class="opt press" data-cp="user" data-v="${u.id}" data-testid="connect-user-${u.id}" aria-pressed="${s.selected===u.id}"><span class="av">${initials(u.name)}</span><span class="grow"><span class="b">${esc(u.name)}</span><span class="mut sm">${esc(u.role)}</span><span class="cp-status"><span class="st ${u.status==='Signed in'?'ok':u.status==='Checking…'?'info':'warn'}"><i></i>${u.status}</span></span></span></button><div class="cp-user-actions">${icon('Remove '+u.name,'remove-user',u.id)}${u.status==='Needs sign-in'?button('Re-authenticate','reauth',u.id,'q'):''}</div></div>`).join('');
+  const stores=u?`<h2>${s.stores.length>1?'Choose a store':'Store'}</h2>${s.stores.length?`<div class="cp-stores" role="radiogroup" aria-label="${s.stores.length>1?'Choose a store':'Store'}">${s.stores.map(([id,name,n])=>`<button class="opt cp-store press" role="radio" aria-checked="${s.store===id}" data-cp="store" data-v="${id}" data-testid="connect-store-${id}"><span class="radio ${s.store===id?'on':''}"></span><span class="grow">${esc(name)}</span><span class="mut sm">#${n}</span></button>`).join('')}</div>`:'<p class="mut">No stores found for this user. Ensure POS is set up on the server.</p>'}${button('Open POS','open','','p',!valid||!s.store?'disabled':'')}`:'';
+  return `<div class="cp-body"><h2>WordPress users</h2><div class="cp-users">${rows}</div>${button(I.plus+'Sign in with WordPress','signin',s.id,'cp-signin')}${stores}</div>`;
+}
+function card(s){
+  const many=st.sites.length>1,expanded=st.expanded===s.id;
+  const identity=`${many?(expanded?I.chevd:I.chev):''}<span class="av">${initials(s.name)}</span><span class="grow"><b>${esc(s.name)}</b><small>${esc(s.url)}</small></span>${many?`<span class="pill">${s.users.length} ${s.users.length===1?'user':'users'}</span>`:''}`;
+  return `<section class="cp-site" data-site="${s.id}"><div class="cp-head">${many?`<button class="cp-identity" data-cp="site" data-v="${s.id}" data-testid="connect-site-${s.id}" aria-expanded="${expanded}">${identity}</button>`:`<div class="cp-identity">${identity}</div>`}${icon('Remove '+s.name,'remove-site',s.id)}</div>${expanded?body(s):''}</section>`;
+}
+function sheet(){
+  if(!st.sheet)return '';const [kind,id]=st.sheet,s=active(),name=kind==='site'?st.sites.find(s=>s.id===id)?.name:s?.users.find(u=>u.id===id)?.name;
+  return `<div class="sheet-wrap"><section class="sheet" role="dialog" aria-modal="true" aria-labelledby="cp-confirm"><div class="sheet-h"><div class="t grow" id="cp-confirm">Remove ${esc(name)}?</div>${icon('Close','cancel','sheet')}</div><div class="sheet-b">${kind==='site'?'Remove store and associated users?':'Removing this user from the POS will not affect any data on the server.'}</div><div class="sheet-f">${button('Cancel','cancel')}${button('Remove','remove','','d cp-danger')}</div></section></div>`;
+}
+function strip(seg){
+  const group=(label,html)=>`<div class="g"><b>${label}</b>${html}</div>`;
+  document.getElementById('strip').hidden=Q.get('board')==='1';
+  document.getElementById('strip').innerHTML=group('Width',seg('w',[['phone','Phone 390'],['tablet','Tablet 1024'],['desktop','Desktop 1440']]))+group('Theme',seg('theme',themes))+group('Scale',seg('scale',[['compact','Compact'],['regular','Regular'],['spacious','Spacious']]))+group('Field',seg('field',[['folded','Folded'],['always','Always']],st))+group('State',`<span class="seg">${SCENES.map(([v,l])=>`<button data-scn="${v}" class="${S.scn===v?'on':''}">${l}</button>`).join('')}</span>`);
+}
+function renderConnect(){
+  const f=document.getElementById('frame'),scroll=f.querySelector('.cp-scroll')?.scrollTop||0,focused=document.activeElement?.dataset,showField=!st.sites.length||st.unfold||st.field==='always';
+  f.innerHTML=`<main class="cp-scroll" ${st.sheet?'inert':''}><div class="cp-column">${logo()}${st.sites.length?`<div class="cp-sites ${st.beat?'cp-beat':''}">${st.sites.length>1?'<b>Your sites</b>':''}${st.sites.map(card).join('')}</div>`:''}${st.sites.length?button('Connect another store','unfold','','q',`aria-expanded="${showField}"`):''}${showField?form():''}${button('Try the demo store','demo','','q',st.phase!==null?'disabled':'')}</div></main>${sheet()}`;
+  st.beat=false;f.querySelector('.cp-scroll').scrollTop=scroll;
+  f.querySelectorAll('button').forEach(b=>b.type='button');
+  if(focusNext){focusNext.split(',').map(selector=>f.querySelector(selector)).find(Boolean)?.focus({preventScroll:!!st.sheet});focusNext=null;}
+  else if(focused?.cp)f.querySelector(`[data-cp="${focused.cp}"][data-v="${CSS.escape(focused.v||'')}"]`)?.focus({preventScroll:true});
+  document.getElementById('notes').textContent='Connect · local drawing only. Discovery, sign-in and removal are simulated; nothing is sent to a store. Enter connects; completion focuses the saved site’s next action. Field compares folded and always visible.';
+}
+function jump(scn){
+  clearTimeout(timer);S.scn=scn;S.sheet=null;Object.assign(st,{address:'',sites:[],expanded:'main',unfold:false,phase:null,error:null,sheet:null,beat:false});
+  if(scn==='typing'||scn==='discovering'||scn.startsWith('error-'))st.address='mystore.com';
+  if(scn==='discovering')st.phase=0;if(errors[scn])st.error=errors[scn];
+  if(SCENES.findIndex(([v])=>v===scn)>=8){const s=site();st.sites=[s];
+    if(scn==='many-sites')st.sites.push(site('bakery','Northside Bakery','https://northside.example'),site('weekend','Weekend Market','https://weekend.example'));
+    if(scn==='no-users')s.users=[];if(scn==='checking-user')s.users[0].status='Checking…';if(scn==='expired-user')s.users[0].status='Needs sign-in';
+    if(scn==='no-stores'){s.stores=[];s.store=null;}if(scn==='many-stores'){s.stores=[['front','Front counter','1'],['market','Market stall','2'],['upstairs','Upstairs','3']];s.store=null;}
+    if(scn==='incompatible')s.compatible=false;if(scn==='remove-site')st.sheet=['site','main'];
+    if(scn==='demo'){s.name='WCPOS demo';s.url='https://demo.wcpos.com';s.users=[{id:'demo',name:'Demo Cashier',role:'Cashier',status:'Signed in'}];s.selected='demo';s.stores=[['front','Demo store','1']];}
+  }
+  focusNext=st.sheet?'[data-cp="cancel"]':st.sites.length?'[data-cp="open"]:not(:disabled),[data-cp="signin"],.cp-site a':'#cp-address';render();document.querySelector('.cp-scroll').scrollTop=0;
+}
+function discover(demo=false){
+  if(st.phase!==null||(!demo&&!st.address.trim()))return;clearTimeout(timer);st.error=null;st.phase=0;st.unfold=true;st.address=demo?'demo.wcpos.com':st.address;S.scn='discovering';render();
+  const step=()=>{if(S.screen!=='connect')return;if(st.phase<3){st.phase++;render();timer=setTimeout(step,700);return;}
+    const host=st.address.trim().replace(/^https?:\/\//,'').replace(/\/+$/,'');let s=st.sites.find(s=>s.url==='https://'+host);
+    if(!s){s=site('connected'+st.sites.length,host,'https://'+host);s.users=[];s.selected=null;st.sites.unshift(s);}
+    if(demo){s.name='WCPOS demo';s.users=[{id:'demo',name:'Demo Cashier',role:'Cashier',status:'Signed in'}];s.selected='demo';s.stores=[['front','Demo store','1']];}
+    st.expanded=s.id;st.phase=null;st.unfold=false;st.beat=true;S.scn=demo?'demo':'one-site';focusNext=demo?'[data-cp="open"]':'[data-cp="signin"]';render();};timer=setTimeout(step,700);
+}
+function open(){const visited=SCN_OF.connect;nav('connect');if(!visited)jump('one-site');}
+function click(e){
+  const set=e.target.closest('[data-set]');if(set){if(set.dataset.set==='field'){st.field=set.dataset.v;render();return true;}return false;}
+  const scene=e.target.closest('[data-scn]');if(scene){jump(scene.dataset.scn);return true;}
+  const b=e.target.closest('[data-cp]');if(!b||b.disabled)return true;const a=b.dataset.cp,v=b.dataset.v,s=active();
+  switch(a){
+    case 'connect':discover();return true;case 'demo':discover(true);return true;
+    case 'clear':st.address='';st.error=null;focusNext='#cp-address';break;
+    case 'unfold':st.unfold=!st.unfold;focusNext=st.unfold?'#cp-address':'[data-cp="unfold"]';break;
+    case 'site':st.expanded=st.expanded===v?null:v;break;
+    case 'user':s.selected=v;s.store=s.stores.length===1?s.stores[0][0]:null;break;
+    case 'store':s.store=v;break;
+    case 'signin':{const u={id:'added',name:'Alex Morgan',role:'Cashier',status:'Signed in'};if(!s.users.some(x=>x.id===u.id))s.users.push(u);s.selected=u.id;s.store=s.stores.length===1?s.stores[0][0]:null;st.beat=true;focusNext='[data-cp="open"]:not(:disabled),[data-cp="store"]';break;}
+    case 'reauth':{const u=s.users.find(u=>u.id===v);u.status='Checking…';render();timer=setTimeout(()=>{u.status='Signed in';if(S.screen==='connect')render();},700);return true;}
+    case 'remove-site':case 'remove-user':returnFocus=`[data-cp="${a}"][data-v="${v}"]`;st.sheet=[a==='remove-site'?'site':'user',v];focusNext='[data-cp="cancel"]';break;
+    case 'cancel':st.sheet=null;focusNext=returnFocus||'[data-cp="remove-site"]';break;
+    case 'remove':{const [kind,id]=st.sheet;if(kind==='site'){st.sites=st.sites.filter(s=>s.id!==id);if(st.expanded===id)st.expanded=st.sites[0]?.id;}else{s.users=s.users.filter(u=>u.id!==id);if(s.selected===id){s.selected=s.users[0]?.id;s.store=s.stores.length===1?s.stores[0][0]:null;}}st.sheet=null;if(!st.sites.length){S.scn='first-run';st.address='';}focusNext=st.sites.length?'[data-cp="user"],[data-cp="signin"],.cp-site a':'#cp-address';break;}
+    case 'open':if(s?.store&&s.users.find(u=>u.id===s.selected)?.status==='Signed in')nav('register');return true;
+  }
+  render();return true;
+}
+function keydown(e){
+  if(e.key==='Enter'&&e.target.id==='cp-address'){e.preventDefault();discover();return;}
+  if(e.key==='Escape'&&st.sheet){e.preventDefault();st.sheet=null;focusNext=returnFocus||'[data-cp="remove-site"]';render();return;}
+  if(st.sheet&&e.key==='Tab'){const nodes=[...document.querySelectorAll('.sheet button')],first=nodes[0],last=nodes.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
+  if(e.target.matches('[data-cp="store"]')&&['ArrowDown','ArrowUp','ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();const nodes=[...document.querySelectorAll('[data-cp="store"]')],i=nodes.indexOf(e.target),next=nodes[(i+(['ArrowDown','ArrowRight'].includes(e.key)?1:nodes.length-1))%nodes.length];next.click();document.querySelector(`[data-cp="store"][data-v="${next.dataset.v}"]`).focus();}
+}
+document.addEventListener('input',e=>{if(S.screen!=='connect'||e.target.id!=='cp-address')return;st.address=e.target.value;st.error=null;const caret=e.target.selectionStart;focusNext='#cp-address';render();document.getElementById('cp-address').setSelectionRange(caret,caret);});
+document.addEventListener('submit',e=>{if(S.screen==='connect'&&e.target.matches('.cp-form')){e.preventDefault();discover();}});
+return {SCENES,strip,render:renderConnect,jump,click,keydown,open};
+})();
+/* Receipt drawing only: no transport, queue, PDF generation or server-owned template engine. */
+const RC=(()=>{
+let st={};const hosts={};
+function activate(screen){if(screen===S.screen)return;hosts[S.screen]=st;st=hosts[screen]||{};if(!st.template)reset();}
+const money=n=>fmt(n);   /* the register's own format: one currency format per screen */
+const esc=v=>String(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
+const templates=['Receipt · 80 mm','Invoice · online','Legacy · no preview'];
+const printers=['Auto — Epson TM-m30','Epson TM-m30','Print dialog'];
+const offline=()=>S.screen==='orders'?!OS.online:!S.online;
+const dest=()=>st.printer==='Print dialog'?'Print dialog':'Epson TM-m30';
+const btn=(label,act,cls='',disabled=false)=>`<button class="btn press ${cls}" ${act==='next'?'data-act="newSale"':`data-rc="${act}"`} ${disabled?'disabled':''}>${label}</button>`;
+function reset(scene=''){clearTimeout(st.timer);st={scene,template:templates[0],printer:printers[0],printerPicks:{},zoom:100,printing:false,printed:null,started:false,beat:false,email:false,address:'',save:false,sent:false,pdf:false};}
+function seed(scene){
+  S.tender=true;S.phoneTab='products';S.online=!scene.includes('offline');
+  if(scene==='paid-split'){settle(cents(sub()/2));S.method='card';settle(remaining());}
+  else {S.method=scene==='paid-captured'?'card':'cash';settle(sub()+(scene==='paid-change'?2.4:0));}
+  st.started=true;st.printing=['paid-printing','paid-syncing'].includes(scene);st.printed=st.printing?null:dest();st.email=scene.startsWith('paid-email');
+  if(scene==='paid-nopreview')st.template=templates[2];
+}
+function openOrder(o){reset();st.order=o;st.started=true;}
+function print(){
+  st.started=true;st.printing=true;st.printed=null;
+  const job=st,destination=dest();clearTimeout(job.timer);job.timer=setTimeout(()=>{job.printing=false;job.printed=destination;if(st===job)render();},1200); // a visible dispatch beat, not physical delivery
+}
+function documentData(){
+  if(st.order){const o=st.order;return {number:o.n,total:o.t,items:[['Flat white',2,3.2],['Sourdough loaf',1,4.2],['Tote bag',1,12]],pays:[{m:o.pm,amt:o.t}],cashier:o.cash,date:o.dl};}
+  return {number:102476,total:sub(),items:lines(),pays:S.pays,cashier:'Sam',date:'18 Sep 2026 · 14:04'};
+}
+function body(){
+  const d=documentData(),noPreview=st.template===templates[2],syncing=st.scene==='paid-syncing';
+  const select=(label,key,opts)=>opts.length>1?`<label>${label}<select class="in" data-rc-select="${key}">${opts.map(v=>`<option ${st[key]===v?'selected':''} ${key==='template'&&offline()&&v!==templates[0]?'disabled':''}>${v}</option>`).join('')}</select></label>`:'';
+  const line=(a,b,cls='')=>`<div class="rc-line ${cls}"><span>${a}</span><span class="money">${b}</span></div>`;
+  const change=d.pays.reduce((n,p)=>n+(p.change||0),0),itemTotal=d.items.reduce((n,[,q,p])=>n+q*p,0);
+  const paper=`<article class="rc-paper" aria-label="Receipt preview · 80 mm" style="zoom:${st.zoom/100}"><h2>UK Store</h2><div>Receipt #${d.number}</div><div>${d.date}</div><hr>${d.items.map(([n,q,p])=>line(`${q} × ${esc(n)}`,money(q*p))).join('')}${itemTotal!==d.total?line('Other order items',money(cents(d.total-itemTotal))):''}<hr>${line('Subtotal',money(d.total/1.2))}${line('VAT 20%',money(d.total-d.total/1.2))}${line('Total',money(d.total),'rc-total')}<hr>${d.pays.map(p=>line(esc(st.order?p.m:methodName(p.m)),money(p.amt))).join('')}${change?line('Tendered',money(d.pays.filter(p=>p.m==='cash').reduce((n,p)=>n+p.amt+(p.change||0),0)))+line('Change',money(change)):''}<footer>Served by ${esc(d.cashier)}<br>Thank you for shopping with us</footer></article>`;
+  const mismatch=st.printer==='Print dialog'&&st.template===templates[0]?'Thermal template selected but printer uses system dialog — raw ESC/POS output will not render correctly.':st.printer!=='Print dialog'&&st.template===templates[1]?'HTML template selected but printer expects raw bytes — HTML content may not print correctly.':'';
+  return `<div class="rc-body">${syncing?'<span class="st info"><i></i>Syncing with server…</span>':offline()?'<span class="st warn"><i></i>Offline · cached receipt</span>':''}<div class="rc-selects">${select('Template','template',templates)}${select('Printer','printer',printers)}</div>${mismatch?`<div class="rc-notice warn"><span class="st warn"><i></i>${mismatch}</span></div>`:''}${noPreview?'<div class="rc-viewport empty">This template can’t be previewed for this order. Choose another template, or sync the order and try again.</div>':`<div class="rc-viewport"><div class="rc-zoom"><button class="ibtn" data-rc="zoom-out" aria-label="Zoom out" ${st.zoom<=10?'disabled':''}>−</button><output aria-live="polite">${st.zoom}%</output><button class="ibtn" data-rc="zoom-in" aria-label="Zoom in" ${st.zoom>=200?'disabled':''}>+</button></div><div class="rc-scroll">${paper}</div></div>`}</div>`;
+}
+function actions(order=false){
+  const printing=st.printing,disabled=printing||st.scene==='paid-syncing';
+  const printButton=btn(printing?'<span class="rc-spin" aria-hidden="true"></span>Printing…':st.printed?`Printed to ${st.printed} · Print again`:'Print','print','rc-print',disabled);
+  const emailButton=btn('Email','email'),pdfButton=btn(st.pdf?'PDF ready · demo':'PDF','pdf','',offline()||st.scene==='paid-syncing'||st.template===templates[2]);
+  return `<div class="rc-actions">${order?btn('Close','close')+emailButton+pdfButton+printButton:btn('Next sale','next','p rc-next',disabled)+printButton+emailButton+pdfButton+btn('No receipt · Next sale','next','q rc-skip',disabled)}</div>`;
+}
+function stage(){
+  if(!st.started)print();
+  const paid=S.pays.reduce((n,p)=>n+p.amt,0),change=S.pays.reduce((n,p)=>n+(p.change||0),0),cash=S.pays.filter(p=>p.m==='cash').reduce((n,p)=>n+p.amt+(p.change||0),0);
+  const detail=change?`Paid ${money(paid)} · tendered ${money(cash)} in cash`:[...new Set(S.pays.map(p=>methodName(p.m)))].join(' · ');
+  const still=st.beat;st.beat=true;
+  const warning=st.scene==='paid-captured'?`<div class="rc-notice warn"><span class="st warn"><i></i>The card was charged, but the order didn't finish. Don't charge again — open the order to finish it.</span><details><summary>Support details</summary><pre>PAYMENT121 · Order finalisation unavailable after capture</pre></details><a href="https://docs.wcpos.com/error-codes/PAYMENT121" target="_blank" rel="noreferrer">Having trouble?</a></div>`:'';
+  return `<div class="pay rc-stage"><div class="paidwrap rc-stage-body ${still?'rc-still':''}">${warning}<div class="rc-beat"><div class="row"><span class="disc">${I.check}</span>${S.tx.stamp?'<span class="stamp">Paid</span>':''}</div><div class="h money">${change>0?'Change '+money(change):'Paid '+money(paid)}</div><div class="mut">${detail}${S.pays.length>1?' · '+S.pays.length+' payments':''}</div></div>${body()}${actions()}</div></div>`;
+}
+function panel(){return `<section class="op-pane rc-order" aria-label="Receipt"><div class="bar"><span class="place">Receipt #${st.order.number||st.order.n}</span><span class="grow"></span><button class="ibtn" data-rc="close" aria-label="Close receipt">${I.x}</button></div>${body()}${actions(true)}</section>`;}
+function email(){return `<div class="sheet-wrap rc-email"><form class="sheet" data-stop="1" role="dialog" aria-modal="true" aria-label="Email receipt"><div class="sheet-h"><b class="t grow">Email receipt</b><button class="ibtn" type="button" data-rc="email-close" aria-label="Close email">${I.x}</button></div><div class="sheet-b"><label>Email address<input class="in" type="email" required autocomplete="email" name="email" value="${esc(st.address)}"></label><button type="button" class="rc-save" role="switch" aria-checked="${st.save}" data-rc="save"><span>Save to the customer's billing address</span><span class="sw ${st.save?'on':''}" aria-hidden="true"></span></button>${offline()?'<div class="mut">Offline · it will send when this device can reach the store</div>':''}${st.sent?`<div class="st ok" role="status"><i></i>${offline()?'Queued on this device · demo':'Email sent · demo'}</div>`:''}</div><div class="sheet-f"><button type="button" class="btn" data-rc="email-close">Cancel</button><button class="btn p" type="submit">${offline()?'Send when online':'Send'}</button></div></form></div>`;}
+function closeEmail(){st.email=false;render();document.querySelector('[data-rc="email"]')?.focus();}
+function click(e){
+  const b=e.target.closest('[data-rc]');if(!b)return !!e.target.closest('.rc-email,.rc-body');
+  const a=b.dataset.rc;e.preventDefault();
+  if(a==='print')print();
+  if(a==='pdf')st.pdf=true;
+  if(a==='email'){st.email=true;st.sent=false;}
+  if(a==='email-close'){closeEmail();return true;}
+  if(a==='save')st.save=!st.save;
+  if(a==='close'){OS.receipt=false;reset();}
+  if(a==='zoom-in')st.zoom=Math.min(200,st.zoom+10);
+  if(a==='zoom-out')st.zoom=Math.max(10,st.zoom-10);
+  render();if(a==='email')document.querySelector('.rc-email input').focus();return true;
+}
+function keydown(e){
+  if(st.email&&(S.screen==='register'&&S.view==='paid'||S.screen==='orders'&&OS.receipt)){if(e.key==='Escape'){e.preventDefault();closeEmail();}return true;}
+  if(S.screen==='orders'&&OS.receipt&&e.key==='Escape'){OS.receipt=false;reset();render();return true;}
+  return false;
+}
+document.addEventListener('change',e=>{const k=e.target.dataset.rcSelect;if(!k)return;st[k]=e.target.value;if(k==='printer')st.printerPicks[st.template]=st.printer;if(k==='template'){st.printer=st.printerPicks[st.template]||printers[0];st.zoom=100;}st.printed=null;render();});
+document.addEventListener('input',e=>{if(e.target.matches('.rc-email input'))st.address=e.target.value;});
+document.addEventListener('submit',e=>{if(!e.target.matches('.rc-email form'))return;e.preventDefault();st.sent=true;render();document.querySelector('.rc-email [type="submit"]').focus();});
+reset();return {reset,activate,seed,openOrder,stage,panel,body,actions,email,emailOpen:()=>st.email,click,keydown};
+})();
+/* Products: fixture-backed states and interactions, not a camera or catalogue client. */
+const PP=(()=>{
+const SCENES=['var-popover','var-sheet','var-syncing','var-unavailable','camera-permission','camera-scanning','camera-unavailable','scan-searching','scan-notfound','scan-ambiguous','scan-outofstock','filter-editor','filter-editor-empty','outage'];
+const prints=['Any option','Plain','Market','Coffee','Botanical','Stripe','Dot','Wave','Sun','Moon','Leaf','Bird','House'];
+const fields=['Category','Tag','Brand','Price','On sale','Featured','Stock','Type','Search'];
+const extra=[['Mug',8],['Notebook',6],['Apron',24],['Tea towel',9],['Bottle',18],['Filter papers',5],['Chocolate',4],['Decaf 250g',10],['Green tea',7],['Jam',5],['Honey',8],['Biscuit tin',12]];
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=n=>fmt(n);   /* the register's own format: one currency format per screen */
+let st={},timer,flashTimer,focusNext=null,returnFocus='.tile[data-act="openVar"]',dragFrom=null;
+const filters=()=>['Stock','Featured','On sale','Category','Tag','Brand'].map(name=>({name,show:true}));
+let bar=filters(),quickPosition=6,preset={name:'Morning menu',conditions:[['Category','Merch']],sort:'Default order',direction:'Ascending'};
+const btn=(label,a,v='',cls='',extra='')=>`<button class="btn press ${cls}" data-pp="${a}" data-v="${esc(v)}" data-testid="products-${a}${v?'-'+esc(v):''}" ${extra}>${label}</button>`;
+const status=(text,kind='neutral')=>`<span class="st ${kind}"><i></i>${esc(text)}</span>`;
+const select=(label,key,options,value)=>`<label>${label}<select class="in" data-pp-field="${key}">${options.map(v=>`<option ${v===value?'selected':''}>${esc(v)}</option>`).join('')}</select></label>`;
+function jump(scene){clearTimeout(timer);clearTimeout(flashTimer);st={picker:false,colour:'',size:'S',print:'Any option',combo:false,query:'',camera:null,height:176,note:'online',scan:null,code:'5012345678900',editor:false,draft:null,confirm:false,outage:scene==='outage',empty:scene==='filter-editor-empty',end:false};focusNext=null;
+  if(!SCENES.includes(scene))return;S.phoneTab='products';S.toast=null;
+  if(scene.startsWith('var-')){st.picker=true;st.variant=scene==='var-syncing'?'syncing':scene==='var-unavailable'?'unavailable':null;st.colour='Natural';if(scene==='var-sheet')S.picker='sheet';}
+  if(scene.startsWith('camera-'))st.camera=scene.slice(7);
+  if(scene.startsWith('scan-'))st.scan=scene.slice(5);
+  if(scene.startsWith('filter-')){st.editor=true;st.draft=structuredClone(preset);if(st.empty)st.draft.conditions=[['Search','winter coat']];}
+}
+function stock(){return st.colour==='Black'?(st.size==='M'?null:['On backorder','warn']):st.size==='L'?['Out of stock','bad']:['12 in stock','ok'];}
+function stockMatches(colour,size){const word=colour==='Black'?(size==='M'?'in':'back'):size==='L'?'out':'in';return !S.stock||(S.stock==='in'?word==='in':S.stock==='out'?word==='out':false);}
+function picker(){const badge=stock(),ready=st.colour&&!st.variant;return `<div class="pp-form"><div class="pp-title"><span class="grow">Tote bag</span>${S.w==='phone'&&(S.picker||'sheet')==='sheet'?'':btn(I.x,'close-picker','','q','aria-label="Close variations"')}</div><label>Colour</label><div class="segt" role="group" aria-label="Colour">${['Natural','Black'].map(v=>btn(v,'colour',v,st.colour===v?'on':'','aria-pressed="'+(st.colour===v)+'"')).join('')}</div>${select('Size','size',['S','M','L','XL','XXL','XXXL'],st.size)}<label>Print<input class="in" role="combobox" aria-expanded="${st.combo}" aria-controls="pp-print-options" aria-autocomplete="list" data-pp-field="print-search" value="${esc(st.combo?st.query:st.print)}"></label><div id="pp-print-options" class="pp-combo" role="listbox">${st.combo?prints.filter(v=>v.toLowerCase().includes(st.query.toLowerCase())).map(v=>`<button class="opt" role="option" aria-selected="${st.print===v}" data-pp="print" data-v="${v}">${v}</button>`).join(''):''}</div>${st.variant?status(st.variant==='syncing'?'Syncing…':'Variant not available',st.variant==='syncing'?'info':'neutral'):ready?`${badge?status(...badge):''}${btn('Add · '+money(st.colour==='Black'?14:12),'add','','p',badge?.[1]==='bad'||!stockMatches(st.colour,st.size)?'disabled':'')}`:'<span class="mut">Select an option</span>'}</div>`;}
+function camera(){const text={permission:'WCPOS needs camera access to scan barcodes.',starting:'Starting camera…',unavailable:'Camera unavailable — check that no other app is using it.'};const note=st.outage||st.note==='storage'?'Local database unavailable — reload the app to restore scanning.':st.note==='offline'||!S.online?'Offline — only products already on this device will scan.':st.note==='starting'?'Sync is still starting — some products may not be found yet.':'';
+  return `<section class="pp-camera ${st.flash?'pp-detected':''}" aria-label="Camera scanner" style="--pp-height:${st.height}"><div class="pp-camera-view">${btn(I.x,'camera-close','','ibtn','aria-label="Close barcode scanner"')}${st.camera==='scanning'?`<div class="pp-viewfinder">${I.scan}</div>`:`<span>${text[st.camera]}</span>`}${st.camera==='permission'?btn('Allow camera','allow'):''}</div>${note?`<div class="pp-camera-note">${note}</div>`:''}<button class="pp-resize" data-pp-resize role="slider" aria-label="Drag to resize the camera view" aria-valuemin="96" aria-valuemax="480" aria-valuenow="${st.height}" tabindex="0"></button></section>`;
+}
+function feedback(){const labels={searching:'Searching store…',added:'Added to cart',notfound:'No product with barcode '+st.code,ambiguous:'Several matches · choose a product',outofstock:'Tote bag · Natural · L out of stock',short:'Barcode must be at least 8 characters long',storage:'Local database unavailable — reload the app before taking more sales'};return status(labels[st.scan]||'',st.scan==='added'?'ok':st.scan==='searching'?'info':'warn');}
+function condition([field,value],i){let control;
+  if(field==='Price')control=`<div class="row"><input class="in" type="number" aria-label="Min" placeholder="Min" data-pp-bound="min" value="${esc(value.min)}"><input class="in" type="number" aria-label="Max" placeholder="Max" data-pp-bound="max" value="${esc(value.max)}"></div>`;
+  else if(['On sale','Featured','Stock','Type'].includes(field))control=select(field,'condition-'+i,field==='Stock'?['In stock','Out of stock','On backorder']:field==='Type'?['Simple','Variable','Grouped','External']:['Yes','No'],value);
+  else control=`<label>${field}<input class="in" data-pp-field="condition-${i}" value="${esc(value)}" placeholder="${field==='Search'?'Enter a search term…':'Choose '+field.toLowerCase()+'…'}" ${field==='Search'?'':`list="pp-values-${i}"`}></label>${field==='Search'?'':`<datalist id="pp-values-${i}">${(field==='Category'?CATLIST:field==='Tag'?TAGLIST:['Acme','Market Street']).map(v=>`<option>${v}</option>`).join('')}</datalist>`}`;
+  return `<div class="pp-condition">${control}${btn(I.x,'remove-condition',String(i),'q',`aria-label="Remove ${field} condition"`)}</div>`;
+}
+function valid(){return !!st.draft?.name.trim()&&st.draft.conditions.every(([f,v])=>f==='Price'?(v.min!==''||v.max!=='')&&(v.min===''||v.max===''||+v.min<=+v.max):!!v.trim());}
+function editor(){const d=st.draft;return `<div class="panel-wrap pp-overlay" data-pp="close-editor"><section class="panel pp-editor" data-stop="1" role="dialog" aria-modal="true" aria-label="Customise filter bar"><div class="bar"><b class="grow">Customise filter bar</b>${btn(I.x,'close-editor','','q','aria-label="Close filter editor"')}</div><div class="panel-b pp-form"><div>${bar.map((f,i)=>`<div class="pp-filter-row" data-pp-row="${i}"><button class="ibtn grip" draggable="true" data-pp-drag="${i}" aria-label="Move ${f.name}; use arrow keys">${I.grip}</button><button class="opt" data-pp="visibility" data-v="${i}" role="switch" aria-checked="${f.show}">${f.name}<span class="sw ${f.show?'on':''}"></span></button></div>`).join('')}${preset?`<div class="pp-filter-row" data-pp-row="quick"><button class="ibtn grip" draggable="true" data-pp-drag="quick" aria-label="Move quick filter; use arrow keys">${I.grip}</button>${btn(esc(preset.name),'edit-filter','','q')}${btn(I.trash||I.x,'delete-filter','','q d','aria-label="Delete quick filter"')}</div>`:''}${btn('Add quick filter','new-filter','','q')}</div>${d?`<h3>Quick filter</h3><label>Button name<input class="in" data-pp-field="name" value="${esc(d.name)}" placeholder="e.g. Sale wines"></label><h3>Show products where</h3>${d.conditions.map(condition).join('')}<label>Add condition<select class="in" data-pp-field="add-condition" ${d.conditions.length===fields.length?'disabled':''}><option value="">Choose a field</option>${fields.filter(f=>!d.conditions.some(([v])=>v===f)).map(f=>`<option>${f}</option>`).join('')}</select></label>${select('Order by','sort',['Default order','Name','SKU','Barcode','Type','Price','Date created','Date modified','Popularity','Stock quantity','Stock status','Menu order'],d.sort)}${select('Sort direction','direction',['Ascending','Descending'],d.direction)}<div class="mut" data-pp-preview>${st.empty?'No products match right now. You can still save this button.':'23 products · Tote bag, Mug, …'}</div>`:'<span class="mut">Select a quick filter to edit it, or add a new one.</span>'}</div><div class="panel-f">${btn('Cancel','close-editor')}${d?btn('Save','save-filter','','p',valid()?'':'disabled'):''}</div></section></div>`;}
+function sheet(title,body){return `<div class="sheet-wrap pp-overlay" data-pp="close-sheet"><section class="sheet pp-sheet" role="dialog" aria-modal="true" aria-label="${title}" data-stop="1"><div class="sheet-h"><b class="grow">${title}</b>${btn(I.x,'close-sheet','','q','aria-label="Close"')}</div><div class="sheet-b pp-form">${body}</div></section></div>`;}
+function renderProducts(f){
+  const strip=document.getElementById('strip');strip.insertAdjacentHTML('beforeend',`<div class="g"><b>Picker</b><span class="seg">${['sheet','popover'].map(v=>`<button data-set="picker" data-v="${v}" class="${(S.picker||'sheet')===v?'on':''}">${v==='sheet'?'Sheet on phone':'Popover everywhere'}</button>`).join('')}</span></div>${st.camera?`<div class="g"><b>Camera demo</b><span class="seg">${['online','offline','storage','starting'].map(v=>`<button data-pp="note" data-v="${v}" class="${st.note===v?'on':''}">${v}</button>`).join('')}<button data-pp="detect">Detect barcode</button></span></div>`:''}<div class="g"><b>Scan demo</b><span class="seg"><button data-pp="scan-demo" data-v="added">Added</button><button data-pp="scan-demo" data-v="short">Too short</button><button data-pp="end">No more products</button></span></div>`);
+  const col=f.querySelector('.prodcol'),main=f.querySelector('.main');if(!col)return;
+  const scan=col.querySelector('.toolbar button[aria-label="'+T().scan+'"]');if(scan){scan.dataset.pp='camera-toggle';scan.setAttribute('aria-label',st.camera?'Close barcode scanner':'Scan barcode with camera');}
+  const custom=col.querySelector('.fbar .add');if(custom){custom.dataset.pp='customise';custom.setAttribute('aria-label','Customise filter bar');}
+  const tile=col.querySelector('.tile[data-act="openVar"]');if(tile){tile.dataset.pp='picker';tile.dataset.testid='products-variable-tile';}
+  const barNode=col.querySelector('.fbar');if(barNode){bar.forEach(f=>{const el=[...barNode.children].find(el=>el.textContent.includes(f.name==='Stock'?'Stock':f.name));if(el){el.hidden=!f.show;barNode.insertBefore(el,custom);}});const quick=barNode.querySelector('[data-act="quickMenu"]');if(quick){quick.hidden=!preset;if(preset){quick.firstChild.textContent=preset.name;const visible=[...barNode.children].filter(el=>el!==quick&&el!==custom);barNode.insertBefore(quick,visible[quickPosition]||custom);}}}
+  if(st.scan){const search=col.querySelector('.search');search.querySelector('input').value=st.code;search.insertAdjacentHTML('beforeend',`<div class="pp-feedback" role="status">${feedback()}</div>`);}
+  if(st.camera)col.querySelector('.fwrap')?.insertAdjacentHTML('afterend',camera());
+  if(st.outage){col.querySelector('.ptable')?.insertAdjacentHTML('beforebegin',`<aside class="pp-outage" role="alert">${status('Local database unavailable — scanning, checkout, saving and voiding are blocked until the app is reloaded.','bad')}<div class="row">${btn('Reload the app','reload')}${btn('View status','status','','q')}</div></aside>`);f.querySelectorAll('[data-act="addLine"],[data-act="checkout"],[data-act="void"]').forEach(b=>b.disabled=true);}
+  const grid=col.querySelector('.ptable.grid .tiles');if(grid&&!anyFilter()&&S.pview==='products')grid.insertAdjacentHTML('beforeend',extra.map(([n,p])=>`<button class="tile press" data-act="addLine" data-n="${n}" data-p="${p}" ${st.outage?'disabled':''}><div class="img" data-i="${n[0]}"></div><div class="n">${n}</div><div class="p money">${money(p)}</div></button>`).join(''));
+  if(S.scn==='noresults'){const empty=col.querySelector('.empty .t');if(empty)empty.textContent='No products found';}
+  if(st.scan==='searching'||st.scan==='notfound'){const pane=col.querySelector('.ptable');if(pane)pane.innerHTML=`<div class="empty"><div class="t">${st.scan==='searching'?'Searching…':'No products found'}</div></div>`;}
+  if(grid&&st.end)grid.insertAdjacentHTML('beforeend','<div class="pp-end">No more products</div>');
+  if(col.querySelector('.ptable.grid')&&!['loading','noresults'].includes(S.scn)){const shown=col.querySelectorAll('.tile').length;col.insertAdjacentHTML('beforeend',`<footer class="pp-foot"><span>Showing ${shown}${st.end?'':' of 312'}</span>${btn(I.sync,'sync','','q','aria-label="Sync products"')}</footer>`);}
+  if(st.editor){main.insertAdjacentHTML('beforeend',editor());const q=main.querySelector('[data-pp-row="quick"]'),rows=main.querySelectorAll('[data-pp-row]:not([data-pp-row="quick"])');if(q&&rows[quickPosition])q.parentElement.insertBefore(q,rows[quickPosition]);}
+  if(st.picker){const isSheet=S.w==='phone'&&(S.picker||'sheet')==='sheet';main.insertAdjacentHTML('beforeend',isSheet?sheet('Choose variation',picker()):`<section class="pop pp-picker" role="dialog" aria-label="Choose variation" data-stop="1">${picker()}</section>`);const pop=main.querySelector('.pp-picker');if(pop){const a=(tile||col).getBoundingClientRect(),m=main.getBoundingClientRect(),u=parseFloat(getComputedStyle(f).getPropertyValue('--u'));const c=col.getBoundingClientRect(),w=pop.offsetWidth,rightX=a.right-m.left+u*2,leftX=a.left-m.left-w-u*2,fits=rightX+w<=c.right-m.left-u*2;const x=fits?rightX:(leftX>=c.left-m.left+u*2?leftX:Math.max(u*2,Math.min(rightX,c.right-m.left-w-u*2)))   /* anchored beside the tile, flipping to the side with room; never over the cart */,y=Math.max(u*2,Math.min(a.top-m.top,m.height-pop.offsetHeight-u*2));pop.style.setProperty('--pp-x',`calc(var(--hair)*${x})`);pop.style.setProperty('--pp-y',`calc(var(--hair)*${y})`);}}
+  if(st.scan==='ambiguous')main.insertAdjacentHTML('beforeend',sheet('Several matches',`<span class="mut">${st.code}</span>${['Tote bag · Natural · S','Tote bag · Black · L'].map((n,i)=>btn(n,'candidate',String(i))).join('')}`));
+  if(st.confirm)main.insertAdjacentHTML('beforeend',sheet('Delete quick filter?',`<span>This removes the quick filter from the filter bar.</span><div class="row">${btn('Cancel','cancel-delete')}${btn('Delete','confirm-delete','','d')}</div>`));
+  if(st.health)main.insertAdjacentHTML('beforeend',sheet('Storage status',status('Local database unavailable','bad')+'<span class="mut">This build can’t reload itself — close the app completely and open it again.</span>'));
+  if(focusNext){f.querySelector(focusNext)?.focus();focusNext=null;}
+}
+function close(){st.picker=false;st.editor=false;st.confirm=false;st.health=false;if(st.scan==='ambiguous')st.scan=null;focusNext=returnFocus;}
+function add(colour=st.colour,size=st.size){if(st.outage||!sessionOpen())return;st.picker=false;st.scan='added';const b=document.createElement('button');Object.assign(b.dataset,{act:'addLine',n:'Tote bag',s:colour+' · '+size,p:colour==='Black'?'14':'12'});document.getElementById('frame').append(b);b.click();b.remove();if(st.camera){S.phoneTab='products';render();}else document.querySelector('.line.settle .q')?.focus();}
+function click(e){if(S.screen!=='register')return false;const b=e.target.closest('[data-pp]');if(!b)return false;if(b.classList.contains('pp-overlay')&&e.target.closest('[data-stop]'))return true;const a=b.dataset.pp,v=b.dataset.v;if(b.disabled)return true;
+  if(a==='picker'){if(st.outage)return true;st.picker=true;st.colour='';st.variant=null;returnFocus='.tile[data-act="openVar"]';focusNext='[data-pp="colour"]';}
+  if(a==='close-picker'||a==='close-sheet'||a==='close-editor')close();
+  if(a==='colour'){st.colour=v;st.size=v==='Black'?(S.stock==='in'?'M':'L'):S.stock==='out'?'L':'S';focusNext='[data-pp="add"]';}
+  if(a==='print'){st.print=v;st.combo=false;focusNext='[data-pp="add"]';}
+  if(a==='add'){add();return true;}
+  if(a==='candidate'){add(v==='0'?'Natural':'Black',v==='0'?'S':'L');return true;}
+  if(a==='camera-toggle'){st.camera=st.camera?null:'permission';returnFocus='[data-pp="camera-toggle"]';focusNext='[data-pp="allow"]';}
+  if(a==='camera-close'){clearTimeout(timer);st.camera=null;focusNext='[data-pp="camera-toggle"]';}
+  if(a==='allow'){st.camera='starting';timer=setTimeout(()=>{st.camera='scanning';render();},700);}
+  if(a==='note'){st.note=v;st.outage=v==='storage';}
+  if(a==='detect'){st.flash=true;st.scan=st.outage||st.note==='storage'?'storage':'added';render();if(!st.outage&&st.note!=='storage')add('Natural','S');flashTimer=setTimeout(()=>{st.flash=false;document.querySelector('.pp-camera')?.classList.remove('pp-detected');},350);return true;}
+  if(a==='scan-demo'){S.phoneTab='products';st.scan=v;st.code=v==='short'?'123':'5012345678900';if(v==='added'){add('Natural','S');return true;}}
+  if(a==='end')st.end=!st.end;
+  if(a==='sync'){st.end=false;}
+  if(a==='customise'){st.editor=true;st.draft=null;returnFocus='[data-pp="customise"]';focusNext='[data-pp="new-filter"]';}
+  if(a==='edit-filter'||a==='new-filter'){st.draft=a==='edit-filter'?structuredClone(preset):{name:'',conditions:[],sort:'Default order',direction:'Ascending'};st.empty=false;focusNext='[data-pp-field="name"]';}
+  if(a==='visibility')bar[+v].show=!bar[+v].show;
+  if(a==='remove-condition')st.draft.conditions.splice(+v,1);
+  if(a==='save-filter'&&valid()){preset=structuredClone(st.draft);close();}
+  if(a==='delete-filter'){st.confirm=true;focusNext='[data-pp="cancel-delete"]';}
+  if(a==='cancel-delete'){st.confirm=false;focusNext='[data-pp="delete-filter"]';}
+  if(a==='confirm-delete'){preset=null;st.draft=null;st.confirm=false;focusNext='[data-pp="new-filter"]';}
+  if(a==='reload'){jump('open');S.scn='open';S.phoneTab='products';}
+  if(a==='status'){st.health=true;focusNext='[data-pp="close-sheet"]';}
+  render();return true;
+}
+function change(e){if(S.screen!=='register')return;const key=e.target.dataset.ppField;if(!key&&!e.target.dataset.ppBound)return;const value=e.target.value,caret=e.target.selectionStart;
+  if(key==='print-search'){st.combo=true;st.query=value;}
+  else if(key==='size')st.size=value;
+  else if(key==='add-condition'){if(!value)return;st.draft.conditions.push([value,value==='Price'?{min:'',max:''}:['On sale','Featured'].includes(value)?'Yes':value==='Stock'?'In stock':value==='Type'?'Simple':'']);}
+  else if(key?.startsWith('condition-'))st.draft.conditions[+key.slice(10)][1]=value;
+  else if(e.target.dataset.ppBound)st.draft.conditions.find(([f])=>f==='Price')[1][e.target.dataset.ppBound]=value;
+  else if(st.draft)st.draft[key]=value;
+  if(st.draft)st.empty=st.draft.conditions.some(([f,v])=>f==='Search'&&v.trim()&&!['tote','mug','bag'].some(n=>v.toLowerCase().includes(n)));
+  const selector=key?`[data-pp-field="${key}"]`:`[data-pp-bound="${e.target.dataset.ppBound}"]`;focusNext=selector;render();if(typeof caret==='number')document.querySelector(selector)?.setSelectionRange(caret,caret);
+}
+function keydown(e){if(S.screen!=='register')return false;const resize=e.target.closest('[data-pp-resize]'),grip=e.target.closest('[data-pp-drag]');
+  if((resize||grip)&&['ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();const dir=e.key==='ArrowUp'?-1:1;if(resize)st.height=Math.max(96,Math.min(480,st.height+dir*16));else if(grip.dataset.ppDrag==='quick'){quickPosition=Math.max(0,Math.min(bar.length,quickPosition+dir));focusNext='[data-pp-drag="quick"]';}else{const i=+grip.dataset.ppDrag,j=Math.max(0,Math.min(bar.length-1,i+dir));bar.splice(j,0,bar.splice(i,1)[0]);focusNext=`[data-pp-drag="${j}"]`;}if(resize)focusNext='[data-pp-resize]';render();return true;}
+  if(!(st.picker||st.editor||st.scan==='ambiguous'||st.health))return false;
+  if(e.key==='Escape'){e.preventDefault();if(st.confirm){st.confirm=false;focusNext='[data-pp="delete-filter"]';}else close();render();return true;}
+  if(e.key==='Enter'&&st.picker&&!e.target.matches('button,select')){e.preventDefault();document.querySelector(st.combo?'#pp-print-options button':'[data-pp="add"]')?.click();return true;}
+  return false;
+}
+document.addEventListener('input',e=>{if(e.target.matches('input[data-pp-field],input[data-pp-bound]'))change(e);});
+document.addEventListener('change',e=>{if(e.target.matches('select[data-pp-field]'))change(e);});
+document.addEventListener('focusin',e=>{if(e.target.dataset.ppField==='print-search'&&!st.combo){st.combo=true;st.query='';focusNext='[data-pp-field="print-search"]';render();}});
+document.addEventListener('dragstart',e=>{if(e.target.dataset.ppDrag!==undefined){dragFrom=e.target.dataset.ppDrag;e.dataTransfer.setData('text/plain',String(dragFrom));}});
+document.addEventListener('dragover',e=>{if(dragFrom!==null&&e.target.closest('[data-pp-row]'))e.preventDefault();});
+document.addEventListener('drop',e=>{const row=e.target.closest('[data-pp-row]');if(dragFrom===null||!row)return;e.preventDefault();if(dragFrom==='quick')quickPosition=row.dataset.ppRow==='quick'?quickPosition:+row.dataset.ppRow;else if(row.dataset.ppRow!=='quick')bar.splice(+row.dataset.ppRow,0,bar.splice(+dragFrom,1)[0]);dragFrom=null;render();});
+document.addEventListener('pointerdown',e=>{const handle=e.target.closest('[data-pp-resize]');if(!handle)return;const start=e.clientY,height=st.height;handle.setPointerCapture(e.pointerId);const move=ev=>{st.height=Math.max(96,Math.min(480,height+ev.clientY-start));handle.closest('.pp-camera').style.setProperty('--pp-height',st.height);handle.setAttribute('aria-valuenow',st.height);};const end=()=>{handle.removeEventListener('pointermove',move);handle.removeEventListener('pointerup',end);handle.removeEventListener('pointercancel',end);};handle.addEventListener('pointermove',move);handle.addEventListener('pointerup',end);handle.addEventListener('pointercancel',end);});
+jump('open');return {SCENES,jump,render:renderProducts,click,keydown};
+})();
+/* TK — live computed token sheet; probes cover every theme × scale. */
+const TK=(()=>{
+const themes=[['light','Default light'],['dark','Default dark'],['paper','Paper till'],['bold','Bold money'],['warm','Warm shop'],['market','Market stall'],['ocean','Ocean'],['sunset','Sunset'],['monochrome','Monochrome']];
+const scales=['compact','regular','spacious'],colours='bg fg card muted muted-fg border primary primary-fg ring rail rail-fg rail-border destructive destructive-fg scrim ok ok-bg warn warn-bg bad bad-bg info neutral c1 c2 c3 c4 c5'.split(' ');
+const pairs=[['fg','bg',4.5],['muted-fg','bg',4.5],['primary-fg','primary',4.5],['rail-fg','rail',4.5],['fg','card',4.5],['ring','bg',3]];
+const dimensions=[['u','Spacing unit'],['fs','Base font'],['ctl','Form control'],['row','List / table row'],['tile','Tile / key / tender'],['r','Radius'],['amt','Leading amount']];
+const SCENES=[['sheet','Token sheet']];
+const esc=v=>String(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
+const code=v=>`<code class="tk-code">${esc(v)}</code>`;
+const iconSet=t=>['market','warm'].includes(t)?'hugeicons':['paper','bold','ocean','sunset'].includes(t)?'ph':'tabler-15';
+const selected=t=>t===S.theme?' class="tk-selected"':'';
+let beats=[];
+function rules(){const out=[];const walk=rs=>{for(const r of rs){if(r.type===CSSRule.STYLE_RULE)out.push(r);else if(r.cssRules&&r.type!==CSSRule.KEYFRAMES_RULE)walk(r.cssRules);}};document.querySelectorAll('style').forEach(s=>walk(s.sheet.cssRules));return out;}
+function strip(seg){document.getElementById('strip').hidden=Q.get('board')==='1';document.getElementById('strip').innerHTML=`<div class="g"><b>Width</b>${seg('w',[['phone','Phone 390'],['tablet','Tablet 1024'],['desktop','Desktop 1440']])}</div><div class="g"><b>Theme</b>${seg('theme',themes)}</div><div class="g"><b>Scale</b>${seg('scale',scales.map(v=>[v,v[0].toUpperCase()+v.slice(1)]))}</div><div class="g"><b>State</b><span class="seg"><button class="on" data-tk-state="sheet">Token sheet</button></span></div>`;}
+function renderTokens(){
+  const f=document.getElementById('frame');
+  f.innerHTML='<div class="tk-probes" aria-hidden="true"></div><article class="tk-page"></article>';
+  const host=f.querySelector('.tk-probes'),page=f.querySelector('.tk-page'),probes={};
+  for(const [theme] of themes)for(const scale of scales){const p=document.createElement('div');p.className='frame';Object.assign(p.dataset,{theme,scale,w:S.w,screen:'tokens'});host.append(p);probes[theme+':'+scale]=p;}
+  const probe=(theme=S.theme,scale=S.scale)=>probes[theme+':'+scale];
+  const value=(name,theme=S.theme,scale=S.scale)=>getComputedStyle(probe(theme,scale)).getPropertyValue('--'+name).trim();
+  const canvas=document.createElement('canvas');canvas.width=canvas.height=1;const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  const resolved=(name,theme)=>{const p=probe(theme);p.style.color=`oklch(from var(--${name}) l c h / alpha)`;return getComputedStyle(p).color;};
+  const rgb=colour=>{ctx.clearRect(0,0,1,1);ctx.fillStyle=colour;ctx.fillRect(0,0,1,1);return [...ctx.getImageData(0,0,1,1).data].slice(0,3).map(v=>v/255);};
+  const luminance=colour=>rgb(colour).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);
+  const ratio=(a,b)=>{const x=luminance(a),y=luminance(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);};
+  const header=`<tr><th scope="col">Token</th>${themes.map(([t,l])=>`<th scope="col"${selected(t)}>${l}</th>`).join('')}</tr>`;
+  const table=body=>`<div class="tk-overflow"><table class="tk-table tk-colours"><thead>${header}</thead><tbody>${body}</tbody></table></div>`;
+  const swatch=(name,t)=>`<span class="tk-swatch" style="background:${esc(value(name,t))}"></span>${code(resolved(name,t))}`;
+  const colourRows=colours.map(n=>`<tr><th scope="row">${code('--'+n)}</th>${themes.map(([t])=>`<td${selected(t)}>${swatch(n,t)}</td>`).join('')}</tr>`).join('');
+  const contrast=pairs.map(([a,b,min])=>`<tr><th scope="row">${a} / ${b}<br><span class="mut">${min}:1 · ${min===3?'UI':'text'}</span></th>${themes.map(([t])=>{const n=ratio(resolved(a,t),resolved(b,t)),fail=n<min;return `<td${selected(t)} data-contrast-theme="${t}" data-contrast-fail="${fail}" data-ratio="${n}" data-min="${min}"><span class="${fail?'tk-fail':'tk-pass'}">${n.toFixed(2)}:1 · ${fail?'Fail':'Pass'}</span></td>`;}).join('')}</tr>`).join('');
+  const statuses=['ok','warn','bad','info','neutral'].map(n=>{const matches=themes.filter(([t])=>resolved(n,t)===resolved(n,S.theme)).length;return `<div class="tk-specimen"><span class="st ${n}"><i></i>${n}</span><p>Identical in ${matches} of ${themes.length} themes</p>${code(resolved(n,S.theme))}</div>`;}).join('');
+  const scaleHead=`<tr><th>Token</th>${scales.map(sc=>`<th${sc===S.scale?' class="tk-selected"':''}>${sc}</th>`).join('')}</tr>`;
+  const scaleRows=dimensions.map(([n,l])=>`<tr><th scope="row">${l}<br>${code('--'+n)}</th>${scales.map(sc=>`<td${sc===S.scale?' class="tk-selected"':''}>${code(value(n,S.theme,sc))}</td>`).join('')}</tr>`).join('');
+  const styleRules=rules();
+  const ramp=[...new Set(styleRules.filter(r=>!r.selectorText.includes('tk-')).map(r=>r.style.fontSize).filter(v=>/var\(--(?:fs|amt)\)/.test(v)))];
+  const sizes=ramp.map(expr=>{const specimens=scales.map(sc=>{const el=document.createElement('span');el.style.fontSize=expr;probe(S.theme,sc).append(el);const size=getComputedStyle(el).fontSize;el.remove();return `<td${sc===S.scale?' class="tk-selected"':''}>${code(size)}<div style="font-size:${size}">18</div></td>`;});return `<tr><th scope="row">${code(expr)}</th>${specimens.join('')}</tr>`;}).join('');
+  const faces=themes.map(([t,l])=>`<div class="tk-specimen"><b>${l}</b>${['display','mono'].map(n=>`<span class="tk-face" style="font-family:${esc(value(n,t))}">18,00 £ · Market</span>${code('--'+n+' · '+value(n,t))}`).join('')}</div>`).join('');
+  beats=[];
+  const sample=document.createElement('span');probe().append(sample);
+  for(const r of styleRules){const animation=r.style.getPropertyValue('animation');if(!animation||animation==='none')continue;sample.style.animation=animation;const cs=getComputedStyle(sample),name=cs.animationName;if(name==='none')continue;const duration=cs.animationDuration,ease=cs.animationTimingFunction,delay=cs.animationDelay;if(!beats.some(b=>b.name===name&&b.duration===duration&&b.delay===delay))beats.push({name,duration,ease,delay,source:r.selectorText});}
+  // Reports overrides the sheet's animation-name, inheriting its duration.
+  sample.style.animation=styleRules.find(r=>r.selectorText==='.sheet').style.animation;sample.style.animationName=styleRules.find(r=>r.style.animationName==='rp-rise').style.animationName;const reportStyle=getComputedStyle(sample);beats.push({name:reportStyle.animationName,duration:reportStyle.animationDuration,ease:reportStyle.animationTimingFunction,delay:reportStyle.animationDelay,source:'Reports sheet'});sample.remove();
+  const motion=beats.map((b,i)=>`<div class="tk-motion"><div><b>${esc(b.name)}</b> · ${code(b.duration)}${b.delay!=='0s'?` + ${code(b.delay)} delay`:''}<br>${code(b.ease)}</div><div class="tk-window"><span class="tk-sample" data-tk-sample="${i}">${I.check}<span>${b.name==='slam'?'Paid':'18,00 £'}</span></span></div><button class="btn" data-tk-play="${i}" aria-label="Play ${esc(b.name)} ${b.duration}">Play</button></div>`).join('');
+  const sets=[['tabler-15','Tabler · 1.5 px'],['hugeicons','Hugeicons'],['ph','Phosphor']].map(([set,label])=>`<div class="tk-specimen"><b>${label}</b><div class="tk-icons">${['pos','products','orders','search','print','gear'].map(k=>`<span title="${k}">${ICONSETS[set][k]||I0[k]}</span>`).join('')}</div><p>${themes.filter(([t])=>iconSet(t)===set).map(([,l])=>l).join(' · ')}</p></div>`).join('');
+  const pop=document.createElement('div');pop.className='pop';probe().dataset.screen='register';probe().append(pop);const shadow=getComputedStyle(pop).boxShadow;pop.remove();probe().dataset.screen='tokens';
+  const floor=width=>{probe().dataset.w=width;const v=value('floor');probe().dataset.w=S.w;return v;};
+  page.innerHTML=`<header><h1>Token sheet</h1><span class="mut">The register, measured live · ${themes.length} themes × ${scales.length} steps</span></header>
+    <section id="tk-colour"><h2>Colour</h2><p>The highlighted column follows Theme; swatches and oklch values resolve from the frame.</p>${table(colourRows)}</section>
+    <section id="tk-contrast"><h2>Contrast</h2><p>WCAG luminance from resolved sRGB · text ≥ 4.5:1 · focus ring against canvas ≥ 3:1</p>${table(contrast)}</section>
+    <section id="tk-status"><h2>Status set</h2><p>Matches the highlighted theme; a dot and a word, never colour alone.</p><div class="tk-grid">${statuses}</div></section>
+    <section id="tk-scale"><h2>Scale steps</h2><p>${themes.find(([t])=>t===S.theme)[1]} · the selected step is highlighted, including theme radius overrides.</p><table class="tk-table"><thead>${scaleHead}</thead><tbody>${scaleRows}</tbody></table><p>Control floor: ${code('max(var(--ctl), var(--floor))')} · touch ${floor('tablet')} · fine pointer ${floor('desktop')}</p></section>
+    <section id="tk-type"><h2>Type</h2><p>Every distinct font-size expression using --fs or --amt in the file; rendered at all three steps.</p><table class="tk-table"><thead>${scaleHead}</thead><tbody>${sizes}</tbody></table><h2>Display and mono faces</h2><div class="tk-grid">${faces}</div></section>
+    <section id="tk-motion"><h2>Motion</h2><p>${code('--t: '+value('t'))} · ${code('--ease: '+value('ease'))} · named CSS beats, one cycle per play; reduced motion stays still.</p>${motion}</section>
+    <section id="tk-icons"><h2>Icons</h2><p>Decision 45 · six glyphs per set; the family follows the theme.</p><div class="tk-grid">${sets}</div></section>
+    <section id="tk-edges"><h2>Radius, hairline and pop shadow</h2><div class="tk-specimen" style="box-shadow:${shadow}">${code('--r: '+value('r'))} · ${code('--hair: '+value('hair'))}<p>Register pop · computed box-shadow: ${code(shadow)}</p></div></section>`;
+  host.remove();document.getElementById('notes').textContent='Token sheet · live measurements, not proposed replacements. Personality-theme contrast failures and status differences remain visible for Paul.';
+}
+function click(e){const b=e.target.closest('[data-tk-play],[data-tk-state]');if(!b)return false;if(b.dataset.tkState){jump();return true;}const beat=beats[+b.dataset.tkPlay],sample=document.querySelector(`[data-tk-sample="${b.dataset.tkPlay}"]`),target=['draw','sl-draw'].includes(beat.name)?sample.querySelector('path'):sample;target.style.animation='none';void target.offsetWidth;if(beat.name==='draw')target.style.strokeDashoffset='30';target.style.animation=`${beat.name} ${beat.duration} ${beat.ease} ${beat.delay} 1 both`;return true;}
+function jump(){S.scn='sheet';render();}
+function keydown(e){if(e.key==='Escape'){e.preventDefault();nav('register');}}
+return {SCENES,strip,render:renderTokens,click,jump,keydown};
+})();
+if(Q.get('screen')==='tokens'){S.screen='tokens';S.scn='sheet';SCN_OF.tokens='sheet';}
+SCENES.push(...PP.SCENES.map(v=>[v,v.replaceAll('-',' · ')]));
+SCENES.push(...['paid-change','paid-split','paid-printing','paid-printed','paid-captured','paid-syncing','paid-offline','paid-nopreview','paid-email','paid-email-offline'].map(v=>[v,v.replaceAll('-',' · ')]));
+OP.SCENES.push(['receipt','Receipt · reprint']);
+if(S.screen==='orders'&&Q.get('scn')==='receipt')OP.jump('receipt');
+SCENES.push(['connect','Connect · before login']);
+if(Q.get('screen')==='connect'){S.screen='connect';CP.jump(CP.SCENES.some(([v])=>v===Q.get('scn'))?Q.get('scn'):'first-run');}
+SCN_OF.settings=S.w==='phone'?'index':'general';
+NAV_BOTTOM.find(([key])=>key==='gear').push('settings');
+if(Q.get('screen')==='settings'){S.screen='settings';S.scn=SCN_OF.settings;SP.jump(SP.SCENES.some(([v])=>v===Q.get('scn'))?Q.get('scn'):S.scn);}
 if(S.screen==='register'&&SCENES.some(([v])=>v===Q.get('scn'))) jump(Q.get('scn')); else render();
 </script>
 </body>

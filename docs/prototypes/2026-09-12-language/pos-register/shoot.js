@@ -13,6 +13,9 @@ fs.mkdirSync(OUT, { recursive: true });
 for (const f of fs.readdirSync(OUT)) if (f.endsWith('.jpg') || f.endsWith('.png')) fs.rmSync(path.join(OUT, f));
 
 const STATES = ['open','added','line-actions','line-edit','many-orders','cart-settings','empty','closed','pick','counting','overdue','panel','closure','offline','loading','noresults','table','settings','tender','tender-card','tender-legacy','split','split-1of2','split-2of3','split-item','paid','long'];
+STATES.push('paid-change','paid-split','paid-printing','paid-printed','paid-captured','paid-syncing','paid-offline','paid-nopreview','paid-email','paid-email-offline');
+STATES.push('var-popover','var-sheet','var-syncing','var-unavailable','camera-permission','camera-scanning','camera-unavailable','scan-searching','scan-notfound','scan-ambiguous','scan-outofstock','filter-editor','filter-editor-empty','outage');
+const ORDERS_STATES = ['receipt'];
 const WIDTHS = QUICK ? ['tablet'] : ['phone','tablet','desktop'];
 const THEMES = QUICK ? ['light'] : ['light','dark'];
 const SCALES = QUICK ? ['regular'] : ['regular','compact'];
@@ -38,10 +41,28 @@ const SCALES = QUICK ? ['regular'] : ['regular','compact'];
       n++;
     }
   }
+  // The new Orders receipt scene uses the same body, without checkout auto-print.
+  await page.goto('file://' + path.join(DIR, 'index.html') + '?screen=orders');
+  for (const w of WIDTHS) for (const theme of THEMES) for (const scale of SCALES) {
+    await set('w', w); await set('theme', theme); await set('scale', scale);
+    for (const state of ORDERS_STATES) {
+      await scn(state);
+      await page.locator('#frame').screenshot({ path: path.join(OUT, `${w}-${theme}-${scale}-orders-${state}.jpg`), type: 'jpeg', quality: 82, animations: 'disabled' });
+      n++;
+    }
+  }
+  await page.goto('file://' + path.join(DIR, 'index.html'));
   // a few interaction assertions: add a line, open the panel, close it, type on the keypad
   await set('w','tablet'); await set('theme','light'); await set('scale','regular'); await scn('empty');
   await page.click('.tile >> nth=0');
   if (!(await page.locator('.line.settle').count())) throw new Error('adding a line did not settle');
+  // Products: the variable tile opens choices; Add lands one quiet cart-line beat.
+  await scn('open');
+  await page.click('[data-testid="products-variable-tile"]');
+  await page.click('[data-pp="colour"][data-v="Natural"]');
+  await page.click('[data-pp="add"]');
+  if (!(await page.locator('.line.settle').textContent()).includes('Tote bag')) throw new Error('variation did not settle in the cart');
+  if (await page.locator('.pp-picker,.pp-sheet,.toast').count()) throw new Error('variation left a picker or success toast open');
   await page.click('[data-act="openPanel"]');
   if (!(await page.locator('.panel').count())) throw new Error('panel did not open');
   await page.click('.panel [data-act="closePanel"]');
@@ -52,6 +73,10 @@ const SCALES = QUICK ? ['regular'] : ['regular','compact'];
   if (!/50\.?00/.test(big)) throw new Error('keypad did not type: ' + big);
   await page.keyboard.press('Enter');
   if (!(await page.locator('.paidwrap').count())) throw new Error('Enter did not take cash');
+  if (!(await page.locator('[data-rc="print"]').textContent()).includes('Printing…')) throw new Error('receipt did not auto-print');
+  if (!(await page.locator('.rc-next').isDisabled()) || !(await page.locator('.rc-skip').isDisabled())) throw new Error('sale can finish before dispatch');
+  await page.waitForFunction(() => document.querySelector('[data-rc="print"]')?.textContent.includes('Printed to Epson TM-m30 · Print again'));
+  if (await page.locator('.rc-next').isDisabled() || await page.locator('.rc-skip').isDisabled()) throw new Error('finish actions did not unlock after dispatch');
   // the rail links the pages: Reports and back, and the phone's menu sheet does the same
   await scn('open');
   await page.click('.rail [data-nav="reports"]');
