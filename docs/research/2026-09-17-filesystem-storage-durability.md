@@ -1208,7 +1208,13 @@ same guard from scratch in August 2026 after a production incident: `9cc71d4a60`
 bare `worker.terminate()`: no banner, checkout and save still enabled — **the cashier keeps selling
 into a dead database**." That is the same workaround, invented twice, on two different boundaries,
 because nobody carried the lesson across. A third boundary will need it a third time, and it should
-be written into the spike as a requirement rather than discovered again.
+be written into the spike as a requirement rather than discovered again — **and the timeout alone is
+not the requirement.** A `Promise.race` deadline only rejects the caller; it cancels nothing on the
+far side, so a `bulkWrite` that timed out because the boundary was slow or backgrounded can still
+commit after the UI has shown `DB01002` and retried or moved on, and the sale is applied twice or
+its outcome is unknowable. The requirement is the deadline **plus** either cancellation/fencing of
+the in-flight request or stable operation ids with late-result reconciliation (idempotent writes),
+so a late answer is recognised rather than re-applied.
 
 Also boundary-inherent and still live: `RxDocument.get(path)` returns a **Proxy** for object-valued
 paths, and a Proxy is not cloneable **anywhere**. The rule — *never pass RxDB documents across a
@@ -1368,7 +1374,11 @@ products and variations no longer reach.
 build ships `-DSQLITE_ENABLE_FTS5` (`ext/wasm/GNUmakefile:439`); **wa-sqlite's default build does
 not**, which is why issue #258's reporter compiled a custom one — and #258 and #320, the two
 wa-sqlite corruption reports, are both FTS5-with-triggers. FTS5's `trigram` tokenizer gives the
-substring matching `tokenize:'full'` exists for. On **Electron** storage runs in the main process, so
+substring matching `tokenize:'full'` exists for — **for terms of three characters or more.** A one-
+or two-character term generates no trigram and a `MATCH` returns nothing, where today's fold-blob
+`indexOf` matches it; so retiring the blob needs either a three-character UI minimum or a
+`LIKE`/`GLOB` fallback (a scan) for short terms, and the spike measures that fallback rather than
+assuming it away. On **Electron** storage runs in the main process, so
 an FTS5 index there is a genuinely different heap — the #2026 fix. On **web** it is not: per #2026's
 own comment 2, *"a browser worker does not create a distinct OS process and gets no exemption from
 tab or browser-wide memory pressure"*, so FTS5 in the storage worker would not obviously stop the
