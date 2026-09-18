@@ -242,8 +242,9 @@ delta only states it. Register and store stay in the bar (they scope the whole p
 chart). On the phone the row scrolls sideways under a fade, as the register's plan chips do.
 
 **Six decisions closed (nineteenth pass, same day).** Asked what was not settled, Paul ruled:
-(1) the parts-of-a-whole cards are thick donuts in distinct hues, confirmed, so the five
-colours (`--c1..--c5`, reports block) go to the shared tokens for every page; (2) the strip's
+(1) the parts-of-a-whole cards are thick donuts in distinct hues, confirmed; the five colours
+stay in the reports block (`--c1..--c5`) until someone is given the lift to shared tokens,
+which the register owner declined as unassigned, and the same goes for a shared `.chip`; (2) the strip's
 *Till* and *Below the chart* switches are retired: the till strip is the equation chips and
 under the chart are the panels; the cash-level line lives on in `till-concepts.html`, the
 list and the tiles only in this history (their code, the Sales | Closures tabs and the scope
