@@ -42,10 +42,10 @@ Natural, presses Add and checks the settled cart line without a toast.
 1. **Sheet on the phone, popover elsewhere** (drawn), or popover everywhere (today).
    The sheet gives touch choices room and leaves one familiar exit; the popover keeps the
    tile beside its options and avoids a platform split. **Pick: sheet on the phone.**
-   The strip's Picker switch draws both; `var-sheet` selects the sheet rule, not a wide-screen
-   modal. Feeds #290. Buttons up to four options, select for five to twelve, combobox above
+   The strip's Picker switch compared both; the popover-everywhere home was deleted when #290
+   ruled the sheet keyed by phone width. `var-sheet` is the phone, `var-popover` the tablet. Buttons up to four options, select for five to twelve, combobox above
    twelve follow the brief's proposed thresholds, not today's text-length/ten-option rule.
-   **Decided (Paul, 2026-09-18): sheet on the phone, popover elsewhere; the Picker switch stays for #290's split rule.**
+   **Decided (Paul, 2026-09-18): sheet on the phone, popover elsewhere; the Picker switch stayed for #290's split rule, which ruled sheet-by-width on 2026-09-18 and retired the switch.**
 2. **Scan feedback under the search field** (drawn), or today's scan toast.
    One place joins the code to the outcome without a message covering products; the toast
    is easier to notice away from search. **Pick: under search**, with the settled cart line
