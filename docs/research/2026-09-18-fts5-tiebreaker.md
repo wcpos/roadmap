@@ -17,9 +17,10 @@ which raised the question; this file answers its five items and adds the numbers
    it fixes a SQLite-specific regression, not every engine.
 3. FTS5 **can** serve all 17 traps — `MATCH` with `remove_diacritics 1` at three characters or more
    (15/17) plus `LIKE` over **folded** stored columns below that (`k2`, `MY საბარგული`), 6.4 ms at
-   20k — so it could retire the blob completely. All three designs can reach that: external content
-   over a rowid table (layout change + folded columns), a self-owned table (+5.5 MB of duplicated
-   text, no layout change), or contentless leaning on the base table's folded columns.
+   20k — so it could retire the catalogue blob. Four designs reach it: external content bound to the
+   base table (layout change), or to a filtered **view** (no layout change), a self-owned table
+   (+5.5 MB of duplicated text), or contentless. **Folded storage is FTS5's cost, not the projection
+   read's** — the blob folds what it is handed.
 4. Its cost: upsert 0.19 → 0.38 ms (~2×), resync ~7×, ~+3 MB disk at 20k; the generated columns alone
    are near-free, so the FTS5 half is what costs. On premium's shipped columns FTS5 still answers
    `MATCH` from the index and returns rowids — what it loses is **column-value reads, `LIKE`, and
@@ -30,8 +31,8 @@ which raised the question; this file answers its five items and adds the numbers
    fixed, #258 is still open and unconfirmed; neither implicates the official build or `opfs-sahpool`.
 
 Recommendation: **if SQLite wins on durability, satisfy #2143's search-index condition with a
-projection read through a custom storage read, riding #2150's generated columns; revisit FTS5 after
-the engine is decided.**
+projection read through a custom storage read, over plain `json_extract` columns added by #2150's
+migration; revisit FTS5 after the engine is decided.**
 
 ## 1. The avoided full read, and what replaces it
 
@@ -59,8 +60,12 @@ the **original** values, then an insert). FTS5's docs make that consistency the 
 **The triggers must know about soft deletes.** RxDB deletes by setting the `deleted` flag, hard-
 deleting only later in `cleanup()`, so an unconditional `AFTER UPDATE` re-indexes a tombstone's text
 and leaves deleted products matching. The insert arm must be skipped when `new.deleted != 0` (or every
-read path must join `deleted = 0`), and `'rebuild'` needs the same exclusion — a content **view**
-filtered on `deleted = 0`, or a delete pass afterwards — since it repopulates from the whole table.
+read path must join `deleted = 0`), and the **delete arm needs the matching guard** — run only when
+`old.deleted = 0`, or `cleanup()`'s later hard-delete of an already-unindexed tombstone issues a
+second FTS5 `'delete'` for a rowid no longer in the index, which can surface as "database disk image
+is malformed"; updating an already-deleted document has the same hazard. `'rebuild'` needs the same
+exclusion — a content **view** filtered on `deleted = 0`, or a delete pass afterwards — since it
+repopulates from the whole table.
 
 **But the content table needs columns FTS5 can read by name, and premium's has none.** The table I
 first measured is premium's shipped shape — `id, revision, deleted, lastWriteTime, data json` — with
@@ -74,35 +79,30 @@ column-value reads, `LIKE`, and `'rebuild'` — the documented repair for a drif
 which the only repair is a resync.
 
 **Measured cost** (SQLite 3.53.4 via Python, M4 Pro, default unix VFS — same SQLite version as
-`@sqlite.org/sqlite-wasm` 3.53.4-build1 but *not* wasm and *not* OPFS, so read ratios; 20,000 products
-of ~1.9 KB, trigram FTS5 over name/sku/barcode, VACUUMed, three triggers as above):
+`@sqlite.org/sqlite-wasm` 3.53.4-build1 but *not* wasm and *not* OPFS, so read ratios; 20k products of
+~1.9 KB, trigram FTS5 over name/sku/barcode, VACUUMed, triggers as above):
 
 | Configuration | 20k seed (one txn) | single-row upsert + commit | database file |
 |---|---:|---:|---:|
 | baseline, `data json` only | 0.06 s | 0.20 ms | 41.3 MB |
 | **+3 STORED generated columns** (no FTS5) | 0.13 s | **0.19 ms** | **41.3 MB** |
 | + generated columns + FTS5 `detail=full` | 0.42 s | **0.38 ms** | 44.2 MB (**+2.9 MB**) |
-| FTS5 `detail=column` / `detail=none` (no generated columns) | 0.43 / 0.39 s | 0.48 / 0.36 ms | +2.2 / +1.0 MB |
 
-So: **FTS5 roughly doubles a product upsert (0.19 → 0.38 ms), costs ~7× on a full resync and ~3 MB
-on disk at 20k** — against the 2 MB of *renderer heap* the folded blob costs today
-(`catalogue-search-blob.ts:18-24`). Disk is the right place for it; the write multiplier is the price.
-**The three STORED generated columns are nearly free on their own** — upsert unchanged within noise,
-no measurable disk growth — so the shared half of the migration is cheap and the FTS5 half is what
-costs. `detail=none`/`column` shrink the index further but the docs cap full-text queries there at
-three-character tokens, which is useless for us.
+So: **FTS5 roughly doubles a product upsert (0.19 → 0.38 ms), costs ~7× on a resync and ~3 MB on disk
+at 20k**, against the 2 MB of *renderer heap* the blob costs today (`catalogue-search-blob.ts:18-24`).
+Disk is the right place for it; the write multiplier is the price. **The three STORED generated
+columns are nearly free on their own**, so the column half of the migration is cheap and the FTS5 half
+is what costs. (`detail=column`/`none` shrink the index to +2.2 / +1.0 MB, but the docs cap full-text
+queries there at three-character tokens — useless for us.)
 
 **A second constraint nobody has recorded: premium's tables are `WITHOUT ROWID`** — every collection
 is `CREATE TABLE "<collection>-<version>"(id TEXT … PRIMARY KEY …, data json) WITHOUT ROWID`
-(`rxdb-premium/dist/esm/plugins/storage-sqlite/sqlite-storage-instance.js`,
-`createSQLiteStorageInstance`; the setting defaults on, `sqlite-types.d.ts:47-52`). FTS5 external
-content addresses rows by rowid and such a table has none
-(<https://www.sqlite.org/withoutrowid.html> §1). Verified on 3.53.4:
-
-```
-INSERT INTO fts(fts) VALUES('rebuild');       -> no such column: T.rowid
-AFTER INSERT trigger using new.rowid, on fire -> no such column: new.rowid
-```
+(`…/storage-sqlite/sqlite-storage-instance.js`, `createSQLiteStorageInstance`; the setting defaults
+on, `sqlite-types.d.ts:47-52`). FTS5 external content addresses rows by rowid and such a table has
+none
+(<https://www.sqlite.org/withoutrowid.html> §1). Verified on 3.53.4: `INSERT INTO fts(fts)
+VALUES('rebuild')` raises `no such column: T.rowid`, and an `AFTER INSERT` trigger using `new.rowid`
+raises `no such column: new.rowid` when it fires.
 
 `content_rowid='id'` does not rescue it: FTS5 rowids are integers and `id` is TEXT. This binds the
 direct external-content design only — so **the two constraints above together make one design fork:**
@@ -113,6 +113,11 @@ direct external-content design only — so **the two constraints above together 
 | **Contentless** (`content=''`, `contentless_delete=1`) + base-table folded columns | `WITHOUT ROWID` kept — **#2143's numbers stand** | **17/17** — `MATCH` for long terms, and short terms by `LIKE` on the base table's folded columns, joined through the id↔rowid map | unmeasured; costs the mapping table and a join per short query |
 | **Regular, self-owned FTS5 table** (own rowids, `docid UNINDEXED`, text duplicated) | `WITHOUT ROWID` kept — **#2143's numbers stand** | **17/17** — `LIKE` runs over its own stored text | +5.5 MB (92.2 → 97.7); upsert 0.30 → 0.72 ms; `LIKE` **2.2 ms** |
 
+**A fourth variant sidesteps the layout change entirely:** bind external content to a **view**
+filtered on `deleted = 0` exposing the mapped integer as `content_rowid`, with the same id↔rowid
+mapping — `'rebuild'`, column reads and `LIKE`, without `withoutRowId: false` and without duplicated
+text.
+
 `contentless_delete=1` (3.43.0+, now preferred by the docs) is better than §16 implied: verified on
 3.53.4, ordinary `DELETE … WHERE rowid=?` and `UPDATE` both work and need **no** original values —
 that contract binds only *legacy* contentless tables, where both statements are refused outright. Its
@@ -121,11 +126,8 @@ document id to an integer FTS rowid (the self-owned measurement uses an auxiliar
 `map(rid INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT UNIQUE)`), since a `WITHOUT ROWID` table offers a
 trigger no `new.rowid`.
 
-So it is not "FTS5 forces `withoutRowId: false`". **All three designs can reach 17/17**: external
-content (needs the layout change plus the folded generated columns §6 wants anyway); a self-owned
-table (needs neither, but duplicates the text at roughly double the index size); and contentless
-(keeps the layout and adds no duplicate text, but leans on the base table's folded columns for every
-short term). Contentless is only short-term blind if those columns are absent.
+So it is not "FTS5 forces `withoutRowId: false`" — **every design here can reach 17/17**, and only
+external content bound *directly* to the base table needs the layout change.
 
 **The traps.** `searchFixtureCatalogue.ts` enshrines 17 (`SEARCH_FIXTURE_TRAPS`) that every search
 layer must satisfy; `foldSearchText` is lowercase + NFD + strip U+0300–U+036F
@@ -176,6 +178,14 @@ with `unknown function: wcpos_fold()`** — tractable for our single storage-wor
 cost of a database no other tool can write. With folded columns the union is **17/17**, re-verified
 end to end; the blob already folds both sides, so this is parity, not a new semantic.
 
+**The folded storage this needs is an FTS5 cost, not a projection cost** — the blob folds what it is
+handed, so a projection read is fine on raw columns (§6). Measured natively (Python UDF, *not* wasm):
+folded columns via a registered `wcpos_fold` cost seed 0.09 → 0.12 s, upsert 0.20 → 0.21 ms and **no
+disk growth** — nearly free, though three UDF calls per row cross the wasm↔JS boundary on our stack
+and that crossing is **unmeasured**. App-written folded fields need no UDF but grew this fixture
+41.3 → 77.4 MB: a **page-packing cliff** (~1.9 KB rows crossing two-per-page at 4 KB), not a linear
+cost, so that route needs sizing against a real catalogue.
+
 **Cost of that fallback: 6.4 ms at 20,000 products**, scanning `name`/`sku`/`barcode` on the content
 table. It is unindexed — a two-character pattern has no trigram to look up, and `remove_diacritics 1`
 disables indexed LIKE/GLOB outright ("Unless the remove_diacritics option is set"; plans: `INDEX 0:L0`
@@ -188,7 +198,10 @@ catalogue bytes, so it is nowhere near the `$regex` shape `catalogue-search-blob
 `$regex`); and a literal `"` in a term (`12" ruler`) terminates the quoted FTS phrase, so **embedded
 quotes must be doubled** — binding the MATCH string as a parameter does *not* escape FTS query
 grammar, since the parameter is the whole query expression. **`SEARCH_FIXTURE_TRAPS` covers neither**,
-so traps carrying a `%`/`_` and a `"` must be added before either path is trusted.
+so traps carrying a `%`/`_` and a `"` must be added before either path is trusted. Routing needs its
+own trap too: the ≥3-character test must count **Unicode code points after folding** by iterating,
+not `.length` — `😀a` is `.length` 3 but two code points, and would be mis-routed to `MATCH`, which
+cannot serve it.
 
 **What that means for the prize.** The earlier reading — short terms keeping a JS structure and the
 full read alive — is withdrawn: **FTS5 can retire the blob completely**, so §16's hoped-for deletion
@@ -199,7 +212,7 @@ is real, at the cost of folded columns plus a 2–6 ms scan on short terms.
 Storage runs in the **Electron main process** (`adapters/storage/index.electron.ts`,
 `getRxStorageIpcRenderer`), a separate OS process from the heap-capped renderer `WOOCOMMERCE-POS-W8`
 crashes; on web it is a DedicatedWorker (`adapters/storage/index.web.ts`, `getRxStorageWorker`) in the
-same process. #2026 comment 2: *"A browser worker does not create a distinct OS process and gets no
+same process — #2026 comment 2: *"a browser worker does not create a distinct OS process and gets no
 exemption from tab or browser-wide memory pressure … not evidence those crashes stop."* So:
 
 | Platform | Today | Under FTS5 |
@@ -208,8 +221,8 @@ exemption from tab or browser-wide memory pressure … not evidence those crashe
 | Web | blob in the **tab's** heap; built by a full read across the worker RPC | index on **disk in OPFS**; page cache in the worker's wasm heap — same OS process, same pressure. The win is the **avoided read**, not avoided heap. |
 
 On native the blob sits on the UI JS thread (§16) and nothing here applies until #2138/#2145 resolve
-that engine. So FTS5's heap argument is Electron-only — and §16's W8 finding already weakened it from
-both ends. What survives everywhere is the avoided full read, which §6 shows is purchasable cheaper.
+that engine. So FTS5's heap argument is Electron-only, and §16's W8 finding already weakened it from
+both ends; what survives everywhere is the avoided full read, which §6 buys cheaper.
 
 ## 3. Availability
 
@@ -219,12 +232,11 @@ both ends. What survives everywhere is the avoided full read, which §6 shows is
   exact artifact we would ship — "3.53.4-build1 (SQLite 3.53.4, `ENABLE_FTS5`, …)",
   `spikes/2138-rxdb-sqlite-wasm/RESULTS.md:3-5` on `origin/next`.
 - **wa-sqlite: not in the stock build; reachable only by compiling your own.** Its `WASQLITE_DEFINES`
-  block (Makefile:101-115) ends with a `$(WASQLITE_EXTRA_DEFINES)` escape hatch and lists no FTS5, so
-  the distributed artifacts have none — but any user can add it there, and both corruption reporters
-  did: #320's ran `make WASQLITE_EXTRA_DEFINES="-DSQLITE_ENABLE_FTS5 -DSQLITE_ENABLE_GEOPOLY=1
-  -DSQLITE_ENABLE_RTREE=1"`, #258's "compil[ed] a separate build that included the FTS5 extension"
-  (and confirmed the corruption "went away" on "the default artifacts distributed by wa-sqlite (i.e.
-  without FTS5)").
+  block (Makefile:101-115) lists no FTS5 and ends with a `$(WASQLITE_EXTRA_DEFINES)` escape hatch, so
+  the distributed artifacts have none — but any user can add it there, and both reporters did: #320's
+  ran `make WASQLITE_EXTRA_DEFINES="-DSQLITE_ENABLE_FTS5 …"`, #258's "compil[ed] a separate build that
+  included the FTS5 extension" (and confirmed the corruption "went away" on "the default artifacts
+  distributed by wa-sqlite (i.e. without FTS5)").
 
 One more item on the official build's side of §12 — a tiebreaker between the wasm packages, which §12
 already decided, not between engines.
@@ -238,8 +250,8 @@ contentless table; frequent corruption. Removing FTS5 stopped it; enabling FTS5 
 *unused* did not reproduce it. The thread converged on a VFS bug — SQLite can write past the file-size
 offset and **IDBBatchAtomicVFS** never fills the skipped pages, so reading a never-written page yields
 a malformed image (sibling **IDBMirrorVFS**, same class, fixed in PR #259). The maintainer's last word
-is that writes-beyond-EOF explain the 1 GB case but feel "less likely" at the reported sizes, so
-#258's root cause is unconfirmed.
+is that this explains the 1 GB case but feels "less likely" at the reported sizes, so #258's root
+cause is unconfirmed.
 
 **[#320](https://github.com/rhashimoto/wa-sqlite/issues/320)** — "Database Disk Image Malformed
 (WriteAheadVFS, FTS5, GEOPOLY)", 2026-04-17, **closed 2026-04-22**. One connection, no concurrency,
@@ -268,17 +280,16 @@ RxDB's Mango cannot express `MATCH`. Two seams reach it, and they are **alternat
 
 **(a) `queryModifier`.** Premium exposes `queryModifier?: RxStorageSQLiteQueryModifier<any>`
 (`rxdb-premium/dist/types/plugins/storage-sqlite/sqlite-types.d.ts:56-63`): "Can be used to modify the
-prepared query before sending it to SQLite … you could use it to replace a regex with %LIKE%
-expressions". Applied in `query()` (both branches) and `count()`, **not** `findDocumentsById`. It may
-rewrite SQL and params wholesale, but the caller wraps the result as
-`SELECT COALESCE('[' || group_concat(data, ',') || ']', '[]') FROM (<your query>)`, so the rewrite must
-still yield a `data` column — `… WHERE id IN (SELECT c.id FROM fts JOIN "<tbl>" c ON c.rowid =
-fts.rowid WHERE fts MATCH ?)` fits. The catch is upstream: the selector must *translate*, or
-`prepareSQLiteQuery` sets `nonImplementedOperator` and `query()` takes the 50-row paging branch that
-discards the WHERE and re-matches with `getQueryMatcher` (§16) — mingo will not match a synthetic
-`$fts` operator, so that branch returns nothing however the SQL is rewritten. The term must ride a
-*translatable* sentinel selector the modifier recognises: a private protocol, invisible to
-`packages/core/src/query/query-state-translator.ts`'s residual matcher unless taught.
+prepared query before sending it to SQLite … replace a regex with %LIKE% expressions". Applied in
+`query()` (both branches) and `count()`, **not** `findDocumentsById`. It may rewrite SQL and params
+wholesale, but the caller wraps the result in `SELECT COALESCE('[' || group_concat(data, ',') || ']',
+'[]') FROM (<your query>)`, so the rewrite must still yield a `data` column — a
+`… WHERE id IN (SELECT c.id FROM fts JOIN "<tbl>" c ON c.rowid = fts.rowid WHERE fts MATCH ?)` fits.
+The catch is upstream: the selector must *translate*, or `prepareSQLiteQuery` sets
+`nonImplementedOperator` and `query()` takes the 50-row paging branch that discards the WHERE and
+re-matches with `getQueryMatcher` (§16) — mingo will not match a synthetic `$fts` operator, so that
+branch returns nothing however the SQL is rewritten. The term must ride a *translatable* sentinel
+selector the modifier recognises: a private protocol, invisible to the residual matcher unless taught.
 
 **(b) A custom storage method / side channel** — **also exactly what the projection read needs (§6)**,
 which is why it is the cheaper route: once the raw-SQL handler exists, it can run `MATCH` and return
@@ -290,8 +301,8 @@ persistent owner connection has to be defined rather than assumed". Our worker e
 
 **What #2143 did** — `worker-sqlite.mjs` used a `queryModifier`, a monkey-patch of
 `instance.query`/`instance.count` where the modifier could not reach, and a `message` channel for raw
-SQL. Net: buildable, none of it vendor-supported end to end, and **the projection read needs path (b)
-anyway**, as do #2150's promoted columns and the pushed sort — do the query-layer work once.
+SQL. Net: buildable, none vendor-supported end to end, and **the projection read needs path (b)
+anyway**, as do #2150's columns and the pushed sort — do the query-layer work once.
 
 ## 6. Does it tip the decision — and what the alternative costs
 
@@ -309,10 +320,13 @@ the existing folded blob. Locally at 20k (3.53.4, native; same caveat as §1):
 
 With the generated columns the projection is as fast as reading whole documents *and* returns **38×
 fewer bytes**; without them `json_extract` costs 2.4× more. #2143 attributes the whole-table penalty
-to marshalling ("SQLite pays wasm-to-JS marshalling per byte returned, and the Windows runner pays it
-hardest"), so at Chrome's 2,410 ms for 38.5 MB (≈63 µs/KB) a 1 MB payload is ~60 ms — plausibly the
-shipped engine's 89 ms band, **but that is an extrapolation and belongs in the #2143 harness as one
-added cell.**
+to marshalling ("SQLite pays wasm-to-JS marshalling per byte returned"), so at Chrome's 2,410 ms for
+38.5 MB (≈63 µs/KB) a 1 MB payload is ~60 ms — plausibly the shipped engine's 89 ms band, **but that
+is an extrapolation and belongs in the #2143 harness as one added cell.**
+
+**Every projection query and the custom-read contract must carry `WHERE deleted = 0`** — the raw-SQL
+path bypasses RxDB's deleted filtering and tombstones persist until `cleanup()`, so an unfiltered
+projection would feed deleted products into the blob.
 
 **It is not a plain `find()`, and it is not engine-independent.** RxDB's `find()` returns whole
 RxDocuments and premium's wrapper is
@@ -324,13 +338,15 @@ read is the SQLite-specific fix for a SQLite-specific regression**, not a free w
 earlier draft claimed.
 
 It reads three STORED generated columns (`name`, `sku`, `barcode` as
-`GENERATED ALWAYS AS (json_extract(data,'$.…')) STORED`); leave any JSON-extracted and its parse cost
-stays. SQLite refuses to add a STORED column to a populated table (verified: `cannot add a STORED
-column`), so it needs a table rebuild — and premium creates one `<collection>-<version>` table per
-collection. The blob covers **products *and* variations** (§16 of the 2026-09-17 doc), so the folded
-columns are needed on both, while #2150's `_pos_user`/`_pos_store` promotion rebuilds **orders**:
-**the same migration mechanism and ticket, but three separate table rebuilds — two catalogue tables
-plus orders**, not one rebuild serving all. It is also the schema §1 shows FTS5 needs.
+`GENERATED ALWAYS AS (json_extract(data,'$.…')) STORED`), and **they do not need to be folded**:
+`catalogue-search-blob.ts` applies `foldSearchText` to whatever fields it receives, so plain
+`json_extract` columns — the near-free ones measured above — preserve today's semantics exactly.
+Folded *storage* is only required if FTS5's short-term `LIKE` fallback is later adopted (§1). SQLite
+refuses to add a STORED column to a populated table (verified: `cannot add a STORED column`), so this
+needs a table rebuild, and premium creates one `<collection>-<version>` table per collection. The blob
+covers **products *and* variations** (§16 of the 2026-09-17 doc), so the columns are needed on both,
+while #2150's `_pos_user`/`_pos_store` promotion rebuilds **orders**: **the same migration mechanism
+and ticket, but three separate table rebuilds — two catalogue tables plus orders**.
 
 **Cost comparison, in work rather than money:**
 
@@ -338,33 +354,26 @@ plus orders**, not one rebuild serving all. It is also the schema §1 shows FTS5
 |---|---|---|
 | Search semantics | unchanged — the blob and its 17 traps keep passing | **17/17**: `MATCH` (`remove_diacritics 1`) ≥3 chars, `LIKE` below it — 6.4 ms at 20k |
 | Query seam | **a custom storage read** (§5(b)) — premium's wrapper needs a full `data` column, so `find()` cannot project | **the same custom path plus a `MATCH` handler in it.** The §5(a) sentinel-selector/`queryModifier` route is an *alternative*, not an addition — take it only if the raw-SQL path is not built |
-| Storage settings | none | `withoutRowId: false` **only** for the external-content design (then re-take #2143's numbers); self-owned and contentless keep `WITHOUT ROWID` and both keep the `LIKE` fallback — self-owned over its duplicated text, contentless over the base table's folded columns |
+| Storage settings | none | `withoutRowId: false` **only** for external content bound *directly* to the base table (then re-take #2143's numbers). External content over a filtered view, self-owned and contentless all keep `WITHOUT ROWID` and all keep the `LIKE` fallback |
 | Schema | **two catalogue rebuilds** (products *and* variations), under #2150's migration | **the same two rebuilds** (external content, or contentless leaning on them); none for a self-owned table |
 | Write cost | 0.19 ms per upsert — unchanged within noise | 0.38 ms per upsert (~2×), resync ~7× |
 | Disk | no measurable growth at 20k | ~+3 MB at 20k |
 | Crash surface | none | three triggers per collection, the exact workload behind wa-sqlite #258/#320; must go in the #2144 harness |
 | Engine-independent? | no — the shipped engine (89 ms) and IndexedDB (285 ms) do not need it | no |
-| Deletions earned | none | `search.ts`, the folded blob, the FlexSearch pipeline, the #2070 export-history bound, the #2020 append bound, the rebuild path, the #2073 sizing question |
+| Deletions earned | none | the **catalogue blob** and the #2073 sizing question — but only for products/variations, the two collections that opt out of FlexSearch. `search.ts`, the FlexSearch pipeline and its #2070/#2020 history bounds still serve every other searchable collection and survive unless all of them are migrated, a cost not analysed here |
 
-The deletion row is the only one FTS5 wins — substantial, as §16 said, but a reward for a decision
-already made, collectable later.
+The deletion row is the only one FTS5 wins, and it is narrower than §16 implied: retiring the blob is
+real; retiring the FlexSearch subsystem is not, unless every searchable collection moves.
 
 **Recommendation.** Weight FTS5 at zero in the engine choice: it is a consequence of choosing SQLite,
 not an input. **If SQLite wins on durability (#2144) and topology (#2146), satisfy #2143's
-search-index condition with a projection read through a custom storage read (§5(b)), on folded
-generated columns added to the products and variations tables under #2150's migration** — it leaves
-today's blob and all 17 traps untouched. **The 0.19 ms / no-growth figures above are for plain
-`json_extract` columns, not the folded ones the schema actually needs**, so call the raw-column cost
-measured and the folded-column cost provisional. Natively (Python UDF, *not* wasm): folded columns via
-a registered `wcpos_fold` cost seed 0.09 → 0.12 s, upsert 0.20 → 0.21 ms and **no disk growth**, so
-the folding itself is nearly free — but three UDF calls per row cross the wasm↔JS boundary on our
-stack and that crossing is **unmeasured**. The alternative, folded fields the app writes into the
-document, needs no UDF but grew this fixture 41.3 → 77.4 MB: a **page-packing cliff** (~1.9 KB rows
-crossing two-per-page at a 4 KB page), not a linear cost, so it must be sized against a real
-catalogue before it is chosen. Revisit
-FTS5 after that on the same schema, as a deletion project: it now looks able to retire the blob
-completely, so the prize is real — but it doubles the write, needs §1's rowid decision, and its
-triggers must go through the crash harness first.
+search-index condition with a projection read through a custom storage read (§5(b)), over plain
+`json_extract` generated columns added to the products and variations tables under #2150's
+migration** — cheap and measured (0.19 ms per upsert, no disk growth), semantics untouched because the
+blob folds what it is handed, and all 17 traps keep passing. Revisit FTS5 afterwards, as a scoped
+deletion project: it retires the catalogue blob but not the FlexSearch subsystem, it doubles the
+write, it needs §1's design decision, its `LIKE` fallback is what forces folded storage (with the
+costs recorded in §1), and its triggers must go through the crash harness first.
 
 ## What I could not verify
 
@@ -373,8 +382,8 @@ triggers must go through the crash harness first.
 - **The contentless design**, and the wasm cost of the `wcpos_fold` UDF per write — both unmeasured.
 - **FTS5 under wasm/OPFS.** All local measurements are native SQLite 3.53.4 via Python (M4 Pro,
   default unix VFS). The version matches `@sqlite.org/sqlite-wasm` 3.53.4-build1 and FTS5 semantics
-  are identical, so trap results and query plans transfer; timings and file sizes are indicative only,
-  including the 6.4 / 2.2 ms `LIKE` fallbacks — the numbers a till would actually feel.
+  are identical, so trap results and query plans transfer; timings and sizes are indicative only,
+  including the 6.4 / 2.2 ms `LIKE` fallbacks.
 - **`@sqlite.org/sqlite-wasm`'s compile options from the artifact** — not installed in any local tree
   (the main clone cannot install), so §3 cites #2138's record and upstream `GNUmakefile:439`.
 - **wa-sqlite #258's root cause** (still open, maintainer unconvinced by his own writes-past-EOF
