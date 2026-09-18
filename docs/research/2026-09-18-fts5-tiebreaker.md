@@ -27,8 +27,9 @@ which raised the question; this file answers its five items and adds the numbers
    ~7×, ~+3 MB of index at 20k plus +15.2 MB for its STORED folded columns on the production shape
    (the other designs cost differently or are unmeasured, §1). On premium's shipped columns FTS5 still answers
    `MATCH` from the index and returns rowids — what it loses is **column-value reads, `LIKE`, and
-   `'rebuild'`, so with an id↔rowid mapping it remains queryable and short-term blind; repair is a
-   manual drop-and-repopulate rather than the built-in command.**
+   `'rebuild'`; with an id↔rowid mapping it remains queryable, short terms fall back to a scan of
+   `wcpos_fold(json_extract(data,…)) LIKE ?` on the base table rather than the FTS table, and repair
+   is a manual drop-and-repopulate rather than the built-in command.**
 5. The risk named in §16 is not an FTS5 defect: no FTS5 defect has been isolated in either wa-sqlite
    report; both are FTS5-with-triggers workloads; #320 was root-caused to wa-sqlite's own VFS and
    fixed, #258 is still open and unconfirmed; neither implicates the official build or `opfs-sahpool`.
@@ -369,7 +370,7 @@ the existing folded blob. Locally at 20k (3.53.4, native; same caveat as §1):
 
 | Read | Time | Bytes returned |
 |---|---:|---:|
-| `SELECT data … WHERE deleted=0` (today's shape) | 13.6 ms | 38.50 MB |
+| `SELECT data … WHERE deleted=0` (today's shape; all rows are the 20k products table only — variations are a second read of the same shape) | 13.6 ms | 38.50 MB |
 | `SELECT id, json_extract(data,'$.payload.…')×3 … WHERE deleted=0` (direct expressions; a VIRTUAL column reads the same) | 33.0 ms | 1.02 MB |
 | **`SELECT id, name, sku, barcode … WHERE deleted=0`** (STORED generated columns) | **13.7 ms** | **1.02 MB** |
 
