@@ -1504,7 +1504,7 @@ barely mentioned the other, which is a bias worth naming rather than quietly fix
 | Multi-tab | leader tab + dedicated worker + routing (§13) | native |
 | COOP/COEP | not required | not required |
 | Production precedent in RxDB's own community | **none found** (§14 null result) | the fallback an RxDB user retreated to after OPFS corruption (rxdb#7074, §1) |
-| Known defect | integration unproven end-to-end | premium-issues #21/#22: SharedWorker + IndexedDB `TransactionInactiveError` |
+| Known defect | integration unproven end-to-end | premium-issues #21/#22: `TransactionInactiveError` — scoped to SharedWorker + IndexedDB, a topology rejected below (§15, Android); not shown to apply to per-tab `multiInstance`, so **not applicable unless reproduced there** |
 | Speed | fastest OPFS option | slower on RxDB's published benchmarks |
 
 The asymmetry that matters is **multi-instance, not the SharedWorker.** §15 records that SharedWorker
@@ -1686,9 +1686,14 @@ user-visible figure of a selector change (keystroke, pill) is their sum; a scrol
   loop, so an injected WHERE makes a grid window one statement up to 50 rows and two up to 100 — milliseconds,
   within 1.5–2.5x of the floor. But `count()` still routes through `query()` and pages with `OFFSET`, so it
   issues `matches/50 + 1` full filtered scans (20 × 375 ms on logs = 7.5 s; 51 × 305 ms on orders = 15.5 s),
-  and both screens wait for it. The rewrite itself is sound: `GLOB` for the fold-space arm, `LIKE … ESCAPE`
-  for the ASCII-best-effort raw arms, `EXISTS (SELECT 1 FROM json_each(…))` per stamp, the regex literal
-  unescaped first — verified against the shipped matcher on a punctuation-bearing term.
+  and both screens wait for it. The rewrite itself is sound for ASCII: `GLOB` for the fold-space arm,
+  `LIKE … ESCAPE` for the raw `$options: 'i'` arms, `EXISTS (SELECT 1 FROM json_each(…))` per stamp, the
+  regex literal unescaped first — verified against the shipped matcher on a punctuation-bearing term. It is
+  **not** the JS matcher for non-ASCII case: SQLite's built-in `LIKE` folds ASCII only, where the regex `i`
+  flag pairs `é` with `É`, so a raw-arm search on a non-ASCII term silently loses matches once the selector is
+  declared fully translated. The fold arm already carries case-folded text, so the fix is to route non-ASCII
+  terms through it (or normalise the raw fields identically at write time) or keep a residual matcher for
+  them; the punctuation check does not cover this and the gate needs a non-ASCII case.
 - **A ~20-line premium patch is required and is the whole difference**: let the modifier declare the selector
   fully translated, then run `query()` without the loop and `count()` as `SELECT COUNT(1) … WHERE <modified>`.
   That is 0.38 s / 0.72 s screen-visible — 300x / 40x over shipped — and still a full scan, because `LIKE`
@@ -1704,4 +1709,9 @@ semantic differences §16 lists — `$exists: true` treating an explicit `null` 
 uses exactly those actor fields), `$nin` excluding missing fields, and pushed sorts ordering nullable fields
 differently — translate successfully and therefore never reach the modifier or the patch; they change query
 results silently even after the hot paths pass, so the migration work carries parity fixes or checks with
-their own tests for each of them.
+their own tests for each of them. And 0.38 s is the **isolated** cost of one keystroke: one worker and
+`TX_QUEUE_BY_DATABASE` serialise the connection, the patch adds no cancellation or coalescing, and a cashier
+typing faster than 0.38 s per character queues a stale find + count pair per keystroke behind the live one, so
+the final term can land seconds later than the isolated row suggests. The gate measures a realistic typing
+burst, not a single selector change, and the screen debounces, cancels or supersedes stale reads before
+that number is quoted as what the cashier sees.
