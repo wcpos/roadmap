@@ -875,11 +875,15 @@ with something we cannot restructure. Treat **WAL as unproven, not as a given** 
 "`journal_mode=wal` allowed" from wa-sqlite's README table, and LiveStore's docs say the opposite from
 production; run the spike both ways and let the harness decide. At the VFS layer specifically the
 harness must exercise, on Chrome, Firefox and Safari: **kill mid-transaction with WAL** (a worker is
-not a process: it cannot take a signal, and `worker.terminate()` only lands between tasks, never
-between the synchronous `xWrite` and `xSync` inside one — so instrument the VFS instead, wrapping
-sahpool's `xWrite`/`xSync` to throw or hang at a named boundary, once between `xWrite` and `xSync`
-and once between the WAL append and the checkpoint, and kill the whole browser process for
-process-level crashes — the "slight performance boost from WAL" claim in the official docs carries no
+not a process and cannot take a signal, but `Worker.terminate()` is immediate — it stops the thread
+wherever it is, mid-`xWrite` included — so the crash is deterministic if the VFS stops at the named
+boundary first: wrap sahpool's `xWrite`/`xSync` so that at the boundary — once between `xWrite` and
+`xSync`, once between the WAL append and the checkpoint — the worker signals the page through a
+`SharedArrayBuffer` (`Atomics.store` + `notify`; `postMessage` does not flush from a blocked worker)
+and blocks on `Atomics.wait`, and the page, watching with `Atomics.waitAsync` or a poll, terminates
+it there. Do **not** inject by throwing: SQLite sees a thrown `xWrite` as an I/O error and runs its
+rollback path, so a clean reopen proves error handling, not crash durability. Kill the whole browser
+process for process-level crashes — the "slight performance boost from WAL" claim in the official docs carries no
 crash-safety claim at all);
 **page-cache spill** (`cache_size` below the working set so the journal actually reaches OPFS instead
 of living in memory — that is how #320's WAL-boundary bug surfaced); **reopen after quota
@@ -1581,7 +1585,13 @@ browsers on a Mac **brackets** the answer — Chrome-on-Mac is the pessimistic b
 Firefox and Safari the optimistic one. If the winner is the same at both ends, no Windows machine is
 needed. Escalate to a GitHub Actions `windows-latest` job (Chrome preinstalled, driven headless by
 Playwright; the repo has 29 ubuntu jobs and 1 macos-15 but no Windows runner yet) only if the bracket
-straddles the decision. Note also that the POS-critical gaps in birchill's data — startup 46 ms vs
+straddles the decision. *Caveat from the 2026-09-18 review:* the bracket is an assumption, not a
+measurement — nothing bounds Chromium on NTFS with `FlushFileBuffers()` from Firefox or Safari on a
+Mac, and Windows Chrome/Edge is where most tills run — so both Mac endpoints could agree while a
+Windows run picked the other engine. The `windows-latest` job costs nothing; running the same harness
+there once to check the bracket, rather than trusting it, is the cheap sound version of this rule.
+The ruling above (Windows not required to decide) is the owner's and stands until he changes it. Note
+also that the POS-critical gaps in birchill's data — startup 46 ms vs
 535 ms, single write 0.17 ms vs 3.17 ms — are **not fsync-bound**, so Chrome's Apple flush cost
 cannot explain them away in either direction.
 
@@ -1599,6 +1609,13 @@ SQLite 3.53.4 with FTS5) passed rxdb 17.4.0's own storage conformance suite: the
 (1416 passing, WAL effective on all 1505 opens) and 65/65 of `init` + `rx-storage-implementations` in Chrome 154
 inside a dedicated worker on the pool VFS. Evidence and reproduction: monorepo PR #2155,
 `spikes/2138-rxdb-sqlite-wasm/RESULTS.md`.
+
+**Scope of "works": one page, one dedicated worker, the conformance suite.** The production web
+topology §15 requires — a `navigator.locks` leader, follower request routing, leader-close and reload
+failover, and Android, where SharedWorker does not exist — is not exercised by this build and is not
+proven by it. That is wayfinder [monorepo#2146](https://github.com/wcpos/monorepo/issues/2146)
+("Topology: where does the single connection live, and who routes to it?"), still open; the web
+feasibility gate is not closed until it is demonstrated, on Android as well as desktop Chrome.
 
 Findings that feed §11/§13/§15 (topology and boundary taxes):
 
@@ -1657,4 +1674,9 @@ user-visible figure of a selector change (keystroke, pill) is their sum; a scrol
 Consequence for the decision: none of this changes the engine choice by itself — the same two selectors are
 unindexed scans on OPFS today (§16) — but it fixes the size of the query-translation work that must ship with a
 SQLite engine (modifier + the small patch + two promoted columns), and it retires "is the modifier enough?" as
-an open question: it is not.
+an open question: it is not. That scope is the *unsupported-operator* work only. The translated-operator
+semantic differences §16 lists — `$exists: true` treating an explicit `null` as absent (the logs kind filter
+uses exactly those actor fields), `$nin` excluding missing fields, and pushed sorts ordering nullable fields
+differently — translate successfully and therefore never reach the modifier or the patch; they change query
+results silently even after the hot paths pass, so the migration work carries parity fixes or checks with
+their own tests for each of them.
