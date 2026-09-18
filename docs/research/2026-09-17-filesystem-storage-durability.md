@@ -1539,7 +1539,11 @@ not equivalent for it, and the control is only a control if two things are true.
 durability is user-agent-selected and rxdb-premium hardcodes `durability: "relaxed"` (found resolving
 wayfinder [monorepo#2139](https://github.com/wcpos/monorepo/issues/2139)), so a transaction can
 report complete and still be lost across an OS or power failure while the store stays structurally
-consistent — durability must be verified or configured `strict` for the control run. Second, §12's
+consistent. The control must therefore test the configuration that would ship, not a better one:
+either `strict` becomes a shipping requirement (a premium patch, like the changelog patch the monorepo
+already carries) and the control benchmarks and crash-tests *that* configuration, or the control runs the
+hardcoded `relaxed` mode and reports its measured durability as the candidate's. A `strict`-only control
+would qualify IndexedDB on a guarantee the deployed engine does not have. Second, §12's
 `xWrite`/`xSync` barrier and file-corruption injections cannot be installed inside the browser's
 IndexedDB backend, so worker and browser kills prove nothing about the Windows power-loss failure that
 motivates this research; the control needs a system-level power-loss leg (a hard reset on the Windows
