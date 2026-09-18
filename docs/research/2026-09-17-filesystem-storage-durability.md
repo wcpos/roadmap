@@ -1613,31 +1613,33 @@ So the task splits:
 **Therefore: declare the indexes inside the engine migration, never before it.** The only place they
 are needed earlier is the benchmark harness, where they cost nothing.
 
-### Windows is not required to decide (the speed decision; crash coverage is separate)
+### Windows: one run to check the bracket (the speed decision; amended 2026-09-18)
 
 Chrome's Apple-only flush cost (§4: `F_BARRIERFSYNC` today, `F_FULLFSYNC` before Chromium changed it;
 which one rhashimoto's figures were taken under is not recorded, so re-measure before leaning on
 them) is a Chrome-on-Apple behaviour, not a Mac behaviour: rhashimoto measured **24.3 tx/s in
 Chrome vs 434 in Firefox vs 818 in Safari on the same Mac mini**. So running the harness in all three
 browsers on a Mac **brackets** the answer — Chrome-on-Mac is the pessimistic bound for SQLite writes,
-Firefox and Safari the optimistic one. If the winner is the same at both ends, no Windows machine is
-needed. Escalate to a GitHub Actions `windows-latest` job (Chrome preinstalled, driven headless by
-Playwright; the repo has 29 ubuntu jobs and 1 macos-15 but no Windows runner yet) only if the bracket
-straddles the decision. *Caveat from the 2026-09-18 review:* the bracket is an assumption, not a
-measurement — nothing bounds Chromium on NTFS with `FlushFileBuffers()` from Firefox or Safari on a
-Mac, and Windows Chrome/Edge is where most tills run — so both Mac endpoints could agree while a
-Windows run picked the other engine. The `windows-latest` job costs nothing; running the same harness
-there once to check the bracket, rather than trusting it, is the cheap sound version of this rule.
-The ruling above (Windows not required to decide) is the owner's and stands until he changes it. Note
-also that the POS-critical gaps in birchill's data — startup 46 ms vs
+Firefox and Safari the optimistic one. The original ruling (2026-09-17) was that if the winner is the
+same at both ends, no Windows machine is needed, with a GitHub Actions `windows-latest` job (Chrome
+preinstalled, driven headless by Playwright; the repo has 29 ubuntu jobs and 1 macos-15 but no Windows
+runner yet) only if the bracket straddled the decision. The 2026-09-18 review objected that the bracket
+is an assumption, not a measurement — nothing bounds Chromium on NTFS with `FlushFileBuffers()` from
+Firefox or Safari on a Mac, and Windows Chrome/Edge is where most tills run — so both Mac endpoints
+could agree while a Windows run picked the other engine. **Amended ruling (owner, 2026-09-18): the
+speed decision includes one run of the same harness on `windows-latest`, as a check on the bracket.**
+The three-browser Mac spread stays the primary read; the Windows run costs one CI job and exists to
+catch the bracket being wrong on the platform that carries most tills. If the Windows run disagrees
+with both Mac endpoints, Windows decides. Note also that the POS-critical gaps in birchill's data —
+startup 46 ms vs
 535 ms, single write 0.17 ms vs 3.17 ms — are **not fsync-bound**, so Chrome's Apple flush cost
 cannot explain them away in either direction.
 
-**Scope of this ruling: the speed decision only.** Crash survival cannot be bracketed from a Mac.
+**Scope of this ruling: the speed decision only.** Crash survival cannot be bracketed from a Mac at all.
 Windows has a different filesystem and flush path (`FlushFileBuffers()`, §4), and §2 places almost
 all of WCPOS's measured storage failures and the NUL-filled-range incidents there. The crash harness
 (wayfinder [monorepo#2144](https://github.com/wcpos/monorepo/issues/2144)) therefore keeps a Windows
-leg on the `windows-latest` runner above, whatever the speed bracket says.
+leg on the `windows-latest` runner above, independent of the speed check.
 
 ## §19 — Feasibility build result (2026-09-17, late; wayfinder ticket #2138)
 
