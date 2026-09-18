@@ -37,8 +37,10 @@ to survive reordered and torn writes, not merely one that calls flush.
 **Update (2026-09-18).** The web half of that recommendation is superseded by the later sections and
 by the map's rulings (wayfinder map [monorepo#2137](https://github.com/wcpos/monorepo/issues/2137)):
 speed on the POS workload is the first criterion, §17 makes premium IndexedDB a viable web candidate
-and control, §19 proves the rxdb + wasm SQLite + OPFS path feasible end to end, and §20 measures the
-query patch that must ship with it. Read §1 as the durability verdict on the incumbent, which stands;
+and control, §19 proves the rxdb + wasm SQLite + OPFS adapter and conformance path in one page and one
+dedicated worker (the deployment topology — leader, routing, failover, Android — is #2146, still
+open, and the web gate is not closed until it works), and §20 measures the query patch that must ship
+with it. Read §1 as the durability verdict on the incumbent, which stands;
 read the web plan from §17–§20 and the map, not from the paragraph above.
 
 ## 2. What WCPOS actually hit
@@ -1335,7 +1337,11 @@ queries use, so declared `indexes` keep working and index identity lines up. **B
 `brands`, `tags` and `coupons` declare none — and **`remoteId`, which every sync-engine reconciliation
 query filters on with `$in`, is indexed nowhere**. Those `$in` lists are not batched by the selector
 translator (only `findDocumentsById` batches, at `SQLITE_VARIABLES_LIMIT = 32000`), so each becomes a
-full-table scan with one bind param per id. Declaring indexes is cheap and should precede the spike.
+full-table scan with one bind param per id — and past that same ceiling the statement does not scan
+slowly, it fails outright with `too many SQL variables` (the #8438 class recorded in §14), before any
+index could be used. An index on `remoteId` fixes the scan, not the ceiling: the migration and the
+spike also batch reconciliation `$in` lists below it. Declaring indexes is cheap and should precede
+the spike (see §18's correction on what "cheap" means when shipped).
 
 Four of the five default grid sorts are **not** pushable today (`pos-products`/`products` →
 `payload.name`, `customers` → `payload.last_name`, `coupons` → `payload.date_created_gmt`, `pos-cart`
