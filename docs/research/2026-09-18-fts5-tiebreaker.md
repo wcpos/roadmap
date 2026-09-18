@@ -62,8 +62,10 @@ the **original** values, then an insert). FTS5's docs make that consistency the 
 
 **The triggers must know about soft deletes.** RxDB deletes by setting the `deleted` flag, hard-
 deleting only later in `cleanup()`, so an unconditional `AFTER UPDATE` re-indexes a tombstone's text
-and leaves deleted products matching. Skip the insert arm when `new.deleted != 0` (or join
-`deleted = 0` on every read path), and guard the **delete arm** to `old.deleted = 0` — otherwise
+and leaves deleted products matching. Skip the insert arm when `new.deleted != 0`, guard the
+**delete arm** to `old.deleted = 0`, and filter `deleted = 0` on every `LIKE` fallback path anyway —
+skipping the insert only cleans the index, and the fallback enumerates the content or base table,
+where the tombstone still sits (or read through the filtered view) — otherwise
 `cleanup()`'s later hard-delete of an already-unindexed tombstone issues a second FTS5 `'delete'` for
 a rowid no longer indexed, which can surface as "database disk image is malformed" (updating an
 already-deleted document has the same hazard). `'rebuild'` needs the same exclusion — a content
@@ -135,7 +137,7 @@ direct external-content design only — so **the two constraints above together 
 | Design | Base table | Traps | Measured cost at 20k |
 |---|---|---|---|
 | **External content over a rowid table** + folded generated columns | `withoutRowId: false` — layout and primary-key path change, so **#2143's numbers need re-taking** | **17/17** (`'rebuild'`, column reads and `LIKE` all verified working) | +2.9 MB; upsert 0.19 → 0.38 ms; `LIKE` 6.4 ms |
-| **Contentless** (`content=''`, `contentless_delete=1`) + base-table folded columns | `WITHOUT ROWID` kept — **#2143's numbers stand** | **17/17** — `MATCH` for long terms, and short terms by `LIKE` on the base table's folded columns, joined through the id↔rowid map | unmeasured; costs the mapping table and a join on **every** query — contentless columns, `UNINDEXED` id included, read back `NULL`, so `MATCH` returns only the FTS rowid |
+| **Contentless** (`content=''`, `contentless_delete=1`) + base-table folded columns | `WITHOUT ROWID` kept — **#2143's numbers stand** | **17/17** — `MATCH` for long terms, and short terms by `LIKE` on the base table's folded columns, joined through the id↔rowid map | unmeasured; costs the mapping table and a join on every query that involves `MATCH` (long or mixed terms) — contentless columns, `UNINDEXED` id included, read back `NULL`, so `MATCH` returns only the FTS rowid; a pure short-term `LIKE` reads the base table, which carries the text `id`, and needs no join |
 | **Regular, self-owned FTS5 table** (own rowids, `docid UNINDEXED`, text duplicated) | `WITHOUT ROWID` kept — **#2143's numbers stand** | **17/17** — `LIKE` runs over its own stored text | +5.5 MB (92.2 → 97.7); upsert 0.30 → 0.72 ms; `LIKE` **2.2 ms** |
 
 **A fourth variant sidesteps the layout change entirely:** bind external content to a **view**
@@ -223,7 +225,8 @@ and that crossing is **unmeasured**. App-written folded fields need no UDF but g
 cost, so that route needs sizing against a real catalogue.
 
 **Cost of that fallback: 6.4 ms at 20,000 products**, scanning `name`/`sku`/`barcode` on the content
-table. A two-character pattern has no trigram to look up either way, and the indexed LIKE/GLOB path
+table — a per-collection figure, like every number in this section: variations are a second table,
+trigger set and fallback scan, so a catalogue-wide total is the sum over both. A two-character pattern has no trigram to look up either way, and the indexed LIKE/GLOB path
 that `remove_diacritics` would disable is unavailable regardless: the literal-safe `LIKE ? ESCAPE '\'`
 the contract below requires takes the bare `INDEX 0:` scan even with the default tokenizer, so neither
 the short-term fallback nor a reduced-detail verification scan is indexed. But it scans ~52 characters per row, **not**
@@ -406,9 +409,9 @@ or contentless designs. #2150's `_pos_user`/`_pos_store` promotion is the one re
 | Search semantics | unchanged — the blob and its 17 traps keep passing | **17/17**: `MATCH` over folded columns with a folded query ≥3 chars, `LIKE` below it — 6.4 ms at 20k |
 | Query seam | **a custom storage read** (§5(b)) — premium's wrapper needs a full `data` column, so `find()` cannot project | **the same custom path plus a `MATCH` handler in it.** The §5(a) sentinel-selector/`queryModifier` route is an *alternative*, not an addition — take it only if the raw-SQL path is not built |
 | Storage settings | none | `withoutRowId: false` **only** for external content bound *directly* to the base table (then re-take #2143's numbers). External content over a filtered view, self-owned and contentless all keep `WITHOUT ROWID` and all keep the `LIKE` fallback |
-| Schema | **none** — VIRTUAL columns by `ADD COLUMN` on products and variations, under #2150's migration | **two catalogue rebuilds** for STORED folded columns (external content, or contentless leaning on them); none for a self-owned table |
+| Schema | **none** — VIRTUAL columns by `ADD COLUMN` on products and variations, under #2150's migration | **two catalogue rebuilds** for STORED folded columns (external content, or contentless leaning on them), or none with UDF-backed VIRTUAL folded columns, which the triggers and the base-table `LIKE` can read (verified callable; read cost unmeasured); none for a self-owned table |
 | Write cost | nothing on write (VIRTUAL); 0.21 ms per upsert if STORED | direct external content 0.38 ms per upsert (~2×), resync ~7×; self-owned 0.72 ms; contentless and filtered-view unmeasured |
-| Disk | none (VIRTUAL); **+15.2 MB at 20k** if STORED on the production document shape (none on the root-level fixture — a packing cliff) | direct external content ~+3 MB of index at 20k **plus +15.2 MB for its STORED folded columns on the production shape**; self-owned +5.5 MB; contentless and filtered-view unmeasured (contentless also needs the STORED columns) |
+| Disk | none (VIRTUAL); **+15.2 MB at 20k** if STORED on the production document shape (none on the root-level fixture — a packing cliff) | direct external content ~+3 MB of index at 20k **plus +15.2 MB if its folded columns are STORED** on the production shape (none if VIRTUAL, at an unmeasured UDF read cost); self-owned +5.5 MB; contentless and filtered-view unmeasured (same STORED-or-VIRTUAL choice). All per collection: variations add a second index |
 | Crash surface | none | three triggers per collection, the exact workload behind wa-sqlite #258/#320; must go in the #2144 harness |
 | Engine-independent? | no — the shipped engine (89 ms) and IndexedDB (285 ms) do not need it | no |
 | Deletions earned | none | the **catalogue blob** and the #2073 sizing question — but only for products/variations, the two collections that opt out of FlexSearch. `search.ts`, the FlexSearch pipeline and its #2070/#2020 history bounds still serve every other searchable collection and survive unless all of them are migrated, a cost not analysed here |
