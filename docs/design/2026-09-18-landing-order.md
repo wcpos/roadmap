@@ -119,8 +119,8 @@ and the results commit that follows it.
 
 **Measured on `next`, 2026-09-18.** The morning dispatch (run 35327301946) read **first row 8,489 ms**
 on the free store and stopped the other shards. That is read as a defect on `next` to be found, not
-a reason to move the ceiling. A second dispatch (run 35360735268) was started for this page; its
-numbers are appended below when it lands. The web tap-to-line number is not recoverable from past
+a reason to move the ceiling. A second dispatch (run 35361489738; an earlier one, 35360735268, was cancelled by mistake seven
+minutes in) was started for this page; its numbers are appended below when it lands. The web tap-to-line number is not recoverable from past
 reports (the merged report drops the attachment); the gate has passed at 300 ms on every trunk run
 since it landed.
 
