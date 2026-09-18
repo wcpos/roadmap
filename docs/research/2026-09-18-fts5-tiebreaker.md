@@ -15,8 +15,9 @@ which raised the question; this file answers its five items and adds the numbers
    Not free of plumbing: premium's wrapper needs a full `data` column, so it takes a custom storage
    read (§5(b)); it rides #2150's migration as **two further rebuilds, products and variations**; and
    it fixes a SQLite-specific regression, not every engine.
-3. FTS5 **can** serve all 17 traps — `MATCH` with `remove_diacritics 1` at three characters or more
-   (15/17) plus `LIKE` over **folded** stored columns below that (`k2`, `MY საბარგული`), 6.4 ms at
+3. FTS5 **can** serve all 17 traps — `MATCH` over **folded** columns with a **folded query** at three
+   characters or more (15/17; `remove_diacritics` is then unnecessary, and worse, since it does not
+   strip Greek tonos) plus `LIKE` below that (`k2`, `MY საბარგული`), 6.4 ms at
    20k — so it could retire the catalogue blob. Four designs reach it: external content bound to the
    base table (layout change), or to a filtered **view** (no layout change), a self-owned table
    (+5.5 MB of duplicated text), or contentless. **Folded storage is FTS5's cost, not the projection
@@ -31,8 +32,8 @@ which raised the question; this file answers its five items and adds the numbers
    fixed, #258 is still open and unconfirmed; neither implicates the official build or `opfs-sahpool`.
 
 Recommendation: **if SQLite wins on durability, satisfy #2143's search-index condition with a
-projection read through a custom storage read, over plain `json_extract` columns added by #2150's
-migration; revisit FTS5 after the engine is decided.**
+projection read through a custom storage read, over plain `json_extract(data,'$.payload.*')` columns
+added by #2150's migration; revisit FTS5 after the engine is decided.**
 
 ## 1. The avoided full read, and what replaces it
 
@@ -59,24 +60,35 @@ the **original** values, then an insert). FTS5's docs make that consistency the 
 
 **The triggers must know about soft deletes.** RxDB deletes by setting the `deleted` flag, hard-
 deleting only later in `cleanup()`, so an unconditional `AFTER UPDATE` re-indexes a tombstone's text
-and leaves deleted products matching. The insert arm must be skipped when `new.deleted != 0` (or every
-read path must join `deleted = 0`), and the **delete arm needs the matching guard** — run only when
-`old.deleted = 0`, or `cleanup()`'s later hard-delete of an already-unindexed tombstone issues a
-second FTS5 `'delete'` for a rowid no longer in the index, which can surface as "database disk image
-is malformed"; updating an already-deleted document has the same hazard. `'rebuild'` needs the same
-exclusion — a content **view** filtered on `deleted = 0`, or a delete pass afterwards — since it
-repopulates from the whole table.
+and leaves deleted products matching. Skip the insert arm when `new.deleted != 0` (or join
+`deleted = 0` on every read path), and guard the **delete arm** to `old.deleted = 0` — otherwise
+`cleanup()`'s later hard-delete of an already-unindexed tombstone issues a second FTS5 `'delete'` for
+a rowid no longer indexed, which can surface as "database disk image is malformed" (updating an
+already-deleted document has the same hazard). `'rebuild'` needs the same exclusion — a content
+**view** filtered on `deleted = 0`, or a delete pass afterwards.
 
 **But the content table needs columns FTS5 can read by name, and premium's has none.** The table I
 first measured is premium's shipped shape — `id, revision, deleted, lastWriteTime, data json` — with
-`content='p'` and triggers supplying `json_extract(new.data,'$.name')`. It indexes and MATCHes
-correctly, but external content resolves declared columns *against the content table* whenever it
-reads them, so on that schema `SELECT name FROM fts …`, `… WHERE name LIKE ?` and
+`content='p'` and triggers supplying `json_extract(new.data,'$.payload.name')`. It indexes and
+MATCHes, but external content resolves declared columns *against the content table* whenever it reads
+them, so there `SELECT name FROM fts …`, `… WHERE name LIKE ?` and
 `INSERT INTO fts(fts) VALUES('rebuild')` all raise `no such column: T.name` (verified, 3.53.4). So
 **on premium's shipped columns an FTS5 index is queryable but unrepairable**: `MATCH` still answers
 from the index and returns rowids, so with an id↔rowid mapping it serves searches; what is lost is
 column-value reads, `LIKE`, and `'rebuild'` — the documented repair for a drifted index, without
 which the only repair is a resync.
+
+**The production JSON paths are nested, and my fixtures' were not.** The persisted document is
+`{uuid, remoteId, <promoted columns>, payload, sync, local}` with the Woo fields under `payload`
+(§16 of the 2026-09-17 doc; #2143's schemas index `payload.name`), and `LEGACY_SEARCH_FIELDS`
+(`packages/query/src/engine-adapter/collection-map.ts:34`) are *legacy flattened* spellings resolved
+against `legacySearchSnapshot`, which spreads `payload` to the top level. The real columns are
+**`$.payload.name`, `$.payload.sku`, `$.payload.barcode` for products, and `$.payload.sku`,
+`$.payload.barcode` for variations** — variations carry no `name`. Verified on the production shape,
+root-level `$.name` yields **NULL** while `$.payload.name` yields the value, so the path is
+load-bearing for correctness — but **not** for the timings: re-measured at 20k, nested paths cost seed
+0.10 → 0.11 s and upsert 0.19 → 0.21 ms against the root-level fixture, the same extract cost class.
+It does move the disk figure; see below.
 
 **Measured cost** (SQLite 3.53.4 via Python, M4 Pro, default unix VFS — same SQLite version as
 `@sqlite.org/sqlite-wasm` 3.53.4-build1 but *not* wasm and *not* OPFS, so read ratios; 20k products of
@@ -91,8 +103,12 @@ which the only repair is a resync.
 So: **FTS5 roughly doubles a product upsert (0.19 → 0.38 ms), costs ~7× on a resync and ~3 MB on disk
 at 20k**, against the 2 MB of *renderer heap* the blob costs today (`catalogue-search-blob.ts:18-24`).
 Disk is the right place for it; the write multiplier is the price. **The three STORED generated
-columns are nearly free on their own**, so the column half of the migration is cheap and the FTS5 half
-is what costs. (`detail=column`/`none` shrink the index to +2.2 / +1.0 MB, but the docs cap full-text
+columns are nearly free on writes**, so the column half of the migration is cheap on time and the FTS5
+half is what costs — but **on disk they are not free on the production shape**: with nested
+`$.payload.*` paths the same three columns took 20k products from 41.3 to **56.5 MB (+15.2 MB)**,
+where the root-level fixture showed none. That is the page-packing cliff again (~1.9 KB rows crossing
+two-per-page at 4 KB), now landing on the shape we actually persist — size it against a real
+catalogue before quoting either number. (`detail=column`/`none` shrink the index to +2.2 / +1.0 MB, but the docs cap full-text
 queries there at three-character tokens. That is not fatal: a longer term can be decomposed into
 overlapping three-code-point tokens joined by `AND` and the superset verified with `LIKE` on the
 folded columns the short-term fallback already needs. Unevaluated here, so the +2.9 MB is the
@@ -139,9 +155,9 @@ name/sku/barcode on 3.53.4, terms AND-ed as quoted phrases:
 
 | Configuration | `MATCH` | + `LIKE` below 3 chars |
 |---|---|---|
-| `trigram remove_diacritics 1` over raw text | **15/17** | 15/17 — `LIKE` misses non-ASCII (see below) |
-| `trigram remove_diacritics 1` over **folded** text | **15/17** | **17/17** |
-| `trigram` over folded text (no `remove_diacritics`) | 13/17 | 15/17 |
+| `trigram remove_diacritics 1`, raw text, raw query | **15/17** | 15/17 — `LIKE` misses non-ASCII (see below) |
+| `trigram remove_diacritics 1`, **folded** text and query | **15/17** | **17/17** |
+| **`trigram`, folded text and query** (no `remove_diacritics`) | **15/17** | **17/17** |
 
 (`unicode61` word tokens score 14/17 — trigram is the only viable tokenizer.)
 
@@ -155,13 +171,20 @@ characters do not match any rows when used with a full-text query"
 all 17 traps, both tokenizers (the earlier `no such column: T.name` was my test schema's fault, not a
 property of external content):
 
-| Path | `trigram` | `trigram remove_diacritics 1` |
+| Path (folded columns, folded query) | `trigram` | `trigram remove_diacritics 1` |
 |---|---:|---:|
-| `MATCH` alone | 13/17 (also loses both accent traps — the stored text is raw) | **15/17** |
-| `LIKE` alone over the three columns | 15/17 | 15/17 (`LIKE` never folds) |
+| `MATCH` alone | **15/17** | **15/17** |
+| `LIKE` alone over the three columns | 15/17 | 15/17 |
 | **`MATCH` ≥3 chars, `LIKE` below** | — | **17/17** |
 
-`remove_diacritics 1` is therefore required (it is what passes `accent-fold` and `unicode-fold`), and
+**`remove_diacritics` is not required — folding both sides is.** An earlier draft scored plain trigram
+13/17, but that came from folded columns queried with *unfolded* terms; the blob folds the query too,
+and with both sides folded plain `trigram` equals `remove_diacritics 1` at 15/17, accent traps
+included. Two reasons to fold and drop the option: it **is not equivalent to `foldSearchText` for all
+scripts** — verified, SQLite's table does not strip Greek tonos, so a stored `άλογο` MISSES the query
+`αλογο` under both tokenizers while folding both sides matches, costing us long accented searches the
+blob finds today — and dropping it **restores indexed LIKE/GLOB**, which it otherwise disables. So the
+requirement is *fold both sides*, and
 `LIKE` covers exactly what trigrams cannot: `k2` finds "K2 Skis", and `%my%` AND `%საბარგული%`
 returns 3013 and not 3014. The union is **17/17** because no trap is both short and accented. A term
 that *was* both would need a folded stored column, which SQLite cannot compute in a generated column
@@ -190,8 +213,9 @@ and that crossing is **unmeasured**. App-written folded fields need no UDF but g
 cost, so that route needs sizing against a real catalogue.
 
 **Cost of that fallback: 6.4 ms at 20,000 products**, scanning `name`/`sku`/`barcode` on the content
-table. It is unindexed — a two-character pattern has no trigram to look up, and `remove_diacritics 1`
-disables indexed LIKE/GLOB outright ("Unless the remove_diacritics option is set"; plans: `INDEX 0:L0`
+table. A two-character pattern has no trigram to look up either way, but keeping `remove_diacritics`
+off — which folding both sides allows — leaves indexed LIKE/GLOB available for longer patterns, where
+setting it disables them outright ("Unless the remove_diacritics option is set"; plans: `INDEX 0:L0`
 with the default tokenizer, bare `INDEX 0:` with it). But it scans ~52 characters per row, **not**
 catalogue bytes, so it is nowhere near the `$regex` shape `catalogue-search-blob.ts`'s header rejected
 (265 ms at 20k). One caveat before calling it far under the 250 ms debounce: in the external-content
@@ -262,12 +286,12 @@ cause is unconfirmed.
 
 **[#320](https://github.com/rhashimoto/wa-sqlite/issues/320)** — "Database Disk Image Malformed
 (WriteAheadVFS, FTS5, GEOPOLY)", 2026-04-17, **closed 2026-04-22**. One connection, no concurrency,
-triggers maintaining fulltext and geopoly indexes; two WAL files grew past 6 GB and the database then
+triggers maintaining fulltext and geopoly indexes; two WAL files grew past 6 GB and the database
 failed to open. The reporter: *"I could not seem to get the database corruption to occur without the
 triggers present."* The maintainer reproduced it and fixed **two bugs in OPFSWriteAheadVFS**: some WAL
 transactions carried a file size disagreeing with the page-1 header (what raises `SQLITE_CORRUPT` via
-`xFileSize()`), and pages from the first transaction after a WAL rollover were read from the *previous*
-WAL file — "poor state management where the WAL file identifier was stale".
+`xFileSize()`), and pages from the first transaction after a WAL rollover were read from the
+*previous* WAL file.
 
 **Does it apply to the official build with sahpool?** Stated carefully: **no FTS5 defect has been
 isolated in either report; both are FTS5-with-triggers workloads; #320 was root-caused to two bugs in
@@ -324,7 +348,7 @@ the existing folded blob. Locally at 20k (3.53.4, native; same caveat as §1):
 | Read | Time | Bytes returned |
 |---|---:|---:|
 | `SELECT data … WHERE deleted=0` (today's shape) | 13.6 ms | 38.50 MB |
-| `SELECT id, json_extract(…)×3 … WHERE deleted=0` (no generated columns) | 33.0 ms | 1.02 MB |
+| `SELECT id, json_extract(data,'$.payload.…')×3 … WHERE deleted=0` (no generated columns) | 33.0 ms | 1.02 MB |
 | **`SELECT id, name, sku, barcode … WHERE deleted=0`** (STORED generated columns) | **13.7 ms** | **1.02 MB** |
 
 With the generated columns the projection is as fast as reading whole documents *and* returns **38×
@@ -347,7 +371,8 @@ read is the SQLite-specific fix for a SQLite-specific regression**, not a free w
 earlier draft claimed.
 
 It reads three STORED generated columns (`name`, `sku`, `barcode` as
-`GENERATED ALWAYS AS (json_extract(data,'$.…')) STORED`), and **they do not need to be folded**:
+`GENERATED ALWAYS AS (json_extract(data,'$.payload.…')) STORED` — variations need only `sku` and
+`barcode`), and **they do not need to be folded**:
 `catalogue-search-blob.ts` applies `foldSearchText` to whatever fields it receives, so plain
 `json_extract` columns — the near-free ones measured above — preserve today's semantics exactly.
 Folded *storage* is only required if FTS5's short-term `LIKE` fallback is later adopted (§1). SQLite
@@ -361,12 +386,12 @@ and ticket, but three separate table rebuilds — two catalogue tables plus orde
 
 | | Projection read | FTS5 |
 |---|---|---|
-| Search semantics | unchanged — the blob and its 17 traps keep passing | **17/17**: `MATCH` (`remove_diacritics 1`) ≥3 chars, `LIKE` below it — 6.4 ms at 20k |
+| Search semantics | unchanged — the blob and its 17 traps keep passing | **17/17**: `MATCH` over folded columns with a folded query ≥3 chars, `LIKE` below it — 6.4 ms at 20k |
 | Query seam | **a custom storage read** (§5(b)) — premium's wrapper needs a full `data` column, so `find()` cannot project | **the same custom path plus a `MATCH` handler in it.** The §5(a) sentinel-selector/`queryModifier` route is an *alternative*, not an addition — take it only if the raw-SQL path is not built |
 | Storage settings | none | `withoutRowId: false` **only** for external content bound *directly* to the base table (then re-take #2143's numbers). External content over a filtered view, self-owned and contentless all keep `WITHOUT ROWID` and all keep the `LIKE` fallback |
 | Schema | **two catalogue rebuilds** (products *and* variations), under #2150's migration | **the same two rebuilds** (external content, or contentless leaning on them); none for a self-owned table |
-| Write cost | 0.19 ms per upsert — unchanged within noise | direct external content 0.38 ms per upsert (~2×), resync ~7×; self-owned 0.72 ms; contentless and filtered-view unmeasured |
-| Disk | no measurable growth at 20k | direct external content ~+3 MB at 20k; self-owned +5.5 MB; contentless and filtered-view unmeasured |
+| Write cost | 0.21 ms per upsert at the production paths — unchanged within noise | direct external content 0.38 ms per upsert (~2×), resync ~7×; self-owned 0.72 ms; contentless and filtered-view unmeasured |
+| Disk | **+15.2 MB at 20k** on the production document shape (none on the root-level fixture — a packing cliff) | direct external content ~+3 MB at 20k; self-owned +5.5 MB; contentless and filtered-view unmeasured |
 | Crash surface | none | three triggers per collection, the exact workload behind wa-sqlite #258/#320; must go in the #2144 harness |
 | Engine-independent? | no — the shipped engine (89 ms) and IndexedDB (285 ms) do not need it | no |
 | Deletions earned | none | the **catalogue blob** and the #2073 sizing question — but only for products/variations, the two collections that opt out of FlexSearch. `search.ts`, the FlexSearch pipeline and its #2070/#2020 history bounds still serve every other searchable collection and survive unless all of them are migrated, a cost not analysed here |
@@ -378,7 +403,8 @@ real; retiring the FlexSearch subsystem is not, unless every searchable collecti
 not an input. **If SQLite wins on durability (#2144) and topology (#2146), satisfy #2143's
 search-index condition with a projection read through a custom storage read (§5(b)), over plain
 `json_extract` generated columns added to the products and variations tables under #2150's
-migration** — cheap and measured (0.19 ms per upsert, no disk growth), semantics untouched because the
+migration** — cheap and measured on writes (0.21 ms per upsert at the production paths, though
++15.2 MB on disk at 20k), semantics untouched because the
 blob folds what it is handed, and all 17 traps keep passing. Revisit FTS5 afterwards, as a scoped
 deletion project: it retires the catalogue blob but not the FlexSearch subsystem, it doubles the
 write, it needs §1's design decision, its `LIKE` fallback is what forces folded storage (with the
@@ -390,9 +416,8 @@ costs recorded in §1), and its triggers must go through the crash harness first
   the existing harness would settle it. I re-ran no benchmark, per the ticket.
 - **The contentless design**, and the wasm cost of the `wcpos_fold` UDF per write — both unmeasured.
 - **FTS5 under wasm/OPFS.** All local measurements are native SQLite 3.53.4 via Python (M4 Pro,
-  default unix VFS). The version matches `@sqlite.org/sqlite-wasm` 3.53.4-build1 and FTS5 semantics
-  are identical, so trap results and query plans transfer; timings and sizes are indicative only,
-  including the 6.4 / 2.2 ms `LIKE` fallbacks.
+  default unix VFS); the version matches `@sqlite.org/sqlite-wasm` 3.53.4-build1 and FTS5 semantics
+  are identical, so trap results and query plans transfer, but timings and sizes are indicative only.
 - **`@sqlite.org/sqlite-wasm`'s compile options from the artifact** — not installed in any local tree
   (the main clone cannot install), so §3 cites #2138's record and upstream `GNUmakefile:439`.
 - **wa-sqlite #258's root cause** (still open, maintainer unconvinced by his own writes-past-EOF
