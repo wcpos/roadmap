@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Screenshots for 2.0</title>
+<style>
+  :root { --primary: #cf2c20; --ink: #0f1729; --muted: #64748b; --line: #e2e8f0; --surface: #f8fafc; --board: #eef1f5; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: var(--board); }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .lede { color: var(--muted); margin: 0 0 16px; max-width: 900px; }
+  .panel { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; margin-bottom: 14px; }
+  .panel h2 { font-size: 15px; margin: 0 0 6px; }
+  .panel ul { margin: 4px 0 0; padding-left: 20px; }
+  .waiting { border-left: 4px solid var(--primary); }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #fff; margin: 12px 0; }
+  .seg button { border: 0; background: none; padding: 8px 14px; font: inherit; font-size: 14px; cursor: pointer; color: var(--muted); }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+  .doc { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 28px 36px; }
+  .doc h1 { font-size: 30px; margin: 0 0 10px; }
+  .doc h2 { font-size: 21px; margin: 28px 0 8px; }
+  .doc p, .doc li { max-width: 760px; }
+  .shot { position: relative; margin: 14px 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .shot img { display: block; width: 100%; height: auto; }
+  .pin { position: absolute; transform: translate(-50%, -50%); width: 26px; height: 26px; border-radius: 50%; background: var(--primary); color: #fff; font: 700 13px/26px system-ui; text-align: center; box-shadow: 0 0 0 3px #fff, 0 2px 6px rgba(0,0,0,.3); }
+  .legend { counter-reset: n; list-style: none; padding: 0; columns: 2; column-gap: 28px; }
+  .legend li { break-inside: avoid; margin-bottom: 8px; padding-left: 34px; position: relative; }
+  .legend li::before { counter-increment: n; content: counter(n); position: absolute; left: 0; top: 1px; width: 22px; height: 22px; border-radius: 50%; background: var(--primary); color: #fff; font: 700 12px/22px system-ui; text-align: center; }
+  .caption { font-size: 13px; color: var(--muted); margin-top: -6px; }
+  .placeholder { border: 2px dashed var(--line); border-radius: 8px; padding: 18px; color: var(--muted); font-size: 14px; text-align: center; margin: 12px 0; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  code { background: #f1f5f9; border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+  @media (max-width: 760px) { .legend { columns: 1; } .two { grid-template-columns: 1fr; } .doc { padding: 20px 16px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>#370: What do 2.0's screenshots look like, and who keeps them true?</h1>
+  <p class="lede">The same docs page, <code>pos/index</code> ("POS Screen Overview", one of the 13 pages the #364 inventory marks Rewrite), drawn two ways. Every image is a <b>real 2.0 screen</b> captured tonight by a script from the <code>next</code> POS on dev-next (v1.11.0), not a mockup. The demo cashier's language is Spanish, so the screens are in Spanish.</p>
+
+  <div class="panel waiting">
+    <h2>Waiting on Paul</h2>
+    <ul>
+      <li><b>Pick the density: A (text-first) or B (visual where the concept is new).</b> I recommend <b>B</b>, but only on pages that introduce something no merchant has a mental model for: the POS layout, panels, the tender pane, registers and cash, customer display. Everything else stays text-first, as today.</li>
+      <li>Everything else below is my recommendation. Override any of it.</li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <h2>Proposed ruling (capture, owner, timing, localisation)</h2>
+    <ul>
+      <li><b>Capture is automated (option 3), and tonight proved it works.</b> One headless script logs in to dev-next as the demo cashier, waits for the catalogue, and captures the POS, a panel and the filter bar in about 40 seconds. It only opens and closes panels; nothing is saved. Screenshots become a build output, not a hand-made asset.</li>
+      <li><b>Owner:</b> the capture script lives in <code>wcpos/docs</code> next to the pages, and each shot is named by the page that uses it. Re-running it after a UI change is a docs PR, reviewed like any other.</li>
+      <li><b>When:</b> not yet. Capture starts at the 2.0 release-candidate freeze, when #195's epics close. Before that, pages keep <code>{/* Screenshot: … */}</code> placeholders. <code>pos/index</code> already has two that were never shot.</li>
+      <li><b>Localised: yes, for free.</b> Tonight's screens came out in Spanish only because the demo cashier's locale is <code>es_ES</code>. One demo user per locale turns the same script into 12 localised sets, with no extra shooting.</li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <h2>Found while capturing</h2>
+    <ul>
+      <li><b>Untranslated strings on <code>next</code></b> in the Spanish UI: "Open orders position", "Top", "Bottom" (cart settings panel) and "Partly paid · … due" (open-order tabs). App strings go through the translation pipeline.</li>
+      <li>The panel in the second screenshot opens from the <b>left</b>, over the products column, not the right. "Every modal became a right-hand panel" is too strong, which matches what the #364 inventory found.</li>
+      <li>The current <code>pos/index</code> drawer table has no <b>Coupons</b> screen. The 2.0 drawer has one (<code>drawer-item-coupons</code>).</li>
+    </ul>
+  </div>
+
+  <span class="seg" id="seg">
+    <button data-v="A" aria-pressed="false">A · Text-first (today's style)</button>
+    <button data-v="B" aria-pressed="true">B · Visual for new concepts (recommended)</button>
+  </span>
+
+  <article class="doc" id="docA" hidden>
+    <h1>POS Screen Overview</h1>
+    <p>The POS screen is where you sell. It has three areas: the navigation drawer on the left, the products column in the middle, and the cart on the right.</p>
+    <h2>Screen layout</h2>
+    <h3>Register bar</h3>
+    <p>The bar at the top of the cart shows the <b>store</b> you are selling in, the <b>register and cash drawer</b> this device is using, and your <b>user menu</b>.</p>
+    <h3>Products</h3>
+    <p>Search by name, SKU or barcode, scan with the camera, switch between grid and list, and filter with the quick-filter bar. Use the settings button at the end of the filter bar to choose which filters appear.</p>
+    <h3>Cart</h3>
+    <p>Choose a customer, add items, and use the settings button to choose which columns the cart shows. Orders you've parked appear as tabs along the bottom of the cart, with their payment status.</p>
+    <h3>Panels</h3>
+    <p>Settings and forms open as a panel beside the screen rather than a dialog in the middle. Close one with <b>Close</b> or the ✕.</p>
+    <div class="placeholder">{/* Screenshot: pos-desktop-layout.png */}. The one image this page would have in style A.</div>
+    <p class="caption">Style A keeps today's character. A new concept (panels, the register bar) is described in words and depends on the reader picturing it.</p>
+  </article>
+
+  <article class="doc" id="docB">
+    <h1>POS Screen Overview</h1>
+    <p>The POS screen is where you sell. Here's the whole screen, numbered.</p>
+    <div class="shot">
+      <img src="01-pos.jpg" alt="The WCPOS 2.0 POS screen: navigation drawer, products grid with quick filters, and the cart with the register bar">
+      <span class="pin" style="left:5.6%;top:29%">1</span>
+      <span class="pin" style="left:30%;top:4.4%">2</span>
+      <span class="pin" style="left:48.5%;top:9%">3</span>
+      <span class="pin" style="left:30%;top:52%">4</span>
+      <span class="pin" style="left:61.5%;top:44%">5</span>
+      <span class="pin" style="left:72.5%;top:3.4%">6</span>
+      <span class="pin" style="left:92.6%;top:6.5%">7</span>
+      <span class="pin" style="left:78%;top:13.5%">8</span>
+      <span class="pin" style="left:97.5%;top:9.5%">9</span>
+      <span class="pin" style="left:72%;top:90.5%">10</span>
+    </div>
+    <ol class="legend">
+      <li><b>Navigation drawer:</b> POS, Products, Orders, Coupons, Customers, Reports; Store health, Settings and Support at the bottom. The version sits at the foot.</li>
+      <li><b>Search:</b> by name, SKU or barcode. Beside it: camera scan, grid/list and product settings.</li>
+      <li><b>Quick filters:</b> in stock, featured, on sale, category, tag, brand. The last button chooses which filters show.</li>
+      <li><b>Products:</b> tap one to add it to the cart.</li>
+      <li><b>Divider:</b> drag it to resize the columns.</li>
+      <li><b>Register bar: store.</b> The store you're selling in.</li>
+      <li><b>Register bar: register and drawer.</b> The register session this device is using.</li>
+      <li><b>Customer:</b> Guest until you choose one.</li>
+      <li><b>Cart settings:</b> opens the panel below.</li>
+      <li><b>Open orders:</b> parked orders as tabs, with their payment status (here, partly paid).</li>
+    </ol>
+    <h2>Panels</h2>
+    <div class="two">
+      <div>
+        <p>Settings and forms open as a <b>panel</b> that slides over part of the screen, so the sale stays visible behind it. The cart settings panel, for example, holds quick-discount amounts, open-order position and which columns the cart shows.</p>
+        <p>Close a panel with <b>Close</b>, the ✕, or <kbd>Esc</kbd>.</p>
+      </div>
+      <div class="shot"><img src="03-panel.jpg" alt="The cart settings panel open over the products column"></div>
+    </div>
+    <p class="caption">Style B puts one annotated picture where the concept is new, and keeps prose for everything else. Both images were captured by the same script.</p>
+  </article>
+
+  <div class="panel" style="margin-top:14px">
+    <h2>Change log</h2>
+    <ul><li><b>2026-09-23, overnight:</b> first board: real 2.0 captures, two densities.</li></ul>
+  </div>
+</div>
+<script>
+  document.querySelectorAll('#seg button').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#seg button').forEach(x => x.setAttribute('aria-pressed', x === b));
+    document.getElementById('docA').hidden = b.dataset.v !== 'A';
+    document.getElementById('docB').hidden = b.dataset.v !== 'B';
+  });
+</script>
+</body>
+</html>
