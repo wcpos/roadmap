@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chart filters · audit and ten arrangements</title>
+<!-- Paul 2026-09-18: "At the moment there is one filter that says 'Everyone' but then it has an Orders section. We need to organise
+     the chart filters and toggles more efficiently and clearly." An audit of every control that scopes the chart today, then ten
+     ways to arrange them. Same page, same data, tablet and phone widths. -->
+<style>
+:root{--font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif}
+body{margin:0;background:#141416;color:#ddd;font:14px/1.4 var(--font)}
+.strip{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;padding:10px 18px;background:#1c1c1f;border-bottom:1px solid #2a2a2e}
+.strip b{font-weight:600;margin-right:8px;color:#aaa}.seg{display:inline-flex;border:1px solid #3a3a40;border-radius:6px;overflow:hidden}
+.seg button{background:transparent;border:0;color:#bbb;padding:5px 10px;font:inherit;cursor:pointer}.seg button.on{background:#e8e8ea;color:#111}
+.stage{padding:24px 18px 60px;display:flex;flex-direction:column;gap:30px;align-items:flex-start}
+h1{font-size:16px;margin:8px 0 0;color:#eee}h1+p{margin:0 0 6px;color:#999;max-width:1100px}
+h2{font-size:13px;font-weight:600;margin:0 0 8px;color:#eee}h2 .tag{font-weight:400;color:#888;margin-left:8px}
+.opt .why{color:#9a9aa0;margin:8px 0 0;font-size:12.5px;max-width:1000px}.opt .why b{color:#c8c8cc;font-weight:600}
+table.audit{border-collapse:collapse;font-size:12.5px;max-width:1100px}.audit th,.audit td{text-align:left;vertical-align:top;padding:6px 14px 6px 0;border-bottom:1px solid #2a2a2e;color:#bbb}.audit th{color:#888;font-weight:500}.audit td b{color:#ddd}
+.audit td.bad{color:#e0a070}
+
+.frame{--u:4px;--fs:14px;--r:8px;--hair:1px;
+  --bg:oklch(0.975 0.004 250);--fg:oklch(0.22 0.02 250);--card:oklch(1 0 0);--muted:oklch(0.955 0.006 250);--muted-fg:oklch(0.50 0.02 250);--border:oklch(0.90 0.008 250);
+  --primary:oklch(0.50 0.18 240);--primary-fg:oklch(0.99 0.01 240);--ok:oklch(0.55 0.16 155);--bad:oklch(0.58 0.2 25);--warn:oklch(0.68 0.16 70);--soft:oklch(0.93 0.03 240);
+  color-scheme:light;background:var(--bg);color:var(--fg);font:var(--fs)/1.4 var(--font);padding:12px;border-radius:10px;width:960px;box-sizing:border-box;position:relative}
+.frame[data-theme="dark"]{--bg:oklch(0.19 0.018 250);--fg:oklch(0.93 0.01 250);--card:oklch(0.23 0.018 250);--muted:oklch(0.28 0.018 250);--muted-fg:oklch(0.70 0.015 250);--border:oklch(0.33 0.02 250);
+  --primary:oklch(0.70 0.17 240);--primary-fg:oklch(0.16 0.02 250);--ok:oklch(0.72 0.15 155);--bad:oklch(0.68 0.18 25);--warn:oklch(0.78 0.15 75);--soft:oklch(0.30 0.04 240);color-scheme:dark}
+.frame[data-w="phone"]{width:390px;padding:8px}
+.frame button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+.mut{color:var(--muted-fg)}.sm{font-size:calc(var(--fs)*.9)}.xs{font-size:calc(var(--fs)*.86)}.b{font-weight:600}
+.card{background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r)}
+.bar{display:flex;align-items:center;gap:10px;height:40px;padding:0 4px 8px;font-weight:600}.bar .grow{flex:1}.bar .bell{width:28px;height:28px;border-radius:50%;background:var(--muted)}
+.hero{padding:14px 16px 12px}
+.head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:36px}.head .grow{flex:1;min-width:0}
+.datebtn{display:inline-flex;align-items:center;gap:6px;font-weight:600;white-space:nowrap}.datebtn .car{color:var(--muted-fg);font-size:11px}
+.datebtn.scope{font-weight:400}.datebtn.on{color:var(--primary)}
+.segt{display:inline-flex;border:var(--hair) solid var(--border);border-radius:var(--r);overflow:hidden;height:36px}.segt button{padding:0 12px;white-space:nowrap}.segt button.on{background:var(--muted);font-weight:600}
+.segt.tabs{height:32px;font-size:calc(var(--fs)*.93)}
+.ibtn{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg);border-radius:var(--r)}.ibtn.b{border:var(--hair) solid var(--border)}
+.btn{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 12px;border:var(--hair) solid var(--border);border-radius:var(--r);font-weight:500;background:var(--card);white-space:nowrap}
+.btn .badge{background:var(--primary);color:var(--primary-fg);border-radius:10px;padding:0 6px;font-size:11px;line-height:18px;font-weight:600}
+.big{font-size:calc(var(--fs)*2.6);font-weight:700;letter-spacing:-.03em;line-height:1.05;margin-top:12px;font-variant-numeric:tabular-nums}
+.delta{display:inline-flex;align-items:center;gap:6px;color:var(--ok);font-weight:600;margin-top:6px}.delta .car{font-size:11px;color:var(--muted-fg)}
+.kpis{display:flex;gap:28px;margin-top:8px}.kpi .l{color:var(--muted-fg);font-size:calc(var(--fs)*.9)}.kpi .n{font-size:calc(var(--fs)*1.45);font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}.kpi .p{color:var(--ok);font-size:calc(var(--fs)*.86);font-weight:600}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
+.frame[data-w="phone"] .kpis{gap:14px}.frame[data-w="phone"] .top{flex-direction:column;gap:6px}.frame[data-w="phone"] .big{font-size:calc(var(--fs)*2.1)}
+svg.plot{display:block;overflow:visible;width:100%;height:110px;margin-top:14px}svg.plot rect{fill:var(--primary);opacity:.55}svg.plot rect.hot{opacity:1}svg.plot path{fill:none;stroke:var(--muted-fg);stroke-dasharray:3 3}svg.plot text{font-size:9px;fill:var(--muted-fg)}
+/* chips (F2) */
+.chips{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}.frame[data-w="phone"] .chips{flex-wrap:nowrap;overflow:hidden;mask-image:linear-gradient(90deg,#000 88%,transparent)}
+.chip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border:var(--hair) solid var(--border);border-radius:15px;white-space:nowrap;font-size:calc(var(--fs)*.93)}.chip .k{color:var(--muted-fg)}.chip .car{font-size:10px;color:var(--muted-fg)}.chip.on{background:var(--soft);border-color:transparent;color:var(--primary)}.chip.on .k{color:inherit;opacity:.75}
+/* summary line (F3, F9) */
+.showing{margin-top:8px;color:var(--muted-fg)}.showing .w{color:var(--fg);border-bottom:1px dotted var(--muted-fg);font-weight:500}.showing .w.on{color:var(--primary);border-color:var(--primary)}
+/* toolbar (F4) */
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}.frame[data-w="phone"] .toolbar{flex-wrap:nowrap;overflow:hidden;mask-image:linear-gradient(90deg,#000 88%,transparent)}
+.sel{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 10px;border:var(--hair) solid var(--border);border-radius:var(--r);background:var(--card);white-space:nowrap}.sel .k{color:var(--muted-fg)}.sel .car{font-size:10px;color:var(--muted-fg)}
+/* footer lenses (F5) */
+.foot{display:flex;gap:16px;align-items:center;margin-top:10px;padding-top:10px;border-top:var(--hair) solid var(--border);color:var(--muted-fg);flex-wrap:wrap}.foot .w{display:inline-flex;align-items:center;gap:5px;color:var(--fg)}.foot .w .car{font-size:10px;color:var(--muted-fg)}
+/* menus / panels drawn open */
+.pop{position:absolute;background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);box-shadow:0 8px 28px rgba(0,0,0,.18);padding:6px;width:280px;z-index:2}.pop .ph{font-weight:600;padding:8px 10px 4px}.pop .ph.div{border-top:var(--hair) solid var(--border);margin-top:6px;padding-top:10px}
+.pop .pr,.panel .pr{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;white-space:nowrap}.pop .pr .ck,.panel .pr .ck{width:14px;color:var(--fg)}.pop .pr.on,.panel .pr.on{background:var(--muted)}.pop .pr .s,.panel .pr .s{margin-left:auto;color:var(--muted-fg);font-size:calc(var(--fs)*.86)}
+.pop .sw{display:flex;align-items:center;justify-content:space-between;padding:8px 10px}.tog{width:34px;height:20px;border-radius:10px;background:var(--border);position:relative;flex:none}.tog::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff}.tog.on{background:var(--primary)}.tog.on::after{left:16px}
+.panel{position:absolute;top:12px;bottom:12px;right:12px;width:320px;background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);box-shadow:-8px 0 28px rgba(0,0,0,.14);display:flex;flex-direction:column;z-index:3}.panel .h{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:var(--hair) solid var(--border);font-weight:600}
+.panel .bd{padding:6px;overflow:auto}.panel .sec{font-weight:600;padding:12px 10px 4px;color:var(--muted-fg);font-size:calc(var(--fs)*.86);letter-spacing:.04em;text-transform:uppercase}
+.frame[data-w="phone"] .panel{left:8px;right:8px;top:auto;bottom:8px;width:auto;height:70%;border-radius:12px 12px 8px 8px}
+.dim{opacity:.55}
+.legend{display:flex;gap:14px;margin-top:6px;font-size:calc(var(--fs)*.9)}.legend .li{display:inline-flex;align-items:center;gap:6px}.legend i{width:10px;height:10px;border-radius:3px;display:inline-block;background:var(--primary)}.legend .li.two i{background:var(--ok)}.legend .li.off{opacity:.45}
+.tabs2{display:flex;gap:2px;border-bottom:var(--hair) solid var(--border);margin:6px -16px 0;padding:0 16px}.tabs2 button{padding:8px 10px;border-bottom:2px solid transparent;color:var(--muted-fg)}.tabs2 button.on{color:var(--fg);border-color:var(--primary);font-weight:600}
+</style>
+<div class="strip">
+  <span><b>Theme</b><span class="seg"><button class="on" data-set="theme" data-v="light">Light</button><button data-set="theme" data-v="dark">Dark</button></span></span>
+  <span><b>Width</b><span class="seg"><button class="on" data-set="w" data-v="tablet">Tablet</button><button data-set="w" data-v="phone">Phone</button></span></span>
+  <span><b>Filters</b><span class="seg"><button class="on" data-set="f" data-v="0">Defaults · Everyone, completed &amp; processing</button><button data-set="f" data-v="1">Priya · every status</button></span></span>
+</div>
+<div class="stage" id="stage"></div>
+<script>
+const ST={theme:'light',w:'tablet',f:0};
+document.querySelectorAll('[data-set]').forEach(b=>b.addEventListener('click',()=>{ST[b.dataset.set]=isNaN(+b.dataset.v)?b.dataset.v:+b.dataset.v;document.querySelectorAll(`[data-set="${b.dataset.set}"]`).forEach(x=>x.classList.toggle('on',x===b));render();}));
+const car='<span class="car">▼</span>';
+const P=()=>ST.w==='phone';
+const who=()=>ST.f?'Priya':'Everyone', st=()=>ST.f?'Every status':'Completed & processing', on=()=>ST.f?' on':'';
+const bars=[0,.3,.55,.5,.95,.2,.35,.75,.7,.3,.15,.1];
+function plot(two){const W=P()?340:880,H=90,bw=W/12*.42;return `<svg class="plot" viewBox="0 0 ${W} ${H+16}">${bars.map((v,i)=>{const x=i*W/12+W/24-bw/2,h=v*H;return `<rect class="${i===4?'hot':''}" x="${x}" y="${H-h}" width="${bw}" height="${h}" rx="2"/>${two?`<rect x="${x}" y="${H-h}" width="${bw}" height="${h*.45}" rx="2" style="fill:var(--ok);opacity:.8"/>`:''}<text x="${x+bw/2}" y="${H+12}" text-anchor="middle">${(8+i)%12||12}${8+i<12?'am':'pm'}</text>`}).join('')}<path d="${bars.map((v,i)=>`${i?'L':'M'}${i*W/12+W/24},${H-Math.min(1,v+.15)*H*.9}`).join(' ')}"/></svg>`;}
+function fig(delta=true){return `<div class="top"><div><div class="big">£1240.50</div>${delta===true?`<div class="delta">+1.3% vs yesterday ${car}</div>`:delta===false?'':`<div class="delta">${delta}</div>`}</div><div class="kpis"><div class="kpi"><div class="l">Orders</div><div class="n">14</div><div class="p mut">±0</div></div><div class="kpi"><div class="l">Average order</div><div class="n">£88.61</div><div class="p">+£1.10</div></div><div class="kpi"><div class="l">Items</div><div class="n">33</div><div class="p">+2</div></div></div></div>`;}
+const date=`<button class="datebtn">Today <span class="mut" style="font-weight:400">· Mon 14 Sep</span> ${car}</button>`;
+const view=`<span class="segt"><button class="on">By hour</button><button>Running total</button></span>`;
+const print=`<button class="ibtn">⎙</button>`;
+const bar=(extra='')=>`<div class="bar">Front till · UK Store <span class="mut" style="font-weight:400">${car}</span>${extra}<span class="grow"></span><span class="bell"></span></div>`;
+const frame=(inner,extra='')=>`<div class="frame" data-theme="${ST.theme}" data-w="${ST.w}">${bar(extra)}<div class="card hero">${inner}</div></div>`;
+
+const OPTS=[
+['F0','What is there today',()=>frame(`<div class="head">${date}<button class="datebtn scope${on()}"><span class="mut">·</span> ${who()}${ST.f?'<span class="mut"> · every status</span>':''} ${car}</button><span class="grow"></span>${view}${print}</div>${fig()}${plot()}
+  <div class="pop" style="left:200px;top:104px"><div class="ph">Cashier</div><div class="pr ${ST.f?'':'on'}"><span class="ck">${ST.f?'':'✓'}</span>Everyone</div><div class="pr ${ST.f?'on':''}"><span class="ck">${ST.f?'✓':''}</span>Priya</div><div class="pr"><span class="ck"></span>Dylan</div><div class="ph div">Orders</div><div class="pr ${ST.f?'':'on'}"><span class="ck">${ST.f?'':'✓'}</span>Completed and processing</div><div class="pr ${ST.f?'on':''}"><span class="ck">${ST.f?'✓':''}</span>Every status<span class="s">incl. pending, on hold</span></div></div>`),
+ `The menu drawn open. <b>The problem in one picture:</b> the word says who, the menu is who <i>and</i> which orders, and the status choice only shows as a suffix once it is off its default. Register and store are in the bar, the comparison is inside the delta chip, the view is on the right: five controls in four places, no one spot that says what the chart is showing.`],
+
+['F1','A sentence, one word per choice',()=>frame(`<div class="head">${date}<button class="datebtn scope${ST.f?' on':''}"><span class="mut">·</span> ${who()} ${car}</button><button class="datebtn scope${ST.f?' on':''}"><span class="mut">·</span> ${st()} ${car}</button><span class="grow"></span>${view}${print}</div>${fig()}${plot()}`),
+ `The cheapest fix. The title reads as a sentence, <b>Today · Everyone · Completed & processing</b>, and every word opens its own small menu; a word off its default turns primary. Nothing moves. <b>Con:</b> the sentence is long on the phone (it wraps to two lines), and the comparison still hides in the delta chip.`],
+
+['F2','Title, then a row of filter chips',()=>frame(`<div class="head">${date}<span class="grow"></span>${view}${print}</div><div class="chips"><span class="chip${on()}"><span class="k">Cashier</span> ${who()} ${car}</span><span class="chip${on()}"><span class="k">Orders</span> ${st()} ${car}</span><span class="chip"><span class="k">Compare</span> Yesterday ${car}</span><span class="chip"><span class="k">Register</span> Front till ${car}</span></div>${fig('+1.3% vs yesterday')}${plot()}`),
+ `Shopify, Stripe, Klaviyo: the period is the title, and a row of labelled chips under it holds every filter, <b>key then value</b>, so "Orders · Completed & processing" is readable without opening anything. A chip off its default fills. The comparison and the register join the row so all of "what am I looking at" is one line. The delta chip becomes plain text. On the phone the row scrolls sideways. <b>Con:</b> the register chip duplicates the bar title; it could stay out of the row.`],
+
+['F3','One Filters button, the panel beside the chart',()=>frame(`<div class="head">${date}<span class="grow"></span><button class="btn">⚲ Filters ${ST.f?'<span class="badge">2</span>':''}</button>${view}${print}</div>${fig()}<div class="showing">Showing <span class="w${on()}">${who()}</span> · <span class="w${on()}">${st().toLowerCase()} orders</span> · compared with <span class="w">yesterday</span></div>${plot()}
+  <div class="panel"><div class="h">Filters <span class="mut" style="font-weight:400">Reset</span></div><div class="bd"><div class="sec">Cashier</div><div class="pr ${ST.f?'':'on'}"><span class="ck">${ST.f?'':'✓'}</span>Everyone</div><div class="pr ${ST.f?'on':''}"><span class="ck">${ST.f?'✓':''}</span>Priya</div><div class="pr"><span class="ck"></span>Dylan</div><div class="sec">Orders</div><div class="pr ${ST.f?'':'on'}"><span class="ck">${ST.f?'':'✓'}</span>Completed and processing</div><div class="pr ${ST.f?'on':''}"><span class="ck">${ST.f?'✓':''}</span>Every status<span class="s">incl. pending, on hold</span></div><div class="sec">Compare with</div><div class="pr on"><span class="ck">✓</span>Yesterday<span class="s">Sun 13 Sep</span></div><div class="pr"><span class="ck"></span>Same day last week<span class="s">Mon 7 Sep</span></div><div class="sec">Chart</div><div class="pr on"><span class="ck">✓</span>Sales by hour</div><div class="pr"><span class="ck"></span>Running total</div></div></div>`),
+ `One button opens the register's right panel (a sheet on the phone) with every choice in named sections; the chart stays in view and updates live, the register's rule that a setting must not cover what it configures. The head goes quiet: date, Filters, view. A <b>Showing…</b> line under the figure states the result so the reader never has to open the panel to know. <b>Con:</b> two taps for the most common change (a cashier); the badge count is the only hint that something is filtered until you read the line.`],
+
+['F4','A toolbar of selects above the card',()=>`<div class="frame" data-theme="${ST.theme}" data-w="${ST.w}">${bar()}<div class="toolbar"><span class="sel">Today · Mon 14 Sep ${car}</span><span class="sel"><span class="k">vs</span> Yesterday ${car}</span><span class="sel"><span class="k">Cashier</span> ${who()} ${car}</span><span class="sel"><span class="k">Orders</span> ${st()} ${car}</span><span class="grow"></span>${view}</div><div class="card hero">${fig('+1.3% vs yesterday')}${plot()}</div></div>`,
+ `Xero, Mixpanel: a toolbar of selects sits <b>above</b> the card and the card is only the numbers and the chart. Every scope is visible and labelled at once. <b>Con:</b> the date leaves the card, which Paul wanted visibly tied to the chart; on the phone the toolbar scrolls and the card loses its title.`],
+
+['F5','Filters above, lenses below',()=>frame(`<div class="head">${date}<button class="datebtn scope${on()}"><span class="mut">·</span> ${who()} ${car}</button><button class="datebtn scope${on()}"><span class="mut">·</span> ${st()} ${car}</button><span class="grow"></span>${print}</div>${fig(false)}${plot()}<div class="foot"><span class="w">vs Yesterday ${car}</span><span class="w">By hour ${car}</span><span class="grow"></span><span class="xs">Refunds count on the day they were made</span></div>`),
+ `Two kinds of control, two places. <b>What data</b> (period, cashier, orders) is the title row. <b>How to look at it</b> (compare with, by hour or running) is a quiet footer under the chart, where a chart's legend normally lives. The delta chip is no longer a control, just the number. <b>Con:</b> the footer is easy to miss; the comparison choice lands far from the delta it changes.`],
+
+['F6','Cashiers as tabs, the rest in ⋯',()=>frame(`<div class="head">${date}<span class="grow"></span><span class="segt tabs"><button class="${ST.f?'':'on'}">Everyone</button><button class="${ST.f?'on':''}">Priya</button><button>Dylan</button></span>${view}<button class="ibtn">⋯</button></div>${fig()}${plot()}
+  <div class="pop" style="right:16px;top:104px;width:250px"><div class="pr"><span class="ck"></span>Compare with…<span class="s">Yesterday</span></div><div class="sw"><span>Include pending &amp; on hold</span><span class="tog ${ST.f?'on':''}"></span></div><div class="ph div" style="padding-top:6px"></div><div class="pr"><span class="ck"></span>Print summary</div><div class="pr"><span class="ck"></span>Export CSV</div></div>`),
+ `A store has two to five cashiers, so they fit as <b>tabs</b>; one tap, no menu, and the current one is always visible. The rare choices (comparison, the status switch, print, export) go behind a ⋯ menu; the status becomes a switch, "Include pending & on hold", which says what it does. <b>Con:</b> tabs stop working past five cashiers or on the phone (they would need to scroll), and the ⋯ hides the comparison.`],
+
+['F7','Date and cashier only; the rest in ⋯',()=>frame(`<div class="head">${date}<button class="datebtn scope${on()}"><span class="mut">·</span> ${who()} ${car}</button><span class="grow"></span>${view}<button class="ibtn">⋯</button></div>${fig(`+1.3% vs yesterday${ST.f?' · <span class="mut" style="font-weight:400">every status</span>':''}`)}${plot()}`),
+ `Keep the head as it is but make "Everyone" honest: its menu is <b>only cashiers</b>. The status choice and the comparison move to a ⋯ menu with print and export, and when either is off its default it is named next to the delta ("+1.3% vs yesterday · every status"). <b>Con:</b> the least discoverable; a merchant who wants pending orders included has to guess the ⋯.`],
+
+['F8','A sentence under the figure',()=>frame(`<div class="head">${date}<span class="grow"></span>${view}${print}</div>${fig(false)}<div class="showing">Sales by <span class="w${on()}">${who()}</span>, <span class="w${on()}">${st().toLowerCase()}</span> orders, <span class="w">+1.3%</span> against <span class="w">yesterday</span></div>${plot()}`),
+ `Mixpanel's inline query: the filters are a <b>plain sentence</b> under the figure and each underlined word is the control. It reads exactly as the chart means, and it never needs a legend of labels. The title row is only the date and the view. <b>Con:</b> underlined words are a web idiom; on a till screen with a finger they are small targets, and the sentence needs translating as a whole.`],
+
+['F9','The chart legend is the cashier filter',()=>frame(`<div class="head">${date}<button class="datebtn scope${on()}"><span class="mut">·</span> ${st()} ${car}</button><span class="grow"></span>${view}${print}</div>${fig()}<div class="legend"><span class="li ${ST.f?'':''}"><i></i>Priya</span><span class="li two ${ST.f?'off':''}"><i></i>Dylan</span></div>${plot(true)}`),
+ `The cashier is not a filter at all: the bars are <b>stacked by cashier</b> and the legend under the figure toggles one on or off, so "how did Priya do" is a tap on her name and the chart keeps the context of the whole. The head then only has the orders choice beside the date. <b>Con:</b> the stacked bars are busier by default; with more than three cashiers the legend grows and the stacks get thin.`],
+
+['F10','Two tiers: page scope in the bar, chart lenses on the card',()=>`<div class="frame" data-theme="${ST.theme}" data-w="${ST.w}">${bar(`<span class="mut" style="font-weight:400">·</span><button class="datebtn scope${on()}" style="font-weight:500">${who()} ${car}</button>`)}<div class="card hero"><div class="head">${date}<button class="datebtn scope${on()}"><span class="mut">·</span> ${st()} ${car}</button><span class="grow"></span>${view}${print}</div>${fig()}${plot()}</div></div>`,
+ `Split by reach. Things that scope the <b>whole page</b>, till strip included (register, store, and now the cashier) are the bar title: "Front till · UK Store · Everyone". Things that scope <b>the dated block</b> (the period, which orders, the comparison, the view) live on the card. The rule from the Closures pass, the date scopes everything under it but not the till, gets a visible home. <b>Con:</b> the cashier in the bar implies the till strip filters by cashier too, which only makes sense on a shared drawer.`],
+];
+
+function render(){
+  document.getElementById('stage').innerHTML=`<h1>Chart filters: what is there, and ten ways to arrange it</h1><p>Every control that scopes the chart today, then ten arrangements. The <b>Filters</b> switch above sets a non-default state (Priya, every status) so you can see how each arrangement shows that something is filtered.</p>
+  <table class="audit"><tr><th>Control</th><th>Where</th><th>Choices</th><th>Reaches</th><th>What is wrong</th></tr>
+  <tr><td><b>Register · Store</b></td><td>bar title</td><td>Front till / Back office / All registers; store when there are two</td><td>whole page, till strip included</td><td>fine as a page scope; it is the only filter not on the card</td></tr>
+  <tr><td><b>Period</b></td><td>hero title</td><td>Today, Yesterday, This/Last week, This/Last month, a day, a range</td><td>chart + the dated cards</td><td>decided on 09-17; the quick ranges sit inside the picker</td></tr>
+  <tr><td><b>"Everyone"</b></td><td>hero title, after the date</td><td>Cashier: Everyone / Priya / Dylan <i>and</i> Orders: completed &amp; processing / every status</td><td>chart + cards</td><td class="bad">two unrelated choices in one menu; the label only names the cashier; the status shows as a suffix once changed</td></tr>
+  <tr><td><b>Compare with</b></td><td>inside the delta chip</td><td>Yesterday / Same day last week (day view only)</td><td>delta, ghost line, the companions' deltas</td><td class="bad">a control disguised as a result; gone on week and month</td></tr>
+  <tr><td><b>By hour · Running total</b></td><td>right of the title</td><td>two views</td><td>chart only</td><td>a lens, not a filter; fine, but it sits in the same row as the filters</td></tr>
+  <tr><td><b>Orders left out</b></td><td>chip beside the delta, only when set</td><td>orders unticked in the Orders panel</td><td>chart + cards</td><td>an invisible filter until it is on; named here so it is not forgotten</td></tr>
+  <tr><td><b>Print</b></td><td>right of the title</td><td>Sales summary</td><td>—</td><td>an action among controls</td></tr>
+  </table>
+  <p style="margin:0;color:#999;max-width:1100px">Four kinds of thing: <b>where</b> (register, store), <b>when</b> (period, compared with), <b>who</b> (cashier), <b>which orders</b> (status, left out), and one <b>lens</b> (by hour or running). The arrangements below differ in which of these are visible at rest, which are grouped, and where the "what am I looking at" summary lives.</p>
+  ${OPTS.map(([k,t,f,why])=>`<section class="opt"><h2>${k} <span class="tag">${t}</span></h2>${f()}<p class="why">${why}</p></section>`).join('')}`;
+}
+render();
+</script>
+</html>

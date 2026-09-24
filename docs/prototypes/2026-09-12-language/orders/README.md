@@ -1,0 +1,152 @@
+# Orders in the 1.11.0 language — prototype for wcpos/roadmap#287
+
+Throwaway, self-contained HTML. Double-click `index.html`. The dark strip is not part of the design.
+
+**Question it answers:** what the orders list and one open order look like in the decided
+direction, as a real table on the web (sortable headers, resize handles, hover, keyboard) and as
+rows with a detail pane on tablet and phone, at three widths, light and dark, compact and regular.
+
+## Inventory (Codex read-only on `next`, 2026-09-14)
+
+The real screen, so the drawing is not a straw man:
+
+- **Today** the list sits in a `shadow-md` Card with a `bg-card-header` toolbar: a search input,
+  the sliders icon, and a wrapping row of `h-6` filter pills (Status, Customer, Cashier, Created
+  via/Store, Register, Date Range). The table has an `h-8` uppercase header, alternating row
+  colours, content-driven row height, and a footer with "Showing N of M" and a sync button; no
+  page numbers. **The phone shows the same table**, not rows.
+- **Columns** (17, all reorderable and hideable in a right-side *Order Settings* dialog): Status
+  (icon only, header hidden, 45 px), Order Number, Customer (with optional billing/shipping
+  lines), Billing Address, Shipping Address (off), Customer Note (icon), Date Created, Date
+  Modified (off), Date Completed (off), Date paid (off), Created Via (icon), Cashier, Register
+  (off), Payment Method, Total (refund as a red second line), Receipt (off), Actions.
+- **Statuses**: pending, processing, on-hold, completed, cancelled, refunded, failed, pos-open,
+  pos-partial, plus a synthetic partially-refunded in the open order. Labels come from the server;
+  the list cell is an icon with a tooltip, the open order a filled pill — two treatments.
+- **Row menu**: View, Edit, Re-open, Receipt (saved only), Sync (saved only), Refund
+  (completed/processing/on-hold only), then Delete. Delete confirms: *Deleted orders will be
+  placed in the Trash on the server.* No row press opens the order; only the menu does.
+- **States**: initial load is the header row plus a central spinner (not skeleton rows);
+  "Searching…" while a search settles; "No orders found" for both an empty store and an empty
+  filter; "Something went wrong:" with the error text in an error boundary; the sync icon
+  animates and a loading footer appears under the rows; offline shows only in the shared header.
+- **The open order** is a right-side `w-200` modal with `shadow-lg`: header (order number,
+  created-via chip, total at `text-4xl`, status pill, subtitle), then items → totals → refund
+  history → note, with a `w-80` rail for customer, addresses, tax IDs, payment and POS metadata.
+  Footer: Print Receipt, Refund, Cancel.
+- **Focus**: nothing is focused on open; no row keyboard navigation; no column resize handle is
+  wired although widths are authored; barcode scans set the search.
+
+## Direction taken
+
+- **Flat hairline card, no shadow**; the toolbar is the page bar (title, search, sliders) and a
+  chip row for the six filters, active chips carrying the value and an ×.
+- **Status is a dot plus a word** in the list, the open order and the row — one treatment, the
+  fixed semantic set from the direction, widening the column to 172 px.
+- **Hairline rows, a hover row and a focused row** replace zebra striping on the web; ↑↓ move the
+  focus, Enter opens, Esc closes.
+- **Web and native split**: at desktop a real table with sortable headers and resize handles on
+  hover; at tablet and phone, 56 pt rows (number, customer, note icon; status, date, payment;
+  total with the refund line; chevron).
+- **The open order is a pane beside the list**, the cart column's twin since cut 3 (the
+  register's width: 480 px at desktop, 42 % capped at 440 at tablet; full screen on phone). The
+  list keeps its core columns and the selected row while the pane is open. The pane's bar carries
+  the order as its place, the source chip, an ellipsis with the row actions, and a close ×; the
+  amount and status sit under it. Footer: Refund (when eligible) and Print receipt as the primary;
+  no Cancel — × is the way out.
+- **Display options are anchored** to the sliders icon, with the table live behind: toggling a
+  column changes the table at once (`shoot.js` asserts it). Drag grips for order; the Customer and
+  Total sub-options nest under their column; Restore defaults in the header.
+- **Filters are anchored popovers**: the status list with dots and a check; the date range with
+  the six presets, a Monday-first calendar and Done. Both are sheets on phone.
+- **Loading is skeleton rows**, still; searching keeps the rows, dims them and runs a thin
+  progress line; empty is split into *No orders yet — Sales you take will appear here* and
+  *No orders match these filters — Clear filters*; error is one line, Retry and Help.
+- **Sentence case** for every string (Search orders, Billing address, Print receipt).
+
+## Decisions Paul must make
+
+In [`../README.md`](../README.md): status dot + label (4), hairline rows (5), rows on tablet (6),
+the pane beside the list (7), loading as skeleton (11, owned by #308), sentence case (12).
+**All decided by Paul on 2026-09-18** (with grouping by day on the Date sort, 20, and the cut 3
+chips, 21); skeleton loading stays with [#308](https://github.com/wcpos/roadmap/issues/308).
+[#287](https://github.com/wcpos/roadmap/issues/287) is closed.
+
+## Rejected
+
+- The 800 px modal with its own two columns — hides the list and the selection.
+- Filled status pills — loudest mark on the screen; fails on a monochrome receipt.
+- Cards for the phone list — rows with a chevron are the touch grammar.
+- The right-side settings dialog — covers the table it configures.
+- Zebra rows — a second surface colour in a one-surface language.
+
+## Cut 3 (2026-09-18) — polish in the register's language
+
+Paul: go over the Orders page and polish it with the language the other pages have established.
+Nothing new is decided; every change copies a rule the register or Reports already carries.
+
+- **The bar.** The title is the bar's place — *Orders* at the base size, 600, as *UK Store* and
+  *Front till · UK Store* are — with the search beside it as in the products toolbar, and the
+  bell at the right as on every other page. The phone gets the bar the register and Reports have
+  (menu · Orders · bell · cashier) and the search on its own row under it, as the products
+  toolbar is on the phone.
+- **The filter chips are the register's pills.** 32 px, an icon each (Unpaid, Today, My sales,
+  Status as a dot, Customer, Cashier, Created via, Register, Date range), filled when on; a select
+  that is set fills and splits into the value (reopens the list) and a × (clears it), exactly as
+  Category · Drinks +1 × does on the products bar. The row fades at its end as the products bar
+  does. Only the fill says on; the toggles keep their check.
+- **The open order is the cart column's twin.** It sits beside the page, not inside the list: the
+  register's width, a hairline on its left, full height, the bar on top with the order as its
+  place and the source chip beside it, the amount under the bar with the display face and the
+  Reports hero's tracking. Sections and the footer take the bar's 16 px inset; item images are
+  the products table's 40 px.
+- **Dates the way Reports writes them.** *Today · 10:42*, *Yesterday · 17:20*, *Sat 12 Sep · 15:48*
+  replace *2 hours ago* and *September 12, 2026*; the phone row keeps the day only. The fixture's
+  today is Mon 14 Sep 2026, as on Reports, so the weekdays are corrected and the date picker's
+  preset is *Last week*, Mon 7 – Sun 13, which reads whole in the Monday-first calendar.
+- **The footer is the products table's.** *12 of 1,248* at the right beside the sync, at the
+  footer's smaller size; *Searching…* and *Syncing…* keep their places. The frameless styles set
+  the footer on the frame's bottom edge, as the products table does.
+- **Order numbers carry their #** in the table too, as the touch rows, the open order and the
+  Reports order list already did.
+- **Every popover sits under the control that opened it**: the display options under the sliders,
+  the status and date lists under their chips, the row menu under its ellipsis.
+
+Everything else is as it was: the table components, the hairline rows, the status dot and word,
+the row grammar on touch, the four list styles and the eighteen states. Captures regenerated
+(`node shoot.js`, `node shoot-pages.js`, `node shoot-variants.js`), assertions green.
+
+## Where it lives now (2026-09-17)
+
+Paul: put the Orders mock-up into the register page and toggle between POS, Orders and Reports
+from the sidebar icons. So the page is inside `../pos-register/index.html`, reached from the
+rail (or `?screen=orders`); `index.html` here only redirects there. The Orders code is the `OS`
+state and the `OP` module at the end of the register's script, its CSS scoped to
+`data-screen="orders"`; a few classes the register styles unscoped are `op-*` on this page
+(`op-pane`, `op-toast`, `op-search`, `op-chip`, `op-k`, `op-range`). The register's Width, Theme,
+Scale and Plan switches are shared; List style and the Orders states show on Orders only.
+
+## Screens
+
+`screens/<width>-<theme>-<scale>-<state>.jpg`: phone, tablet, desktop × light, dark × regular,
+compact × eighteen states, taken from the register page. `node shoot.js` regenerates them, runs
+the keyboard and live-column assertions, and fails on any page or console error; `--quick` is
+desktop light regular only. `node shoot-variants.js` redraws the list styles into
+`screens/variants/`; `node shoot-pages.js` draws every theme, the rail round trip and the phone
+menu into `screens/pages/` and asserts each page keeps its State. Run them from a directory
+that resolves Playwright (`cd /Users/kilbot/Projects/monorepo-v2 && node <path>`).
+
+## Cut 2 (2026-09-14) — Paul's first thoughts
+
+1. **Away from the framed, rounded table.** Four list styles in the strip (*List style*) and in
+   `screens/variants/list-<style>-<width>[-filtered|-open].jpg`: no frame (Linear, Stripe) ·
+   no frame grouped by day · status counts above a frameless list (Stripe) · the hairline card
+   from cut 1. The Mobbin round behind them is in `mobbin-notes.md` (round two). Default now:
+   no frame.
+2. **A filter toggle is not a filter select.** *Unpaid · Today · My sales* are two-state chips
+   (no chevron, filled with a check when on); the selects keep their chevron and show the value
+   with an × when set; a hairline separates the groups. The status-counts style turns the
+   Status select into the count strip.
+3. **The POS product table reuses these table components.** Drawn in
+   `../pos-register/` (state *Products · table view*); the tile/table control is one icon that
+   shows the view you would switch to.

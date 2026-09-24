@@ -1,0 +1,40 @@
+// Capture the decided cart line: quantity expanding, quick edit, the swipe, the hover nudge, the phone sheet. Throwaway.
+const { chromium } = require('/Users/kilbot/Projects/monorepo-v2/node_modules/playwright');
+const path = require('path');
+const fs = require('fs');
+const DIR = __dirname; const OUT = path.join(DIR, 'screens', 'board-cart');
+(async () => {
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 1100, height: 900 } });
+  const errors = []; page.on('pageerror', e => errors.push('pageerror: ' + e.message));
+  await page.goto('file://' + path.join(DIR, 'board-cart.html'));
+  const set = async (v) => { await page.locator(`.seg[data-k="pt"] button[data-v="${v}"]`).click(); await page.waitForTimeout(60); };
+  const f = page.locator('.frame.dec').first(); const ph = page.locator('.frame.phone');
+  const shot = async (loc, s) => loc.screenshot({ path: path.join(OUT, `00-decided-${s}.jpg`), type: 'jpeg', quality: 84 });
+  await set('touch');
+  await shot(f, 'tablet-1-rest');
+  await f.locator('.line').nth(1).locator('[data-act="qopen"]').click(); await page.waitForTimeout(250); await shot(f, 'tablet-2-quantity-open');
+  await f.locator('.qx [data-k="1"]').click(); await f.locator('.qx [data-k="2"]').click(); await page.waitForTimeout(80); await shot(f, 'tablet-3-quantity-typed-12');
+  const q = await f.locator('.line').nth(1).locator('.q').innerText(); if (q.trim() !== '12') throw new Error('keypad did not set 12: ' + q);
+  await f.locator('.qx [data-act="qclose"]').click(); await page.waitForTimeout(80);
+  await f.locator('.line').nth(0).locator('.nm').click(); await page.waitForTimeout(80); await shot(f, 'tablet-4-quick-edit-name');
+  await page.keyboard.type(' large'); await page.keyboard.press('Enter'); await page.waitForTimeout(80);
+  const nm = await f.locator('.line').nth(0).locator('.nm').innerText(); if (!/large/.test(nm)) throw new Error('name edit did not commit: ' + nm);
+  const l2 = f.locator('.line').nth(2); const tb = await l2.locator('.tot').boundingBox();
+  await page.mouse.move(tb.x + 20, tb.y + 10); await page.mouse.down(); await page.mouse.move(tb.x - 60, tb.y + 10, { steps: 5 }); await page.mouse.move(tb.x - 110, tb.y + 10, { steps: 5 }); await page.mouse.up(); await page.waitForTimeout(300); await shot(f, 'tablet-5-swiped-open');
+  if (!(await l2.evaluate(el => el.classList.contains('open')))) throw new Error('short swipe did not snap open');
+  const l3 = f.locator('.line').nth(3); const tb3 = await l3.locator('.tot').boundingBox(); const before = await f.locator('.line').count();
+  await page.mouse.move(tb3.x + 20, tb3.y + 10); await page.mouse.down(); await page.mouse.move(tb3.x - 150, tb3.y + 10, { steps: 6 }); await page.mouse.move(tb3.x - 280, tb3.y + 10, { steps: 6 }); await page.mouse.up(); await page.waitForTimeout(400); await shot(f, 'tablet-6-full-swipe-deleted');
+  if ((await f.locator('.line').count()) !== before - 1) throw new Error('full swipe did not delete');
+  await page.evaluate(() => { const a = window.APPS[0]; a.S.lines = [{q:2,n:'Flat white',s:'Oat milk',p:3.2},{q:1,n:'Sourdough loaf',s:'',p:4.2},{q:1,n:'Tote bag',s:'Black · M',p:14},{q:3,n:'Croissant',s:'',p:2.4}]; a.S.undo=null; clearTimeout(a.S.ut); a.render(); });
+  await set('mouse');
+  const lm = f.locator('.line').nth(1); const tm = await lm.locator('.tot').boundingBox(); await page.mouse.move(tm.x + 20, tm.y + 10); await page.waitForTimeout(300); await shot(f, 'desktop-1-hover-nudge');
+  await page.mouse.click(tm.x + 20, tm.y + 10); await page.waitForTimeout(300); await shot(f, 'desktop-2-click-open');
+  await set('touch');
+  await shot(ph, 'phone-1-rest');
+  await ph.locator('.line').nth(1).locator('[data-act="qopen"]').click(); await page.waitForTimeout(300); await shot(ph, 'phone-2-sheet');
+  await page.screenshot({ path: path.join(OUT, '00-full.jpg'), type: 'jpeg', quality: 70, fullPage: true });
+  await browser.close();
+  if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
+  console.log('ok · decided captures in ' + OUT);
+})().catch(e => { console.error(e); process.exit(1); });

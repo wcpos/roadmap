@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Payments — six ledger drawings</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#e6e8ec;color:#17202d;font:14px system-ui,sans-serif}header{padding:24px 28px;background:#fff;border-bottom:1px solid #cfd4dc}h1{margin:0 0 6px;font-size:24px}p{margin:0;color:#566171}nav{margin-top:20px}label{display:flex;gap:10px;align-items:center;font-weight:600}select{font:inherit;padding:8px;border:1px solid #abb4bf;border-radius:6px;background:white;color:inherit}main{display:flex;gap:20px;padding:28px;width:max-content}figure{margin:0;width:240px}.preview{width:240px;height:384px;overflow:hidden;border-radius:6px;background:white;box-shadow:0 2px 8px #17202d18}iframe{display:block;border:0;width:1024px;height:768px;transform:scale(.5);transform-origin:top left;margin-left:-272px}figcaption{padding:14px 2px;line-height:1.5}figcaption b{display:block;font-size:17px}figcaption span{color:#566171}a{color:inherit}select:focus-visible{outline:2px solid #0067ad;outline-offset:3px}
+</style>
+<header><h1>Six drawings. The same payments.</h1><p>Captured, waiting, and still to take — the ledger’s payments block, not another set of controls.</p>
+<nav aria-label="Comparison controls"><label>State <select id="state"><option value="split-2of3">2 of 3 taken</option><option value="split-1of2">1 of 2 taken</option><option value="tender-card">Terminal in progress</option><option value="paid">Paid</option></select></label></nav></header>
+<main id="looks" aria-label="Payments list comparisons"></main>
+<script>
+// References support the information patterns; these are original studies, not product replicas.
+const looks=[
+  ['rows','Rows (as drawn)','The register’s original rows, with the shared payment facts.',''],
+  ['tiles','Rows with method tiles','Apple Wallet-inspired method identity and transaction detail.','https://support.apple.com/en-au/104954'],
+  ['bar','Paid · left bar and timeline','Klarna-inspired payment-plan overview; a segmented paid/left study.','https://www.klarna.com/uk/customer-service/where-can-i-find-my-payment-plan/'],
+  ['story','The story','Stripe / Wise-inspired chronological status events.','https://wise.com/help/articles/2452305/how-do-i-check-my-transfers-status'],
+  ['receipt','Receipt tender lines','The till’s own paper: dotted leaders and a paid stamp.',''],
+  ['cards','Cards','Fresha-inspired payment-method breakdown, drawn as cards.','https://www.fresha.com/help-center/knowledge-base/reports/345-payments-summary-article-1']
+];
+const state=document.getElementById('state'),query=new URLSearchParams(location.search);
+state.value=['split-2of3','split-1of2','tender-card','paid'].includes(query.get('scn'))?query.get('scn'):'split-2of3';
+function draw(){document.getElementById('looks').innerHTML=looks.map(([look,name,source,url])=>`<figure><div class="preview"><iframe data-look="${look}" title="${name} — ${state.selectedOptions[0].text}" src="index.html?screen=register&payList=${look}&scn=${state.value}&w=tablet&board=1"></iframe></div><figcaption><b>${name}</b><span>${url?`<a href="${url}">${source}</a>`:source}</span></figcaption></figure>`).join('');}
+state.addEventListener('change',draw);draw();
+</script>
+</html>
