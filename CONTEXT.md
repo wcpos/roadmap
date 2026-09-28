@@ -7,7 +7,7 @@ The planning context for WCPOS and WCPOS Pro: how releases are scoped, described
 ### Releases
 
 **Release**:
-A versioned minor of WCPOS (`v1.11.0`) that ships from the development lane and has a public scope. Patch lines and standing tracks are not releases.
+A versioned minor or major of WCPOS (`v2.0.0`) that ships from the development lane and has a public scope. Patch lines and standing tracks are not releases.
 _Avoid_: Milestone, sprint, version, iteration
 
 **Release issue**:
@@ -37,6 +37,25 @@ _Avoid_: Description, blurb, excerpt
 **Work**:
 Anything beneath an epic: landing tasks, implementation issues in the code repos, research. Never public, never a direct child of a release.
 _Avoid_: Sub-task, ticket, task (in the roadmap sense)
+
+### Version names (ruled on wcpos/roadmap#363, 2026-09-23; confirmed by Paul 2026-09-28)
+
+**WCPOS 2.0** / **2.0** / **version 2**:
+The product release tagged `v2.0.0` and its patch line `2.0.x`. "WCPOS 2.0" at first mention in prose, "2.0" or "version 2" after that. It ships *stamped* `2.0.0` in the plugin, the app and the updater, not stamped `1.11.0` and merely called 2. Why: a release called version 2 but stamped 1.11 needs translating forever in support, and the release is semver-major on its own merits (WooCommerce minimum 5.3 → 9.0, app and plugin must match, the magnetic card reader removed, the whole register UI rebuilt).
+_Avoid_: v2 (bare), 1.11, the 1.11 release
+
+**2.x**:
+The docs version tree and its label in `wcpos/docs`, matching `1.x`.
+
+**1.11** / `1.11.0`:
+The pre-release lane name this release carried on `next` before the renumber on 2026-09-28. Allowed only in historical records: PRs, run records, research, ADRs. Never in new merchant-facing prose.
+
+**1.10** / **1.x**:
+The current shipped line and its docs tree.
+
+**`wcpos/v2` REST API** / **REST v2**:
+The plugin's v2 REST surface. Always qualified, because inside `wcpos/wiki` a bare "v2" has meant this API for over a hundred pages.
+_Avoid_: v2 (bare) for either the product or the API
 
 ### Lifecycle
 

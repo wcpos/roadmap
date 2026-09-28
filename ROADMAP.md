@@ -19,21 +19,25 @@ Critical issues that jump the queue (`priority/P0`):
 
 ## Now
 
-**v1.10.0 — releasing 2026-08-24** · *Offline & stock-state correctness*:
-offline queues (email/order/customer sync), overselling prevention,
-server-side stock validation, barcode reliability.
+**v2.0.0 — A new register, checkout and cash drawer** · no fixed date:
+the date follows the work (Paul, 2026-09-11). Ships from `next` stamped `2.0.0` (it was developed
+as `1.11.0`; renumbered 2026-09-28, see wcpos/roadmap#363): the new register UI,
+a checkout that belongs to the POS (cash, split payments, card terminals at the
+till), registers and cash-drawer sessions in Free, saved closures, the customer
+display, and the fiscal groundwork every European regime needs. Requires
+WooCommerce 9.0. Release issue: wcpos/roadmap#195.
 
-**v1.9.x** — rolling stabilization patches for the 1.9 line (no fixed date).
+**v1.10.x** — rolling patches for the shipped 1.10 line on `main` (no fixed date).
 
 ## Next
 
-**v1.11.0 — targeting mid-September 2026** · *Checkout & payments*:
-split payments, and a quick discount at the till via an on-the-fly coupon
-(#91) — which retires negative fees.
+**v1.12.0 — Fiscal compliance** (wcpos/roadmap#225) and
+**v1.13.0 — Works with your other plugins** (wcpos/roadmap#226): numbered as
+planned; they will be renumbered to 2.1 / 2.2 when they are scheduled.
 
 ## Later
 
-**v2.0.0** — tablet-first UI refresh (vision; not yet scheduled).
+_Nothing scheduled beyond the two releases above._
 
 ## Shipped
 
