@@ -9,7 +9,7 @@ Written before a machine restart. Everything below is committed and pushed; noth
 | PR 1 shell, bar, date button, Free lock hint — wcpos/monorepo#2238 | merged into `next` | `cbde29c82` |
 | PR 1b till strip — #2239 | merged | `309c5876a` |
 | PR 2a hero (comparison state, chips, figure, companions) — #2241 | merged | `2093e7c8a` |
-| PR 2b chart (instant-keyed buckets, comparison series, running total, toggle) — #2246 | **open**, waiting on CI (Lint and Merge Gate were pending at 12:35Z) and the first Codex/CodeRabbit pass | head `8efc9e3a4` |
+| PR 2b chart (instant-keyed buckets, comparison series, running total, toggle) — #2246 | **open**. Codex's first pass (one P2: the comparison label read the whole previous period) fixed in `f414a2858`, thread resolved, Codex re-requested 12:41Z (check "Reviewed commit" = `f414a28`), CI running on that head, CodeRabbit rate-limited until ~13:15Z. Body's Reviewers section is current | head `f414a2858` |
 | PR 3 cards, panels, unticking, Export, Print | not started | |
 | PR 4 margin (Cost / Profit / Margin %, Brands card) | not started; see the COGS note | |
 
