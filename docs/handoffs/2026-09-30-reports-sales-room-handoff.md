@@ -13,8 +13,8 @@ Continues `2026-09-29-reports-sales-room-handoff.md`. Everything below is commit
 | 3d Orders panel, unticking, left-out chip — #2262 | merged (Print pulled out to 3e) | `0391a04a1` |
 | 3e Print through the plugin's `report` templates — #2270 | merged | `6d8d00962` |
 | 4a margin columns, Brands card, four states, rollup — #2274 | merged (review of record: `codex review` on the diff; both bots exhausted) | `9c7927b8a` |
-| 4b `refunds-browse` lane in the sync engine — #2277 | **open, waits for a bot pass** (both exhausted 2026-09-29 evening); two `codex review` passes taken | head `a396c3259` |
-| 4c Refunds by refund date + margin netting | brief written (`BRIEF-4c.md`), not started; opens off `next` after 4b merges | |
+| 4b `refunds-browse` lane in the sync engine — #2277 | merged (CodeRabbit's full-diff pass at 23:14Z + two `codex review` passes) | `c14790517` |
+| 4c Refunds by refund date + margin netting — #2283 | **open, waits for a bot pass**; walked on dev-next; gates green | head `c010c2522` |
 | Where sold card + Channels / Registers panel | **waits on Paul's ruling** (below); its `channels` / `registers` aggregations are on `next`, tested | |
 
 Every landing note, the splits (3 → 3a/3b/3c → 3d/3e; 4 → 4a/4b/4c), the COGS proof and the refunds-route probe are comments on #332. Captures per PR are under `docs/prototypes/2026-09-29-reports-shell-captures/{cards,panels,margin}/`.
@@ -25,9 +25,9 @@ Every landing note, the splits (3 → 3a/3b/3c → 3d/3e; 4 → 4a/4b/4c), the C
 
 ## To resume
 
-1. `git -C /Users/kilbot/Projects/monorepo-v2 fetch origin next`. The 4b worktree is `/Users/kilbot/Projects/monorepo-v2/.claude/worktrees/reports-sales-4b` (branch `feat/reports-sales-4b`, clean and pushed).
-2. **4b:** request `@codex review` and `@coderabbitai review` on #2277 once the windows reopen (Codex said "usage limits for code reviews" from ~21:30Z; CodeRabbit "Review limit reached" all day). Answer threads at their **root** id, resolve, push, re-request; the body carries the stop rule. Merge with `gh pr merge 2277 -R wcpos/monorepo --merge --delete-branch`, landing note on #332, `rm -rf` the worktree, `git worktree prune`, delete the local branch.
-3. **4c:** `git worktree add -b feat/reports-sales-4c … origin/next`, `pnpm install --frozen-lockfile --offline`, copy `BRIEF-4c.md` into the worktree root, run `codex exec -m gpt-6-astra -c model_reasoning_effort="high" -C <worktree> -s workspace-write -o <result.md> "Read BRIEF-4c.md … A type error in a test you have just written is ordinary work … Where the brief and the code's real contract differ, the code wins …"`, review the diff, walk it (a local Metro + the throwaway capture spec pattern in the 2026-09-29 handoff; dev-next has refunds in its history), PR titled `feat(reports) 4c of 4: refunds on the day they were made, margin nets them (roadmap#332)`, own to merge. Note: a refund's store and register are its parent's; the brief scopes by parent order or POS identity meta.
+1. `git -C /Users/kilbot/Projects/monorepo-v2 fetch origin next`. The 4c worktree is `/Users/kilbot/Projects/monorepo-v2/.claude/worktrees/reports-sales-4c` (branch `feat/reports-sales-4c`, clean and pushed).
+2. **4c:** own #2283 to merge — request `@codex review` and `@coderabbitai review` when the windows reopen (Codex's GitHub reviewer said "usage limits for code reviews" from ~21:30Z on 2026-09-29; CodeRabbit reviewed 4b at 23:14Z and may have a window). Answer threads at their **root** id, resolve, push, re-request; the body carries the stop rule; it waits for at least one bot pass. Merge with `gh pr merge 2283 -R wcpos/monorepo --merge --delete-branch`, landing note on #332, `rm -rf` the worktree, `git worktree prune`, delete the local branch.
+3. *(done — 4b merged at `c14790517`, 4c implemented and open.)*
 4. **Where sold:** when Paul answers — A: a small PR on `query-state-translator.ts`'s `store` rule (+ test) then the Where sold card and its two panels from 3b's first head (`git show 1c2f5a3c1:packages/core/src/screens/main/reports/cards/where-sold.tsx`); B: the card as Registers-only under All registers.
 5. **Close-out:** after 4c and Where sold: close #332 with a landing comment listing every PR and merge commit; one clause in map #282's progress paragraph after the register clause; a note on #333 that its app half is unblocked (a registered report becomes one more card through `PeriodSection`'s `cards` array and a `panelSpec`).
 
