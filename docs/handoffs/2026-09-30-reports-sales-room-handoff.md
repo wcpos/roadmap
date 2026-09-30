@@ -14,7 +14,7 @@ Continues `2026-09-29-reports-sales-room-handoff.md`. Everything below is commit
 | 3e Print through the plugin's `report` templates — #2270 | merged | `6d8d00962` |
 | 4a margin columns, Brands card, four states, rollup — #2274 | merged (review of record: `codex review` on the diff; both bots exhausted) | `9c7927b8a` |
 | 4b `refunds-browse` lane in the sync engine — #2277 | merged (CodeRabbit's full-diff pass at 23:14Z + two `codex review` passes) | `c14790517` |
-| 4c Refunds by refund date + margin netting — #2283 | **open, waits for a bot pass**; walked on dev-next; a `codex review` pass's four P2 fixed in `eb201c5`; gates green | head `eb201c5bb` |
+| 4c Refunds by refund date + margin netting — #2283 | merged 01:40Z (both bots limited 23:50–01:31Z, `full review` ignored; review of record a second `codex review` on the final head, no defects, as on 4a) | `10418f13b` |
 | Where sold card + Channels / Registers panel | **waits on Paul's ruling** (below); its `channels` / `registers` aggregations are on `next`, tested | |
 
 Every landing note, the splits (3 → 3a/3b/3c → 3d/3e; 4 → 4a/4b/4c), the COGS proof and the refunds-route probe are comments on #332. Captures per PR are under `docs/prototypes/2026-09-29-reports-shell-captures/{cards,panels,margin}/`.
@@ -25,9 +25,9 @@ Every landing note, the splits (3 → 3a/3b/3c → 3d/3e; 4 → 4a/4b/4c), the C
 
 ## To resume
 
-1. `git -C /Users/kilbot/Projects/monorepo-v2 fetch origin next`. The 4c worktree is `/Users/kilbot/Projects/monorepo-v2/.claude/worktrees/reports-sales-4c` (branch `feat/reports-sales-4c`, clean and pushed).
-2. **4c:** own #2283 to merge — request `@codex review` and `@coderabbitai review` when the windows reopen (Codex's GitHub reviewer said "usage limits for code reviews" from ~21:30Z on 2026-09-29; CodeRabbit reviewed 4b at 23:14Z and may have a window). Answer threads at their **root** id, resolve, push, re-request; the body carries the stop rule; it waits for at least one bot pass. Merge with `gh pr merge 2283 -R wcpos/monorepo --merge --delete-branch`, landing note on #332, `rm -rf` the worktree, `git worktree prune`, delete the local branch.
-3. *(done — 4b merged at `c14790517`, 4c implemented and open.)*
+1. `git -C /Users/kilbot/Projects/monorepo-v2 fetch origin next`. No reports worktree or branch remains (4c's removed; PR 1's leftover `feat/reports-sales-1` deleted too).
+2. *(done — 4c merged at `10418f13b`, landing note on #332.)*
+3. *(done — 4b merged at `c14790517`.)*
 4. **Where sold:** when Paul answers — A: a small PR on `query-state-translator.ts`'s `store` rule (+ test) then the Where sold card and its two panels from 3b's first head (`git show 1c2f5a3c1:packages/core/src/screens/main/reports/cards/where-sold.tsx`); B: the card as Registers-only under All registers.
 5. **Close-out:** after 4c and Where sold: close #332 with a landing comment listing every PR and merge commit; one clause in map #282's progress paragraph after the register clause; a note on #333 that its app half is unblocked (a registered report becomes one more card through `PeriodSection`'s `cards` array and a `panelSpec`).
 
@@ -43,7 +43,7 @@ The five from the 2026-09-29 handoff still hold. Added today, each from a review
 - **A brief that sketches another repo's schema** names the schema file as the authority and asks for the validator's invariants pinned in tests (two Readiness stops on 3d: `group_by`, `fiscal.is_report_document`, non-nullable `totals`).
 - **Every new testID grepped against the tree** (3a's one stop: `reports-period` was the date button's).
 - `useNumberFormat` **mutates its options** (lodash `defaults`): build every formatter from its own object (`use-report-formats.ts`).
-- Stop rule in the PR body's Reviewers section **before** the second pass; both bots' limits are a daily fact — record unreviewed heads in the body, and for engine-stakes PRs wait for one bot pass.
+- Stop rule in the PR body's Reviewers section **before** the second pass; both bots' limits are a daily fact — record unreviewed heads in the body, and for engine-stakes PRs wait for one bot pass. Codex's GitHub limit is account-level ("add credits"), not a rolling window; CodeRabbit's `@coderabbitai review` is a no-op while automatic reviews are on, and `full review` was ignored for 45 min under its limit. When both are out, a second `codex review` CLI pass on the final head is the review of record for UI-stakes PRs (4a, 4c).
 
 ## Known environment facts (additions)
 
