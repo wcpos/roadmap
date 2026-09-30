@@ -29,7 +29,7 @@ Every landing note, the splits (3 → 3a/3b/3c → 3d/3e; 4 → 4a/4b/4c), the C
 2. *(done — 4c merged at `10418f13b`, landing note on #332.)*
 3. *(done — 4b merged at `c14790517`.)*
 4. **Where sold:** when Paul answers — A: a small PR on `query-state-translator.ts`'s `store` rule (+ test) then the Where sold card and its two panels from 3b's first head (`git show 1c2f5a3c1:packages/core/src/screens/main/reports/cards/where-sold.tsx`); B: the card as Registers-only under All registers.
-5. **Close-out:** after 4c and Where sold: close #332 with a landing comment listing every PR and merge commit; one clause in map #282's progress paragraph after the register clause; a note on #333 that its app half is unblocked (a registered report becomes one more card through `PeriodSection`'s `cards` array and a `panelSpec`).
+5. **Close-out:** after Where sold: close #332 with a landing comment listing every PR and merge commit (#2238 `cbde29c82`, #2239 `309c5876a`, #2241 `2093e7c8a`, #2246 `15d0aca3d`, #2250 `16ead0f72`, #2254 `859dc60df`, #2256 `513ac45f8`, #2262 `0391a04a1`, #2270 `6d8d00962`, #2274 `9c7927b8a`, #2277 `c14790517`, #2283 `10418f13b`, plus Where sold's). *Done 2026-09-30 01:50Z:* the clause in map #282's progress paragraph (says Where sold waits — amend when it lands) and the unblocked note on #333 with the tile surface named.
 
 ## What every PR here needed under review (write these into any new brief)
 
