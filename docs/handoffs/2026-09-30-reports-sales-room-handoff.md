@@ -30,7 +30,7 @@ Every landing note, the splits (3 → 3a/3b/3c → 3d/3e; 4 → 4a/4b/4c), the C
 2. *(done — #2301 merged at `cd753f8a3`.)*
 3. *(done — 2b–4c and #2294 merged; see the table.)*
 4. *(done — ruling A landed as #2294; Where sold is #2301.)*
-5. **Close-out:** after Where sold: close #332 with a landing comment listing every PR and merge commit (#2238 `cbde29c82`, #2239 `309c5876a`, #2241 `2093e7c8a`, #2246 `15d0aca3d`, #2250 `16ead0f72`, #2254 `859dc60df`, #2256 `513ac45f8`, #2262 `0391a04a1`, #2270 `6d8d00962`, #2274 `9c7927b8a`, #2277 `c14790517`, #2283 `10418f13b`, #2294 `db1a82236`, #2301's); amend the #282 clause (drop "Where sold waits", count fourteen PRs). *Done 2026-09-30 01:50Z:* the clause in map #282's progress paragraph (says Where sold waits — amend when it lands) and the unblocked note on #333 with the tile surface named.
+5. *(done — #332 closed 2026-09-30 08:50Z with the full table of fourteen PRs and merge commits; #282's clause amended; #333 noted.)* Left open on purpose, recorded on #332: comparison-range refunds, the orders lane's progress-publisher gap, a live two-register proof of the Registers view.
 
 ## What every PR here needed under review (write these into any new brief)
 
