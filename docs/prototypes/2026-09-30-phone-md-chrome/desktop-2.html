@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Desktop top edge — the idioms real apps use</title>
+<style>
+  :root{--bg:#f7f8fa;--card:#fff;--border:#e3e6ea;--fg:#111827;--muted:#6b7280;--primary:#0b6bcb;--rail:#f1f3f6;--strip:#eef0f4}
+  *{box-sizing:border-box}
+  body{margin:0;background:#dfe3ea;color:var(--fg);font:14px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,"Segoe UI",system-ui,sans-serif;padding:24px 32px 64px}
+  h1{font-size:20px;margin:0 0 4px}.lede{color:var(--muted);max-width:980px;margin:0 0 20px}
+  h2{font-size:16px;margin:40px 0 4px}.why{color:var(--muted);max-width:980px;margin:0 0 14px}
+  .ref{font-size:12px;color:var(--muted);margin:-8px 0 12px}.ref b{color:var(--fg)}
+  .row{display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap}
+  .win{width:960px;height:560px;background:var(--bg);border-radius:12px;overflow:hidden;position:relative;flex:none;box-shadow:0 12px 32px rgba(0,0,0,.28),0 0 0 1px rgba(0,0,0,.12)}
+  .win.windows{border-radius:8px}
+  .cap{font-size:12px;color:var(--muted);margin:6px 0 0 2px;max-width:960px}
+  .strip{position:absolute;left:0;right:0;top:0;height:40px;z-index:2;display:flex;align-items:center;background:var(--strip)}
+  .windows .strip{height:36px}
+  .strip.clear{background:transparent}
+  .lights{position:absolute;left:13px;top:13px;display:flex;gap:8px;z-index:4}
+  .lights i{width:12px;height:12px;border-radius:50%;display:block}
+  .lights .r{background:#ff5f57}.lights .y{background:#febc2e}.lights .g{background:#28c840}
+  .wco{position:absolute;right:0;top:0;height:36px;display:flex;z-index:4}
+  .wco i{width:46px;height:36px;display:flex;align-items:center;justify-content:center;color:#111;font-size:12px}
+  .app{position:absolute;inset:0;display:flex;padding-top:40px}.windows .app{padding-top:36px}.app.flush{padding-top:0}
+  .rail{width:72px;background:var(--rail);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:10px;flex:none}
+  .rail.tall{padding-top:44px}
+  .rail .av{width:26px;height:26px;border-radius:50%;background:#c9ced6;margin-bottom:6px}
+  .rail .it{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+  .rail .it i{width:20px;height:20px;border:1.6px solid #374151;border-radius:5px;display:block}
+  .rail .it.on{background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.08)}.rail .it.on i{border-color:var(--primary)}
+  .rail .sp{flex:1}.rail .v{font-size:10px;color:var(--muted)}
+  .cols{flex:1;display:flex;min-width:0}.col{display:flex;flex-direction:column;min-width:0}
+  .products{flex:1.6;border-right:1px solid var(--border)}.cart{flex:1;background:#fff}
+  .search{height:56px;display:flex;align-items:center;gap:16px;padding:0 14px}
+  .field{flex:1;height:34px;border:1px solid var(--border);border-radius:8px;background:var(--card);display:flex;align-items:center;padding:0 12px;color:var(--muted);font-weight:400;font-size:13px;gap:8px}
+  .field kbd{margin-left:auto;font:11px ui-monospace,Menlo,monospace;color:var(--muted);border:1px solid var(--border);border-radius:4px;padding:0 5px;background:#fff}
+  .ico{width:22px;height:22px;display:inline-block;border-radius:5px;position:relative;flex:none}
+  .ico.bell{border:1.6px solid var(--fg);border-radius:9px 9px 3px 3px;width:15px;height:16px;margin:0 3px}
+  .ico.reg{border:1.6px solid var(--fg);border-radius:4px;width:17px;height:18px;margin:0 2px}
+  .ico.scan{border:1.6px solid var(--fg);border-radius:4px;width:18px;height:16px;margin:0 2px}
+  .ico.list,.ico.slid{width:18px;height:14px;background:repeating-linear-gradient(to bottom,var(--fg) 0 1.6px,transparent 1.6px 6px);margin:0 2px}
+  .chips{height:52px;display:flex;gap:8px;padding:0 14px;align-items:center;overflow:hidden;white-space:nowrap}
+  .chip{height:36px;border:1px solid var(--border);border-radius:999px;padding:0 12px;display:flex;align-items:center;gap:8px;background:var(--card);font-weight:600;font-size:13px;flex:none}
+  .chip.on{border-color:var(--primary);color:var(--primary)}
+  .grid{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:10px 14px;overflow:hidden;border-top:1px solid var(--border)}
+  .tile{background:var(--card);border:1px solid var(--border);border-radius:8px;height:150px;display:flex;flex-direction:column}
+  .tile .img{flex:1;background:#e5e7eb;border-radius:7px 7px 0 0}.tile .t{padding:8px 8px 6px;font-weight:600;font-size:13px}.tile .p{padding:0 8px 8px;font-size:13px}
+  .foot{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:13px;border-top:1px solid var(--border);background:var(--bg)}
+  .bar{height:48px;display:flex;align-items:center;gap:14px;padding:0 14px;border-bottom:1px solid var(--border);font-weight:600;font-size:15px}.bar .sp{flex:1}
+  .status{font-size:12px;color:#166534;background:#dcfce7;border-radius:999px;padding:2px 8px;font-weight:600}
+  .custrow{height:52px;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid var(--border)}
+  .custrow .sel{border:1px solid var(--border);border-radius:999px;padding:6px 12px;background:var(--card);font-weight:600}.custrow .sp{flex:1}
+  .cartbody{flex:1}
+  .total{height:56px;display:flex;align-items:center;gap:14px;padding:0 14px;border-top:1px solid var(--border);font-weight:700;font-size:17px}
+  .total .cnt{background:#e5e7eb;border-radius:999px;padding:2px 8px;font-size:12px}
+  /* strip contents */
+  .strip .center{position:absolute;left:50%;transform:translateX(-50%);width:420px;display:flex;align-items:center;gap:10px}
+  .strip .right{position:absolute;right:14px;display:flex;align-items:center;gap:14px}
+  .windows .strip .right{right:152px}
+  .strip .left{position:absolute;left:88px;display:flex;align-items:center;gap:10px;font-weight:600}
+  .windows .strip .left{left:14px}
+  .tabs{position:absolute;left:88px;right:200px;bottom:0;display:flex;align-items:flex-end;gap:2px;height:40px}
+  .windows .tabs{left:14px;right:160px;height:36px}
+  .wtab{height:32px;padding:0 14px;display:flex;align-items:center;gap:8px;border-radius:8px 8px 0 0;font-size:13px;color:var(--muted);background:transparent}
+  .wtab.on{background:var(--bg);color:var(--fg);font-weight:600;box-shadow:0 -1px 0 var(--border),1px 0 0 var(--border),-1px 0 0 var(--border)}
+  .wtab .n{background:#e5e7eb;border-radius:999px;padding:0 6px;font-size:11px}
+  .wtab .x{margin-left:4px;color:var(--muted)}
+  .wtab.add{width:32px;justify-content:center;padding:0}
+  .stat{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .stat .d{width:7px;height:7px;border-radius:50%;background:#16a34a;display:inline-block}
+  .rec{background:#e8f1fb;border:1px solid #b6d3f2;border-radius:8px;padding:10px 14px;margin:18px 0 0;max-width:980px}
+  .callout{position:absolute;background:#dc2626;color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;z-index:5}
+  a{color:var(--primary)}
+</style>
+</head>
+<body>
+<h1>The desktop's top edge — what the apps on your dock actually do with it</h1>
+<p class="lede">Nobody good leaves the title strip empty or writes a title in it. Finder, Mail, VS Code, Spotify, Slack, Linear, Figma, Arc all treat the band under the window controls as the <b>most valuable row on screen</b>: it is always visible, always at the top, and the OS already made it a drag handle. Four idioms below, each with the app that owns it, drawn on the till at lg in a mac and a Windows window. ← <a href="desktop.html">the first three</a> · <a href="index.html">phone and md</a></p>
+
+<h2>4 · Unified toolbar — the search lives in the strip</h2>
+<p class="why">macOS's own idiom since Big Sur: the toolbar and the title bar are one row (Finder, Mail, Notes, Safari), and VS Code's command centre does the same on every platform. The products search field moves <b>up into the strip</b>, centred, with the scan target and the list/sliders icons beside it; the products column then starts straight at the chip row. The strip is no longer a cost — it <b>gives back the 56 pt search row</b>, so the grid gains a row net. The cart bar stays as it is; the rail runs full height under the lights.</p>
+<p class="ref"><b>References:</b> Finder / Mail unified toolbar · VS Code command centre · Spotify's top search.</p>
+<div class="row">
+  <div>
+    <div class="win mac">
+      <div class="strip"><div class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+        <div class="center"><div class="field">⌕ Search products <kbd>⌘K</kbd></div><i class="ico scan"></i><i class="ico list"></i><i class="ico slid"></i></div></div>
+      <div class="app flush">
+        <div class="rail tall"><span class="av"></span><div class="it on"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="sp"></span><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="v">v 2.0.0</span></div>
+        <div class="cols" style="padding-top:40px">
+          <div class="col products">
+            <div class="chips"><span class="chip on">En stock ×</span><span class="chip">☆ Destacado</span><span class="chip">$ En oferta</span><span class="chip">▭ Categoría</span><span class="chip">▭ Etiqueta</span></div>
+            <div class="grid"><div class="tile"><div class="img"></div><div class="t">Affirm Water Bottle</div><div class="p">7,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Aim Analog Watch</div><div class="p">45,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Album</div><div class="p">15,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie with Logo</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Belt</div><div class="p">55,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Bolo Sport Watch</div><div class="p">49,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Cap</div><div class="p">16,00 £</div></div></div>
+            <div class="foot"><span>٪ Shop base ˅</span><span>Mostrando 16 de 244 ◌</span></div>
+          </div>
+          <div class="col cart">
+            <div class="bar"><span>Front counter</span><span class="status">Open</span><span class="sp"></span><i class="ico reg"></i><i class="ico bell"></i></div>
+            <div class="custrow"><span style="color:var(--muted)">Cliente</span><span class="sel">Invitado ˅</span><span class="sp"></span>＋ <i class="ico slid"></i></div>
+            <div class="cartbody"></div>
+            <div class="total"><span class="cnt">4</span>67,00 £<span class="sp" style="flex:1"></span>› ＋</div>
+          </div>
+        </div>
+      </div>
+      <span class="callout" style="left:110px;top:60px">search row gone: +56 pt for the grid</span>
+    </div>
+    <p class="cap">macOS: the search field centred in the strip like Finder's; scan, list and display options beside it; the rail runs to the top.</p>
+  </div>
+  <div>
+    <div class="win windows">
+      <div class="strip"><div class="left"><div class="field" style="width:360px">⌕ Search products <kbd>Ctrl K</kbd></div><i class="ico scan"></i><i class="ico list"></i><i class="ico slid"></i></div></div>
+      <div class="wco"><i>&#x2013;</i><i>&#x25A1;</i><i>&#x2715;</i></div>
+      <div class="app">
+        <div class="rail"><span class="av"></span><div class="it on"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="sp"></span><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="v">v 2.0.0</span></div>
+        <div class="cols">
+          <div class="col products">
+            <div class="chips"><span class="chip on">En stock ×</span><span class="chip">☆ Destacado</span><span class="chip">$ En oferta</span><span class="chip">▭ Categoría</span><span class="chip">▭ Etiqueta</span></div>
+            <div class="grid"><div class="tile"><div class="img"></div><div class="t">Affirm Water Bottle</div><div class="p">7,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Aim Analog Watch</div><div class="p">45,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Album</div><div class="p">15,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie with Logo</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Belt</div><div class="p">55,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Bolo Sport Watch</div><div class="p">49,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Cap</div><div class="p">16,00 £</div></div></div>
+            <div class="foot"><span>٪ Shop base ˅</span><span>Mostrando 16 de 244 ◌</span></div>
+          </div>
+          <div class="col cart">
+            <div class="bar"><span>Front counter</span><span class="status">Open</span><span class="sp"></span><i class="ico reg"></i><i class="ico bell"></i></div>
+            <div class="custrow"><span style="color:var(--muted)">Cliente</span><span class="sel">Invitado ˅</span><span class="sp"></span>＋ <i class="ico slid"></i></div>
+            <div class="cartbody"></div>
+            <div class="total"><span class="cnt">4</span>67,00 £<span class="sp" style="flex:1"></span>› ＋</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="cap">Windows: the search left-aligned in the strip (VS Code does the same), clear of the controls at the right.</p>
+  </div>
+</div>
+
+<h2>5 · Command centre — one field that finds anything, scans anything</h2>
+<p class="why">Option 4's field, but it is not the products search: it is the <b>till's</b> search. Type a name → products; a number → an order; a name with an @ → a customer; scan → the barcode lands here wherever focus was. That is what the register prototype's "scanner captured anywhere" promised and never wired (research #342), and it is the Raycast / Spotlight / VS Code ⌘K pattern every desktop user already has in their hands. The products column keeps its chips; the search row goes, as in 4. The strip's right end carries the sync/online dot and the bell, so the cart bar is the register alone.</p>
+<p class="ref"><b>References:</b> VS Code command centre · Raycast · Linear ⌘K · Spotify's search as the whole top bar.</p>
+<div class="row">
+  <div>
+    <div class="win mac">
+      <div class="strip"><div class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+        <div class="center" style="width:480px"><div class="field">⌕ Search products, orders, customers — or scan <kbd>⌘K</kbd></div></div>
+        <div class="right"><span class="stat"><span class="d"></span>Synced</span><i class="ico bell"></i></div></div>
+      <div class="app flush">
+        <div class="rail tall"><span class="av"></span><div class="it on"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="sp"></span><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="v">v 2.0.0</span></div>
+        <div class="cols" style="padding-top:40px">
+          <div class="col products">
+            <div class="chips"><span class="chip on">En stock ×</span><span class="chip">☆ Destacado</span><span class="chip">$ En oferta</span><span class="chip">▭ Categoría</span><span class="chip">▭ Etiqueta</span><span class="sp" style="flex:1"></span><i class="ico list"></i><i class="ico slid"></i></div>
+            <div class="grid"><div class="tile"><div class="img"></div><div class="t">Affirm Water Bottle</div><div class="p">7,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Aim Analog Watch</div><div class="p">45,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Album</div><div class="p">15,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie with Logo</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Belt</div><div class="p">55,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Bolo Sport Watch</div><div class="p">49,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Cap</div><div class="p">16,00 £</div></div></div>
+            <div class="foot"><span>٪ Shop base ˅</span><span>Mostrando 16 de 244 ◌</span></div>
+          </div>
+          <div class="col cart">
+            <div class="bar"><span>Front counter</span><span class="status">Open</span><span class="sp"></span><i class="ico reg"></i></div>
+            <div class="custrow"><span style="color:var(--muted)">Cliente</span><span class="sel">Invitado ˅</span><span class="sp"></span>＋ <i class="ico slid"></i></div>
+            <div class="cartbody"></div>
+            <div class="total"><span class="cnt">4</span>67,00 £<span class="sp" style="flex:1"></span>› ＋</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="cap">macOS: one field for everything, sync state and the bell at the strip's right; the cart bar is the register only.</p>
+  </div>
+  <div>
+    <div class="win windows">
+      <div class="strip"><div class="left"><div class="field" style="width:440px">⌕ Search products, orders, customers — or scan <kbd>Ctrl K</kbd></div></div><div class="right"><span class="stat"><span class="d"></span>Synced</span><i class="ico bell"></i></div></div>
+      <div class="wco"><i>&#x2013;</i><i>&#x25A1;</i><i>&#x2715;</i></div>
+      <div class="app">
+        <div class="rail"><span class="av"></span><div class="it on"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="sp"></span><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="v">v 2.0.0</span></div>
+        <div class="cols">
+          <div class="col products">
+            <div class="chips"><span class="chip on">En stock ×</span><span class="chip">☆ Destacado</span><span class="chip">$ En oferta</span><span class="chip">▭ Categoría</span><span class="chip">▭ Etiqueta</span><span class="sp" style="flex:1"></span><i class="ico list"></i><i class="ico slid"></i></div>
+            <div class="grid"><div class="tile"><div class="img"></div><div class="t">Affirm Water Bottle</div><div class="p">7,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Aim Analog Watch</div><div class="p">45,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Album</div><div class="p">15,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie with Logo</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Belt</div><div class="p">55,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Bolo Sport Watch</div><div class="p">49,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Cap</div><div class="p">16,00 £</div></div></div>
+            <div class="foot"><span>٪ Shop base ˅</span><span>Mostrando 16 de 244 ◌</span></div>
+          </div>
+          <div class="col cart">
+            <div class="bar"><span>Front counter</span><span class="status">Open</span><span class="sp"></span><i class="ico reg"></i></div>
+            <div class="custrow"><span style="color:var(--muted)">Cliente</span><span class="sel">Invitado ˅</span><span class="sp"></span>＋ <i class="ico slid"></i></div>
+            <div class="cartbody"></div>
+            <div class="total"><span class="cnt">4</span>67,00 £<span class="sp" style="flex:1"></span>› ＋</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="cap">Windows: same, the field and the right cluster both clear of the controls.</p>
+  </div>
+</div>
+
+<h2>6 · Open orders as window tabs</h2>
+<p class="why">Figma, Arc, every browser: the strip is a <b>tab strip</b>. The till's open orders — the customer who stepped away, the table still eating — become tabs across the top, each with its line count; <b>+</b> starts a new one. The cart column then shows one order and loses its own open-orders control (the prototype's takeover, decision C26, becomes the strip). It is the most desktop-native of the six and the only one that changes a workflow rather than a row: switching orders is a click at the top, visible all day, with no menu.</p>
+<p class="ref"><b>References:</b> Figma file tabs · Arc / Chrome tab strip · Things and Craft's window tabs on macOS.</p>
+<div class="row">
+  <div>
+    <div class="win mac">
+      <div class="strip"><div class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+        <div class="tabs"><div class="wtab on">Invitado <span class="n">4</span><span class="x">×</span></div><div class="wtab">Mesa 3 · Ana <span class="n">2</span></div><div class="wtab">#108349 <span class="n">1</span></div><div class="wtab add">＋</div></div>
+        <div class="right"><span class="stat"><span class="d"></span>Synced</span><i class="ico bell"></i></div></div>
+      <div class="app flush">
+        <div class="rail tall"><span class="av"></span><div class="it on"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="sp"></span><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="v">v 2.0.0</span></div>
+        <div class="cols" style="padding-top:40px">
+          <div class="col products">
+            <div class="search"><div class="field">⌕ Search products</div><i class="ico scan"></i><i class="ico list"></i><i class="ico slid"></i></div>
+            <div class="chips"><span class="chip on">En stock ×</span><span class="chip">☆ Destacado</span><span class="chip">$ En oferta</span><span class="chip">▭ Categoría</span></div>
+            <div class="grid"><div class="tile"><div class="img"></div><div class="t">Affirm Water Bottle</div><div class="p">7,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Aim Analog Watch</div><div class="p">45,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Album</div><div class="p">15,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie with Logo</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Belt</div><div class="p">55,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Bolo Sport Watch</div><div class="p">49,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Cap</div><div class="p">16,00 £</div></div></div>
+            <div class="foot"><span>٪ Shop base ˅</span><span>Mostrando 16 de 244 ◌</span></div>
+          </div>
+          <div class="col cart">
+            <div class="bar"><span>Front counter</span><span class="status">Open</span><span class="sp"></span><i class="ico reg"></i></div>
+            <div class="custrow"><span style="color:var(--muted)">Cliente</span><span class="sel">Invitado ˅</span><span class="sp"></span>＋ <i class="ico slid"></i></div>
+            <div class="cartbody"></div>
+            <div class="total">67,00 £<span class="sp" style="flex:1"></span>› </div>
+          </div>
+        </div>
+      </div>
+      <span class="callout" style="left:780px;top:520px">count + open-orders control leave the cart</span>
+    </div>
+    <p class="cap">macOS: three open orders as tabs beside the lights; the cart's bottom row is just the total and Checkout.</p>
+  </div>
+  <div>
+    <div class="win windows">
+      <div class="strip"><div class="tabs"><div class="wtab on">Invitado <span class="n">4</span><span class="x">×</span></div><div class="wtab">Mesa 3 · Ana <span class="n">2</span></div><div class="wtab">#108349 <span class="n">1</span></div><div class="wtab add">＋</div></div><div class="right"><span class="stat"><span class="d"></span>Synced</span><i class="ico bell"></i></div></div>
+      <div class="wco"><i>&#x2013;</i><i>&#x25A1;</i><i>&#x2715;</i></div>
+      <div class="app">
+        <div class="rail"><span class="av"></span><div class="it on"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="sp"></span><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="v">v 2.0.0</span></div>
+        <div class="cols">
+          <div class="col products">
+            <div class="search"><div class="field">⌕ Search products</div><i class="ico scan"></i><i class="ico list"></i><i class="ico slid"></i></div>
+            <div class="chips"><span class="chip on">En stock ×</span><span class="chip">☆ Destacado</span><span class="chip">$ En oferta</span><span class="chip">▭ Categoría</span></div>
+            <div class="grid"><div class="tile"><div class="img"></div><div class="t">Affirm Water Bottle</div><div class="p">7,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Aim Analog Watch</div><div class="p">45,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Album</div><div class="p">15,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie with Logo</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Belt</div><div class="p">55,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Bolo Sport Watch</div><div class="p">49,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Cap</div><div class="p">16,00 £</div></div></div>
+            <div class="foot"><span>٪ Shop base ˅</span><span>Mostrando 16 de 244 ◌</span></div>
+          </div>
+          <div class="col cart">
+            <div class="bar"><span>Front counter</span><span class="status">Open</span><span class="sp"></span><i class="ico reg"></i></div>
+            <div class="custrow"><span style="color:var(--muted)">Cliente</span><span class="sel">Invitado ˅</span><span class="sp"></span>＋ <i class="ico slid"></i></div>
+            <div class="cartbody"></div>
+            <div class="total">67,00 £<span class="sp" style="flex:1"></span>› </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="cap">Windows: tabs from the left edge, the controls' 138 px kept clear at the right.</p>
+  </div>
+</div>
+
+<h2>7 · The strip is the register</h2>
+<p class="why">Xcode's activity bar and Slack's workspace header: the strip carries the <b>state of the thing you are running</b>. The register bar — <i>Front counter · Open · £480.80 in drawer</i>, the drawer icon, the bell, the sync dot — moves <b>up into the strip</b>, full width, and the cart column starts directly with the customer row. The register was already the E ruling's "one bar above the cart"; this just says the window's top edge <i>is</i> that bar, which is what a cashier glances at all day. Nothing new is invented; one row is removed from the cart column and the strip is the most important row on screen.</p>
+<p class="ref"><b>References:</b> Xcode's activity viewer · Slack's workspace bar · Discord's channel header in the title strip · Linear's breadcrumb strip.</p>
+<div class="row">
+  <div>
+    <div class="win mac">
+      <div class="strip"><div class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+        <div class="left"><i class="ico reg"></i><span>Front counter</span><span class="status">Open</span><span style="color:var(--muted);font-weight:500">480,80 £ in drawer</span></div>
+        <div class="right"><span class="stat"><span class="d"></span>Synced</span><i class="ico bell"></i></div></div>
+      <div class="app flush">
+        <div class="rail tall"><span class="av"></span><div class="it on"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="sp"></span><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="v">v 2.0.0</span></div>
+        <div class="cols" style="padding-top:40px">
+          <div class="col products">
+            <div class="search"><div class="field">⌕ Search products</div><i class="ico scan"></i><i class="ico list"></i><i class="ico slid"></i></div>
+            <div class="chips"><span class="chip on">En stock ×</span><span class="chip">☆ Destacado</span><span class="chip">$ En oferta</span><span class="chip">▭ Categoría</span></div>
+            <div class="grid"><div class="tile"><div class="img"></div><div class="t">Affirm Water Bottle</div><div class="p">7,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Aim Analog Watch</div><div class="p">45,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Album</div><div class="p">15,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie with Logo</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Belt</div><div class="p">55,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Bolo Sport Watch</div><div class="p">49,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Cap</div><div class="p">16,00 £</div></div></div>
+            <div class="foot"><span>٪ Shop base ˅</span><span>Mostrando 16 de 244 ◌</span></div>
+          </div>
+          <div class="col cart">
+            <div class="custrow"><span style="color:var(--muted)">Cliente</span><span class="sel">Invitado ˅</span><span class="sp"></span>＋ <i class="ico slid"></i></div>
+            <div class="cartbody"></div>
+            <div class="total"><span class="cnt">4</span>67,00 £<span class="sp" style="flex:1"></span>› ＋</div>
+          </div>
+        </div>
+      </div>
+      <span class="callout" style="left:760px;top:56px">cart bar gone: +48 pt for the lines</span>
+    </div>
+    <p class="cap">macOS: the register bar is the window's top edge; the cart column starts with the customer row.</p>
+  </div>
+  <div>
+    <div class="win windows">
+      <div class="strip"><div class="left"><i class="ico reg"></i><span>Front counter</span><span class="status">Open</span><span style="color:var(--muted);font-weight:500">480,80 £ in drawer</span></div><div class="right"><span class="stat"><span class="d"></span>Synced</span><i class="ico bell"></i></div></div>
+      <div class="wco"><i>&#x2013;</i><i>&#x25A1;</i><i>&#x2715;</i></div>
+      <div class="app">
+        <div class="rail"><span class="av"></span><div class="it on"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="sp"></span><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="v">v 2.0.0</span></div>
+        <div class="cols">
+          <div class="col products">
+            <div class="search"><div class="field">⌕ Search products</div><i class="ico scan"></i><i class="ico list"></i><i class="ico slid"></i></div>
+            <div class="chips"><span class="chip on">En stock ×</span><span class="chip">☆ Destacado</span><span class="chip">$ En oferta</span><span class="chip">▭ Categoría</span></div>
+            <div class="grid"><div class="tile"><div class="img"></div><div class="t">Affirm Water Bottle</div><div class="p">7,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Aim Analog Watch</div><div class="p">45,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Album</div><div class="p">15,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie with Logo</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Belt</div><div class="p">55,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Bolo Sport Watch</div><div class="p">49,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Cap</div><div class="p">16,00 £</div></div></div>
+            <div class="foot"><span>٪ Shop base ˅</span><span>Mostrando 16 de 244 ◌</span></div>
+          </div>
+          <div class="col cart">
+            <div class="custrow"><span style="color:var(--muted)">Cliente</span><span class="sel">Invitado ˅</span><span class="sp"></span>＋ <i class="ico slid"></i></div>
+            <div class="cartbody"></div>
+            <div class="total"><span class="cnt">4</span>67,00 £<span class="sp" style="flex:1"></span>› ＋</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="cap">Windows: the register left, sync and bell right, both inside the strip and clear of the controls.</p>
+  </div>
+</div>
+
+<div class="rec"><b>Where I land now: 7, with 5's field as the next step.</b> The strip should carry the thing a cashier glances at all day — the register and its state — because that is what the top edge is for in every serious desktop app, and it <i>removes</i> a row from the cart instead of adding a band. It changes nothing about the register model (E is still "one bar above the cart"; the bar just becomes the window's edge) and it is one component moving up, not a new one. 5 is the bigger idea — one field that finds a product, an order or a customer and catches every scan — and it belongs in the same strip on the left once the register sits there; do it second, as the search work it is. 4 alone under-uses the strip (it is 5 without the ambition); 6 is a real workflow change (open orders as tabs) that deserves its own decision on the open-orders prototype, not a ride on this one. On the web app and the tablet, where there is no strip, 7 is simply the bar it already is — so nothing forks between platforms; the desktop just gets its bar at the very top.</div>
+</body>
+</html>
