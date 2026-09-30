@@ -1,6 +1,6 @@
 # Settings switch — the captures walk (2026-09-30)
 
-Screen switch 10 (wcpos/roadmap#398, wcpos/monorepo#2343 at `c7927075b`), shot by `apps/main/e2e/settings-captures.spec.ts` against a local Metro of the branch and dev-next: 12 device × theme × scale combos, all passing, 102 PNGs. These fourteen are the representative set; the rest are reproducible from the spec (`CAPTURES=1`). The store's locale is Spanish, so labels read in Spanish; the new keys (Saved, the Restore title, the address link) show in English until the translation bundle carries them.
+Screen switch 10 (wcpos/roadmap#398, wcpos/monorepo#2343 at `86ccb41b9` (the independent-review fix head; `e726820b4` after it touches only Health's rail)), shot by `apps/main/e2e/settings-captures.spec.ts` against a local Metro of the branch and dev-next: 12 device × theme × scale combos, all passing, 102 PNGs. These fourteen are the representative set; the rest are reproducible from the spec (`CAPTURES=1`). The store's locale is Spanish, so labels read in Spanish; the new keys (Saved, the Restore title, the address link) show in English until the translation bundle carries them.
 
 | File | What it shows |
 |---|---|
