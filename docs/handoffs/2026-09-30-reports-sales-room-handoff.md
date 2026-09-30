@@ -15,21 +15,22 @@ Continues `2026-09-29-reports-sales-room-handoff.md`. Everything below is commit
 | 4a margin columns, Brands card, four states, rollup — #2274 | merged (review of record: `codex review` on the diff; both bots exhausted) | `9c7927b8a` |
 | 4b `refunds-browse` lane in the sync engine — #2277 | merged (CodeRabbit's full-diff pass at 23:14Z + two `codex review` passes) | `c14790517` |
 | 4c Refunds by refund date + margin netting — #2283 | merged 01:40Z (both bots limited 23:50–01:31Z, `full review` ignored; review of record a second `codex review` on the final head, no defects, as on 4a) | `10418f13b` |
-| Where sold card + Channels / Registers panel | **waits on Paul's ruling** (below); its `channels` / `registers` aggregations are on `next`, tested | |
+| Store scope, ruling A — #2294 | merged 07:23Z (`storeScope: 'sales'` on the two Reports bindings; the no-`store` ranged lane as a superset that proves completeness, never a count; refunds of a local non-POS parent). Review: CLI pass, both bots capped | `db1a82236` |
+| Where sold + Channels / Registers panels — #2301 | **open**, head `3ea2118e8` (rebased on #2294; two CLI-review P2 taken: the Registers view names the unstamped remainder Online / No register so parts sum to the figure; the panel waits for register names); second CLI pass clean; walked (captures `where-sold/`) | |
 
 Every landing note, the splits (3 → 3a/3b/3c → 3d/3e; 4 → 4a/4b/4c), the COGS proof and the refunds-route probe are comments on #332. Captures per PR are under `docs/prototypes/2026-09-29-reports-shell-captures/{cards,panels,margin}/`.
 
-## Decision waiting on Paul (posted on #332, 2026-09-29 ~15:40Z)
+## Decision — ruled A (Paul, 2026-09-30 "do as you recommend"; recorded on #332)
 
 **Should the Sales room's store scope include the store's online orders?** The Sales query is POS-only by construction (`store` matches `_pos_store` or `created_via = woocommerce-pos`), so "Where sold: In store · Online" can never show Online — the design call PR 1's landing note deferred. **A** (recommended): the store's sales include the site's online orders (one translator rule; multi-store shows the online leg under every store); Where sold returns as In store · Online with Registers under All registers. **B**: the room stays the till's; Where sold becomes Registers-only. One answer, A or B; everything else proceeds.
 
 ## To resume
 
-1. `git -C /Users/kilbot/Projects/monorepo-v2 fetch origin next`. No reports worktree or branch remains (4c's removed; PR 1's leftover `feat/reports-sales-1` deleted too).
-2. *(done — 4c merged at `10418f13b`, landing note on #332.)*
-3. *(done — 4b merged at `c14790517`.)*
-4. **Where sold:** when Paul answers — A: a small PR on `query-state-translator.ts`'s `store` rule (+ test) then the Where sold card and its two panels from 3b's first head (`git show 1c2f5a3c1:packages/core/src/screens/main/reports/cards/where-sold.tsx`); B: the card as Registers-only under All registers.
-5. **Close-out:** after Where sold: close #332 with a landing comment listing every PR and merge commit (#2238 `cbde29c82`, #2239 `309c5876a`, #2241 `2093e7c8a`, #2246 `15d0aca3d`, #2250 `16ead0f72`, #2254 `859dc60df`, #2256 `513ac45f8`, #2262 `0391a04a1`, #2270 `6d8d00962`, #2274 `9c7927b8a`, #2277 `c14790517`, #2283 `10418f13b`, plus Where sold's). *Done 2026-09-30 01:50Z:* the clause in map #282's progress paragraph (says Where sold waits — amend when it lands) and the unblocked note on #333 with the tile surface named.
+1. `git -C /Users/kilbot/Projects/monorepo-v2 fetch origin next`. The only reports worktree is `/Users/kilbot/Projects/monorepo-v2/.claude/worktrees/reports-where-sold` (branch `feat/reports-where-sold`, clean, pushed).
+2. **#2301 (Where sold):** own to merge — checks were running at 08:20Z; both bots capped for the day (Codex account-level, CodeRabbit Fair Usage), the second CLI pass on `3ea2118e8` is the review of record. `gh pr merge 2301 -R wcpos/monorepo --merge --delete-branch`, landing note on #332, rm -rf the worktree, prune, delete the branch.
+3. *(done — 2b–4c and #2294 merged; see the table.)*
+4. *(done — ruling A landed as #2294; Where sold is #2301.)*
+5. **Close-out:** after Where sold: close #332 with a landing comment listing every PR and merge commit (#2238 `cbde29c82`, #2239 `309c5876a`, #2241 `2093e7c8a`, #2246 `15d0aca3d`, #2250 `16ead0f72`, #2254 `859dc60df`, #2256 `513ac45f8`, #2262 `0391a04a1`, #2270 `6d8d00962`, #2274 `9c7927b8a`, #2277 `c14790517`, #2283 `10418f13b`, #2294 `db1a82236`, #2301's); amend the #282 clause (drop "Where sold waits", count fourteen PRs). *Done 2026-09-30 01:50Z:* the clause in map #282's progress paragraph (says Where sold waits — amend when it lands) and the unblocked note on #333 with the tile surface named.
 
 ## What every PR here needed under review (write these into any new brief)
 
