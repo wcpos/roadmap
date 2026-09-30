@@ -14,7 +14,7 @@ Continues `2026-09-29-reports-sales-room-handoff.md`. Everything below is commit
 | 3e Print through the plugin's `report` templates — #2270 | merged | `6d8d00962` |
 | 4a margin columns, Brands card, four states, rollup — #2274 | merged (review of record: `codex review` on the diff; both bots exhausted) | `9c7927b8a` |
 | 4b `refunds-browse` lane in the sync engine — #2277 | merged (CodeRabbit's full-diff pass at 23:14Z + two `codex review` passes) | `c14790517` |
-| 4c Refunds by refund date + margin netting — #2283 | **open, waits for a bot pass**; walked on dev-next; gates green | head `c010c2522` |
+| 4c Refunds by refund date + margin netting — #2283 | **open, waits for a bot pass**; walked on dev-next; a `codex review` pass's four P2 fixed in `eb201c5`; gates green | head `eb201c5bb` |
 | Where sold card + Channels / Registers panel | **waits on Paul's ruling** (below); its `channels` / `registers` aggregations are on `next`, tested | |
 
 Every landing note, the splits (3 → 3a/3b/3c → 3d/3e; 4 → 4a/4b/4c), the COGS proof and the refunds-route probe are comments on #332. Captures per PR are under `docs/prototypes/2026-09-29-reports-shell-captures/{cards,panels,margin}/`.
