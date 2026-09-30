@@ -16,7 +16,7 @@ Continues `2026-09-29-reports-sales-room-handoff.md`. Everything below is commit
 | 4b `refunds-browse` lane in the sync engine — #2277 | merged (CodeRabbit's full-diff pass at 23:14Z + two `codex review` passes) | `c14790517` |
 | 4c Refunds by refund date + margin netting — #2283 | merged 01:40Z (both bots limited 23:50–01:31Z, `full review` ignored; review of record a second `codex review` on the final head, no defects, as on 4a) | `10418f13b` |
 | Store scope, ruling A — #2294 | merged 07:23Z (`storeScope: 'sales'` on the two Reports bindings; the no-`store` ranged lane as a superset that proves completeness, never a count; refunds of a local non-POS parent). Review: CLI pass, both bots capped | `db1a82236` |
-| Where sold + Channels / Registers panels — #2301 | **open**, head `3ea2118e8` (rebased on #2294; two CLI-review P2 taken: the Registers view names the unstamped remainder Online / No register so parts sum to the figure; the panel waits for register names); second CLI pass clean; walked (captures `where-sold/`) | |
+| Where sold + Channels / Registers panels — #2301 | merged 08:45Z (two CLI-review P2 taken: the Registers view names the unstamped remainder Online / No register so parts sum to the figure; the panel waits for register names; second CLI pass clean; walked, captures `where-sold/`) | `cd753f8a3` |
 
 Every landing note, the splits (3 → 3a/3b/3c → 3d/3e; 4 → 4a/4b/4c), the COGS proof and the refunds-route probe are comments on #332. Captures per PR are under `docs/prototypes/2026-09-29-reports-shell-captures/{cards,panels,margin}/`.
 
@@ -26,8 +26,8 @@ Every landing note, the splits (3 → 3a/3b/3c → 3d/3e; 4 → 4a/4b/4c), the C
 
 ## To resume
 
-1. `git -C /Users/kilbot/Projects/monorepo-v2 fetch origin next`. The only reports worktree is `/Users/kilbot/Projects/monorepo-v2/.claude/worktrees/reports-where-sold` (branch `feat/reports-where-sold`, clean, pushed).
-2. **#2301 (Where sold):** own to merge — checks were running at 08:20Z; both bots capped for the day (Codex account-level, CodeRabbit Fair Usage), the second CLI pass on `3ea2118e8` is the review of record. `gh pr merge 2301 -R wcpos/monorepo --merge --delete-branch`, landing note on #332, rm -rf the worktree, prune, delete the branch.
+1. **Nothing is left on this ticket.** #332 is closed (landing comment 2026-09-30 08:50Z lists all fourteen PRs and merge commits); the #282 clause is final; #333 carries the unblocked note. No reports worktree or branch remains.
+2. *(done — #2301 merged at `cd753f8a3`.)*
 3. *(done — 2b–4c and #2294 merged; see the table.)*
 4. *(done — ruling A landed as #2294; Where sold is #2301.)*
 5. **Close-out:** after Where sold: close #332 with a landing comment listing every PR and merge commit (#2238 `cbde29c82`, #2239 `309c5876a`, #2241 `2093e7c8a`, #2246 `15d0aca3d`, #2250 `16ead0f72`, #2254 `859dc60df`, #2256 `513ac45f8`, #2262 `0391a04a1`, #2270 `6d8d00962`, #2274 `9c7927b8a`, #2277 `c14790517`, #2283 `10418f13b`, #2294 `db1a82236`, #2301's); amend the #282 clause (drop "Where sold waits", count fourteen PRs). *Done 2026-09-30 01:50Z:* the clause in map #282's progress paragraph (says Where sold waits — amend when it lands) and the unblocked note on #333 with the tile surface named.
