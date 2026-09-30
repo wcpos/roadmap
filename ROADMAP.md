@@ -15,7 +15,7 @@ Status mapping: **Expedite/Now** = current milestone (In Progress), **Next** = U
 
 Critical issues that jump the queue (`priority/P0`):
 - Org security P0s (leaked credential removal, TLS validation) — ship immediately, not release-gated
-- Fiscal compliance Phase 1 (NF525/VeriFactu) — milestone **Compliance / Fiscalization**, due 2026-12-31 (VeriFactu deadline Jan 2027)
+- Fiscal compliance Phase 1 (NF525/VeriFactu) — release **v2.1.0** (wcpos/roadmap#225), due 2026-12-31 (VeriFactu deadline Jan 2027). The plugin repos still carry it as the `Compliance / Fiscalization` milestone until the sync heals them
 
 ## Now
 
@@ -31,9 +31,14 @@ WooCommerce 9.0. Release issue: wcpos/roadmap#195.
 
 ## Next
 
-**v1.12.0 — Fiscal compliance** (wcpos/roadmap#225) and
-**v1.13.0 — Works with your other plugins** (wcpos/roadmap#226): numbered as
-planned; they will be renumbered to 2.1 / 2.2 when they are scheduled.
+**v2.1.0 — Fiscal compliance** (wcpos/roadmap#225) · due 2026-12-31: the first
+minor after WCPOS 2.0. Signed and hash-chained records, gap-free numbering, official
+closure reports, audit-file export and tax-authority reporting, France and Spain first,
+built on the fiscal groundwork 2.0 ships. Renumbered from v1.12.0 on 2026-09-30.
+
+**v2.2.0 — Works with your other plugins** (wcpos/roadmap#226) · no date yet:
+loyalty, gift cards, subscriptions, email lists and pricing rules at the till.
+Renumbered from v1.13.0 on 2026-09-30; it follows 2.1.0.
 
 ## Later
 
