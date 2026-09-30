@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Personality — six directions for the register (board)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Fraunces:ital,opsz,wght@0,9..144,600;1,9..144,600&family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@500;600;700&family=JetBrains+Mono:wght@500;700&family=Manrope:wght@500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;padding:24px}
+h1{font-size:20px;margin:0 0 4px} .lead{color:#374151;margin:0 0 20px;max-width:110ch;font-size:13px;line-height:1.5}
+.board{display:grid;grid-template-columns:repeat(2,720px);gap:28px}
+.panel .cap{margin:0 0 8px;font-size:13px;color:#374151;line-height:1.45;max-width:720px} .panel .cap b{font-size:15px;color:#111;display:block} .panel .cap .n{font-weight:700;color:#6b7280;margin-right:6px} .panel .cap em{color:#111;font-style:normal}
+svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+/* the register, in miniature; every theme only moves the variables and a few named seams */
+.frame{--r:8px;--font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;--display:var(--font);--mono:var(--font);
+  --bg:oklch(0.975 0.004 250);--fg:oklch(0.22 0.02 250);--card:#fff;--muted:oklch(0.955 0.006 250);--muted-fg:oklch(0.50 0.02 250);--border:oklch(0.90 0.008 250);
+  --primary:oklch(0.50 0.18 240);--primary-fg:#fff;--destructive:oklch(0.55 0.22 25);--tile-bg:var(--muted);
+  width:720px;height:500px;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.35;border:1px solid #c9ced6;border-radius:12px;overflow:hidden;display:flex;position:relative;font-variant-numeric:tabular-nums}
+.prod{flex:1;min-width:0;padding:14px;display:flex;flex-direction:column;gap:12px}
+.search{height:44px;border:1px solid var(--border);border-radius:var(--r);background:var(--card);display:flex;align-items:center;gap:10px;padding:0 14px;color:var(--muted-fg)}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tile{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px;display:flex;flex-direction:column;gap:6px}
+.tile .img{height:72px;border-radius:calc(var(--r) - 2px);background:var(--tile-bg);display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--muted-fg)}
+.tile .n{font-weight:500} .tile .p{color:var(--muted-fg);font-family:var(--mono)}
+.cart{width:300px;flex:none;background:var(--card);border-left:1px solid var(--border);display:flex;flex-direction:column}
+.crow{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);color:var(--muted-fg)} .chip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 10px;border-radius:999px;border:1px solid var(--border);color:var(--fg);font-weight:500}
+.line{display:grid;grid-template-columns:30px 1fr auto;gap:10px;padding:8px 12px;align-items:center;border-bottom:1px solid var(--border)} .line .q{height:30px;border:1px solid var(--border);border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-weight:600} .line .t{font-weight:600;font-family:var(--mono)} .line .sub{display:block;color:var(--muted-fg);font-size:12px}
+.lines{flex:1}
+.totals{padding:10px 12px 6px;border-top:1px solid var(--border)} .totals div{display:flex;justify-content:space-between;padding:2px 0;color:var(--muted-fg)} .totals .big{color:var(--fg);font-size:22px;font-weight:700;padding-top:6px;font-family:var(--display)} .totals .big span:last-child{font-family:var(--mono)}
+.cf{display:flex;gap:8px;padding:6px 12px 12px}
+.btn{height:52px;border:1px solid var(--border);border-radius:var(--r);padding:0 18px;display:inline-flex;align-items:center;justify-content:center;font-weight:600;gap:8px;background:var(--card);font-size:15px;flex:none}
+.btn.p{background:var(--primary);color:var(--primary-fg);border-color:transparent;flex:1} .btn.vd{color:var(--destructive);border-color:color-mix(in oklch,var(--destructive) 55%,transparent)}
+.copy{position:absolute;left:14px;bottom:12px;right:330px;color:var(--muted-fg);font-size:12px;line-height:1.4}
+
+/* 01 paper till */
+.t-paper{--bg:#f3ede2;--card:#fbf7ef;--fg:#211b14;--muted:#ebe3d3;--muted-fg:#7a6e5c;--border:#d8cdb8;--primary:#211b14;--primary-fg:#fbf7ef;--destructive:#b0432b;--r:4px;--font:'DM Sans',sans-serif;--display:'Instrument Serif',serif;--mono:'JetBrains Mono',monospace;--tile-bg:#efe6d4}
+.t-paper .cart{background:#fffdf8;border-left:0;margin:12px 12px 12px 0;border-radius:2px;box-shadow:0 1px 0 #d8cdb8,0 6px 18px -8px rgba(60,40,10,.25);position:relative}
+.t-paper .cart::before{content:"";position:absolute;left:0;right:0;top:-6px;height:6px;background:radial-gradient(circle at 6px 6px,transparent 5px,#fffdf8 5.5px) 0 0/12px 6px}
+.t-paper .crow{font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-size:11px;border-bottom:1px dashed var(--border)}
+.t-paper .line{border-bottom:1px dashed var(--border);font-family:var(--mono);font-size:13px} .t-paper .line .q{border-radius:2px}
+.t-paper .totals{border-top:1px dashed var(--border);font-family:var(--mono);font-size:13px} .t-paper .totals .big{font-family:var(--display);font-size:28px;font-weight:400;font-style:italic}
+.t-paper .tile .img{font-family:var(--display);font-style:italic;color:#211b14;font-size:30px;border-radius:50%;width:56px;height:56px;margin:4px auto 0}
+.t-paper .btn.p{border-radius:2px} .t-paper .btn.vd{border-radius:2px}
+/* 02 bold money */
+.t-bold{--bg:#fff;--card:#fff;--fg:#0a0a0a;--muted:#f1f1f1;--muted-fg:#6b6b6b;--border:#e6e6e6;--primary:#0a0a0a;--primary-fg:#c9f542;--destructive:#e0245e;--r:18px;--font:'Space Grotesk',sans-serif;--display:'Space Grotesk',sans-serif;--tile-bg:#f1f1f1}
+.t-bold .search{border-radius:999px;background:var(--muted);border-color:transparent}
+.t-bold .tile{border:0;background:var(--muted);border-radius:20px} .t-bold .tile .img{background:#e4e4e4;border-radius:14px} .t-bold .tile .p{color:var(--fg);font-weight:700;background:#c9f542;align-self:flex-start;padding:2px 8px;border-radius:999px;font-size:12px}
+.t-bold .cart{border-left:0;background:#fafafa} .t-bold .line{border-bottom:0} .t-bold .line .q{border-radius:999px;background:#fff;border:0}
+.t-bold .totals{border-top:0;padding-top:0} .t-bold .totals .big{font-size:44px;letter-spacing:-.03em;font-weight:700;line-height:1;display:block;padding-top:10px} .t-bold .totals .big span:first-child{display:block;font-size:12px;font-weight:500;color:var(--muted-fg);letter-spacing:0;text-transform:uppercase;margin-bottom:6px}
+.t-bold .btn{border-radius:999px;height:56px;font-weight:700} .t-bold .btn.p{background:#0a0a0a;color:#fff} .t-bold .btn.vd{border-color:transparent;background:#f1f1f1;color:var(--destructive)}
+/* 03 warm shop */
+.t-warm{--bg:#f6f3ee;--card:#fffdfa;--fg:#2a2420;--muted:#efe9e1;--muted-fg:#857a70;--border:#e3dbd0;--primary:#8a4b34;--primary-fg:#fff8f3;--destructive:#a8462e;--r:12px;--font:'DM Sans',sans-serif;--display:'Fraunces',serif;--tile-bg:#efe9e1}
+.t-warm .tile .img{font-family:var(--display);font-style:italic;font-size:20px;color:#fff8f3} .t-warm .tile:nth-child(3n+1) .img{background:#b9a68c} .t-warm .tile:nth-child(3n+2) .img{background:#9aa88e} .t-warm .tile:nth-child(3n) .img{background:#c98a6b}
+.t-warm .totals .big{font-family:var(--display);font-style:italic;font-weight:600;font-size:26px} .t-warm .totals .big span:last-child{font-family:var(--display)}
+.t-warm .btn{border-radius:999px} .t-warm .btn.p{letter-spacing:.01em}
+/* 04 market */
+.t-market{--bg:#fffcf5;--card:#fff;--fg:#1d1a2e;--muted:#f6f1e6;--muted-fg:#6f6a80;--border:#ece6da;--primary:#ff5c39;--primary-fg:#fff;--destructive:#d6336c;--r:16px;--font:'Manrope',sans-serif;--display:'Manrope',sans-serif;--tile-bg:#f6f1e6}
+.t-market .tile{border:0;box-shadow:0 1px 2px rgba(29,26,46,.06),0 0 0 1px rgba(29,26,46,.04)} .t-market .tile .img{font-size:32px}
+.t-market .tile:nth-child(1) .img,.t-market .tile:nth-child(4) .img{background:#ffe1c9} .t-market .tile:nth-child(2) .img,.t-market .tile:nth-child(5) .img{background:#fff0a8} .t-market .tile:nth-child(3) .img{background:#d5f0da} .t-market .tile:nth-child(6) .img{background:#e6dcfa}
+.t-market .tile .n{font-weight:700} .t-market .search{border-radius:999px;border-width:2px;border-color:#1d1a2e}
+.t-market .chip{border-width:2px;border-color:#1d1a2e;font-weight:700}
+.t-market .totals .big{font-weight:800;font-size:24px} .t-market .btn{border-radius:999px;font-weight:800;height:56px} .t-market .btn.p{box-shadow:0 4px 0 #c93f21} .t-market .btn.vd{border:2px solid #1d1a2e;color:#1d1a2e}
+.t-market .copy{font-weight:700;color:#1d1a2e}
+/* 05 dark stage */
+.t-stage{--bg:#0e0f13;--card:#15171d;--fg:#eceef3;--muted:#1e2129;--muted-fg:#8b90a0;--border:#262a34;--primary:#7c7cff;--primary-fg:#fff;--destructive:#ff6b6b;--r:10px;--font:'Inter Tight',sans-serif;--display:'Inter Tight',sans-serif;--tile-bg:#1e2129}
+.t-stage .tile{background:linear-gradient(180deg,#1a1d25,#15171d)} .t-stage .tile .img{background:radial-gradient(120% 80% at 50% 0%,#2b2f3d,#1a1d25);color:#5d6275}
+.t-stage .cart{border-left-color:#262a34;background:#111318}
+.t-stage .totals .big{font-size:30px;letter-spacing:-.02em;color:#fff;text-shadow:0 0 24px rgba(124,124,255,.45)}
+.t-stage .btn.p{background:linear-gradient(135deg,#7c7cff,#a06bff);box-shadow:0 0 0 1px rgba(160,107,255,.5),0 8px 24px -8px rgba(124,124,255,.8)} .t-stage .btn.vd{background:#15171d}
+.t-stage .search{background:#15171d}
+/* 06 woo */
+.t-woo{--bg:#faf8fd;--card:#fff;--fg:#271c3b;--muted:#f1ecf8;--muted-fg:#6e6484;--border:#e5dff0;--primary:#7f54b3;--primary-fg:#fff;--destructive:#c9364c;--r:10px;--font:'DM Sans',sans-serif;--display:'Bricolage Grotesque',sans-serif;--tile-bg:#f1ecf8}
+.t-woo .tile .img{color:#7f54b3;background:linear-gradient(135deg,#f1ecf8,#e8dff5)} .t-woo .tile .n{font-family:var(--display);font-weight:700}
+.t-woo .totals .big{font-family:var(--display);font-weight:800;font-size:26px;color:#7f54b3} .t-woo .totals .big span:last-child{font-family:var(--display)}
+.t-woo .search{border-color:#e5dff0;box-shadow:0 1px 2px rgba(127,84,179,.08)} .t-woo .btn.p{box-shadow:0 6px 16px -8px rgba(127,84,179,.7)}
+.t-woo .chip{background:#f1ecf8;border-color:transparent;color:#7f54b3}
+</style>
+</head>
+<body>
+<h1>Personality — six directions for the same register</h1>
+<p class="lead">Paul: <em>"I like the design. I just find it uninspired, boring, dull."</em> The language so far is the 2026 SaaS default: grey-blue neutrals, one blue, 8 px radius, the system font, hairlines, grey tiles, copy that says "Search products". Linear and Stripe look like that too, and they are only interesting because of what they add on top. Personality lives in five places this prototype has not touched: <em>type with a voice</em>, <em>a canvas that is not white</em>, <em>the money as the hero</em>, <em>moments</em> (what happens when a line lands or the sale is paid) and <em>copy written by a person</em>. Six directions below, each the same register, same data, same components. Only the tokens, the seams and the words move. References: Cash App's 44-point balance and green pay screen; Wise's lime and giant numerals; Uber Eats' black primary; Fresha's calm warmth; Linear's glow; the paper receipt every shop already prints.</p>
+<div class="board" id="board"></div>
+<script>
+const I={search:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',chevd:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>'};
+const products=[['Flat white','3.20','☕'],['Sourdough loaf','4.20','🍞'],['Tote bag','12.00','👜'],['Oat latte','3.60','🥛'],['Croissant','2.40','🥐'],['Gift card','20.00','🎁']];
+const lines=[['2','Flat white','Oat milk','6.40'],['1','Sourdough loaf','','4.20'],['1','Tote bag','Natural · L','12.00']];
+const D=[
+ ['paper','The paper till','the receipt every shop prints, Aesop, Monocle','Cream paper for the canvas, ink for the buttons, a serif italic for the total, a monospace for every number. The cart is a receipt with a torn top edge. Radius 2. It says: a real shop, run by someone who cares about the till roll.',
+  {search:'Ring up…',checkout:'Take',void:'Void',copy:'Copy in this voice: "Nothing on the till yet." · "Paid. Drawer open."',tile:(n,p,e,i)=>n[0]}],
+ ['bold','Bold money','Cash App, Wise, Uber Eats','White, black and one loud colour. The total is the biggest thing on the screen at 44 pt, the price on every tile is a lime chip, the buttons are pills, and Checkout is black. It says: money, quickly, with confidence.',
+  {search:'Search',checkout:'Charge',void:'Void',copy:'Moments: the total counts up when a line lands; on Paid, the whole cart column flashes lime.',tile:(n,p,e)=>''}],
+ ['warm','The warm shop','Fresha, Aesop, Glossier','A warm off-white, terracotta for the primary, a serif italic (Fraunces) for money, tiles as colour swatches (sand, sage, clay) instead of grey boxes. Pills for buttons. Calm rather than loud. It says: a boutique, a salon, a good bakery.',
+  {search:'Find a product',checkout:'Checkout',void:'Void',copy:'Copy: "Add something to start." · "All paid, thank you." · the customer\'s first name in the header, not "Guest".',tile:(n,p,e)=>n[0]}],
+ ['market','The market stall','Duolingo, Monzo, Notion\'s emoji','Category colours on the tiles (coffee, bakery, retail, gifts), heavy rounded Manrope, 2 px ink outlines, a coral primary with a hard drop shadow, emoji as the fallback image. It says: friendly, fast, a bit of fun; this is a tool people are not scared of.',
+  {search:'What are they buying?',checkout:'Take',void:'Scrap it',copy:'Copy with a person behind it: "Nothing rung up yet. Tap a product." · "Paid. Nice one." · a doodle for the empty cart.',tile:(n,p,e)=>e}],
+ ['stage','The dark stage','Linear, Arc, Raycast','Near-black canvas, one violet accent used as light rather than paint: a glow on the total, a gradient on Checkout, a top highlight on each tile. Inter Tight. It says: precise, modern, evening trade; a bar, a record shop, a night market.',
+  {search:'Search',checkout:'Checkout',void:'Void',copy:'Moments: a line landing lights the row briefly; Paid is a slow violet bloom behind the total.',tile:(n,p,e)=>''}],
+ ['woo','Woo, owned','WooCommerce purple, Shopify\'s green, Stripe\'s indigo','The one direction that is about identity rather than mood: WooCommerce purple as the single accent, Bricolage Grotesque for names and money, everything else stays close to today. It says: this is the WooCommerce register, obviously and without effort.',
+  {search:'Search products',checkout:'Checkout',void:'Void',copy:'The cheapest of the six: one colour, one display face, the same components.',tile:(n,p,e)=>n[0]}],
+];
+document.getElementById('board').innerHTML=D.map(([k,t,a,w,c],i)=>`<section class="panel" data-n="${String(i+1).padStart(2,'0')}-${k}"><div class="cap"><b><span class="n">${String(i+1).padStart(2,'0')}</span>${t} <span style="font-weight:400;color:#6b7280">· after ${a}</span></b>${w}</div>
+<div class="frame t-${k}">
+  <div class="prod"><div class="search">${I.search}${c.search}</div><div class="tiles">${products.map(([n,p,e])=>`<div class="tile"><div class="img">${c.tile(n,p,e)}</div><div class="n">${n}</div><div class="p">£${p}</div></div>`).join('')}</div><div class="copy">${c.copy}</div></div>
+  <div class="cart"><div class="crow">Customer <span class="chip">${k==='warm'?'Sarah':'Guest'} ${I.chevd}</span></div><div class="lines">${lines.map(([q,n,s,t])=>`<div class="line"><span class="q">${q}</span><span>${n}${s?`<span class="sub">${s}</span>`:''}</span><span class="t">£${t}</span></div>`).join('')}</div>
+  <div class="totals"><div><span>Subtotal</span><span>£18.83</span></div><div><span>VAT 20%</span><span>£3.77</span></div><div class="big"><span>${k==='bold'?'To pay':'Total'}</span><span>£22.60</span></div></div>
+  <div class="cf"><span class="btn vd">${c.void}</span><span class="btn p">${c.checkout} £22.60</span></div></div>
+</div></section>`).join('');
+</script>
+</body>
+</html>

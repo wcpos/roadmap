@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reports panels · options</title>
+<!-- Paul 2026-09-17: "The orders box still sucks … Cashiers would be better as a pie … the design of the pie chart is pretty ugly.
+     Think outside the box. Do some research … Give me like 10 different options." Ten Orders panels and eight share-chart styles,
+     every one on the prototype's fixture (Monday 14 Sep 2026, 14 orders, now 5:30 pm) and tokens, at the desktop panel width.
+     Research: Few's Graph Selection Matrix (distribution → strip plot when every value should show; part-to-whole → pie for a rough
+     read of ≤5 slices, 100% bar when precision matters; bullet graph for a value against a target), Carbon (donut centre KPI, slices
+     under 3° need a callout), UNHCR (2–5 slices, fold the rest into Other), Observable's pie-chart piece; Mobbin: Glassdoor, Commons,
+     Starling, Rivian, Obvious (thick donut, distinct hues, big centre figure), Higgsfield and Obvious (100% bar with a legend),
+     Monarch (a Summary block of plain figures beside the list), Xero (bills due as a mini bar timeline). Throwaway: the winners move
+     into ../pos-register/index.html (reportPanels). -->
+<style>
+:root{--font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif}
+body{margin:0;background:#141416;color:#ddd;font:14px/1.4 var(--font)}
+.strip{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;padding:10px 18px;background:#1c1c1f;border-bottom:1px solid #2a2a2e}
+.strip b{font-weight:600;margin-right:8px;color:#aaa}.seg{display:inline-flex;border:1px solid #3a3a40;border-radius:6px;overflow:hidden}
+.seg button{background:transparent;border:0;color:#bbb;padding:5px 10px;font:inherit;cursor:pointer}.seg button.on{background:#e8e8ea;color:#111}
+.stage{padding:24px 18px 60px}
+h1{font-size:16px;margin:8px 0 4px;color:#eee}h1+p{margin:0 0 18px;color:#999;max-width:1100px}
+h2{font-size:13px;font-weight:600;margin:6px 0 6px;color:#eee}h2 span{font-weight:400;color:#8a8a90;margin-left:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(440px,1fr));gap:22px;margin-bottom:34px}
+.opt .why{color:#9a9aa0;margin:6px 0 0;font-size:12.5px;max-width:440px}
+
+/* ---- the prototype's tokens ---- */
+.frame{--u:4px;--fs:14px;--ctl:44px;--row:44px;--r:8px;--hair:1px;--floor:24px;
+  --bg:oklch(0.975 0.004 250);--fg:oklch(0.22 0.02 250);--card:oklch(1 0 0);--muted:oklch(0.955 0.006 250);--muted-fg:oklch(0.50 0.02 250);--border:oklch(0.90 0.008 250);
+  --primary:oklch(0.50 0.18 240);--primary-fg:oklch(0.99 0.01 240);--ok:oklch(0.55 0.16 155);--bad:oklch(0.58 0.2 25);--warn:oklch(0.68 0.16 70);
+  /* a categorical set for parts of a whole: the primary, then hues turned away from it at the same lightness and chroma, then a neutral */
+  --c1:var(--primary);--c2:oklch(0.62 0.15 160);--c3:oklch(0.72 0.15 70);--c4:oklch(0.58 0.16 320);--c5:oklch(0.70 0.02 250);
+  color-scheme:light;background:var(--bg);color:var(--fg);font:var(--fs)/1.4 var(--font);padding:12px;border-radius:10px;width:440px;box-sizing:border-box}
+.frame[data-theme="dark"]{--bg:oklch(0.19 0.018 250);--fg:oklch(0.93 0.01 250);--card:oklch(0.23 0.018 250);--muted:oklch(0.28 0.018 250);--muted-fg:oklch(0.70 0.015 250);--border:oklch(0.33 0.02 250);
+  --primary:oklch(0.70 0.17 240);--primary-fg:oklch(0.16 0.02 250);--ok:oklch(0.72 0.15 155);--bad:oklch(0.68 0.18 25);--warn:oklch(0.78 0.15 75);
+  --c2:oklch(0.75 0.14 160);--c3:oklch(0.80 0.14 75);--c4:oklch(0.72 0.15 320);--c5:oklch(0.60 0.02 250);color-scheme:dark}
+.frame button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+.mut{color:var(--muted-fg)}.sm{font-size:calc(var(--fs)*.9)}.xs{font-size:calc(var(--fs)*.86)}.b{font-weight:600}.num{font-variant-numeric:tabular-nums}
+.st{display:inline-flex;align-items:center;gap:6px}.st i{width:8px;height:8px;border-radius:50%;background:currentColor}.st.ok{color:var(--ok)}.st.warn{color:var(--warn)}.st.bad{color:var(--bad)}
+.rp-panel{background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);display:flex;flex-direction:column;min-height:236px}
+.ph{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px 0 16px;border-bottom:var(--hair) solid var(--border)}
+.ph .n{font-weight:600;flex:1}.ph .v{font-weight:600;color:var(--muted-fg);font-variant-numeric:tabular-nums}.ph svg{width:16px;height:16px;color:var(--muted-fg)}
+.pb{padding:10px 16px 12px;display:flex;flex-direction:column;gap:10px;flex:1}.pf{padding:0 16px 12px;color:var(--muted-fg);font-size:calc(var(--fs)*.9)}
+svg.plot{width:100%;height:auto;display:block;overflow:visible}svg.plot text{font-family:var(--font)}
+/* bars (ranked) */
+.br{display:grid;grid-template-columns:1fr auto;grid-template-areas:"l r" "sh sh" "s s";column-gap:12px;row-gap:3px}.br .l{grid-area:l}.br .r{grid-area:r;font-weight:600;font-variant-numeric:tabular-nums}.br .sh{grid-area:sh;height:4px;border-radius:2px;background:var(--muted);overflow:hidden}.br .sh b{display:block;height:100%;background:var(--primary)}.br .s{grid-area:s;color:var(--muted-fg);font-size:calc(var(--fs)*.86)}
+/* stat block */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px 16px}.stats .l{color:var(--muted-fg);font-size:calc(var(--fs)*.86)}.stats .n{font-size:calc(var(--fs)*1.35);font-weight:600;font-variant-numeric:tabular-nums}
+/* 100% bar */
+.hbar{display:flex;height:14px;border-radius:7px;overflow:hidden;gap:2px}.hbar i{display:block;height:100%}.hbar.thin{height:8px;border-radius:4px}
+.leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:calc(var(--fs)*.9)}.leg span{display:inline-flex;align-items:center;gap:6px}.leg i{width:10px;height:10px;border-radius:3px;display:inline-block}
+/* donut with rows */
+.dn{display:flex;align-items:center;gap:18px}.dn .rows{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.cr{display:grid;grid-template-columns:12px 1fr auto auto;align-items:center;gap:10px}.cr i{width:12px;height:12px;border-radius:4px}.cr .r{font-weight:600;font-variant-numeric:tabular-nums}.cr .s{color:var(--muted-fg);font-size:calc(var(--fs)*.86);min-width:3.2ch;text-align:right}
+/* list rows */
+.or{display:flex;justify-content:space-between;gap:12px;align-items:center;min-height:26px}.or .r{font-weight:600;font-variant-numeric:tabular-nums}
+/* waffle */
+.waffle{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;width:150px;flex:none}.waffle i{aspect-ratio:1;border-radius:2px;display:block}
+/* tiles */
+.tiles{display:grid;grid-template-columns:3fr 1fr;grid-template-rows:2fr 1fr;gap:4px;height:120px}.tiles div:nth-child(2):last-child{grid-row:1/3}.tiles div{border-radius:6px;padding:8px 10px;color:#fff;display:flex;flex-direction:column;justify-content:flex-end;min-width:0}.tiles .n{font-weight:600;font-variant-numeric:tabular-nums}.tiles .l{font-size:calc(var(--fs)*.86);opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bignum{display:flex;align-items:baseline;gap:14px}.bignum .a{font-size:calc(var(--fs)*2.6);font-weight:700;letter-spacing:-.03em;line-height:1}.bignum .bl{font-size:calc(var(--fs)*1.3);font-weight:600;color:var(--muted-fg)}
+</style>
+<div class="strip">
+  <span><b>Theme</b><span class="seg"><button class="on" data-set="theme" data-v="light">Light</button><button data-set="theme" data-v="dark">Dark</button></span></span>
+  <span><b>Show</b><span class="seg"><button class="on" data-set="only" data-v="all">Both</button><button data-set="only" data-v="orders">Orders</button><button data-set="only" data-v="share">Share charts</button></span></span>
+</div>
+<div class="stage" id="stage"></div>
+<script>
+/* fixture: today's fourteen orders, copied from the prototype */
+const ORDERS=[[1227,'09:12',24.50,'Cash','Priya','In store',2,9],[1228,'09:40',118.00,'Card','Priya','In store',3,9],[1229,'10:05',36.90,'Card','Priya','Online',1,10],[1230,'10:31',72.40,'Cash','Priya','In store',4,10],[1231,'11:02',15.00,'Cash','Priya','In store',1,11],[1232,'11:48',149.99,'Card','Priya','Online',2,11],[1233,'12:10',88.20,'Card','Priya','In store',3,12],[1234,'12:35',124.20,'Card','Priya','In store',5,12],[1235,'13:20',49.00,'PayPal','Dylan','Online',1,13],[1236,'14:05',96.50,'Card','Dylan','Online',2,14],[1237,'15:15',203.80,'Card','Dylan','In store',3,15],[1238,'16:02',134.70,'Cash','Dylan','In store',1,16],[1239,'16:44',68.31,'Card','Dylan','In store',2,16],[1240,'17:10',59.00,'Cash','Dylan','In store',3,17]].map(a=>({n:a[0],time:a[1],total:a[2],method:a[3],cashier:a[4],channel:a[5],items:a[6],hour:a[7],min:+a[1].slice(3)}));
+const NOWH=17, T=ORDERS.reduce((s,o)=>s+o.total,0), N=ORDERS.length;
+const fmt=(n,sign=false)=>{const a=Math.abs(n).toFixed(2);return `${n<0?'−':sign&&n>0?'+':''}£${a}`};const pct=n=>Math.round(n*100)+'%';const sum=(a,f)=>a.reduce((s,x)=>s+(f?f(x):x),0);
+const by=(f)=>{const m={};ORDERS.forEach(o=>{m[f(o)]=(m[f(o)]||0)+o.total});return m};const cnt=(f)=>{const m={};ORDERS.forEach(o=>{m[f(o)]=(m[f(o)]||0)+1});return m};
+const sorted=[...ORDERS].sort((a,b)=>a.total-b.total), median=(sorted[6].total+sorted[7].total)/2, big=sorted[N-1], avg=T/N, items=sum(ORDERS,o=>o.items);
+const chev='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+const S={theme:'light',only:'all'};
+const panel=(name,fig,body,foot='')=>`<section class="rp-panel"><div class="ph"><span class="n">${name}</span><span class="v">${fig}</span>${chev}</div><div class="pb">${body}</div>${foot?`<div class="pf">${foot}</div>`:''}</section>`;
+const C=['var(--c1)','var(--c2)','var(--c3)','var(--c4)','var(--c5)'];
+
+/* ============ Orders: ten answers to "what were today's orders like?" ============ */
+const O={};
+O['O1']=['Size bands (as drawn)','A histogram in four bands with counts, amounts and share. Honest, but four bars for fourteen orders is coarse, and the bands are arbitrary.',()=>{
+  const bands=[['Under £25',0,25],['£25 to £50',25,50],['£50 to £100',50,100],['Over £100',100,1e9]];
+  return panel('Orders',N,bands.map(([l,a,b])=>{const os=ORDERS.filter(o=>o.total>=a&&o.total<b),amt=sum(os,o=>o.total);return `<div class="br"><span class="l">${l}</span><span class="r">${os.length} orders</span><i class="sh"><b style="width:${Math.round(os.length/N*100)}%"></b></i><span class="s">${pct(os.length/N)} · ${fmt(amt)} · ${pct(amt/T)} of sales</span></div>`}).join(''),`Largest #${big.n} ${fmt(big.total)} · discounts £13.65`);}];
+O['O2']=['Strip plot: every order on a £ line','Few’s pick for a distribution when every value should show. Each order is a dot on a £ axis, the median is a tick, the largest is named. Fourteen dots read at a glance; a hundred would need bands.',()=>{
+  const W=400,H=72,max=250,x=v=>12+(W-24)*Math.min(v,max)/max;
+  let s=`<svg class="plot" viewBox="0 0 ${W} ${H}"><line x1="12" x2="${W-12}" y1="40" y2="40" stroke="var(--border)"/>`;
+  [0,50,100,150,200,250].forEach(v=>s+=`<line x1="${x(v)}" x2="${x(v)}" y1="36" y2="44" stroke="var(--border)"/><text x="${x(v)}" y="62" text-anchor="middle" font-size="10.5" fill="var(--muted-fg)">£${v}</text>`);
+  s+=`<line x1="${x(median)}" x2="${x(median)}" y1="22" y2="58" stroke="var(--fg)" stroke-width="1.5"/><text x="${x(median)}" y="14" text-anchor="middle" font-size="10.5" fill="var(--muted-fg)">median ${fmt(median)}</text>`;
+  ORDERS.forEach(o=>s+=`<circle cx="${x(o.total)}" cy="40" r="6" fill="var(--primary)" fill-opacity=".55"/>`);
+  s+=`<text x="${x(big.total)}" y="30" text-anchor="end" font-size="11" font-weight="600" fill="var(--fg)">#${big.n} ${fmt(big.total)}</text></svg>`;
+  return panel('Orders',N,s+`<div class="stats"><div><div class="l">Average</div><div class="n">${fmt(avg)}</div></div><div><div class="l">Median</div><div class="n">${fmt(median)}</div></div><div><div class="l">Items per order</div><div class="n">${(items/N).toFixed(1)}</div></div></div>`);}];
+O['O3']=['Timeline: the day as dots, sized by amount','When did the money come in, and how big was each sale. The rhythm of the day plus the big ones, without repeating the hero chart’s hourly totals.',()=>{
+  const W=400,H=86,x=o=>12+(W-24)*((o.hour+o.min/60)-8)/12;
+  let s=`<svg class="plot" viewBox="0 0 ${W} ${H}"><line x1="12" x2="${W-12}" y1="46" y2="46" stroke="var(--border)"/>`;
+  [8,10,12,14,16,18,20].forEach(h=>s+=`<text x="${12+(W-24)*(h-8)/12}" y="76" text-anchor="middle" font-size="10.5" fill="var(--muted-fg)">${h===12?'12pm':h<12?h+'am':(h-12)+'pm'}</text>`);
+  s+=`<line x1="${12+(W-24)*9.5/12}" x2="${12+(W-24)*9.5/12}" y1="20" y2="60" stroke="var(--fg)" stroke-dasharray="2 3"/><text x="${12+(W-24)*9.5/12}" y="14" text-anchor="middle" font-size="10.5" fill="var(--muted-fg)">now</text>`;
+  ORDERS.forEach(o=>s+=`<circle cx="${x(o)}" cy="46" r="${3+Math.sqrt(o.total)*1.1}" fill="var(--primary)" fill-opacity=".5"/>`);
+  s+=`<text x="${x(big)}" y="24" text-anchor="middle" font-size="11" font-weight="600" fill="var(--fg)">${fmt(big.total)}</text></svg>`;
+  return panel('Orders',N,s,`Busiest hour 12 pm · quietest 1 pm · largest #${big.n} ${fmt(big.total)}`);}];
+O['O4']=['Summary block: the figures, no chart','Monarch’s answer: Total, Average, Largest, plain. Six figures a cashier can read in two seconds. The list and the exclusions live behind the chevron.',()=>
+  panel('Orders',N,`<div class="stats"><div><div class="l">Average order</div><div class="n">${fmt(avg)}</div></div><div><div class="l">Median</div><div class="n">${fmt(median)}</div></div><div><div class="l">Largest</div><div class="n">${fmt(big.total)}</div></div><div><div class="l">Items sold</div><div class="n">${items}</div></div><div><div class="l">Items per order</div><div class="n">${(items/N).toFixed(1)}</div></div><div><div class="l">Discounts</div><div class="n">£13.65</div></div></div>`,`First 09:12 · last 17:10 · none refunded`)];
+O['O5']=['Status: what state the orders are in','Completed, processing, on hold, refunded, as one 100% bar. The cashier’s question is “is anything stuck?”; the answer is the non-green part of the bar.',()=>{
+  const parts=[['Completed',12,'var(--ok)'],['Processing',2,'var(--c3)'],['On hold',0,'var(--warn)'],['Refunded',0,'var(--bad)']];
+  return panel('Orders',N,`<div class="hbar">${parts.filter(p=>p[1]).map(p=>`<i style="flex:${p[1]};background:${p[2]}"></i>`).join('')}</div><div class="leg">${parts.map(p=>`<span><i style="background:${p[2]}"></i>${p[0]} <b>${p[1]}</b></span>`).join('')}</div><div class="or" style="margin-top:6px"><span class="st ok"><i></i>Nothing needs you</span><span class="mut sm">2 card payments still settling</span></div>`);}];
+O['O6']=['Basket size: singles or baskets','How many items people buy at once. One item, two, three or more, as a 100% bar with the average. Says something about the shop that money alone does not.',()=>{
+  const parts=[['1 item',ORDERS.filter(o=>o.items===1).length],['2 items',ORDERS.filter(o=>o.items===2).length],['3 or more',ORDERS.filter(o=>o.items>=3).length]];
+  return panel('Orders',N,`<div class="bignum"><span class="a">${(items/N).toFixed(1)}</span><span class="bl">items per basket</span></div><div class="hbar">${parts.map((p,i)=>`<i style="flex:${p[1]};background:${C[i]}"></i>`).join('')}</div><div class="leg">${parts.map((p,i)=>`<span><i style="background:${C[i]}"></i>${p[0]} <b>${p[1]}</b></span>`).join('')}</div>`,`${items} items across ${N} orders · largest basket 5 items`);}];
+O['O7']=['Pareto: the few orders that made the money','The top three orders as a share of sales, then those three named. The only list of orders that says something, because it is chosen, not recent.',()=>{
+  const top=[...ORDERS].sort((a,b)=>b.total-a.total).slice(0,3),tt=sum(top,o=>o.total);
+  return panel('Orders',N,`<div class="bignum"><span class="a">${pct(tt/T)}</span><span class="bl">of sales from 3 orders</span></div><div class="hbar thin"><i style="flex:${tt};background:var(--primary)"></i><i style="flex:${T-tt};background:var(--muted)"></i></div>${top.map(o=>`<div class="or"><span>#${o.n}<span class="mut"> · ${o.time} · ${o.cashier} · ${o.items} items</span></span><span class="r">${fmt(o.total)}</span></div>`).join('')}`,`The other ${N-3} orders average ${fmt((T-tt)/(N-3))}`);}];
+O['O8']=['Footfall: orders per hour against yesterday','Counts, not money. The hero chart already shows £ by hour; this shows how many people came through, with yesterday dotted, so a busy-but-small day reads differently from a quiet-but-big one.',()=>{
+  const hours=[8,9,10,11,12,13,14,15,16,17,18,19],cur=hours.map(h=>ORDERS.filter(o=>o.hour===h).length),prev=[0,1,2,1,2,2,1,2,1,2,1,0];
+  const W=400,H=90,max=3,step=W/12,y=v=>12+(60)*(1-v/max);
+  let s=`<svg class="plot" viewBox="0 0 ${W} ${H}">`;
+  hours.forEach((h,i)=>{if(cur[i])s+=`<rect x="${i*step+8}" y="${y(cur[i])}" width="${step-16}" height="${72-y(cur[i])}" rx="2" fill="var(--primary)" fill-opacity="${h<=NOWH?.85:.2}"/>`;if(i%2===0)s+=`<text x="${(i+.5)*step}" y="86" text-anchor="middle" font-size="10.5" fill="var(--muted-fg)">${h===12?'12pm':h<12?h+'am':(h-12)+'pm'}</text>`;});
+  s+=`<polyline points="${hours.map((h,i)=>`${(i+.5)*step},${y(prev[i])}`).join(' ')}" fill="none" stroke="var(--muted-fg)" stroke-width="1.5" stroke-dasharray="3 3"/></svg>`;
+  return panel('Orders',N,s,`14 today · 11 by now yesterday · peak 2 an hour`);}];
+O['O9']=['Bullet: today against yesterday and the best day','Few’s bullet graph, built to replace gauges. Orders so far as the bar, yesterday-by-now as the tick, the best day in the period as the light band. One glance says ahead or behind.',()=>{
+  const bullet=(l,v,target,best,fmtv)=>{const W=400,x=n=>Math.round((W-4)*n/best);return `<div><div class="or"><span>${l}<span class="mut xs"> · best day ${fmtv(best)}</span></span><span class="r">${fmtv(v)}<span class="mut"> · ${fmtv(target)} by now yesterday</span></span></div><svg class="plot" viewBox="0 0 ${W} 22"><rect x="0" y="4" width="${W}" height="14" rx="3" fill="var(--muted)"/><rect x="0" y="4" width="${x(best*.66)}" height="14" fill="var(--border)"/><rect x="0" y="8" width="${x(v)}" height="6" fill="var(--primary)"/><line x1="${x(target)}" x2="${x(target)}" y1="2" y2="20" stroke="var(--fg)" stroke-width="2"/></svg></div>`};
+  return panel('Orders',N,bullet('Orders',N,11,22,n=>String(n))+bullet('Sales',T,975.23,1892.40,n=>fmt(n))+bullet('Average order',avg,88.66,96.10,n=>fmt(n)));}];
+O['O10']=['Needs attention: only the orders that want something','The cashier’s actual question. Held orders, unpaid or partly paid, awaiting refund, unsynced. Empty most of the time, and an empty state that says so is the point.',()=>{
+  const rows=[['#1224','On hold since 08:40 · Sam Reilly','£42.10','warn'],['#1236','Card settling · 14:05','£96.50','neutral'],['#1229','Online, not yet picked up','£36.90','neutral']];
+  return panel('Orders',N,rows.map(([n,l,v,k])=>`<div class="or"><span class="st ${k==='warn'?'warn':''}">${k==='warn'?'<i></i>':''}${n}<span class="mut"> · ${l}</span></span><span class="r">${v}</span></div>`).join(''),`3 of ${N} need something · the rest are done`);}];
+
+/* ============ Share charts: eight ways to draw parts of a whole (Payments as the example, Cashiers below it) ============ */
+const PAY=Object.entries(by(o=>o.method)).sort((a,b)=>b[1]-a[1]).map(([k,v])=>[k,v,cnt(o=>o.method)[k]+' orders']);
+const CASH=Object.entries(by(o=>o.cashier)).sort((a,b)=>b[1]-a[1]).map(([k,v])=>[k,v,cnt(o=>o.cashier)[k]+' orders']);
+const arcs=(parts,R,w,size,colors,tot)=>{const Cc=2*Math.PI*R;let acc=0;return parts.map((p,i)=>{const sh=p[1]/tot,a=`<circle r="${R}" cx="${size/2}" cy="${size/2}" fill="none" stroke="${colors[i]}" stroke-width="${w}" stroke-dasharray="${(Cc*sh-2).toFixed(2)} ${Cc.toFixed(2)}" stroke-dashoffset="${(-Cc*acc).toFixed(2)}" transform="rotate(-90 ${size/2} ${size/2})"/>`;acc+=sh;return a}).join('')};
+const rows=(parts,colors,tot)=>`<div class="rows">${parts.map((p,i)=>`<div class="cr"><i style="background:${colors[i]}"></i><span>${p[0]}${p[2]?`<span class="mut xs"> · ${p[2]}</span>`:''}</span><span class="r">${fmt(p[1])}</span><span class="s">${pct(p[1]/tot)}</span></div>`).join('')}</div>`;
+const SH={};
+SH['S1']=['As drawn','One hue at four opacities, a thin ring, a percentage in the middle, rows beside. The opacities read as fading, not as different things; the ring is too thin to see the split.',(parts)=>{const tot=sum(parts,p=>p[1]);const cols=['var(--primary)','color-mix(in oklch,var(--primary) 62%,var(--card))','color-mix(in oklch,var(--primary) 38%,var(--card))','color-mix(in oklch,var(--primary) 20%,var(--card))'];
+  return `<div class="dn"><svg class="plot" style="width:88px;flex:none" viewBox="0 0 88 88">${arcs(parts,34,12,88,cols,tot)}<text x="44" y="48" text-anchor="middle" font-size="12" font-weight="600" fill="var(--fg)">${pct(parts[0][1]/tot)}</text></svg>${rows(parts,cols,tot)}</div>`}];
+SH['S2']=['Thick donut, distinct hues, the total in the middle','What Glassdoor, Commons and Starling do. Four colours that are actually different, a ring thick enough to see, the figure the panel is about at its centre, gaps between slices.',(parts)=>{const tot=sum(parts,p=>p[1]);
+  return `<div class="dn"><svg class="plot" style="width:120px;flex:none" viewBox="0 0 120 120">${arcs(parts,44,22,120,C,tot)}<text x="60" y="57" text-anchor="middle" font-size="15" font-weight="700" fill="var(--fg)">£${Math.round(tot)}</text><text x="60" y="73" text-anchor="middle" font-size="10.5" fill="var(--muted-fg)">${parts.length} ways</text></svg>${rows(parts,C,tot)}</div>`}];
+SH['S3']=['Thick donut, the largest slice in colour, the rest grey','One colour for the thing that matters, neutrals for the rest. Brand-safe on every theme. Rivian and Cash App do this. Loses the ability to tell the small slices apart.',(parts)=>{const tot=sum(parts,p=>p[1]);const cols=['var(--primary)','var(--c5)','var(--border)','var(--muted)'];
+  return `<div class="dn"><svg class="plot" style="width:120px;flex:none" viewBox="0 0 120 120">${arcs(parts,44,22,120,cols,tot)}<text x="60" y="57" text-anchor="middle" font-size="18" font-weight="700" fill="var(--fg)">${pct(parts[0][1]/tot)}</text><text x="60" y="73" text-anchor="middle" font-size="10.5" fill="var(--muted-fg)">${parts[0][0]}</text></svg>${rows(parts,cols,tot)}</div>`}];
+SH['S4']=['One 100% bar with a legend','Higgsfield and Obvious. The most compact and the most precise: a 71 / 25 / 4 split reads exactly, two panels stack and compare, and it works at any width. No chart junk at all.',(parts)=>{const tot=sum(parts,p=>p[1]);
+  return `<div class="hbar">${parts.map((p,i)=>`<i style="flex:${p[1]};background:${C[i]}"></i>`).join('')}</div>${rows(parts,C,tot)}`}];
+SH['S5']=['Half donut for a two-way split','For In store · Online, Front till · Back office, or Card · Cash: a gauge-shaped half ring with the split written under it. Two numbers, one shape.',(parts)=>{const tot=sum(parts,p=>p[1]),a=parts[0],b=parts.slice(1),bs=sum(b,p=>p[1]);const R=52,Cc=Math.PI*R;
+  return `<div class="dn"><svg class="plot" style="width:140px;flex:none" viewBox="0 0 140 84"><path d="M18 74 A52 52 0 0 1 122 74" fill="none" stroke="${C[1]}" stroke-width="16" stroke-linecap="round"/><path d="M18 74 A52 52 0 0 1 122 74" fill="none" stroke="${C[0]}" stroke-width="16" stroke-linecap="round" stroke-dasharray="${(Cc*a[1]/tot).toFixed(1)} ${Cc.toFixed(1)}"/><text x="70" y="66" text-anchor="middle" font-size="20" font-weight="700" fill="var(--fg)">${pct(a[1]/tot)}</text><text x="70" y="80" text-anchor="middle" font-size="10.5" fill="var(--muted-fg)">${a[0]}</text></svg>${rows([a,[b.map(p=>p[0]).join(' · '),bs,'']],C,tot)}</div>`}];
+SH['S6']=['Waffle: a hundred squares','Each square is one per cent. Precise and countable, friendlier than a pie, and it needs no legend colours to be read. Slow to build a hundred cells per panel on a phone.',(parts)=>{const tot=sum(parts,p=>p[1]);let cells='',acc=0;parts.forEach((p,i)=>{const n=Math.round(p[1]/tot*100);for(let k=0;k<n&&acc<100;k++,acc++)cells+=`<i style="background:${C[i]}"></i>`});while(acc<100){cells+=`<i style="background:${C[4]}"></i>`;acc++}
+  return `<div class="dn"><div class="waffle">${cells}</div>${rows(parts,C,tot)}</div>`}];
+SH['S7']=['Proportional tiles','A treemap in miniature: the biggest part is the biggest box, with its figure inside. Reads as “mostly card” before you read anything.',(parts)=>{const tot=sum(parts,p=>p[1]);
+  return `<div class="tiles"><div style="background:${C[0]};grid-row:1/3"><span class="n">${fmt(parts[0][1])}</span><span class="l">${parts[0][0]} · ${pct(parts[0][1]/tot)}</span></div><div style="background:${C[1]}"><span class="n">${fmt(parts[1][1])}</span><span class="l">${parts[1][0]}</span></div>${parts[2]?`<div style="background:${C[2]}"><span class="n">${fmt(parts[2][1])}</span><span class="l">${parts[2][0]}</span></div>`:''}</div>`}];
+SH['S8']=['The big number and a hairline split','No chart. The share that matters as a large figure, the rest as small figures, and a hairline bar under them so the eye still gets a proportion. Quietest of all.',(parts)=>{const tot=sum(parts,p=>p[1]);
+  return `<div class="bignum"><span class="a">${pct(parts[0][1]/tot)}</span><span class="bl">${parts[0][0]} · ${fmt(parts[0][1])}</span></div><div class="hbar thin" style="margin:2px 0 4px">${parts.map((p,i)=>`<i style="flex:${p[1]};background:${i?'var(--border)':'var(--primary)'}"></i>`).join('')}</div><div class="leg">${parts.slice(1).map(p=>`<span>${p[0]} <b>${fmt(p[1])}</b> <span class="mut">${pct(p[1]/tot)}</span></span>`).join('')}</div>`}];
+
+function render(){
+  document.querySelectorAll('.strip [data-set]').forEach(b=>b.classList.toggle('on',S[b.dataset.set]===b.dataset.v));
+  let h='';
+  if(S.only!=='share'){h+=`<h1>Orders · ten answers to “what were today’s orders like?”</h1><p>Same fourteen orders in every panel. The head opens the full list with the tick boxes in all of them; the question is what the panel itself should say.</p><div class="grid">`+Object.entries(O).map(([k,[t,why,f]])=>`<div class="opt"><h2>${k} · ${t}</h2><div class="frame" data-theme="${S.theme}">${f()}</div><p class="why">${why}</p></div>`).join('')+'</div>';}
+  if(S.only!=='orders'){h+=`<h1>Share charts · eight ways to draw parts of a whole</h1><p>Payments on top, Cashiers underneath, in each. The same style would carry Payments, Cashiers, In store · Online and Categories, so pick one for all four.</p><div class="grid">`+Object.entries(SH).map(([k,[t,why,f]])=>`<div class="opt"><h2>${k} · ${t}</h2><div class="frame" data-theme="${S.theme}">${panel('Payments',fmt(T),f(PAY))}<div style="height:12px"></div>${panel('Cashiers',CASH.length,f(CASH))}</div><p class="why">${why}</p></div>`).join('')+'</div>';}
+  document.getElementById('stage').innerHTML=h;
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-set]');if(!b)return;S[b.dataset.set]=b.dataset.v;render();});
+render();
+</script>
+</html>

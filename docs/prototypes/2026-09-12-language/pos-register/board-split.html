@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Split — five looks, one flow</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#e6e8ec;color:#17202d;font:14px system-ui,sans-serif}header{padding:24px 28px;background:#fff;border-bottom:1px solid #cfd4dc}h1{margin:0 0 6px;font-size:24px}p{margin:0;color:#566171}nav{display:flex;gap:24px;margin-top:20px;flex-wrap:wrap}label{display:flex;gap:10px;align-items:center;font-weight:600}select{font:inherit;padding:8px;border:1px solid #abb4bf;border-radius:6px;background:white;color:inherit}main{display:flex;gap:20px;padding:28px;width:max-content}figure{margin:0;width:512px}.preview{width:512px;height:384px;overflow:hidden;border-radius:6px;background:white;box-shadow:0 2px 8px #17202d18}iframe{display:block;border:0;width:1024px;height:768px;transform:scale(.5);transform-origin:top left}body[data-w="phone"] figure,body[data-w="phone"] .preview{width:234px}body[data-w="phone"] .preview{height:506.4px;border-radius:22px}body[data-w="phone"] iframe{width:390px;height:844px;transform:scale(.6)}figcaption{padding:14px 2px;line-height:1.5}figcaption b{display:block;font-size:17px}figcaption span{color:#566171}select:focus-visible{outline:2px solid #0067ad;outline-offset:3px}
+</style>
+<header><h1>Five looks. One split.</h1><p>The same payment flow, expressed as chips, a filling bar, a ring, receipts, or seats.</p>
+<nav aria-label="Comparison controls"><label>State <select id="state"><option value="split">Split chooser</option><option value="split-1of2">1 of 2 taken</option><option value="split-item">By item</option></select></label><label>Width <select id="width"><option value="tablet">Tablet</option><option value="phone">Phone</option></select></label></nav></header>
+<main id="looks" aria-label="Split look comparisons"></main>
+<script>
+const looks=[['chips','As drawn (chips)','The register’s original leg chips.'],['bar','The bar that fills','Binance’s received / left bar; Satispay’s two-tone pill.'],['ring','The ring','bunq’s coins; the register’s Reports donuts.'],['tear','Tear the receipt','The till’s own paper, tear and PAID stamp.'],['seats','Seats','Splitwise’s people; Toast’s split by seat.']];
+const query=new URLSearchParams(location.search), state=document.getElementById('state'), width=document.getElementById('width');
+state.value=['split','split-1of2','split-item'].includes(query.get('scn'))?query.get('scn'):'split';
+width.value=query.get('w')==='phone'?'phone':'tablet';
+function draw(){
+  document.body.dataset.w=width.value;
+  document.getElementById('looks').innerHTML=looks.map(([look,name,source])=>`<figure><div class="preview"><iframe data-look="${look}" title="${name} — ${state.selectedOptions[0].text}" src="index.html?screen=register&splitLook=${look}&scn=${state.value}&w=${width.value}&board=1"></iframe></div><figcaption><b>${name}</b><span>${source}</span></figcaption></figure>`).join('');
+}
+state.addEventListener('change',draw);width.addEventListener('change',draw);draw();
+</script>
+</html>
