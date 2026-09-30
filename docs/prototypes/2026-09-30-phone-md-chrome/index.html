@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Register chrome below the rail — options</title>
+<style>
+  :root{--bg:#f7f8fa;--card:#fff;--border:#e3e6ea;--fg:#111827;--muted:#6b7280;--primary:#0b6bcb;--primary-soft:#e8f1fb;--rail:#0f172a;--rail-fg:#cbd5e1}
+  *{box-sizing:border-box}
+  body{margin:0;background:#e9ecf1;color:var(--fg);font:14px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif;padding:24px 32px 64px}
+  h1{font-size:20px;margin:0 0 4px}
+  .lede{color:var(--muted);max-width:900px;margin:0 0 20px}
+  h2{font-size:16px;margin:36px 0 4px}
+  .why{color:var(--muted);max-width:900px;margin:0 0 14px}
+  .row{display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap}
+  .frame{background:var(--bg);border:1px solid #cfd4db;border-radius:14px;overflow:hidden;position:relative;flex:none;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+  .md{width:820px;height:560px}
+  .ph{width:390px;height:560px}
+  .cap{font-size:12px;color:var(--muted);margin:6px 0 0 2px}
+  /* bars */
+  .bar{height:48px;display:flex;align-items:center;gap:14px;padding:0 14px;border-bottom:1px solid var(--border);background:var(--bg);font-weight:600;font-size:15px}
+  .bar .sp{flex:1}
+  .ico{width:22px;height:22px;display:inline-block;border-radius:5px;position:relative;flex:none}
+  .ico.menu::before,.ico.menu::after{content:"";position:absolute;left:3px;right:3px;height:1.6px;background:var(--fg)}
+  .ico.menu::before{top:6px}.ico.menu::after{bottom:6px}
+  .ico.bell{border:1.6px solid var(--fg);border-radius:9px 9px 3px 3px;width:15px;height:16px;margin:0 3px}
+  .ico.reg{border:1.6px solid var(--fg);border-radius:4px;width:17px;height:18px;margin:0 2px}
+  .ico.reg::after{content:"$";position:absolute;right:-4px;bottom:-5px;font-size:9px;background:var(--bg);padding:0 1px}
+  .ico.scan{border:1.6px solid var(--fg);border-radius:4px;width:18px;height:16px;margin:0 2px}
+  .ico.list{width:18px;height:14px;background:repeating-linear-gradient(to bottom,var(--fg) 0 1.6px,transparent 1.6px 6px);margin:0 2px}
+  .ico.slid{width:18px;height:14px;background:repeating-linear-gradient(to bottom,var(--fg) 0 1.6px,transparent 1.6px 6px);margin:0 2px;opacity:.9}
+  .avatar{width:26px;height:26px;border-radius:50%;background:#d1d5db;flex:none}
+  .dot{position:absolute;top:-2px;right:-2px;width:7px;height:7px;border-radius:50%;background:#dc2626}
+  .status{font-size:12px;color:#166534;background:#dcfce7;border-radius:999px;padding:2px 8px;font-weight:600}
+  /* columns */
+  .cols{display:flex;height:calc(100% - 0px)}
+  .cols.under{height:calc(100% - 48px)}
+  .col{display:flex;flex-direction:column;min-width:0}
+  .products{flex:1.5;border-right:1px solid var(--border)}
+  .cart{flex:1}
+  .search{height:56px;display:flex;align-items:center;gap:16px;padding:0 12px}
+  .search .field{flex:1;height:38px;border:1px solid var(--border);border-radius:9px;background:var(--card);display:flex;align-items:center;padding:0 12px;color:var(--muted)}
+  .chips{height:52px;display:flex;gap:8px;padding:0 12px;align-items:center;overflow:hidden;white-space:nowrap}
+  .chip{height:36px;border:1px solid var(--border);border-radius:999px;padding:0 12px;display:flex;align-items:center;gap:8px;background:var(--card);font-weight:600;font-size:13px;flex:none}
+  .chip.on{border-color:var(--primary);color:var(--primary)}
+  .grid{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:10px 12px;overflow:hidden;border-top:1px solid var(--border)}
+  .ph .grid{grid-template-columns:repeat(2,1fr)}
+  .tile{background:var(--card);border:1px solid var(--border);border-radius:8px;height:150px;display:flex;flex-direction:column}
+  .tile .img{flex:1;background:#e5e7eb;border-radius:7px 7px 0 0}
+  .tile .t{padding:8px 8px 6px;font-weight:600;font-size:13px}
+  .tile .p{padding:0 8px 8px;font-size:13px}
+  .foot{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-size:13px;color:var(--fg);border-top:1px solid var(--border);background:var(--bg)}
+  .custrow{height:52px;display:flex;align-items:center;gap:10px;padding:0 12px;border-bottom:1px solid var(--border)}
+  .custrow .sel{border:1px solid var(--border);border-radius:999px;padding:6px 12px;background:var(--card);font-weight:600}
+  .custrow .sp{flex:1}
+  .cartbody{flex:1}
+  .total{height:56px;display:flex;align-items:center;gap:14px;padding:0 12px;border-top:1px solid var(--border);font-weight:700;font-size:17px}
+  .total .cnt{background:#e5e7eb;border-radius:999px;padding:2px 8px;font-size:12px}
+  .tabs{height:64px;display:flex;border-top:1px solid var(--border);background:var(--card)}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:12px;color:var(--muted)}
+  .tab.on{color:var(--primary)}
+  .tab .g{width:20px;height:20px;border:1.6px solid currentColor;border-radius:5px}
+  .rail{width:48px;background:var(--rail);display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:6px;flex:none}
+  .rail .it{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center}
+  .rail .it i{width:18px;height:18px;border:1.6px solid var(--rail-fg);border-radius:5px;display:block}
+  .rail .it.on{background:rgba(255,255,255,.12)}
+  .rail .av{width:26px;height:26px;border-radius:50%;background:#94a3b8;margin-bottom:6px}
+  .rail .sp{flex:1}
+  .note{background:#fff8e6;border:1px solid #f3d58a;border-radius:8px;padding:8px 12px;margin:10px 0 0;max-width:900px;font-size:13px}
+  .rec{background:#e8f1fb;border:1px solid #b6d3f2;border-radius:8px;padding:10px 14px;margin:18px 0 0;max-width:900px}
+  .callout{position:absolute;background:#dc2626;color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+  .today .products .search{border-bottom:1px solid var(--border)}
+  code{font:12px ui-monospace,Menlo,monospace;background:#eef0f3;padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body>
+<h1>Register chrome below the rail — where the menu, store, bell and cashier live at md and on the phone</h1>
+<p class="lede">The rail (POS, Orders, Reports, Settings…) exists from <b>lg</b> (≥1024) only. Below it the drawer becomes a hamburger, and today that hamburger — with the store name, bell and avatar — rides the <b>cart column's</b> register bar. So at <b>md</b> (iPad portrait, 768–1023) the products column starts with a bare search row beside a cart column that starts with a bar; and on the <b>phone</b> the Products tab has the bar only on the <code>(tabs)</code> route (Electron) — the columns route's resize fallback draws a second phone UI without it (the web tab). Three options below, each at md (820) and phone (390). The resize bug is fixed under every option: crossing into <code>sm</code> lands on the <code>(tabs)</code> route, one phone UI.</p>
+
+<h2>Today (md, and the phone reached by resizing)</h2>
+<div class="row">
+  <div>
+    <div class="frame md today">
+      <div class="cols">
+        <div class="col products">
+          <div class="search"><div class="field">Search products</div><i class="ico scan"></i><i class="ico list"></i><i class="ico slid"></i></div>
+          <div class="chips"><span class="chip on">En stock ×</span><span class="chip">☆ Destacado</span><span class="chip">$ En oferta</span><span class="chip">▭ Categoría</span></div>
+          <div class="grid"><div class="tile"><div class="img"></div><div class="t">Affirm Water…</div><div class="p">7,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Aim Analog…</div><div class="p">45,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Album</div><div class="p">15,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie with Logo</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Belt</div><div class="p">55,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Bolo Sport…</div><div class="p">49,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Cap</div><div class="p">16,00 £</div></div></div>
+          <div class="foot"><span>٪ Shop base ˅</span><span>Mostrando 20 de 229 ⟳</span></div>
+        </div>
+        <div class="col cart">
+          <div class="bar"><i class="ico menu"></i>AL Store<span class="sp"></span><i class="ico reg"></i><i class="ico bell"></i><span class="avatar"></span></div>
+          <div class="custrow"><span style="color:var(--muted)">Cliente</span><span class="sel">Invitado ˅</span><span class="sp"></span>＋ <i class="ico slid"></i></div>
+          <div class="cartbody"></div>
+          <div class="total"><span class="cnt">0</span>0,00 £<span class="sp" style="flex:1"></span>› ＋</div>
+        </div>
+      </div>
+      <span class="callout" style="left:14px;top:14px">no menu, no store, no bell</span>
+      <span class="callout" style="left:530px;top:60px">tops don't align</span>
+    </div>
+    <p class="cap">md today: the chrome is the cart column's; the products column has nowhere to open the menu from.</p>
+  </div>
+  <div>
+    <div class="frame ph today">
+      <div class="col" style="height:100%">
+        <div class="search"><div class="field">Search products</div><i class="ico scan"></i><i class="ico list"></i><i class="ico slid"></i></div>
+        <div class="chips"><span class="chip on">En stock ×</span><span class="chip">☆ Destacado</span><span class="chip">$ En oferta</span></div>
+        <div class="grid"><div class="tile"><div class="img"></div><div class="t">Affirm Water…</div><div class="p">7,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Aim Analog…</div><div class="p">45,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Album</div><div class="p">15,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie</div><div class="p">18,00 £</div></div></div>
+        <div class="foot"><span>٪ Shop base ˅</span><span>20 de 229 ⟳</span></div>
+        <div class="tabs"><div class="tab on"><span class="g"></span>Products</div><div class="tab"><span class="g"></span>Cart</div></div>
+      </div>
+      <span class="callout" style="left:14px;top:14px">Products tab: no bar (resize path)</span>
+    </div>
+    <p class="cap">Phone reached by resizing: the columns route's fallback. Loaded narrow, the (tabs) route shows the bar on both tabs.</p>
+  </div>
+</div>
+
+<h2>A · The rail stays until the phone</h2>
+<p class="why">The rail exists from <b>md</b> (768) as the 48 pt icon column it already is on lg; the hamburger appears only on the phone. iPad portrait is a real counter posture and a 48 pt rail costs 6% of it. The cart bar loses the hamburger at md and keeps the register alone (the E ruling); the cashier avatar is at the top of the rail (ruling 42), the bell in the cart bar. On the phone the register bar sits on <b>both</b> tabs — the (tabs) route already does this — with the hamburger at its left.</p>
+<div class="row">
+  <div>
+    <div class="frame md">
+      <div class="cols">
+        <div class="rail"><span class="av"></span><div class="it on"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="sp"></span><div class="it"><i></i></div><div class="it"><i></i></div></div>
+        <div class="col products">
+          <div class="search"><div class="field">Search products</div><i class="ico scan"></i><i class="ico list"></i><i class="ico slid"></i></div>
+          <div class="chips"><span class="chip on">En stock ×</span><span class="chip">☆ Destacado</span><span class="chip">$ En oferta</span><span class="chip">▭ Categoría</span></div>
+          <div class="grid" style="grid-template-columns:repeat(3,1fr)"><div class="tile"><div class="img"></div><div class="t">Affirm Water…</div><div class="p">7,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Aim Analog…</div><div class="p">45,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Album</div><div class="p">15,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie with Logo</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Belt</div><div class="p">55,00 £</div></div></div>
+          <div class="foot"><span>٪ Shop base ˅</span><span>20 de 229 ⟳</span></div>
+        </div>
+        <div class="col cart">
+          <div class="bar"><span>Front counter</span><span class="status">Open</span><span class="sp"></span><i class="ico reg"></i><i class="ico bell"></i></div>
+          <div class="custrow"><span style="color:var(--muted)">Cliente</span><span class="sel">Invitado ˅</span><span class="sp"></span>＋ <i class="ico slid"></i></div>
+          <div class="cartbody"></div>
+          <div class="total"><span class="cnt">0</span>0,00 £<span class="sp" style="flex:1"></span>› ＋</div>
+        </div>
+      </div>
+    </div>
+    <p class="cap">md: rail at 48 pt, cart bar is the register only, no hamburger anywhere.</p>
+  </div>
+  <div>
+    <div class="frame ph">
+      <div class="col" style="height:100%">
+        <div class="bar"><i class="ico menu" style="position:relative"><span class="dot"></span></i>AL Store<span class="sp"></span><i class="ico reg"></i><i class="ico bell"></i><span class="avatar"></span></div>
+        <div class="search"><div class="field">Search products</div><i class="ico scan"></i><i class="ico list"></i><i class="ico slid"></i></div>
+        <div class="chips"><span class="chip on">En stock ×</span><span class="chip">☆ Destacado</span><span class="chip">$ En oferta</span></div>
+        <div class="grid"><div class="tile"><div class="img"></div><div class="t">Affirm Water…</div><div class="p">7,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Aim Analog…</div><div class="p">45,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Album</div><div class="p">15,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie</div><div class="p">18,00 £</div></div></div>
+        <div class="foot"><span>٪ Shop base ˅</span><span>20 de 229 ⟳</span></div>
+        <div class="tabs"><div class="tab on"><span class="g"></span>Products</div><div class="tab"><span class="g"></span>Cart</div></div>
+      </div>
+    </div>
+    <p class="cap">Phone: the same bar on both tabs (what Electron shows now). Costs 48 pt of the product grid.</p>
+  </div>
+</div>
+
+<h2>B · One page bar over both columns</h2>
+<p class="why">Below lg a single 48 pt bar spans the whole page — hamburger, store, then bell and avatar — and the cart column's bar is the register alone beneath it. Same shape as every management page's bar (Orders, Customers…), so the whole app reads as one thing below the rail. Costs 48 pt of height on md; on the phone it is the same bar over both tabs as A.</p>
+<div class="row">
+  <div>
+    <div class="frame md">
+      <div class="bar"><i class="ico menu" style="position:relative"><span class="dot"></span></i>AL Store<span class="sp"></span><i class="ico bell"></i><span class="avatar"></span></div>
+      <div class="cols under">
+        <div class="col products">
+          <div class="search"><div class="field">Search products</div><i class="ico scan"></i><i class="ico list"></i><i class="ico slid"></i></div>
+          <div class="chips"><span class="chip on">En stock ×</span><span class="chip">☆ Destacado</span><span class="chip">$ En oferta</span><span class="chip">▭ Categoría</span></div>
+          <div class="grid"><div class="tile"><div class="img"></div><div class="t">Affirm Water…</div><div class="p">7,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Aim Analog…</div><div class="p">45,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Album</div><div class="p">15,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie with Logo</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Belt</div><div class="p">55,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Bolo Sport…</div><div class="p">49,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Cap</div><div class="p">16,00 £</div></div></div>
+          <div class="foot"><span>٪ Shop base ˅</span><span>Mostrando 20 de 229 ⟳</span></div>
+        </div>
+        <div class="col cart">
+          <div class="bar"><span>Front counter</span><span class="status">Open</span><span class="sp"></span><i class="ico reg"></i></div>
+          <div class="custrow"><span style="color:var(--muted)">Cliente</span><span class="sel">Invitado ˅</span><span class="sp"></span>＋ <i class="ico slid"></i></div>
+          <div class="cartbody"></div>
+          <div class="total"><span class="cnt">0</span>0,00 £<span class="sp" style="flex:1"></span>› ＋</div>
+        </div>
+      </div>
+    </div>
+    <p class="cap">md: the page bar the management pages already have; the register bar under it is the till's own row.</p>
+  </div>
+  <div>
+    <div class="frame ph">
+      <div class="col" style="height:100%">
+        <div class="bar"><i class="ico menu" style="position:relative"><span class="dot"></span></i>AL Store<span class="sp"></span><i class="ico bell"></i><span class="avatar"></span></div>
+        <div class="search"><div class="field">Search products</div><i class="ico scan"></i><i class="ico list"></i><i class="ico slid"></i></div>
+        <div class="chips"><span class="chip on">En stock ×</span><span class="chip">☆ Destacado</span><span class="chip">$ En oferta</span></div>
+        <div class="grid"><div class="tile"><div class="img"></div><div class="t">Affirm Water…</div><div class="p">7,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Aim Analog…</div><div class="p">45,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Album</div><div class="p">15,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie</div><div class="p">18,00 £</div></div></div>
+        <div class="foot"><span>٪ Shop base ˅</span><span>20 de 229 ⟳</span></div>
+        <div class="tabs"><div class="tab on"><span class="g"></span>Products</div><div class="tab"><span class="g"></span>Cart</div></div>
+      </div>
+    </div>
+    <p class="cap">Phone: the page bar over both tabs; the Cart tab carries the register row under it (two rows on the cart tab).</p>
+  </div>
+</div>
+
+<h2>C · Chrome on the search row (the prototype's "split")</h2>
+<p class="why">No new row. At md the hamburger takes the left of the products column's search row, so the two columns start at the same height: <code>≡ [Search] ⌷ ≣ ⚙</code> beside <code>Front counter · Open … 🔔 👤</code>. On the phone the hamburger sits left of the search field on Products; the Cart tab keeps its bar. Cheapest in pixels; the price is that "where and who" (store, bell, cashier) live on the cart side and the menu on the products side — the prototype dropped this on the phone for exactly that reason.</p>
+<div class="row">
+  <div>
+    <div class="frame md">
+      <div class="cols">
+        <div class="col products">
+          <div class="search"><i class="ico menu" style="position:relative"><span class="dot"></span></i><div class="field">Search products</div><i class="ico scan"></i><i class="ico list"></i><i class="ico slid"></i></div>
+          <div class="chips"><span class="chip on">En stock ×</span><span class="chip">☆ Destacado</span><span class="chip">$ En oferta</span><span class="chip">▭ Categoría</span></div>
+          <div class="grid"><div class="tile"><div class="img"></div><div class="t">Affirm Water…</div><div class="p">7,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Aim Analog…</div><div class="p">45,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Album</div><div class="p">15,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie with Logo</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Belt</div><div class="p">55,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Bolo Sport…</div><div class="p">49,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Cap</div><div class="p">16,00 £</div></div></div>
+          <div class="foot"><span>٪ Shop base ˅</span><span>Mostrando 20 de 229 ⟳</span></div>
+        </div>
+        <div class="col cart">
+          <div class="bar" style="height:56px"><span>Front counter</span><span class="status">Open</span><span class="sp"></span><i class="ico reg"></i><i class="ico bell"></i><span class="avatar"></span></div>
+          <div class="custrow"><span style="color:var(--muted)">Cliente</span><span class="sel">Invitado ˅</span><span class="sp"></span>＋ <i class="ico slid"></i></div>
+          <div class="cartbody"></div>
+          <div class="total"><span class="cnt">0</span>0,00 £<span class="sp" style="flex:1"></span>› ＋</div>
+        </div>
+      </div>
+    </div>
+    <p class="cap">md: both columns start with a 56 pt row; the store name goes under the avatar (as the prototype's A did).</p>
+  </div>
+  <div>
+    <div class="frame ph">
+      <div class="col" style="height:100%">
+        <div class="search"><i class="ico menu" style="position:relative"><span class="dot"></span></i><div class="field">Search products</div><i class="ico scan"></i><i class="ico slid"></i></div>
+        <div class="chips"><span class="chip on">En stock ×</span><span class="chip">☆ Destacado</span><span class="chip">$ En oferta</span></div>
+        <div class="grid"><div class="tile"><div class="img"></div><div class="t">Affirm Water…</div><div class="p">7,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Aim Analog…</div><div class="p">45,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Album</div><div class="p">15,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie with Logo</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Belt</div><div class="p">55,00 £</div></div></div>
+        <div class="foot"><span>٪ Shop base ˅</span><span>20 de 229 ⟳</span></div>
+        <div class="tabs"><div class="tab on"><span class="g"></span>Products</div><div class="tab"><span class="g"></span>Cart</div></div>
+      </div>
+    </div>
+    <p class="cap">Phone: the menu in the search row, one row fewer than A/B — the whole grid row you see here is the gain. The list-view toggle folds into the sliders.</p>
+  </div>
+</div>
+
+<div class="rec"><b>Recommendation: A for md, and A's phone.</b> md is iPad portrait — a shop tablet on a stand, not a phone — and the rail is what makes Orders, Customers and Reports one tap away with no menu to open (rule 1: reachable in one or two taps, never hidden). It also removes the hamburger from every width but the phone, so there is one navigation model per device class instead of three. On the phone the bar over both tabs is what the (tabs) route already ships; the fix is to route into it. B is the fallback if the 48 pt rail proves too tight beside a 6-column keypad on an 8" Android tablet; C is the one I'd argue against — it scatters "where and who" between the two columns to save a row.</div>
+<p class="note">Under every option the resize bug goes: crossing into <code>sm</code> lands on the <code>(tabs)</code> route (and back out, on <code>(columns)</code>), so there is one phone UI. The columns route's own tab fallback (<code>(pos)/(columns)/index.tsx</code> line 47) is deleted — it was the register switch's stage-1 stand-in, and it keeps the scanner's "both panes stay mounted" rule only by being a second copy of the tabs.</p>
+</body>
+</html>

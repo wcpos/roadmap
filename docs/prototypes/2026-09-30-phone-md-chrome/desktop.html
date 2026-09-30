@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Desktop windows without a native title bar — the strip</title>
+<style>
+  :root{--bg:#f7f8fa;--card:#fff;--border:#e3e6ea;--fg:#111827;--muted:#6b7280;--primary:#0b6bcb;--rail:#f1f3f6;--strip:#eef0f4}
+  *{box-sizing:border-box}
+  body{margin:0;background:#dfe3ea;color:var(--fg);font:14px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,"Segoe UI",system-ui,sans-serif;padding:24px 32px 64px}
+  h1{font-size:20px;margin:0 0 4px}
+  .lede{color:var(--muted);max-width:960px;margin:0 0 20px}
+  h2{font-size:16px;margin:36px 0 4px}
+  .why{color:var(--muted);max-width:960px;margin:0 0 14px}
+  .row{display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap}
+  .win{width:960px;height:600px;background:var(--bg);border-radius:12px;overflow:hidden;position:relative;flex:none;box-shadow:0 12px 32px rgba(0,0,0,.28),0 0 0 1px rgba(0,0,0,.12)}
+  .win.windows{border-radius:8px}
+  .cap{font-size:12px;color:var(--muted);margin:6px 0 0 2px;max-width:960px}
+  /* the reserved strip */
+  .strip{position:absolute;left:0;right:0;top:0;height:40px;background:var(--strip);z-index:2;display:flex;align-items:center}
+  .windows .strip{height:32px}
+  .strip.clear{background:transparent}
+  .lights{position:absolute;left:13px;top:13px;display:flex;gap:8px}
+  .lights i{width:12px;height:12px;border-radius:50%;display:block}
+  .lights .r{background:#ff5f57;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.15)}.lights .y{background:#febc2e;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.15)}.lights .g{background:#28c840;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.15)}
+  .wco{position:absolute;right:0;top:0;height:32px;display:flex;z-index:3}
+  .wco i{width:46px;height:32px;display:flex;align-items:center;justify-content:center;color:#111;font-size:12px;font-family:"Segoe UI Symbol",system-ui}
+  .wco i.x:hover{background:#e81123;color:#fff}
+  .strip .title{margin:0 auto;font-size:13px;color:var(--muted);font-weight:500}
+  .strip .titlebar{display:flex;align-items:center;gap:14px;padding:0 14px 0 88px;width:100%;font-weight:600;font-size:14px}
+  .windows .strip .titlebar{padding:0 152px 0 14px}
+  .strip .titlebar .sp{flex:1}
+  .status{font-size:12px;color:#166534;background:#dcfce7;border-radius:999px;padding:2px 8px;font-weight:600}
+  .app{position:absolute;inset:0;display:flex;padding-top:40px}
+  .windows .app{padding-top:32px}
+  .app.flush{padding-top:0}
+  .rail{width:72px;background:var(--rail);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:10px;flex:none}
+  .rail .av{width:26px;height:26px;border-radius:50%;background:#c9ced6;margin-bottom:6px}
+  .rail .it{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+  .rail .it i{width:20px;height:20px;border:1.6px solid #374151;border-radius:5px;display:block}
+  .rail .it.on{background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.08)}.rail .it.on i{border-color:var(--primary)}
+  .rail .sp{flex:1}
+  .rail .v{font-size:10px;color:var(--muted)}
+  .cols{flex:1;display:flex;min-width:0}
+  .col{display:flex;flex-direction:column;min-width:0}
+  .products{flex:1.6;border-right:1px solid var(--border)}
+  .cart{flex:1;background:#fff}
+  .search{height:56px;display:flex;align-items:center;gap:16px;padding:0 14px}
+  .search .field{flex:1;height:38px;border:1px solid var(--border);border-radius:9px;background:var(--card);display:flex;align-items:center;padding:0 12px;color:var(--muted)}
+  .ico{width:22px;height:22px;display:inline-block;border-radius:5px;position:relative;flex:none}
+  .ico.bell{border:1.6px solid var(--fg);border-radius:9px 9px 3px 3px;width:15px;height:16px;margin:0 3px}
+  .ico.reg{border:1.6px solid var(--fg);border-radius:4px;width:17px;height:18px;margin:0 2px}
+  .ico.scan{border:1.6px solid var(--fg);border-radius:4px;width:18px;height:16px;margin:0 2px}
+  .ico.list,.ico.slid{width:18px;height:14px;background:repeating-linear-gradient(to bottom,var(--fg) 0 1.6px,transparent 1.6px 6px);margin:0 2px}
+  .chips{height:52px;display:flex;gap:8px;padding:0 14px;align-items:center;overflow:hidden;white-space:nowrap}
+  .chip{height:36px;border:1px solid var(--border);border-radius:999px;padding:0 12px;display:flex;align-items:center;gap:8px;background:var(--card);font-weight:600;font-size:13px;flex:none}
+  .chip.on{border-color:var(--primary);color:var(--primary)}
+  .grid{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:10px 14px;overflow:hidden;border-top:1px solid var(--border)}
+  .tile{background:var(--card);border:1px solid var(--border);border-radius:8px;height:150px;display:flex;flex-direction:column}
+  .tile .img{flex:1;background:#e5e7eb;border-radius:7px 7px 0 0}
+  .tile .t{padding:8px 8px 6px;font-weight:600;font-size:13px}
+  .tile .p{padding:0 8px 8px;font-size:13px}
+  .foot{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:13px;border-top:1px solid var(--border);background:var(--bg)}
+  .bar{height:48px;display:flex;align-items:center;gap:14px;padding:0 14px;border-bottom:1px solid var(--border);font-weight:600;font-size:15px}
+  .bar .sp{flex:1}
+  .custrow{height:52px;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid var(--border)}
+  .custrow .sel{border:1px solid var(--border);border-radius:999px;padding:6px 12px;background:var(--card);font-weight:600}
+  .custrow .sp{flex:1}
+  .cartbody{flex:1}
+  .total{height:56px;display:flex;align-items:center;gap:14px;padding:0 14px;border-top:1px solid var(--border);font-weight:700;font-size:17px}
+  .total .cnt{background:#e5e7eb;border-radius:999px;padding:2px 8px;font-size:12px}
+  .callout{position:absolute;background:#dc2626;color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;z-index:5;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+  .rec{background:#e8f1fb;border:1px solid #b6d3f2;border-radius:8px;padding:10px 14px;margin:18px 0 0;max-width:960px}
+  .note{background:#fff8e6;border:1px solid #f3d58a;border-radius:8px;padding:8px 12px;margin:10px 0 0;max-width:960px;font-size:13px}
+  code{font:12px ui-monospace,Menlo,monospace;background:#eef0f3;padding:1px 5px;border-radius:4px}
+  a{color:var(--primary)}
+</style>
+</head>
+<body>
+<h1>Desktop windows without a native title bar</h1>
+<p class="lede">Option A at lg, inside the frameless windows the desktop app now ships (monorepo#2299 + electron#488): the OS keeps its window controls — traffic lights on macOS, minimise · maximise · close on Windows — and the app reserves a strip under them through the safe-area top inset (40 pt macOS, 32 pt Windows). The rail starts below the strip. Two treatments of that strip. ← <a href="index.html">phone and md</a></p>
+
+<h2>1 · The strip is empty (what ships today)</h2>
+<p class="why">The reserved strip is a drag region and nothing else. The traffic lights sit in it on the left; on Windows the controls sit in it on the right. The app is exactly the web app pushed down by the strip's height. Honest and simple; the cost is a blank 40 pt band across the top of a till that is otherwise fighting for vertical space, and on Windows the band's right end is the only place the controls can live.</p>
+<div class="row">
+  <div>
+    <div class="win mac">
+      <div class="strip"><div class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></div></div>
+      <div class="app">
+        <div class="rail"><span class="av"></span><div class="it on"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="sp"></span><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="v">v 2.0.0</span></div>
+        <div class="cols">
+          <div class="col products">
+            <div class="search"><div class="field">Search products</div><i class="ico scan"></i><i class="ico list"></i><i class="ico slid"></i></div>
+            <div class="chips"><span class="chip on">En stock ×</span><span class="chip">☆ Destacado</span><span class="chip">$ En oferta</span><span class="chip">▭ Categoría</span><span class="chip">▭ Etiqueta</span></div>
+            <div class="grid"><div class="tile"><div class="img"></div><div class="t">Affirm Water Bottle</div><div class="p">7,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Aim Analog Watch</div><div class="p">45,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Album</div><div class="p">15,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie with Logo</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Belt</div><div class="p">55,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Bolo Sport Watch</div><div class="p">49,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Cap</div><div class="p">16,00 £</div></div></div>
+            <div class="foot"><span>٪ Shop base ˅</span><span>Mostrando 16 de 244 ◌</span></div>
+          </div>
+          <div class="col cart">
+            <div class="bar"><span>Front counter</span><span class="status">Open</span><span class="sp"></span><i class="ico reg"></i><i class="ico bell"></i></div>
+            <div class="custrow"><span style="color:var(--muted)">Cliente</span><span class="sel">Invitado ˅</span><span class="sp"></span>＋ <i class="ico slid"></i></div>
+            <div class="cartbody"></div>
+            <div class="total"><span class="cnt">4</span>67,00 £<span class="sp" style="flex:1"></span>› ＋</div>
+          </div>
+        </div>
+      </div>
+      <span class="callout" style="left:400px;top:10px">40 pt, empty, drag only</span>
+    </div>
+    <p class="cap">macOS: traffic lights in the strip, rail below it with the cashier at its top. The rail is 72 pt at lg; the strip runs the full width.</p>
+  </div>
+  <div>
+    <div class="win windows">
+      <div class="strip"></div>
+      <div class="wco"><i>&#x2013;</i><i>&#x25A1;</i><i class="x">&#x2715;</i></div>
+      <div class="app">
+        <div class="rail"><span class="av"></span><div class="it on"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="sp"></span><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="v">v 2.0.0</span></div>
+        <div class="cols">
+          <div class="col products">
+            <div class="search"><div class="field">Search products</div><i class="ico scan"></i><i class="ico list"></i><i class="ico slid"></i></div>
+            <div class="chips"><span class="chip on">En stock ×</span><span class="chip">☆ Destacado</span><span class="chip">$ En oferta</span><span class="chip">▭ Categoría</span><span class="chip">▭ Etiqueta</span></div>
+            <div class="grid"><div class="tile"><div class="img"></div><div class="t">Affirm Water Bottle</div><div class="p">7,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Aim Analog Watch</div><div class="p">45,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Album</div><div class="p">15,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie with Logo</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Belt</div><div class="p">55,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Bolo Sport Watch</div><div class="p">49,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Cap</div><div class="p">16,00 £</div></div></div>
+            <div class="foot"><span>٪ Shop base ˅</span><span>Mostrando 16 de 244 ◌</span></div>
+          </div>
+          <div class="col cart">
+            <div class="bar"><span>Front counter</span><span class="status">Open</span><span class="sp"></span><i class="ico reg"></i><i class="ico bell"></i></div>
+            <div class="custrow"><span style="color:var(--muted)">Cliente</span><span class="sel">Invitado ˅</span><span class="sp"></span>＋ <i class="ico slid"></i></div>
+            <div class="cartbody"></div>
+            <div class="total"><span class="cnt">4</span>67,00 £<span class="sp" style="flex:1"></span>› ＋</div>
+          </div>
+        </div>
+      </div>
+      <span class="callout" style="left:400px;top:6px">32 pt, empty, controls at the right</span>
+    </div>
+    <p class="cap">Windows: the same, with the Window Controls Overlay (three 46 px buttons) at the strip's right end; the bell and register icons sit safely below it.</p>
+  </div>
+</div>
+
+<h2>2 · The strip is the window's title: store and register</h2>
+<p class="why">Slack, Linear and Notion draw their own top bar into the reserved strip. Here the strip carries what the old native title bar showed anyway — the <b>store name</b>, and the <b>register with its status</b> — as quiet text, centred on macOS, left on Windows (clear of the controls). It is still all drag region (text is not a control). Nothing moves out of the app: the cart bar keeps the register controls and the bell, the rail keeps the cashier. The gain is that the 40 pt is no longer blank and the window says where it is, which matters with two stores or two registers open in two windows.</p>
+<div class="row">
+  <div>
+    <div class="win mac">
+      <div class="strip"><div class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></div><span class="title">UK Store — Front counter · Open</span></div>
+      <div class="app">
+        <div class="rail"><span class="av"></span><div class="it on"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="sp"></span><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="v">v 2.0.0</span></div>
+        <div class="cols">
+          <div class="col products">
+            <div class="search"><div class="field">Search products</div><i class="ico scan"></i><i class="ico list"></i><i class="ico slid"></i></div>
+            <div class="chips"><span class="chip on">En stock ×</span><span class="chip">☆ Destacado</span><span class="chip">$ En oferta</span><span class="chip">▭ Categoría</span><span class="chip">▭ Etiqueta</span></div>
+            <div class="grid"><div class="tile"><div class="img"></div><div class="t">Affirm Water Bottle</div><div class="p">7,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Aim Analog Watch</div><div class="p">45,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Album</div><div class="p">15,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie with Logo</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Belt</div><div class="p">55,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Bolo Sport Watch</div><div class="p">49,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Cap</div><div class="p">16,00 £</div></div></div>
+            <div class="foot"><span>٪ Shop base ˅</span><span>Mostrando 16 de 244 ◌</span></div>
+          </div>
+          <div class="col cart">
+            <div class="bar"><span>Front counter</span><span class="status">Open</span><span class="sp"></span><i class="ico reg"></i><i class="ico bell"></i></div>
+            <div class="custrow"><span style="color:var(--muted)">Cliente</span><span class="sel">Invitado ˅</span><span class="sp"></span>＋ <i class="ico slid"></i></div>
+            <div class="cartbody"></div>
+            <div class="total"><span class="cnt">4</span>67,00 £<span class="sp" style="flex:1"></span>› ＋</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="cap">macOS: the title centred in the strip, the way every Mac window titles itself; the strip stays a drag region.</p>
+  </div>
+  <div>
+    <div class="win windows">
+      <div class="strip"><div class="titlebar">UK Store <span style="color:var(--muted);font-weight:500">— Front counter · Open</span></div></div>
+      <div class="wco"><i>&#x2013;</i><i>&#x25A1;</i><i class="x">&#x2715;</i></div>
+      <div class="app">
+        <div class="rail"><span class="av"></span><div class="it on"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="sp"></span><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="v">v 2.0.0</span></div>
+        <div class="cols">
+          <div class="col products">
+            <div class="search"><div class="field">Search products</div><i class="ico scan"></i><i class="ico list"></i><i class="ico slid"></i></div>
+            <div class="chips"><span class="chip on">En stock ×</span><span class="chip">☆ Destacado</span><span class="chip">$ En oferta</span><span class="chip">▭ Categoría</span><span class="chip">▭ Etiqueta</span></div>
+            <div class="grid"><div class="tile"><div class="img"></div><div class="t">Affirm Water Bottle</div><div class="p">7,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Aim Analog Watch</div><div class="p">45,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Album</div><div class="p">15,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie with Logo</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Belt</div><div class="p">55,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Bolo Sport Watch</div><div class="p">49,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Cap</div><div class="p">16,00 £</div></div></div>
+            <div class="foot"><span>٪ Shop base ˅</span><span>Mostrando 16 de 244 ◌</span></div>
+          </div>
+          <div class="col cart">
+            <div class="bar"><span>Front counter</span><span class="status">Open</span><span class="sp"></span><i class="ico reg"></i><i class="ico bell"></i></div>
+            <div class="custrow"><span style="color:var(--muted)">Cliente</span><span class="sel">Invitado ˅</span><span class="sp"></span>＋ <i class="ico slid"></i></div>
+            <div class="cartbody"></div>
+            <div class="total"><span class="cnt">4</span>67,00 £<span class="sp" style="flex:1"></span>› ＋</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="cap">Windows: the title at the left of the strip, Windows-style, ending well before the controls' 138 px.</p>
+  </div>
+</div>
+
+<h2>3 · The strip belongs to the rail and the cart bar (flush)</h2>
+<p class="why">No full-width band. The rail extends up into the strip on the left (the traffic lights sit inside the rail, as your screenshot already shows — they land at 13 pt from the corner, so the rail's first item just starts lower), and the <b>cart bar rises to the top</b> on the right, its own height absorbing the strip. The products column also starts at the top with the search row. On Windows the cart bar's right end keeps 138 px clear for the controls, so the bell and register icons shift left by that much — or the bar starts a row lower on Windows only. The gain is the full 40 pt back; the cost is a platform-specific bar on Windows and drag regions that must be carved around every control on the top row (Chromium computes them geometrically, so the search field, chips and bar icons all need <code>no-drag</code>, which #2299 already applies globally).</p>
+<div class="row">
+  <div>
+    <div class="win mac">
+      <div class="strip clear"><div class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></div></div>
+      <div class="app flush">
+        <div class="rail" style="padding-top:44px"><span class="av"></span><div class="it on"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="sp"></span><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="v">v 2.0.0</span></div>
+        <div class="cols">
+          <div class="col products">
+            <div class="search"><div class="field">Search products</div><i class="ico scan"></i><i class="ico list"></i><i class="ico slid"></i></div>
+            <div class="chips"><span class="chip on">En stock ×</span><span class="chip">☆ Destacado</span><span class="chip">$ En oferta</span><span class="chip">▭ Categoría</span><span class="chip">▭ Etiqueta</span></div>
+            <div class="grid"><div class="tile"><div class="img"></div><div class="t">Affirm Water Bottle</div><div class="p">7,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Aim Analog Watch</div><div class="p">45,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Album</div><div class="p">15,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie with Logo</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Belt</div><div class="p">55,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Bolo Sport Watch</div><div class="p">49,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Cap</div><div class="p">16,00 £</div></div></div>
+            <div class="foot"><span>٪ Shop base ˅</span><span>Mostrando 16 de 244 ◌</span></div>
+          </div>
+          <div class="col cart">
+            <div class="bar" style="height:56px"><span>Front counter</span><span class="status">Open</span><span class="sp"></span><i class="ico reg"></i><i class="ico bell"></i></div>
+            <div class="custrow"><span style="color:var(--muted)">Cliente</span><span class="sel">Invitado ˅</span><span class="sp"></span>＋ <i class="ico slid"></i></div>
+            <div class="cartbody"></div>
+            <div class="total"><span class="cnt">4</span>67,00 £<span class="sp" style="flex:1"></span>› ＋</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="cap">macOS: nothing reserved; the lights live inside the rail, the columns start at the window's top edge.</p>
+  </div>
+  <div>
+    <div class="win windows">
+      <div class="strip clear"></div>
+      <div class="wco"><i>&#x2013;</i><i>&#x25A1;</i><i class="x">&#x2715;</i></div>
+      <div class="app flush">
+        <div class="rail" style="padding-top:36px"><span class="av"></span><div class="it on"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="sp"></span><div class="it"><i></i></div><div class="it"><i></i></div><div class="it"><i></i></div><span class="v">v 2.0.0</span></div>
+        <div class="cols">
+          <div class="col products">
+            <div class="search"><div class="field">Search products</div><i class="ico scan"></i><i class="ico list"></i><i class="ico slid"></i></div>
+            <div class="chips"><span class="chip on">En stock ×</span><span class="chip">☆ Destacado</span><span class="chip">$ En oferta</span><span class="chip">▭ Categoría</span><span class="chip">▭ Etiqueta</span></div>
+            <div class="grid"><div class="tile"><div class="img"></div><div class="t">Affirm Water Bottle</div><div class="p">7,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Aim Analog Watch</div><div class="p">45,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Album</div><div class="p">15,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Beanie with Logo</div><div class="p">18,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Belt</div><div class="p">55,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Bolo Sport Watch</div><div class="p">49,00 £</div></div><div class="tile"><div class="img"></div><div class="t">Cap</div><div class="p">16,00 £</div></div></div>
+            <div class="foot"><span>٪ Shop base ˅</span><span>Mostrando 16 de 244 ◌</span></div>
+          </div>
+          <div class="col cart">
+            <div class="bar" style="height:56px;padding-right:152px"><span>Front counter</span><span class="status">Open</span><span class="sp"></span><i class="ico reg"></i><i class="ico bell"></i></div>
+            <div class="custrow"><span style="color:var(--muted)">Cliente</span><span class="sel">Invitado ˅</span><span class="sp"></span>＋ <i class="ico slid"></i></div>
+            <div class="cartbody"></div>
+            <div class="total"><span class="cnt">4</span>67,00 £<span class="sp" style="flex:1"></span>› ＋</div>
+          </div>
+        </div>
+      </div>
+      <span class="callout" style="right:150px;top:44px">bar icons shift 138 px left</span>
+    </div>
+    <p class="cap">Windows: the cart bar keeps its right end clear for the controls, so its icons sit further in than on macOS — the platform difference option 3 buys.</p>
+  </div>
+</div>
+
+<div class="rec"><b>Recommendation: 2.</b> Keep the strip (one layout on both platforms, the drag region stays trivially correct, and #2299's inset mechanism is already what ships), but let it say <i>UK Store — Front counter · Open</i> the way the native title bar used to, so the band is not blank and two windows are tellable apart. It is a text-only change inside the strip: no control moves, nothing to carve out of the drag region, no Windows-specific bar. 3 recovers 40 pt but pays with a per-platform cart bar and a drag region that has to be right around every top-row control on every screen, including the management pages' bars; the products grid gets one more row on a 1080 p screen for that. 1 is what you have now and is the fallback if the title reads as clutter.</div>
+<p class="note">Mechanics for 2: the strip is `DesktopWindowChrome`'s inset (#2299); the title is a web-only element positioned in `env(titlebar-area-*)` inside `public/index.html`'s drag region, fed the store and register names by the same send channel that already carries the colour scheme (`window-color-scheme`), or rendered from the app root above the `SafeAreaProvider`. Windows variant: text left-aligned, `padding-right: env(titlebar-area-width)` untouched because the overlay's width is the controls' own. No change to the rail or the cart bar under any of the three; the phone/md board's option A stands as decided.</p>
+</body>
+</html>
