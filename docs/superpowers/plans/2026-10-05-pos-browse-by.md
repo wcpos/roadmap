@@ -2319,6 +2319,12 @@ it('shows the empty state under the parent tile when the level answered with not
 	expect(screen.queryByTestId('product-placeholder')).toBeNull();
 });
 
+it('Escape goes back one level', () => {
+	render(<TermLevelGrid {...(base as never)} />);
+	fireEvent.keyDown(screen.getByTestId('browse-level'), { key: 'Escape' });
+	expect(base.back).toHaveBeenCalled();
+});
+
 it('is the All products level too: the All products tile in slot 0, no children', () => {
 	render(<TermLevelGrid {...(base as never)} term={{ kind: 'all' }} children={[]} />);
 	expect(screen.getByTestId('browse-parent')).toBeTruthy();
@@ -2388,6 +2394,7 @@ import { Breadcrumb } from '@wcpos/components/breadcrumb';
 import type { EngineRecord } from '@wcpos/query';
 import { useGuardedExtendLimit } from '../../../../../../query';
 import { DealCell, DealFade, FRONT, type Measurable, useDeal } from '../deal-stack';
+import { LevelBack } from '../level-back';
 import { ProductTile, type GridFields } from '../grid/product-tile';
 import { VariableProductTile } from '../grid/variable-product-tile';
 import { ProductsFooter } from '../footer';
@@ -2484,7 +2491,8 @@ export function TermLevelGrid({
 	) as [Crumb, ...Crumb[]];
 
 	return (
-		<View className="flex-1" testID="browse-level">
+		// Escape and the edge swipe go back one level, as the variations pane's do (Task 9).
+		<LevelBack onBack={back} testID="browse-level">
 			{/* The crumb is a row of its own on the ground above the grid (drill-in.tsx). */}
 			<DealFade>
 				<Breadcrumb parents={parents} here={crumb.here} detail={detail} autoFocus testID="products-breadcrumb" />
@@ -2538,7 +2546,7 @@ export function TermLevelGrid({
 					<ProductsFooter collectionName="products" active$={binding.active$ as never} total$={total$} sync={binding.sync as never} count={products.filter(Boolean).length} />
 				</DealFade>
 			)}
-		</View>
+		</LevelBack>
 	);
 }
 ```
@@ -2549,7 +2557,7 @@ Note `VariableProductTile` reads `DealStagedContext` itself to lift the tapped p
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run the Step 2 command. Expected: PASS, 7 tests. `useScrollViewOffset` on the Animated.ScrollView and an `onScroll` handler coexist (Reanimated merges them); if the mock environment complains, check `variations-grid.test.tsx` for how it stubs Reanimated and copy that. `ParentTermTile` must render `{ kind: 'all' }` as the All products card (Task 4's `TermBody` already does for the root tile).
+Run the Step 2 command. Expected: PASS, 9 tests (mock `../level-back` as a `View` with the testID and Escape → `onBack`). `useScrollViewOffset` on the Animated.ScrollView and an `onScroll` handler coexist (Reanimated merges them); if the mock environment complains, check `variations-grid.test.tsx` for how it stubs Reanimated and copy that. `ParentTermTile` must render `{ kind: 'all' }` as the All products card (Task 4's `TermBody` already does for the root tile).
 
 - [ ] **Step 5: Commit**
 
@@ -2573,6 +2581,7 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
     answer: LevelAnswer | undefined; settled: boolean;   // as TermLevelGrid: shown through useLevelSnapshot
     showProducts: boolean;
     crumb: { parents: Crumb[]; here: string };            // detail is the snapshot's total
+    back: () => void;          // Escape / edge swipe (LevelBack); the crumb's last parent is the same callback
     onOpenTerm: (term: BrowseTerm) => void;
     onDrillProduct: (record: EngineRecord<'products'>) => void;
     variationsStyle: string;
@@ -2608,7 +2617,7 @@ jest.mock('../footer', () => ({ ProductsFooter: () => null }));
 const drinks = { kind: 'term' as const, id: 1, name: 'Drinks', count: 12 };
 const hot = { kind: 'term' as const, id: 2, name: 'Hot', count: 6, parent: 1 };
 const base = {
-	term: drinks, children: [hot], showProducts: true, settled: true,
+	term: drinks, children: [hot], showProducts: true, settled: true, back: jest.fn(),
 	answer: { hits: [{ record: { uuid: 'l', payload: { type: 'variable' } } }, { record: { uuid: 'f', payload: { type: 'simple' } } }], total: 80 },
 	crumb: { parents: [{ label: 'Categories', onPress: jest.fn() }], here: 'Drinks' },
 	onOpenTerm: jest.fn(), onDrillProduct: jest.fn(), variationsStyle: 'drill',
@@ -2637,6 +2646,12 @@ it('shows a skeleton until the products answer, and no products for subcategorie
 it('hands the empty state to the table when the level answered with nothing and has no children', () => {
 	render(<TermLevelTable {...(base as never)} children={[]} answer={{ hits: [], total: 0 }} />);
 	expect(screen.getByTestId('no-data-message')).toBeTruthy();
+});
+
+it('Escape goes back one level', () => {
+	render(<TermLevelTable {...(base as never)} />);
+	fireEvent.keyDown(screen.getByTestId('browse-level'), { key: 'Escape' });
+	expect(base.back).toHaveBeenCalled();
 });
 
 it('shows neither the empty state nor the table fallback under child rows with no products', () => {
@@ -2672,6 +2687,7 @@ import { ProductsFooter } from '../footer';
 import { ProductRow } from '../rows/product-row';
 import { VariableProductRow } from '../rows/variable-product-row';
 import { useT } from '../../../../../../contexts/translations';
+import { LevelBack } from '../level-back';
 import { type LevelAnswer, useLevelSnapshot } from './level-snapshot';
 
 type Crumb = { label: string; onPress: () => void; testID?: string };
@@ -2686,7 +2702,7 @@ const NOTHING = <></>;
  * products table, then its products. The rows travel with their pane; none animates on its own.
  */
 export function TermLevelTable({
-	term, children, answer, settled, showProducts, crumb, onOpenTerm, onDrillProduct, variationsStyle, binding, state, actions, empty,
+	term, children, answer, settled, showProducts, crumb, back, onOpenTerm, onDrillProduct, variationsStyle, binding, state, actions, empty,
 }: {
 	term: BrowseTerm;
 	children: BrowseTerm[];
@@ -2694,6 +2710,7 @@ export function TermLevelTable({
 	settled: boolean;
 	showProducts: boolean;
 	crumb: { parents: Crumb[]; here: string };
+	back: () => void;
 	onOpenTerm: (term: BrowseTerm) => void;
 	onDrillProduct: (record: EngineRecord<'products'>) => void;
 	variationsStyle: string;
@@ -2723,7 +2740,8 @@ export function TermLevelTable({
 	const total$ = React.useMemo(() => of(shown?.total ?? 0), [shown?.total]);
 	const data = showProducts ? shown?.hits : [];
 	return (
-		<View className="flex-1" testID="browse-level">
+		// Escape and the edge swipe go back one level, as the variations pane's do (Task 9).
+		<LevelBack onBack={back} testID="browse-level">
 			<Breadcrumb parents={parents} here={crumb.here} detail={detail} autoFocus testID="products-breadcrumb" />
 			<View className="flex-1">
 				{data === undefined ? (
@@ -2766,7 +2784,7 @@ export function TermLevelTable({
 					/>
 				)}
 			</View>
-		</View>
+		</LevelBack>
 	);
 }
 ```
@@ -2775,7 +2793,7 @@ Check `DataTable`'s props in `components/data-table/v2/index.tsx`: `noDataMessag
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run the Step 2 command. Expected: PASS, 5 tests.
+Run the Step 2 command. Expected: PASS, 6 tests. (`LevelBack` mock in the test: render its children in a `View` with the `testID` and the `onKeyDown` → Escape → `onBack` wiring, as `drill-in.test.tsx` exercises it.)
 
 - [ ] **Step 5: Commit**
 
@@ -3111,7 +3129,7 @@ export function BrowseStage(props: BrowseStageProps) {
 		return viewMode === 'grid' ? (
 			<TermLevelGrid key={termKey(term)} term={term} children={children} answer={answer} settled={settled} showProducts={showProducts} crumb={crumb} back={() => goBackTo(depth - 1)} onOpenTerm={openTerm} onDrillProduct={drillProduct} variationsStyle={props.variationsStyle} binding={binding as never} actions={props.actions} empty={props.empty} />
 		) : (
-			<TermLevelTable key={termKey(term)} term={term} children={children} answer={answer} settled={settled} showProducts={showProducts} crumb={crumb} onOpenTerm={openTerm} onDrillProduct={drillProduct} variationsStyle={props.variationsStyle} binding={binding as never} state={props.state as never} actions={props.actions as never} empty={props.empty} />
+			<TermLevelTable key={termKey(term)} term={term} children={children} answer={answer} settled={settled} showProducts={showProducts} crumb={crumb} back={() => goBackTo(depth - 1)} onOpenTerm={openTerm} onDrillProduct={drillProduct} variationsStyle={props.variationsStyle} binding={binding as never} state={props.state as never} actions={props.actions as never} empty={props.empty} />
 		);
 	};
 
@@ -3127,6 +3145,7 @@ Replace the Task 6 `BrowseStage` mount with:
 
 ```tsx
 									<BrowseStage
+										key={browseBy}
 										source={browseBy}
 										viewMode={viewMode}
 										renderProducts={renderProducts}
@@ -3140,7 +3159,7 @@ Replace the Task 6 `BrowseStage` mount with:
 									/>
 ```
 
-with `const [browseDrilled, setBrowseDrilled] = React.useState(false);` near `drill`, and the filter bar's level becoming `level={drilled || browseDrilled ? 'variations' : 'products'}`. A drill does not outlive its stage: in `index.tsx` add `React.useEffect(() => { setDrill(null); }, [browseBy]);` (a drill opened under All products is not shown under a browse source, nor restored when switching back), and in `BrowseStage` add `React.useEffect(() => () => onDrilledChange(false), [onDrilledChange]);` so an unmounting stage hands the filter bar's level back. Stage test: unmount while drilled → `onDrilledChange` last called with `false`.
+with `const [browseDrilled, setBrowseDrilled] = React.useState(false);` near `drill`, and the filter bar's level becoming `level={drilled || browseDrilled ? 'variations' : 'products'}`. The stage is keyed by `browseBy` (landed in Slice 1): a source change is a fresh stage, so no level of the old source ever gathers against the new source's terms. A drill does not outlive its stage: in `index.tsx` add `React.useEffect(() => { setDrill(null); }, [browseBy]);` (a drill opened under All products is not shown under a browse source, nor restored when switching back), and in `BrowseStage` add `React.useEffect(() => () => onDrilledChange(false), [onDrilledChange]);` so an unmounting stage hands the filter bar's level back. Stage test: unmount while drilled → `onDrilledChange` last called with `false`.
 
 - [ ] **Step 5: Run the tests**
 

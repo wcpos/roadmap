@@ -109,14 +109,14 @@
   .tiles.under .tile { transition: none; }
 
   /* term tiles */
-  .tile.term.photo .img { background: oklch(var(--tint-l) var(--tint-c) var(--h)); color: oklch(var(--tint-fg-l) .08 var(--h)); }
-  .tile.term .plainbody { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 4px; padding: 14px 12px; background: oklch(var(--tint-l) var(--tint-c) var(--h)); color: oklch(var(--tint-fg-l) .1 var(--h)); }
+  .tile.term.photo .img { background: var(--muted); color: var(--muted-foreground); }
+  .tile.term .plainbody { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 4px; padding: 14px 12px; background: var(--muted); color: var(--foreground); }
   .tile.term .plainbody .nm { font-size: 18px; font-weight: 600; }
-  .tile.term .plainbody .sub { color: oklch(var(--tint-fg-l) .06 var(--h)); opacity: .85; }
+  .tile.term .plainbody .sub { color: var(--muted-foreground); opacity: .85; }
   .tile.term.all .plainbody { background: var(--muted); color: var(--foreground); }
   .tile.term.all .plainbody svg { width: 28px; height: 28px; color: var(--muted-foreground); margin-bottom: 4px; }
   .tile.term.all .plainbody .sub { color: var(--muted-foreground); }
-  .tile.term.short .plainbody { background: oklch(var(--tint-l) var(--tint-c) var(--h)); }
+  .tile.term.short .plainbody { background: var(--muted); }
   .tile.term.short .plainbody .sub { font-size: 12px; }
 
   /* rows */
@@ -132,7 +132,7 @@
   .thumb { width: 40px; height: 40px; border-radius: 8px; background: var(--img); display: grid; place-items: center; color: var(--muted-foreground); margin: 0 8px; font-weight: 600; }
   .thumb svg { width: 18px; height: 18px; opacity: .6; }
   .thumb.sm { width: 32px; height: 32px; margin-left: 24px; }
-  .row.term .thumb { background: oklch(var(--tint-l) var(--tint-c) var(--h)); color: oklch(var(--tint-fg-l) .1 var(--h)); }
+  .row.term .thumb { background: var(--muted); color: var(--foreground); }
   .row.term.all .thumb { background: var(--muted); color: var(--muted-foreground); }
   .sub { font-size: 12.5px; color: var(--muted-foreground); }
   .add { width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border); display: grid; place-items: center; color: var(--primary); justify-self: end; margin-right: 8px; }
