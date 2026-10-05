@@ -75,6 +75,15 @@ footer and the variations drill-in are reused unchanged.
   zero-count ids, re-run as products arrive). A term that is empty for the till but not the shop
   cannot occur; one that is empty for the shop but holds POS-only products shows as soon as one of
   them is local. The settings row's count and its dimming use the same predicate.
+- **A parent is visible when any descendant is.** WooCommerce's recount counts a hierarchical
+  term's descendants into it (`_wc_term_recount`, `wc_change_term_counts`), so a shop-visible
+  child never has an empty parent. The POS-only case can: an organising parent with no products
+  of its own whose child holds only POS-only products has `count === 0` on both, and only the
+  child is carried by a synced product. The parent stays visible — entering it includes its
+  descendants, and hiding it would make the branch unreachable.
+- **The tile's `N products` is the term's `count`, shown only when `count > 0`.** That number is
+  the storefront's (catalog-visible products, descendants included); a term kept only because a
+  synced product carries it shows no count rather than `0 products` over a non-empty level.
 - "Descendants" is the transitive closure over `parent` in the local collection, computed by a pure
   function (`term-tree.ts`: `childrenOf`, `descendantsOf`, `orderTerms`, `displayTypeOf`) with unit
   tests. A term whose `parent` points at a missing term is treated as a root.
@@ -103,8 +112,9 @@ today's grid has none, and the All products tile says where you are. Tiles are t
 size and columns (`gridColumns`), so `useFitPageSize` and the skeleton count stay valid.
 
 - Term with an image: image area (same proportion as the product tile's), then name (500 weight)
-  and `N products` muted — `N` is the term's `count`.
-- Term without an image: the name centred on a `bg-muted` card, 18 px 600, `N products` under it.
+  and `N products` muted — `N` is the term's `count`, omitted when it is 0 (above).
+- Term without an image: the name centred on a `bg-muted` card, 18 px 600, `N products` under it
+  (omitted likewise).
   **No per-term colour** — the mockup's tints are illustrative; design rule 7 keeps colour
   semantic. If Paul wants the tints they are a token decision for the design program, not this
   build.
@@ -170,8 +180,10 @@ Product tiles and rows keep their ids. The setting rows: `ui-settings-browse-by-
 ## Strings
 
 `pos_products.browse_by`, `.browse_all_products`, `.browse_categories`, `.browse_tags`,
-`.browse_brands`, `.browse_shortcuts`, `.n_products` (`{count} products`, pluralised),
-`.no_terms_yet` (`No {kind} yet`), `.n_quick_filters`. Crumb root labels reuse the source labels.
+`.browse_brands`, `.browse_shortcuts`; the counts `.n_products`, `.n_categories`, `.n_tags`,
+`.n_brands`, `.n_quick_filters` each as an `_one`/`_other` pair (`{count} product` /
+`{count} products` — the catalogue's plural contract, `catalog-plurals.test.ts`); `.no_categories_yet`,
+`.no_tags_yet`, `.no_brands_yet`, `.no_shortcuts_yet`. Crumb root labels reuse the source labels.
 
 ## Testing
 

@@ -32,7 +32,8 @@ All paths under `packages/core/src/screens/main/pos/products/v2/` unless stated.
 | `browse/use-browse-path.ts` (new) | The path state + guard + projection into the root query (`setFilter`/`clearFilter`, quick-filter apply), and `search` reset. Exposes `path`, `enter(term, target?)`, `backTo(depth)`, `root()`. |
 | `browse/term-tile.tsx` (new) | `TermTile`, `AllProductsTile`, `ParentTermTile`. |
 | `browse/term-row.tsx` (new) | `TermRow`, `AllProductsRow`. |
-| `browse/term-grid.tsx` (new) | The root term grid (`BrowseRootGrid`) and a level's dealt grid (`TermLevelGrid`: slot 0 parent, child term tiles, product tiles from hits held as state). |
+| `browse/level-snapshot.ts` (new) | `useLevelSnapshot(answer, settled)`: a level's own last answer, held while the shared products query is another level's (a child over it, or gathering its set again on the way back). |
+| `browse/term-grid.tsx` (new) | The root term grid (`BrowseRootGrid`) and a level's dealt grid (`TermLevelGrid`: slot 0 parent, child term tiles, product tiles from the level snapshot). |
 | `browse/term-table.tsx` (new) | The root term list (`BrowseRootTable`) and a level's pane (`TermLevelTable`: crumb, child term rows, product rows on `DataTable`). |
 | `browse/browse-stage.tsx` (new) | `BrowseStage`: owns the nested `DealStack`/`PaneStack` recursion for `path` and the per-level variations drill; renders `DrillIn` for a product. |
 | `index.tsx` (modify) | Reads `browseBy`; when not `'all'` renders `BrowseStage` in place of the bare `DealStack`/`PaneStack`; passes the products element and the drill plumbing down. |
@@ -61,7 +62,7 @@ All paths under `packages/core/src/screens/main/pos/products/v2/` unless stated.
   export type TermLike = { id: number; name: string; parent?: number; menu_order?: number; count?: number; display?: string };
   export type DisplayType = 'products' | 'subcategories' | 'both';
   export function orderTerms<T extends TermLike>(terms: T[], hierarchical: boolean): T[];
-  export function visibleTerms<T extends TermLike>(terms: T[], knownNonEmpty?: ReadonlySet<number>): T[]; // count > 0, or a synced product carries it
+  export function visibleTerms<T extends TermLike>(terms: T[], knownNonEmpty?: ReadonlySet<number>): T[]; // count > 0, or a synced product carries it, or any descendant is visible
   export function childrenOf<T extends TermLike>(terms: T[], parentId: number): T[]; // ordered, visible
   export function rootTerms<T extends TermLike>(terms: T[]): T[];            // parent missing/0/orphaned, ordered, visible
   export function descendantIds(terms: TermLike[], id: number): number[];     // [id, ...all descendants], no duplicates, cycle-safe
@@ -117,12 +118,24 @@ describe('visibleTerms', () => {
 	it('keeps a zero-count term a synced product carries (POS-only products are not in the catalog recount)', () => {
 		expect(visibleTerms([T(1, 'A', { count: 0 }), T(2, 'B', { count: 0 })], new Set([2])).map((t) => t.id)).toEqual([2]);
 	});
+	it('keeps an empty parent whose descendant is visible, so the branch stays reachable', () => {
+		const terms = [T(1, 'Org', { count: 0 }), T(2, 'Mid', { parent: 1, count: 0 }), T(3, 'Leaf', { parent: 2, count: 0 }), T(4, 'Bare', { parent: 1, count: 0 })];
+		expect(visibleTerms(terms, new Set([3])).map((t) => t.id)).toEqual([1, 2, 3]);
+	});
+	it('does not loop on a parent cycle', () => {
+		expect(visibleTerms([T(1, 'A', { parent: 2, count: 1 }), T(2, 'B', { parent: 1, count: 0 })]).map((t) => t.id)).toEqual([1, 2]);
+	});
 });
 
 describe('rootTerms and childrenOf', () => {
 	const terms = [T(1, 'Drinks', { menu_order: 1 }), T(2, 'Hot', { parent: 1, menu_order: 2 }), T(3, 'Cold', { parent: 1, menu_order: 1 }), T(4, 'Orphan', { parent: 99 }), T(5, 'Empty', { parent: 1, count: 0 })];
 	it('roots are parentless or orphaned, ordered and visible', () => {
 		expect(rootTerms(terms).map((t) => t.name)).toEqual(['Drinks', 'Orphan']);
+	});
+	it('an empty parent with a POS-only child is a root, and the child is its child', () => {
+		const posOnly = [T(1, 'Org', { count: 0 }), T(2, 'Leaf', { parent: 1, count: 0 })];
+		expect(rootTerms(posOnly, new Set([2])).map((t) => t.name)).toEqual(['Org']);
+		expect(childrenOf(posOnly, 1, new Set([2])).map((t) => t.name)).toEqual(['Leaf']);
 	});
 	it('children are the direct, visible, ordered children', () => {
 		expect(childrenOf(terms, 1).map((t) => t.name)).toEqual(['Cold', 'Hot']);
@@ -197,10 +210,21 @@ export function orderTerms<T extends TermLike>(terms: T[], hierarchical: boolean
 /**
  * WooCommerce's `count` is the catalog recount, which leaves out products hidden from the
  * catalog — the POS-only products a till sells. So a zero-count term stays if a synced product
- * carries it (`knownNonEmpty`, from one local products query for the zero-count ids).
+ * carries it (`knownNonEmpty`, from one local products query for the zero-count ids), and a
+ * parent stays whenever a descendant does: the shop's recount already folds descendants into a
+ * parent's count (`_wc_term_recount`), so the only parent this lifts is one whose branch holds
+ * nothing but POS-only products — and hiding it would make that branch unreachable.
  */
 export function visibleTerms<T extends TermLike>(terms: T[], knownNonEmpty?: ReadonlySet<number>): T[] {
-	return terms.filter((term) => (term.count ?? 0) > 0 || !!knownNonEmpty?.has(term.id));
+	const byId = new Map(terms.map((term) => [term.id, term]));
+	const visible = new Set<number>();
+	for (const term of terms) {
+		if (!((term.count ?? 0) > 0 || knownNonEmpty?.has(term.id))) continue;
+		// The term and every ancestor; a cycle ends where it started.
+		for (let cursor: TermLike | undefined = term; cursor && !visible.has(cursor.id); cursor = cursor.parent ? byId.get(cursor.parent) : undefined)
+			visible.add(cursor.id);
+	}
+	return terms.filter((term) => visible.has(term.id));
 }
 
 export function rootTerms<T extends TermLike>(terms: T[], knownNonEmpty?: ReadonlySet<number>): T[] {
@@ -243,7 +267,7 @@ export function displayTypeOf(term: TermLike): DisplayType {
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run the Step 2 command. Expected: PASS, 15 tests.
+Run the Step 2 command. Expected: PASS, 18 tests.
 
 - [ ] **Step 5: Commit**
 
@@ -257,6 +281,8 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
 **Files:**
 - Modify: `packages/core/src/screens/main/contexts/ui-settings/initial-settings.json` (the `pos-products` block, next to `"variationsStyle": "drill"`)
 - Modify: `packages/core/src/screens/main/contexts/ui-settings/use-ui-label.ts` (the `pos-products` label map, next to `viewMode`)
+- Modify: `packages/core/src/screens/main/contexts/ui-settings/utils.ts` (`ENUM_VOCABULARIES['pos-products']`)
+- Modify: `packages/core/src/screens/main/contexts/ui-settings/utils.test.ts` (two tests, next to the `position` ones at lines 226-254)
 - Modify: `packages/core/src/contexts/translations/locales/en/core.json`
 - Create: `packages/core/src/screens/main/pos/products/v2/browse/browse-source.ts`
 - Test: `packages/core/src/screens/main/pos/products/v2/browse/browse-source.test.ts`
@@ -384,23 +410,75 @@ In `core.json`, in the `pos_products.` block (keep alphabetical order within the
 	"pos_products.browse_categories": "Categories",
 	"pos_products.browse_shortcuts": "Shortcuts",
 	"pos_products.browse_tags": "Tags",
-	"pos_products.n_brands": "{count} brands",
-	"pos_products.n_categories": "{count} categories",
-	"pos_products.n_products": "{count} products",
-	"pos_products.n_quick_filters": "{count} quick filters",
-	"pos_products.n_tags": "{count} tags",
+	"pos_products.n_brands_one": "{count} brand",
+	"pos_products.n_brands_other": "{count} brands",
+	"pos_products.n_categories_one": "{count} category",
+	"pos_products.n_categories_other": "{count} categories",
+	"pos_products.n_products_one": "{count} product",
+	"pos_products.n_products_other": "{count} products",
+	"pos_products.n_quick_filters_one": "{count} quick filter",
+	"pos_products.n_quick_filters_other": "{count} quick filters",
+	"pos_products.n_tags_one": "{count} tag",
+	"pos_products.n_tags_other": "{count} tags",
 	"pos_products.no_brands_yet": "No brands yet",
+	"pos_products.no_categories_yet": "No categories yet",
 	"pos_products.no_shortcuts_yet": "No shortcuts yet",
 	"pos_products.no_tags_yet": "No tags yet",
-	"pos_products.no_categories_yet": "No categories yet",
 ```
 
+Every count string is an `_one`/`_other` pair: i18next picks the form from `count`, so call sites ask for the base key (`t('pos_products.n_products', { count })`) and `catalog-plurals.test.ts` fails a base without `_other`. The existing bare `pos_products.n_variations` is not this task's.
+
 Then run the translations check the repo uses for `core.json` ordering/validity: `pnpm --filter @wcpos/core test -- --maxWorkers=2 src/contexts/translations` and fix any ordering complaint it reports.
+
+- [ ] **Step 5b: Hydration — an unknown stored value reads as `all`**
+
+`mergeWithInitalValues` (`ui-settings/utils.ts`) resets an enum setting whose persisted value is outside its vocabulary; that table is the per-device hydration rule the spec names. Add `browseBy` to it:
+
+```ts
+import { BROWSE_BY } from '../../pos/products/v2/browse/browse-source';
+// …
+const ENUM_VOCABULARIES: Partial<Record<UISettingID, Record<string, readonly string[]>>> = {
+	'pos-products': { position: ['left', 'right'], browseBy: BROWSE_BY },
+	'pos-cart': { openOrdersPosition: ['top', 'bottom'] },
+};
+```
+
+And in `utils.test.ts`, after the `keeps a position the cashier actually chose` test:
+
+```ts
+	it('resets a browseBy outside the vocabulary to all', async () => {
+		const currentState: Record<string, unknown> = { position: 'left', browseBy: 'favourites', filterBar: [] };
+		const state = {
+			get: () => currentState,
+			set: jest.fn(async (key: string, updater: (value: unknown) => unknown) => {
+				currentState[key] = updater(currentState[key]);
+			}),
+		};
+		await mergeWithInitalValues('pos-products', state as never);
+		expect(currentState.browseBy).toBe('all');
+	});
+
+	it('keeps a browseBy the cashier chose, and seeds all on a state written before the setting existed', async () => {
+		const chosen: Record<string, unknown> = { position: 'left', browseBy: 'categories', filterBar: [] };
+		const older: Record<string, unknown> = { position: 'left', filterBar: [] };
+		for (const currentState of [chosen, older]) {
+			const state = {
+				get: () => currentState,
+				set: jest.fn(async (key: string, updater: (value: unknown) => unknown) => {
+					currentState[key] = updater(currentState[key]);
+				}),
+			};
+			await mergeWithInitalValues('pos-products', state as never);
+		}
+		expect(chosen.browseBy).toBe('categories');
+		expect(older.browseBy).toBe('all');
+	});
+```
 
 - [ ] **Step 6: Run the tests**
 
 Run: `pnpm --filter @wcpos/core test -- --maxWorkers=2 src/screens/main/pos/products/v2/browse/browse-source.test.ts src/screens/main/contexts/ui-settings`
-Expected: PASS (the `initial-settings.test.ts` and `utils.test.ts` suites still pass with the new key).
+Expected: PASS (the `initial-settings.test.ts` suite still passes with the new key; `utils.test.ts` gains two tests).
 
 - [ ] **Step 7: Commit**
 
@@ -708,6 +786,12 @@ describe('TermTile', () => {
 		expect(screen.queryByTestId('browse-term-8-image')).toBeNull();
 		expect(screen.getByText('Snacks')).toBeTruthy();
 	});
+	it('shows no count on a term the storefront counts as empty (kept for its POS-only products)', () => {
+		render(<TermTile term={{ ...snacks, count: 0 }} onPress={jest.fn()} />);
+		expect(screen.queryByText(/products$/)).toBeNull();
+		render(<TermRow term={{ ...snacks, count: 0 }} onPress={jest.fn()} />);
+		expect(screen.queryByText(/products$/)).toBeNull();
+	});
 	it('renders All products with no count', () => {
 		render(<TermTile term={{ kind: 'all' }} onPress={jest.fn()} />);
 		expect(screen.getByTestId('browse-all-products')).toBeTruthy();
@@ -806,9 +890,12 @@ function TermBody({ term }: { term: BrowseTerm }) {
 				<Text className="text-center text-lg font-bold" numberOfLines={3} decodeHtml>
 					{term.name}
 				</Text>
-				<Text className="text-muted-foreground text-center">
-					{t('pos_products.n_products', { count: term.count })}
-				</Text>
+				{/* The storefront's count; a term kept for its POS-only products has none to show. */}
+				{term.count > 0 && (
+					<Text className="text-muted-foreground text-center">
+						{t('pos_products.n_products', { count: term.count })}
+					</Text>
+				)}
 			</View>
 		);
 	}
@@ -821,7 +908,9 @@ function TermBody({ term }: { term: BrowseTerm }) {
 				<Text className="font-bold" numberOfLines={2} decodeHtml>
 					{term.name}
 				</Text>
-				<Text className="text-muted-foreground">{t('pos_products.n_products', { count: term.count })}</Text>
+				{term.count > 0 && (
+					<Text className="text-muted-foreground">{t('pos_products.n_products', { count: term.count })}</Text>
+				)}
 			</VStack>
 		</>
 	);
@@ -897,9 +986,10 @@ import { termTestId } from './term-tile';
 export function TermRow({ term, onPress }: { term: BrowseTerm; onPress: (term: BrowseTerm) => void }) {
 	const t = useT();
 	const name = term.kind === 'all' ? t('pos_products.browse_all_products') : term.name;
+	// The storefront's count; a term kept for its POS-only products has none to show.
 	const sub =
 		term.kind === 'term'
-			? t('pos_products.n_products', { count: term.count })
+			? term.count > 0 ? t('pos_products.n_products', { count: term.count }) : undefined
 			: term.kind === 'shortcut'
 				? term.description
 				: undefined;
@@ -942,7 +1032,7 @@ export function TermRow({ term, onPress }: { term: BrowseTerm; onPress: (term: B
 
 - [ ] **Step 5: Run the tests to verify they pass**
 
-Run the Step 2 command. Expected: PASS, 8 tests.
+Run the Step 2 command. Expected: PASS, 9 tests.
 
 - [ ] **Step 6: Commit**
 
@@ -1270,8 +1360,9 @@ jest.mock('./use-browse-terms', () => ({
 jest.mock('../../../../../../contexts/translations', () => ({ useT: () => (key: string) => key }));
 jest.mock('../../../../contexts/ui-settings', () => ({ useUISettings: () => ({ uiSettings: { gridColumns: 2 } }) }));
 jest.mock('@wcpos/query', () => ({ ...jest.requireActual('@wcpos/query'), useDocField: (doc: Record<string, unknown>, read: (value: Record<string, unknown>) => unknown) => read(doc) }));
+let search = '';
 jest.mock('../../../../../../query', () => ({
-	useQueryState: () => ({ search: '', filters: {}, sort: { field: 'name', direction: 'asc' } }),
+	useQueryState: () => ({ search, filters: {}, sort: { field: 'name', direction: 'asc' } }),
 	useQueryStateActions: () => ({ setFilter: jest.fn(), clearFilter: jest.fn(), resetFilters: jest.fn(), clearSearch: jest.fn(), setSearch: jest.fn(), setSort: jest.fn() }),
 }));
 
@@ -1283,6 +1374,14 @@ it('opens on the root term set, not the products, in grid and table', () => {
 	rerender(<BrowseStage source="categories" viewMode="table" products={<Text testID="products">products</Text>} />);
 	expect(screen.getByTestId('browse-root')).toBeTruthy();
 	expect(screen.queryByTestId('products')).toBeNull();
+});
+
+it('a search displaces the term set with the catalogue-wide products', () => {
+	search = 'lat';
+	render(<BrowseStage source="categories" viewMode="grid" products={<Text testID="products">products</Text>} />);
+	expect(screen.getByTestId('products')).toBeTruthy();
+	expect(screen.queryByTestId('browse-root')).toBeNull();
+	search = '';
 });
 ```
 
@@ -1309,10 +1408,14 @@ export type BrowseStageProps = {
  * (grid) or pushing (table) its contents, products inside. Task 8 adds the levels; here the
  * root alone, so the setting has something to show.
  */
-export function BrowseStage({ source, viewMode }: BrowseStageProps) {
+export function BrowseStage({ source, viewMode, products }: BrowseStageProps) {
 	const terms = useBrowseTerms(source);
+	const { search } = useQueryState<'products'>();
 	const roots = terms.rootsOf();
 	const open = () => {};
+	// A search spans the catalogue, not the term set: the products show, with no crumb (spec,
+	// "Search"). The filter bar's own clear brings the term set back.
+	if (search !== '') return <>{products}</>;
 	return viewMode === 'grid' ? (
 		<BrowseRootGrid terms={roots} onOpen={open} />
 	) : (
@@ -1320,6 +1423,8 @@ export function BrowseStage({ source, viewMode }: BrowseStageProps) {
 	);
 }
 ```
+
+with `import { useQueryState } from '../../../../../../query';` among the imports.
 
 - [ ] **Step 6: Mount it in `index.tsx`**
 
@@ -1749,19 +1854,26 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
 ### Task 10: `TermLevelGrid` — a term's dealt grid
 
 **Files:**
+- Create: `packages/core/src/screens/main/pos/products/v2/browse/level-snapshot.ts`
 - Modify: `packages/core/src/screens/main/pos/products/v2/browse/term-grid.tsx` (add `TermLevelGrid`)
+- Test: `packages/core/src/screens/main/pos/products/v2/browse/level-snapshot.test.tsx`
 - Test: `packages/core/src/screens/main/pos/products/v2/browse/term-level-grid.test.tsx`
 
 **Interfaces:**
 - Consumes: `DealCell`, `DealFade`, `FRONT`, `useDeal`, `DealStagedContext` from `../deal-stack`; `ProductTile`, `GridFields` from `../grid/product-tile`; `VariableProductTile` from `../grid/variable-product-tile`; `ParentTermTile`, `TermTile` (Task 4); `Breadcrumb`; `ProductsFooter` from `../footer`; `displayTypeOf` (Task 1).
 - Produces:
   ```tsx
+  // level-snapshot.ts
+  export type LevelAnswer = { hits: { record: EngineRecord<'products'> }[]; total: number | undefined };
+  export function useLevelSnapshot(live: LevelAnswer | undefined, settled: boolean): LevelAnswer | undefined;
+  // term-grid.tsx
   export function TermLevelGrid(props: {
     term: BrowseTerm;                       // the dealt parent (slot 0)
     children: BrowseTerm[];                 // child terms (already filtered by display type by the caller)
-    hits: { record: EngineRecord<'products'> }[] | undefined;   // the products; undefined until answered
+    answer: LevelAnswer | undefined;        // the products query's answer, attributed to the current projection by the stage; undefined while gathering
+    settled: boolean;                       // this level is the deepest: the query is its own (the stage's word)
     showProducts: boolean;                  // display type !== 'subcategories'
-    crumb: { parents: Crumb[]; here: string; detail?: string };
+    crumb: { parents: Crumb[]; here: string };   // detail (`N products`, the query total) is the level's own, from its snapshot
     back: () => void;
     onOpenTerm: (term: BrowseTerm, target?: Measurable) => void;
     onDrillProduct: (record: EngineRecord<'products'>, target?: Measurable) => void;
@@ -1769,9 +1881,36 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
     binding: ReturnType<typeof useRelationalCollectionBinding>;   // for the footer
   }): JSX.Element;
   ```
-  Behaviour: slot 0 = `ParentTermTile`; then one `DealCell` per child term; then one per product; the grid holds the hits it was dealt with while it gathers (a snapshot taken while `dealt` is true), so tiles do not morph on the way home; the crumb is a `DealFade` over the top (sets `top` via `useDeal().setTop`) exactly as `DrillIn` does with `tiles`.
+  Behaviour: slot 0 = `ParentTermTile`; then one `DealCell` per child term; then one per product; the grid shows `useLevelSnapshot(answer, settled)` — its own last answer, held while a child level is over it and while the query gathers its set again on the way back — so tiles never morph into another level's products; the crumb is a `DealFade` over the top (sets `top` via `useDeal().setTop`) exactly as `DrillIn` does with `tiles`, and its detail is `N products` from the snapshot's `total` (the query total, not the loaded window).
 
-- [ ] **Step 1: Write the failing test**
+  Why not `useDeal().dealt`: a level stays `dealt` while a grandchild is over it, and `ObservableResource.reload` (query-bindings `useObservableResource`) keeps the previous answer while the re-projected query loads, with no loading flag — so neither "am I dealt" nor "is the answer defined" says whose answer this is. The stage attributes the answer (Task 12) and says which level is settled.
+
+- [ ] **Step 1: Write the failing tests**
+
+```tsx
+// level-snapshot.test.tsx
+import { renderHook } from '@testing-library/react-native';
+
+import { useLevelSnapshot } from './level-snapshot';
+
+const own = { hits: [{ record: { uuid: 'a' } }], total: 1 } as never;
+const theirs = { hits: [{ record: { uuid: 'b' } }], total: 9 } as never;
+
+it('takes the live answer while settled, holds it while not, and ignores a live answer that is not its own', () => {
+	const { result, rerender } = renderHook(({ live, settled }) => useLevelSnapshot(live, settled), {
+		initialProps: { live: undefined as typeof own | undefined, settled: true },
+	});
+	expect(result.current).toBeUndefined();            // cold: gathering
+	rerender({ live: own, settled: true });
+	expect(result.current).toBe(own);
+	rerender({ live: theirs, settled: false });        // a child level is over it; the query is the child's
+	expect(result.current).toBe(own);
+	rerender({ live: undefined, settled: true });      // on the way back: deepest again, query gathering its set
+	expect(result.current).toBe(own);
+	rerender({ live: theirs, settled: true });         // its own fresh answer (the stage attributed it)
+	expect(result.current).toBe(theirs);
+});
+```
 
 ```tsx
 // term-level-grid.test.tsx
@@ -1805,9 +1944,10 @@ const flat = { uuid: 'f', payload: { type: 'simple', name: 'Flat White' } };
 const base = {
 	term: drinks,
 	children: [hot],
-	hits: [{ record: latte }, { record: flat }],
+	answer: { hits: [{ record: latte }, { record: flat }], total: 80 },
+	settled: true,
 	showProducts: true,
-	crumb: { parents: [{ label: 'Categories', onPress: jest.fn() }], here: 'Drinks', detail: '12 products' },
+	crumb: { parents: [{ label: 'Categories', onPress: jest.fn() }], here: 'Drinks' },
 	back: jest.fn(),
 	onOpenTerm: jest.fn(),
 	onDrillProduct: jest.fn(),
@@ -1820,8 +1960,17 @@ it('deals the parent first, then child terms, then products', () => {
 	const order = ['browse-parent', 'browse-term-2', 'variable-l', 'product-f'].map((id) => screen.getByTestId(id));
 	expect(order.every(Boolean)).toBe(true);
 	expect(screen.getByTestId('products-breadcrumb')).toBeTruthy();
+	// The crumb's detail is the query TOTAL, not the two loaded rows.
+	expect(screen.getByText('80 pos_products.n_products')).toBeTruthy();
 	fireEvent.press(screen.getByTestId('browse-parent'));
 	expect(base.back).toHaveBeenCalled();
+});
+
+it('keeps its own products while a child level is over it', () => {
+	const { rerender } = render(<TermLevelGrid {...(base as never)} />);
+	rerender(<TermLevelGrid {...(base as never)} settled={false} answer={{ hits: [{ record: { uuid: 'x', payload: { type: 'simple', name: 'Other' } } }], total: 1 }} />);
+	expect(screen.getByTestId('product-f')).toBeTruthy();
+	expect(screen.queryByTestId('product-x')).toBeNull();
 });
 
 it('shows only child terms for a subcategories display type', () => {
@@ -1831,17 +1980,46 @@ it('shows only child terms for a subcategories display type', () => {
 });
 
 it('holds placeholders for products until the query answers', () => {
-	render(<TermLevelGrid {...(base as never)} hits={undefined} />);
+	render(<TermLevelGrid {...(base as never)} answer={undefined} />);
 	expect(screen.getAllByTestId('product-placeholder').length).toBeGreaterThan(0);
 });
 ```
 
 - [ ] **Step 2: Run it to verify it fails**
 
-Run: `pnpm --filter @wcpos/core test -- --maxWorkers=2 src/screens/main/pos/products/v2/browse/term-level-grid.test.tsx`
-Expected: FAIL — `TermLevelGrid` is not exported.
+Run: `pnpm --filter @wcpos/core test -- --maxWorkers=2 src/screens/main/pos/products/v2/browse/level-snapshot.test.tsx src/screens/main/pos/products/v2/browse/term-level-grid.test.tsx`
+Expected: FAIL — modules/exports not found.
 
-- [ ] **Step 3: Implement `TermLevelGrid`** (append to `term-grid.tsx`)
+- [ ] **Step 3: Implement `level-snapshot.ts`, then `TermLevelGrid`** (append to `term-grid.tsx`)
+
+```ts
+// level-snapshot.ts
+import * as React from 'react';
+
+import type { EngineRecord } from '@wcpos/query';
+
+export type LevelAnswer = {
+	hits: { record: EngineRecord<'products'> }[];
+	/** The query total (the footer's and the crumb's number), not the loaded window. */
+	total: number | undefined;
+};
+
+/**
+ * What a level shows. The products query is shared by every level of the browse stage, so the
+ * live answer is this level's only while the level is the deepest AND the answer was made under
+ * its projection — `settled`, the stage's word. Otherwise the level holds the last answer that
+ * was its own: while a child is dealt over it, and while the query gathers its set again on the
+ * way back, the tiles on stage stay the tiles that came out.
+ */
+export function useLevelSnapshot(
+	live: LevelAnswer | undefined,
+	settled: boolean
+): LevelAnswer | undefined {
+	const held = React.useRef<LevelAnswer | undefined>(undefined);
+	if (settled && live !== undefined) held.current = live;
+	return held.current;
+}
+```
 
 ```tsx
 import Animated, { useAnimatedRef, useScrollViewOffset } from 'react-native-reanimated';
@@ -1851,11 +2029,11 @@ import { DealCell, DealFade, FRONT, useDeal } from '../deal-stack';
 import { ProductTile, type GridFields } from '../grid/product-tile';
 import { VariableProductTile } from '../grid/variable-product-tile';
 import { ProductsFooter } from '../footer';
+import { type LevelAnswer, useLevelSnapshot } from './level-snapshot';
 import { ParentTermTile } from './term-tile';
 import { useT } from '../../../../../../contexts/translations';
 
 type Crumb = { label: string; onPress: () => void; testID?: string };
-type Hit = { record: EngineRecord<'products'> };
 // Over the grid, which scrolls underneath it (as drill-in.tsx).
 const CRUMB_OVER = { zIndex: 1 };
 // How many product placeholders a cold level holds: a row's worth, so the deal goes out with shape.
@@ -1878,7 +2056,8 @@ function ProductPlaceholder() {
 export function TermLevelGrid({
 	term,
 	children,
-	hits,
+	answer,
+	settled,
 	showProducts,
 	crumb,
 	back,
@@ -1889,16 +2068,17 @@ export function TermLevelGrid({
 }: {
 	term: BrowseTerm;
 	children: BrowseTerm[];
-	hits: Hit[] | undefined;
+	answer: LevelAnswer | undefined;
+	settled: boolean;
 	showProducts: boolean;
-	crumb: { parents: Crumb[]; here: string; detail?: string };
+	crumb: { parents: Crumb[]; here: string };
 	back: () => void;
 	onOpenTerm: (term: BrowseTerm, target?: Measurable) => void;
 	onDrillProduct: (record: EngineRecord<'products'>, target?: Measurable) => void;
 	variationsStyle: string;
 	binding: { active$: unknown; total$: unknown; sync: unknown };
 }) {
-	const { top, setTop, dealt } = useDeal();
+	const { top, setTop } = useDeal();
 	const scroller = useAnimatedRef<Animated.ScrollView>();
 	const scroll = useScrollViewOffset(scroller);
 	const { uiSettings } = useUISettings('pos-products');
@@ -1907,16 +2087,15 @@ export function TermLevelGrid({
 	const staged = React.useContext(DealStagedContext) as { term?: BrowseTerm; record?: EngineRecord<'products'> } | null;
 	const t = useT();
 
-	// Frozen while gathering: the shared query has already moved on to the ancestor's set.
-	const frozen = React.useRef(hits);
-	if (dealt) frozen.current = hits;
-	const shownHits = dealt ? hits : frozen.current;
+	// This level's own answer, held while the shared query is another level's (level-snapshot.ts).
+	const shown = useLevelSnapshot(answer, settled);
+	const detail = shown?.total === undefined ? undefined : t('pos_products.n_products', { count: shown.total });
 
 	const products: (EngineRecord<'products'> | null)[] = !showProducts
 		? []
-		: shownHits === undefined
+		: shown === undefined
 			? Array.from({ length: columns * PLACEHOLDER_ROWS }, () => null)
-			: shownHits.map((hit) => hit.record);
+			: shown.hits.map((hit) => hit.record);
 	const count = 1 + children.length + products.length;
 	const rows = Array.from({ length: Math.ceil(count / columns) }, (_, row) =>
 		Array.from({ length: columns }, (_, column) => row * columns + column)
@@ -1932,7 +2111,7 @@ export function TermLevelGrid({
 				style={CRUMB_OVER}
 				onLayout={(event) => setTop(event.nativeEvent.layout.height)}
 			>
-				<Breadcrumb parents={parents} here={crumb.here} detail={crumb.detail} autoFocus testID="products-breadcrumb" />
+				<Breadcrumb parents={parents} here={crumb.here} detail={detail} autoFocus testID="products-breadcrumb" />
 			</DealFade>
 			<Animated.ScrollView
 				ref={scroller}
@@ -1977,12 +2156,12 @@ Note `VariableProductTile` reads `DealStagedContext` itself to lift the tapped p
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run the Step 2 command. Expected: PASS, 3 tests.
+Run the Step 2 command. Expected: PASS, 5 tests.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by add packages/core/src/screens/main/pos/products/v2/browse/term-grid.tsx packages/core/src/screens/main/pos/products/v2/browse/term-level-grid.test.tsx
+git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by add packages/core/src/screens/main/pos/products/v2/browse/level-snapshot.ts packages/core/src/screens/main/pos/products/v2/browse/level-snapshot.test.tsx packages/core/src/screens/main/pos/products/v2/browse/term-grid.tsx packages/core/src/screens/main/pos/products/v2/browse/term-level-grid.test.tsx
 git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "feat(pos): a term's dealt grid — parent, child terms, products, crumb over the top"
 ```
 
@@ -1998,15 +2177,16 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
   ```tsx
   export function TermLevelTable(props: {
     term: BrowseTerm; children: BrowseTerm[];
-    hits: Hit[] | undefined; showProducts: boolean;
-    crumb: { parents: Crumb[]; here: string; detail?: string };
+    answer: LevelAnswer | undefined; settled: boolean;   // as TermLevelGrid: shown through useLevelSnapshot
+    showProducts: boolean;
+    crumb: { parents: Crumb[]; here: string };            // detail is the snapshot's total
     onOpenTerm: (term: BrowseTerm) => void;
     onDrillProduct: (record: EngineRecord<'products'>) => void;
     variationsStyle: string;
     binding; state; actions;   // the root products binding/state/actions, as index.tsx passes DataTable
   }): JSX.Element;
   ```
-  Behaviour: crumb above (not over) the rows as `DrillIn` does without `tiles`; child term rows on top of the `DataTable`'s rows via `ListHeaderComponent`; products rows from `tableConfig={{ data: hits }}` so the pane shows the hits it is given (and the level can freeze them on the way out the same way the grid does); a `DataTableSkeleton` with `rowCount` = children + 4 until `hits` is defined.
+  Behaviour: crumb above (not over) the rows as `DrillIn` does without `tiles`; child term rows on top of the `DataTable`'s rows via `ListHeaderComponent`; products rows from `tableConfig={{ data: shown.hits }}` where `shown = useLevelSnapshot(answer, settled)` — the pane holds its own rows while a child pane is pushed over it and while the query gathers its set again on the pop, exactly as the grid does (Task 10 says why `dealt`/"is the answer defined" cannot stand in); a `DataTableSkeleton` with `rowCount` = children + 4 until the snapshot exists.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -2032,9 +2212,9 @@ jest.mock('../footer', () => ({ ProductsFooter: () => null }));
 const drinks = { kind: 'term' as const, id: 1, name: 'Drinks', count: 12 };
 const hot = { kind: 'term' as const, id: 2, name: 'Hot', count: 6, parent: 1 };
 const base = {
-	term: drinks, children: [hot], showProducts: true,
-	hits: [{ record: { uuid: 'l', payload: { type: 'variable' } } }, { record: { uuid: 'f', payload: { type: 'simple' } } }],
-	crumb: { parents: [{ label: 'Categories', onPress: jest.fn() }], here: 'Drinks', detail: '12 products' },
+	term: drinks, children: [hot], showProducts: true, settled: true,
+	answer: { hits: [{ record: { uuid: 'l', payload: { type: 'variable' } } }, { record: { uuid: 'f', payload: { type: 'simple' } } }], total: 80 },
+	crumb: { parents: [{ label: 'Categories', onPress: jest.fn() }], here: 'Drinks' },
 	onOpenTerm: jest.fn(), onDrillProduct: jest.fn(), variationsStyle: 'drill',
 	binding: {} as never, state: { sort: { field: 'name', direction: 'asc' } } as never, actions: {} as never,
 };
@@ -2050,11 +2230,18 @@ it('renders the crumb, then child term rows, then product rows', () => {
 });
 
 it('shows a skeleton until the products answer, and no products for subcategories display', () => {
-	const { rerender } = render(<TermLevelTable {...(base as never)} hits={undefined} />);
+	const { rerender } = render(<TermLevelTable {...(base as never)} answer={undefined} />);
 	expect(screen.getByTestId('skeleton')).toBeTruthy();
 	rerender(<TermLevelTable {...(base as never)} showProducts={false} />);
 	expect(screen.queryByTestId('row-f')).toBeNull();
 	expect(screen.getByTestId('browse-term-2')).toBeTruthy();
+});
+
+it('keeps its own rows while a child pane is over it', () => {
+	const { rerender } = render(<TermLevelTable {...(base as never)} />);
+	rerender(<TermLevelTable {...(base as never)} settled={false} answer={{ hits: [{ record: { uuid: 'x', payload: { type: 'simple' } } }], total: 1 }} />);
+	expect(screen.getByTestId('row-f')).toBeTruthy();
+	expect(screen.queryByTestId('row-x')).toBeNull();
 });
 ```
 
@@ -2074,6 +2261,8 @@ import { cellsForRow } from '../../index';
 import { ProductsFooter } from '../footer';
 import { ProductRow } from '../rows/product-row';
 import { VariableProductRow } from '../rows/variable-product-row';
+import { useT } from '../../../../../../contexts/translations';
+import { type LevelAnswer, useLevelSnapshot } from './level-snapshot';
 
 type Crumb = { label: string; onPress: () => void; testID?: string };
 type Hit = { record: EngineRecord<'products'> };
@@ -2085,13 +2274,14 @@ const SKELETON_PRODUCT_ROWS = 4;
  * products table, then its products. The rows travel with their pane; none animates on its own.
  */
 export function TermLevelTable({
-	term, children, hits, showProducts, crumb, onOpenTerm, onDrillProduct, variationsStyle, binding, state, actions,
+	term, children, answer, settled, showProducts, crumb, onOpenTerm, onDrillProduct, variationsStyle, binding, state, actions,
 }: {
 	term: BrowseTerm;
 	children: BrowseTerm[];
-	hits: Hit[] | undefined;
+	answer: LevelAnswer | undefined;
+	settled: boolean;
 	showProducts: boolean;
-	crumb: { parents: Crumb[]; here: string; detail?: string };
+	crumb: { parents: Crumb[]; here: string };
 	onOpenTerm: (term: BrowseTerm) => void;
 	onDrillProduct: (record: EngineRecord<'products'>) => void;
 	variationsStyle: string;
@@ -2112,10 +2302,14 @@ export function TermLevelTable({
 		),
 		[children, onOpenTerm]
 	);
-	const data = showProducts ? hits : [];
+	// This pane's own answer, held while the shared query is another level's (level-snapshot.ts).
+	const shown = useLevelSnapshot(answer, settled);
+	const t = useT();
+	const detail = shown?.total === undefined ? undefined : t('pos_products.n_products', { count: shown.total });
+	const data = showProducts ? shown?.hits : [];
 	return (
 		<View className="flex-1" testID="browse-level">
-			<Breadcrumb parents={parents} here={crumb.here} detail={crumb.detail} autoFocus testID="products-breadcrumb" />
+			<Breadcrumb parents={parents} here={crumb.here} detail={detail} autoFocus testID="products-breadcrumb" />
 			<View className="flex-1">
 				{data === undefined ? (
 					<>
@@ -2161,7 +2355,7 @@ Check `DataTable`'s props in `components/data-table/v2/index.tsx`: `tableConfig=
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run the Step 2 command. Expected: PASS, 2 tests.
+Run the Step 2 command. Expected: PASS, 3 tests.
 
 - [ ] **Step 5: Commit**
 
@@ -2192,11 +2386,15 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
     onDrilledChange: (drilled: boolean) => void; // so index.tsx can set the filter bar's level
   }
   ```
-  A level's detail is `type Detail = { term: BrowseTerm; target?: Measurable } | { record: EngineRecord<'products'>; target?: Measurable }`. The stage keeps ONE product drill `{ record, depth, search, target }` (shown only at `depth === path.length` and while `search === state.search`, the existing rule).
+  A level's detail is `type Detail = { term: BrowseTerm; target?: Measurable } | { record: EngineRecord<'products'>; target?: Measurable }`. The stage keeps ONE product drill `{ record, depth, search, target }` (shown only at `depth === path.length` and while `search === state.search`, the existing rule); every move of the path (`openTerm`, `goBackTo`, `goRoot`) clears it first, and a drilled product's crumb ends with the current term, whose press closes the drill.
+
+  The stage also owns two readings of the shared products query that the levels cannot make for themselves:
+  - **Attribution.** `ObservableResource.reload` keeps the previous answer while a re-projected query loads (query-bindings `useObservableResource`), so the answer object is paired with the query key it arrived under; `answer` is `undefined` while the current key has no answer of its own. Edge: an emission of the old query that lands in the same render as a key change is attributed to the new key — one wrong frame, which the level snapshot then replaces; noted, not guarded.
+  - **Search displacement.** With the path empty and `state.search !== ''`, depth 0 is today's products element (`props.products`, which reads the query itself) with no crumb — the spec's search contract; clearing the search shows the root term set again because the path was already dropped.
 
 - [ ] **Step 1: Extend the stage test**
 
-Add to `browse-stage.test.tsx` (its mocks already stub `useBrowseTerms`; add a stub for `useBrowsePath` that is a real `useState` so taps move it, and stub `DealStack`/`PaneStack` to render children + detail side by side with testIDs):
+Add to `browse-stage.test.tsx` (its mocks already stub `useBrowseTerms`; import `act` alongside `render`; stub `DealStack`/`PaneStack` to render children + detail side by side with testIDs):
 
 ```tsx
 jest.mock('../deal-stack', () => {
@@ -2231,15 +2429,32 @@ it('tapping a root term opens its level; a child term nests; the crumb goes back
 	expect(screen.getByTestId('products-breadcrumb')).toBeTruthy();
 });
 
-it('a product drilled inside a term gets the term crumb as its ancestors', () => {
+it('a product drilled inside a term gets the term crumb as its ancestors, and the term crumb closes the drill', () => {
 	render(<BrowseStage {...stageProps} source="categories" viewMode="table" />);
 	fireEvent.press(screen.getByTestId('browse-term-1'));
 	fireEvent.press(screen.getByTestId('variable-product-drill'));
 	expect(screen.getByTestId('drill-in').props.children).toBe('Categories › Drinks');
+	fireEvent.press(screen.getByTestId('drill-in-last-parent'));     // the DrillIn mock renders the last parent as a pressable
+	expect(screen.queryByTestId('drill-in')).toBeNull();
+	expect(screen.getByTestId('browse-level')).toBeTruthy();         // still inside Drinks
+});
+
+it('a search typed inside a term shows the catalogue-wide products with no crumb; clearing it shows the root set', () => {
+	render(<BrowseStage {...stageProps} source="categories" viewMode="grid" />);
+	fireEvent.press(screen.getByTestId('browse-term-1'));
+	act(() => queryActions.setSearch('lat'));                          // the Task 8 fake store
+	expect(screen.getByTestId('products')).toBeTruthy();
+	expect(screen.queryByTestId('products-breadcrumb')).toBeNull();
+	expect(screen.queryByTestId('browse-level')).toBeNull();
+	act(() => queryActions.clearSearch());
+	expect(screen.queryByTestId('products')).toBeNull();
+	expect(screen.getByTestId('browse-term-1')).toBeTruthy();
 });
 ```
 
-`stageProps` is a fixture in the test file with `products={<Text testID="products" />}`, a `binding` whose `resource.valueRef$$.value.current.hits` holds one variable product and one simple product, `state`, `actions` fakes, `initialFilters: { status: 'publish' }`, `variationsStyle: 'drill'`, `onDrilledChange: jest.fn()`; the `useBrowseTerms` mock returns Drinks at the root with Hot as its child and `idsFor` → `[1,2]` / `[2]`; the `use-browse-path` module is NOT mocked (its own test covers it; here the query mock from Task 6's test is extended with a working `setFilter`/`clearFilter` fake exactly as in Task 8's test so the guard sees what `enter` wrote).
+The `DrillIn` mock gains a pressable for its last parent: `<Pressable testID="drill-in-last-parent" onPress={parents[parents.length - 1].onPress} />` beside the `Text`. `queryActions` is the Task 8 fake store's `actions` object, exported from the test's mock factory (hoist it with `jest.mock`'s factory returning the same object both tests import).
+
+`stageProps` is a fixture in the test file with `products={<Text testID="products" />}`, `total$: of(80)`, a `binding` whose `resource.valueRef$$.value.current.hits` holds one variable product and one simple product, `state`, `actions` fakes, `initialFilters: { status: 'publish' }`, `variationsStyle: 'drill'`, `onDrilledChange: jest.fn()`; the `useBrowseTerms` mock returns Drinks at the root with Hot as its child and `idsFor` → `[1,2]` / `[2]`; the `use-browse-path` module is NOT mocked (its own test covers it; here the query mock from Task 6's test is extended with a working `setFilter`/`clearFilter` fake exactly as in Task 8's test so the guard sees what `enter` wrote).
 
 - [ ] **Step 2: Run it to verify it fails**
 
@@ -2253,6 +2468,7 @@ Expected: FAIL — tapping a term does nothing.
 import * as React from 'react';
 
 import { useObservableEagerState } from 'observable-hooks';
+import type { Observable } from 'rxjs';
 
 import { PaneStack } from '@wcpos/components/pane-stack';
 import type { EngineRecord } from '@wcpos/query';
@@ -2262,6 +2478,7 @@ import { useQueryState } from '../../../../../../query';
 import { DealStack, type Measurable } from '../deal-stack';
 import { DrillIn } from '../drill-in';
 import { type BrowseBy, type BrowseTerm } from './browse-source';
+import type { LevelAnswer } from './level-snapshot';
 import { BrowseRootGrid, TermLevelGrid } from './term-grid';
 import { BrowseRootTable, TermLevelTable } from './term-table';
 import { displayTypeOf } from './term-tree';
@@ -2302,7 +2519,7 @@ function sourceLabel(source: Exclude<BrowseBy, 'all'>, t: ReturnType<typeof useT
 export function BrowseStage(props: BrowseStageProps) {
 	const { source, viewMode, binding, onDrilledChange } = props;
 	const terms = useBrowseTerms(source);
-	const { path, enter, backTo, root } = useBrowsePath(source, terms);
+	const { path, enter, backTo } = useBrowsePath(source, terms);
 	const state = useQueryState<'products'>();
 	// The product drill remembers its depth and the search it opened under (the existing rule).
 	const [drill, setDrill] = React.useState<{ record: EngineRecord<'products'>; depth: number; search: string; target?: Measurable } | null>(null);
@@ -2317,11 +2534,27 @@ export function BrowseStage(props: BrowseStageProps) {
 	// mid-deal would lose its place).
 	// eslint-disable-next-line wcpos/no-dollar-getter-into-observable-hooks -- ObservableResource exposes a stable BehaviorSubject property, not an RxDB $-getter; exception dated 2026-10-02.
 	useObservableEagerState(binding.resource.valueRef$$ as never);
-	const hits = binding.resource.valueRef$$.value?.current.hits;
+	const liveAnswer = binding.resource.valueRef$$.value;
+	const total = useObservableEagerState(binding.total$ as Observable<number | undefined>);
+	// Attributed: the resource keeps the previous answer while a re-projected query loads, so an
+	// answer object is paired with the query key it arrived under, and a key without an answer of
+	// its own is "gathering" (see the Interfaces note on the one-frame edge).
+	const queryKey = JSON.stringify([state.search, state.filters, state.sort]);
+	const attributed = React.useRef<{ key: string; answer: typeof liveAnswer }>({ key: queryKey, answer: undefined });
+	if (liveAnswer !== attributed.current.answer) attributed.current = { key: queryKey, answer: liveAnswer };
+	const answer: LevelAnswer | undefined =
+		attributed.current.key === queryKey && liveAnswer ? { hits: liveAnswer.current.hits, total } : undefined;
 	const t = useT();
 	const rootLabel = sourceLabel(source, t);
+	const labelOf = (term: BrowseTerm) => (term.kind === 'all' ? t('pos_products.browse_all_products') : term.name);
 
+	// Every move of the path closes the product drill: a stale drill at a depth the path returns
+	// to would otherwise reappear.
 	const openTerm = React.useCallback((term: BrowseTerm, target?: Measurable) => { setDrill(null); enter(term, target); }, [enter]);
+	const goBackTo = React.useCallback((depth: number) => { setDrill(null); backTo(depth); }, [backTo]);
+	const goRoot = React.useCallback(() => goBackTo(0), [goBackTo]);
+	// A search over an empty path has displaced the term set: the catalogue-wide products show.
+	const searchDisplaced = path.length === 0 && state.search !== '';
 
 	// What is on stage at `depth`: the next path entry, or the product drilled here.
 	const detailAt = (depth: number): Detail | null => {
@@ -2329,18 +2562,23 @@ export function BrowseStage(props: BrowseStageProps) {
 		if (drilled && drilled.depth === depth) return { kind: 'product', record: drilled.record, target: drilled.target };
 		return null;
 	};
+	// The crumb's ancestors for the level at `depth`: the source, then the path above it.
 	const crumbParentsAt = (depth: number) => [
-		{ label: rootLabel, onPress: root },
+		{ label: rootLabel, onPress: goRoot },
 		...path.slice(0, depth).map((entry, index) => ({
-			label: entry.term.kind === 'all' ? t('pos_products.browse_all_products') : entry.term.name,
-			onPress: () => backTo(index + 1),
+			label: labelOf(entry.term),
+			onPress: () => goBackTo(index + 1),
 		})),
 	];
+	// A product drilled at `depth` sits inside path[depth - 1]: that term is the last crumb parent,
+	// and pressing it closes the drill (the path stays where it is).
+	const drillParentsAt = (depth: number) =>
+		depth === 0 ? undefined : [...crumbParentsAt(depth - 1), { label: labelOf(path[depth - 1].term), onPress: () => drillProduct(null) }];
 
 	// Level `depth` (0 = the root) with whatever is dealt over it.
 	const renderLevel = (depth: number): React.ReactNode => {
 		const detail = detailAt(depth);
-		const content = depth === 0 ? renderRoot() : renderTerm(path[depth - 1], depth);
+		const content = depth === 0 ? (searchDisplaced ? props.products : renderRoot()) : renderTerm(path[depth - 1], depth);
 		const renderDetail = (d: Detail) =>
 			d.kind === 'term' ? renderLevel(depth + 1) : (
 				<DrillIn
@@ -2348,7 +2586,7 @@ export function BrowseStage(props: BrowseStageProps) {
 					back={() => drillProduct(null)}
 					stockStatus={props.stockStatus}
 					tiles={viewMode === 'grid'}
-					parents={depth === 0 ? undefined : crumbParentsAt(depth)}
+					parents={drillParentsAt(depth)}
 				/>
 			);
 		const staged = detail?.kind === 'term' ? { term: detail.entry.term } : detail?.kind === 'product' ? detail.record : null;
@@ -2368,15 +2606,14 @@ export function BrowseStage(props: BrowseStageProps) {
 
 	const renderTerm = (entry: PathEntry, depth: number) => {
 		const { term } = entry;
-		const crumb = {
-			parents: crumbParentsAt(depth - 1),
-			here: term.kind === 'all' ? t('pos_products.browse_all_products') : term.name,
-			detail: hits ? t('pos_products.n_products', { count: hits.length }) : undefined,
-		};
+		const crumb = { parents: crumbParentsAt(depth - 1), here: labelOf(term) };
+		// The query is this level's own only while it is the deepest (a product drill over it
+		// does not move the products query).
+		const settled = depth === path.length;
 		if (term.kind === 'all') {
 			// The plain products, with the crumb above (table) or over (grid) — as the existing DrillIn.
 			return (
-				<AllProductsLevel crumb={crumb} tiles={viewMode === 'grid'}>
+				<AllProductsLevel crumb={{ ...crumb, detail: answer?.total === undefined ? undefined : t('pos_products.n_products', { count: answer.total }) }} tiles={viewMode === 'grid'}>
 					{props.products}
 				</AllProductsLevel>
 			);
@@ -2385,9 +2622,9 @@ export function BrowseStage(props: BrowseStageProps) {
 		const children = display === 'products' ? [] : terms.childrenOf(term);
 		const showProducts = display !== 'subcategories' || children.length === 0;
 		return viewMode === 'grid' ? (
-			<TermLevelGrid term={term} children={children} hits={hits} showProducts={showProducts} crumb={crumb} back={() => backTo(depth - 1)} onOpenTerm={openTerm} onDrillProduct={drillProduct} variationsStyle={props.variationsStyle} binding={binding as never} />
+			<TermLevelGrid term={term} children={children} answer={answer} settled={settled} showProducts={showProducts} crumb={crumb} back={() => goBackTo(depth - 1)} onOpenTerm={openTerm} onDrillProduct={drillProduct} variationsStyle={props.variationsStyle} binding={binding as never} />
 		) : (
-			<TermLevelTable term={term} children={children} hits={hits} showProducts={showProducts} crumb={crumb} onOpenTerm={openTerm} onDrillProduct={drillProduct} variationsStyle={props.variationsStyle} binding={binding as never} state={props.state as never} actions={props.actions as never} />
+			<TermLevelTable term={term} children={children} answer={answer} settled={settled} showProducts={showProducts} crumb={crumb} onOpenTerm={openTerm} onDrillProduct={drillProduct} variationsStyle={props.variationsStyle} binding={binding as never} state={props.state as never} actions={props.actions as never} />
 		);
 	};
 
@@ -2587,11 +2824,17 @@ Read the product tile/row testIDs on `next` before finalising the regexes (`prod
 - Inside a term: deal with parent at slot 0, children then products, crumb as the existing component, nested levels, crumb ancestors return in one pass → Tasks 10, 12 (`backTo` truncates the path; every intermediate `DealStack` sees its `detail` go `null` on the same render).
 - Table: pane push, crumb above, child rows then product rows → Task 11.
 - All products as a term → Task 12 `AllProductsLevel`.
-- Search/scan reset to products while non-empty, root on clear → Task 8 (guard + effect), Task 12 (`drill.search`).
-- Empty states: nothing-matches with Clear filters → the existing `noDataMessage` inside `props.products`… **gap**: `TermLevelGrid`/`TermLevelTable` render their own rows from `hits` and so do not show `noDataMessage` when `hits` is `[]`. Fix inline: both accept an optional `empty: React.ReactNode` prop; Task 12 passes `noDataMessage` from `index.tsx` (add it to `BrowseStageProps` as `empty`), and each level renders it in place of the product cells/rows when `showProducts && hits?.length === 0`. Added to Tasks 10, 11, 12 by this note; implementers treat it as part of those tasks.
+- Search/scan reset to products while non-empty, root on clear → Task 8 (guard + effect), Tasks 6 and 12 (`searchDisplaced`: depth 0 is `props.products` while the path is empty and the search non-empty), Task 12 (`drill.search`).
+- A term is visible when any descendant is (POS-only branch under an organising parent) → Task 1 `visibleTerms` lifts ancestors; the tile shows no count at `count === 0` → Task 4.
+- Crumb detail is the query total → the stage reads `binding.total$`; each level snapshots `{ hits, total }` together (Tasks 10, 11, 12).
+- A level's rows/tiles are its own while covered or gathering → `useLevelSnapshot` (Task 10) in both the grid and the table; the stage attributes the shared answer to its query key (Task 12).
+- Product drill inside a term: the term crumb closes it; every path move clears it → Task 12 (`drillParentsAt`, `goBackTo`).
+- `browseBy` in the per-device hydration rule → Task 2 Step 5b (`ENUM_VOCABULARIES`, two `utils.test.ts` tests).
+- Count strings are `_one`/`_other` pairs → Task 2 Step 5.
+- Empty states: nothing-matches with Clear filters → the existing `noDataMessage` inside `props.products`… **gap**: `TermLevelGrid`/`TermLevelTable` render their own rows from the snapshot and so do not show `noDataMessage` when its `hits` is `[]`. Fix inline: both accept an optional `empty: React.ReactNode` prop; Task 12 passes `noDataMessage` from `index.tsx` (add it to `BrowseStageProps` as `empty`), and each level renders it in place of the product cells/rows when `showProducts && shown?.hits.length === 0`. Added to Tasks 10, 11, 12 by this note; implementers treat it as part of those tasks.
 - Subcategories display with all children hidden → products instead → Task 12 (`showProducts = display !== 'subcategories' || children.length === 0`).
 - Test IDs, strings → Tasks 2, 4, 10, 11.
 - Gallery, E2E, films, ledger → Tasks 15, 16.
 - Filter bar untouched → no task touches `v2/filter-bar.tsx` or `filter-bar/*` (Task 8 only imports from them). `level` still flips to `variations` for a product drill (Task 12 Step 4).
 
-Type consistency: `BrowseTerm`, `termKey`, `termTestId` (Tasks 2, 4) are used with those names in 5, 10, 11, 12; `BrowseTerms.{rootsOf, childrenOf, idsFor, quickFilterFor}` (Task 3) in 8 and 12; `useBrowsePath` returns `{ path, enter, backTo, root }` (Task 8) as consumed in 12; `DrillIn.parents` (Task 9) as consumed in 12; `useBrowseCounts` (Task 6) as consumed by the form.
+Type consistency: `BrowseTerm`, `termKey`, `termTestId` (Tasks 2, 4) are used with those names in 5, 10, 11, 12; `BrowseTerms.{rootsOf, childrenOf, idsFor, quickFilterFor}` (Task 3) in 8 and 12; `useBrowsePath` returns `{ path, enter, backTo, root }` (Task 8) — Task 12 wraps `backTo` as `goBackTo`/`goRoot` and leaves `root` unused; `LevelAnswer`/`useLevelSnapshot` (Task 10) in 11 and 12, with the level props `answer`/`settled`/`crumb: { parents, here }`; `DrillIn.parents` (Task 9) as consumed in 12 (`drillParentsAt`); `useBrowseCounts` (Task 6) as consumed by the form.
