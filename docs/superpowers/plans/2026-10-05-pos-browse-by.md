@@ -12,7 +12,7 @@
 
 - Lane `next`; worktree `/Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by` (branch `feat/pos-browse-by`, already created and installed). Every slice is its own PR to `next`, after the fresh-session review the lane requires.
 - Spec: `wcpos/roadmap` `docs/specs/2026-10-05-pos-browse-by-spec.md` (PR #403). Owner decisions: breadcrumb reused as is; **filter bar untouched in every mode**; scope = tiles and table; no per-term colour (image-less tiles are `bg-muted` with the name).
-- Design rules: `CODING_STANDARDS.md` § Design. Tap targets ≥ 44 pt; semantic tokens only (`bg-card`, `bg-muted`, `text-muted-foreground`…), never a hex; animate only `transform`/`opacity`; nothing animates on mount; no skeleton or spinner inside a moving surface.
+- Design rules: `CODING_STANDARDS.md` § Design. Tap targets ≥ 44 pt; semantic tokens only (`bg-card`, `bg-muted`, `text-muted-foreground`…), never a hex; animate only `transform`/`opacity`; nothing animates on mount; no skeleton or spinner inside a moving surface — a slot held in a tile's own shape (`VariationPlaceholder` in `variations-grid.tsx`, `ProductPlaceholder` here) is the deal's own pattern, not a skeleton: the deal goes out complete and what arrives lands in a slot already there.
 - Tests: ALWAYS `--maxWorkers=2`, one suite at a time. From the worktree root: `pnpm --filter @wcpos/core test -- --maxWorkers=2 <path>`; the hook `cap-test-workers.js` blocks uncapped runs. `pnpm typecheck --force` before every push.
 - **Component tests in `@wcpos/core` are jsdom + `@testing-library/react`** (`/** @jest-environment jsdom */` at the top, `render`/`screen`/`fireEvent.click`/`act`/`renderHook` from `@testing-library/react`, the neighbouring `v2/*.test.tsx` as the pattern — React Native renders as web in this package, and `@testing-library/react-native` is not what these suites use). Where a task's test code below says `@testing-library/react-native` or `fireEvent.press`, read `@testing-library/react` and `fireEvent.click`; the assertions stand. Mock `@wcpos/components/icon` and the image the way `drill-in.test.tsx` / `term-tile.test.tsx` do when SVG loading trips the test.
 - The icon registry has no `filter`; shortcuts use `sliders` (Task 4).
@@ -1269,7 +1269,8 @@ export function useBrowseCounts(): Record<Exclude<BrowseBy, 'all'>, number | und
 	const brands = useTaxonomyTerms('brands');
 	const { uiSettings } = useUISettings('pos-products');
 	const items = normalizeFilterBar(useDocField(uiSettings, (value) => value.filterBar));
-	const answered = (terms: BrowseTerms) => (terms.all === undefined ? undefined : terms.rootsOf().length);
+	// Every visible term of the source (nested ones too), not just the root tiles.
+	const answered = (terms: BrowseTerms) => terms.all?.length;
 	return {
 		categories: answered(categories),
 		tags: answered(tags),
@@ -1727,6 +1728,28 @@ it('a parent reparented or deleted under an open child drops the path', () => {
 	expect(result.current.path).toEqual([]);
 });
 
+it('a child added under the open term re-projects the level in place instead of dropping it', () => {
+	let children = [2];
+	const dynamic = { ...terms, idsFor: (term: { id?: number }) => (term.id === 1 ? [1, ...children] : term.id ? [term.id] : []) };
+	const { result, rerender } = renderHook(() => useBrowsePath('categories', dynamic as never));
+	act(() => result.current.enter(drinks));
+	expect(state.filters.categories).toEqual([1, 2]);
+	children = [2, 7];
+	rerender();
+	expect(result.current.path.length).toBe(1);
+	expect(state.filters.categories).toEqual([1, 2, 7]);
+});
+
+it('a root term reparented under another visible term drops the path', () => {
+	const food = { kind: 'term' as const, id: 5, name: 'Food', count: 3 };
+	let all: unknown[] = [drinks, food];
+	const { result, rerender } = renderHook(() => useBrowsePath('categories', { ...terms, all } as never));
+	act(() => result.current.enter(drinks));
+	all = [{ ...drinks, parent: 5 }, food];            // Drinks is now under Food: not reachable from the root
+	rerender();
+	expect(result.current.path).toEqual([]);
+});
+
 it('unmounting clears the projection (Browse by → All products)', () => {
 	const { result, unmount } = renderHook(() => useBrowsePath('categories', terms as never));
 	act(() => result.current.enter(drinks));
@@ -1784,15 +1807,19 @@ const sameSet = (left: unknown, right: number[]) =>
 const sameSort = (left: { field: string; direction: string }, right: { field: string; direction: string }) =>
 	left.field === right.field && left.direction === right.direction;
 
-/** Every stored term is still in the source, and each is still the child of the one before. */
+/**
+ * Every stored term is still in the source, the first is still a root (its parent absent or
+ * not in the source), and each later one is still the child of the one before.
+ */
 function chainStands(stored: PathEntry[], all: BrowseTerm[] | undefined): boolean {
 	if (all === undefined) return true;
+	const ids = new Set(all.map((candidate) => (candidate.kind === 'term' ? candidate.id : -1)));
 	let previous: number | undefined;
 	for (const { term } of stored) {
 		if (term.kind !== 'term') continue;
 		const known = all.find((candidate) => termKey(candidate) === termKey(term));
 		if (!known || known.kind !== 'term') return false;
-		if (previous !== undefined && known.parent !== previous) return false;
+		if (previous === undefined ? !!known.parent && ids.has(known.parent) : known.parent !== previous) return false;
 		previous = known.id;
 	}
 	return true;
@@ -1916,10 +1943,14 @@ export function useBrowsePath(source: Exclude<BrowseBy, 'all'>, terms: BrowseTer
 			// still the child of the one before (a parent deleted or reparented on the server
 			// leaves the child a root, or someone else's). While the source has not answered
 			// (`all === undefined`) it is unknown, not gone.
+			// The filter must still be what the PATH put there (`projected`), not the term's current
+			// derived set: a child added or removed under the open term changes `idsFor` without the
+			// cashier touching anything — that is re-projected below, not treated as a pill press.
 			live =
 				state.search === '' &&
 				!!field &&
-				sameSet(state.filters[field], terms.idsFor(term)) &&
+				projected.current?.kind === 'taxonomy' &&
+				sameSet(state.filters[field], projected.current.ids) &&
 				chainStands(stored, terms.all);
 		else {
 			const quickFilter = terms.quickFilterFor(term);
@@ -1937,6 +1968,19 @@ export function useBrowsePath(source: Exclude<BrowseBy, 'all'>, terms: BrowseTer
 			unproject();
 		}
 	}, [stored.length, live, unproject]);
+
+	// A live term level whose descendant set has changed under it (a child added, removed or
+	// moved on the server) is re-projected in place: the level stays, its products follow.
+	const derived = deepest?.term.kind === 'term' ? terms.idsFor(deepest.term) : undefined;
+	const derivedKey = derived?.join(',');
+	React.useEffect(() => {
+		const current = projected.current;
+		if (!live || !derived || !field || current?.kind !== 'taxonomy') return;
+		if (sameSet(current.ids, derived)) return;
+		actions.setFilter(field, derived as never);
+		projected.current = { kind: 'taxonomy', field, ids: derived };
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the set's contents, not the array identity
+	}, [live, derivedKey, field, actions]);
 
 	const enter = React.useCallback(
 		(term: BrowseTerm, target?: Measurable) => {
@@ -1964,7 +2008,7 @@ The `resetState` above is the chip's own (`v2/filter-bar.tsx` `QuickChip`: empty
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run the Step 2 command. Expected: PASS, 12 tests (make the in-stock baseline case two `it.each` rows over `showOutOfStock` true/false by mocking `useUISettings` per row; assert `clearFilter('stock_status')` for true and `setFilter('stock_status', 'instock')` for false). (`project` runs `unproject` first, so entering a child from a parent clears the parent's set and then sets the child's — the test's `toHaveBeenLastCalledWith` sees the second.) If the "entering a child" test shows `path` lagging one render, the guard is reading stale `state` — `enter` must call `project` BEFORE `setStored` (it does) and the fake store must emit synchronously (it does); fix the hook, not the test.
+Run the Step 2 command. Expected: PASS, 14 tests (make the in-stock baseline case two `it.each` rows over `showOutOfStock` true/false by mocking `useUISettings` per row; assert `clearFilter('stock_status')` for true and `setFilter('stock_status', 'instock')` for false). (`project` runs `unproject` first, so entering a child from a parent clears the parent's set and then sets the child's — the test's `toHaveBeenLastCalledWith` sees the second.) If the "entering a child" test shows `path` lagging one render, the guard is reading stale `state` — `enter` must call `project` BEFORE `setStored` (it does) and the fake store must emit synchronously (it does); fix the hook, not the test.
 
 - [ ] **Step 5: Commit**
 
@@ -2802,6 +2846,8 @@ it('a level stays rendered from its staged entry while its stack gathers after t
 	fireEvent.click(screen.getAllByTestId('products-breadcrumb-parent-0')[1]);   // Categories: path → []
 	expect(screen.getAllByTestId('browse-level').length).toBe(2);               // both levels still on stage, gathering
 	expect(screen.queryByText('undefined')).toBeNull();
+	// The deepest level's crumb still carries its middle: Categories › Drinks › Hot.
+	expect(screen.getAllByTestId('products-breadcrumb-parent-1').length).toBeGreaterThan(0);
 });
 
 it('a product drilled inside a term keeps its crumb while it gathers after the path was cut from under it', () => {
@@ -2856,7 +2902,7 @@ import { displayTypeOf } from './term-tree';
 import { useBrowsePath, type PathEntry } from './use-browse-path';
 import { useBrowseTerms, type BrowseTerms } from './use-browse-terms';
 
-type ProductDrill = { kind: 'product'; record: EngineRecord<'products'>; depth: number; search: string; target?: Measurable };
+type ProductDrill = { kind: 'product'; record: EngineRecord<'products'>; depth: number; search: string; source: BrowseBy; target?: Measurable };
 // By identity: DealStack re-arms whenever `detail !== staged`, so a level's detail is the stored
 // path entry or the drill object itself, never a fresh literal.
 type Detail = PathEntry | ProductDrill;
@@ -2897,22 +2943,23 @@ export function BrowseStage(props: BrowseStageProps) {
 	const state = useQueryState<'products'>();
 	// The product drill remembers its depth and the search it opened under (the existing rule).
 	const [drill, setDrill] = React.useState<ProductDrill | null>(null);
-	const drilled = drill && drill.search === state.search && drill.depth === path.length ? drill : null;
+	// Shown only for the source, depth and search it opened under — judged in the same render, so
+	// a source change never hands the old product to the new root stack for a frame.
+	const drilled = drill && drill.source === source && drill.search === state.search && drill.depth === path.length ? drill : null;
 	React.useEffect(() => onDrilledChange(drilled !== null), [drilled, onDrilledChange]);
 	// A drill whose search has moved, or whose source has changed, is forgotten — not merely
 	// hidden: restoring the same search later must show the results, not the old variations.
 	// (Every source shares this one stage instance, so an unmount cleanup cannot do it.)
 	React.useEffect(() => {
-		if (drill && drill.search !== state.search) setDrill(null);
-	}, [drill, state.search]);
-	React.useEffect(() => { setDrill(null); }, [source]);
+		if (drill && (drill.search !== state.search || drill.source !== source)) setDrill(null);
+	}, [drill, state.search, source]);
 	// Stable: it is baked into the tiles' component identity through renderProducts, and a new
 	// handler per keystroke would remount every tile under the search.
-	const where = React.useRef({ depth: path.length, search: state.search });
-	where.current = { depth: path.length, search: state.search };
+	const where = React.useRef({ depth: path.length, search: state.search, source });
+	where.current = { depth: path.length, search: state.search, source };
 	const drillProduct = React.useCallback<DrillHandler>(
 		(record, target) =>
-			setDrill(record ? { kind: 'product', record, depth: where.current.depth, search: where.current.search, target } : null),
+			setDrill(record ? { kind: 'product', record, depth: where.current.depth, search: where.current.search, source: where.current.source, target } : null),
 		[]
 	);
 	// The products answer as state: a level never suspends (a tile swapped for a skeleton
@@ -2939,36 +2986,39 @@ export function BrowseStage(props: BrowseStageProps) {
 	// objects themselves (identity, see Detail).
 	const detailAt = (depth: number): Detail | null =>
 		path[depth] ?? (drilled && drilled.depth === depth ? drilled : null);
-	// The crumb's ancestors for the level at `depth`: the source, then the path above it.
-	const crumbParentsAt = (depth: number) => [
+	// The crumb's ancestors above a level: the source, then the STAGED chain above it — the
+	// entries each stack has on stage, handed down the recursion, never `path.slice(…)`: while a
+	// level gathers after the path was cut, the live path is already shorter than the crumb.
+	const crumbParentsFor = (chain: PathEntry[]) => [
 		{ label: rootLabel, onPress: goRoot },
-		...path.slice(0, depth).map((entry, index) => ({
+		...chain.map((entry, index) => ({
 			label: labelOf(entry.term),
 			onPress: () => goBackTo(index + 1),
 		})),
 	];
-	// A product drilled at `depth` sits inside the level's own entry (handed down from the staged
-	// detail, never read from `path[depth - 1]`: the path may already be shorter while the drill
-	// gathers): that term is the last crumb parent, and pressing it closes the drill.
-	const drillParentsAt = (depth: number, entry?: PathEntry) =>
-		depth === 0 || !entry ? undefined : [...crumbParentsAt(depth - 1), { label: labelOf(entry.term), onPress: () => drillProduct(null) }];
+	// A product drilled inside a level: the level's own entry is the last crumb parent, and
+	// pressing it closes the drill.
+	const drillParentsFor = (chain: PathEntry[]) =>
+		chain.length === 0 ? undefined : [...crumbParentsFor(chain.slice(0, -1)), { label: labelOf(chain[chain.length - 1].term), onPress: () => drillProduct(null) }];
 
 	// Level `depth` (0 = the root) with whatever is dealt over it.
-	// `entry` is the term this level shows — handed down from the stack's STAGED detail, not read
-	// from `path[depth - 1]`: a stack keeps its detail on stage for the gather after the path has
-	// already been truncated, and a level rendered from the path in that window would be
-	// rendering `undefined`.
-	const renderLevel = (depth: number, entry?: PathEntry): React.ReactNode => {
+	// `chain` is the staged entries from the root down to this level (its last element is the
+	// term this level shows) — handed down from each stack's STAGED detail, not read from the
+	// path: a stack keeps its detail on stage for the gather after the path has already been
+	// truncated, and a level rendered from the path in that window would be rendering
+	// `undefined`, with a crumb missing its middle.
+	const renderLevel = (chain: PathEntry[]): React.ReactNode => {
+		const depth = chain.length;
 		const detail = detailAt(depth);
-		const content = depth === 0 ? (searchDisplaced ? props.renderProducts(drillProduct) : renderRoot()) : renderTerm(entry as PathEntry, depth);
+		const content = depth === 0 ? (searchDisplaced ? props.renderProducts(drillProduct) : renderRoot()) : renderTerm(chain);
 		const renderDetail = (d: Detail) =>
-			d.kind === 'term' ? renderLevel(depth + 1, d) : (
+			d.kind === 'term' ? renderLevel([...chain, d]) : (
 				<DrillIn
 					parent={d.record}
 					back={() => drillProduct(null)}
 					stockStatus={props.stockStatus}
 					tiles={viewMode === 'grid'}
-					parents={drillParentsAt(depth, entry)}
+					parents={drillParentsFor(chain)}
 				/>
 			);
 		return viewMode === 'grid' ? (
@@ -2985,9 +3035,11 @@ export function BrowseStage(props: BrowseStageProps) {
 	const renderRoot = () =>
 		viewMode === 'grid' ? <BrowseRootGrid terms={terms.rootsOf()} onOpen={openTerm} /> : <BrowseRootTable terms={terms.rootsOf()} onOpen={openTerm} />;
 
-	const renderTerm = (entry: PathEntry, depth: number) => {
+	const renderTerm = (chain: PathEntry[]) => {
+		const depth = chain.length;
+		const entry = chain[depth - 1];
 		const { term } = entry;
-		const crumb = { parents: crumbParentsAt(depth - 1), here: labelOf(term) };
+		const crumb = { parents: crumbParentsFor(chain.slice(0, -1)), here: labelOf(term) };
 		// The query is this level's own only while it is the deepest AND still on the path (a
 		// product drill over it does not move the products query; a level gathering after the
 		// path was truncated is neither, and holds its snapshot).
@@ -3004,7 +3056,7 @@ export function BrowseStage(props: BrowseStageProps) {
 		);
 	};
 
-	return <>{renderLevel(0)}</>;
+	return <>{renderLevel([])}</>;
 }
 ```
 
@@ -3210,7 +3262,7 @@ Read the product tile/row testIDs on `next` before finalising the regexes (`prod
 - Crumb detail is the query total → the stage reads `binding.total$`; each level snapshots `{ hits, total }` together (Tasks 10, 11, 12).
 - A level's rows/tiles are its own while covered or gathering → `useLevelSnapshot` (Task 10) in both the grid and the table; the stage attributes the shared answer to the `result$` that emitted it (`useAnswerOf`, Task 10/12).
 - A term deleted or hidden while open drops the path → Task 8 liveness requires the term in `terms.all` (unknown while the source has not answered).
-- Product drill inside a term: the term crumb closes it; every path move clears it → Task 12 (`drillParentsAt`, `goBackTo`).
+- Product drill inside a term: the term crumb closes it; every path move clears it → Task 12 (`drillParentsFor`, `goBackTo`).
 - `browseBy` in the per-device hydration rule → Task 2 Step 5b (`ENUM_VOCABULARIES`, two `utils.test.ts` tests).
 - Count strings are `_one`/`_other` pairs → Task 2 Step 5.
 - Empty states: nothing-matches with Clear filters → the search-displaced root has it inside `renderProducts`; a term level has it through the `empty` prop (Tasks 10, 11: `index.tsx`'s `noDataMessage`, shown under slot 0 / handed to `DataTable` when the level answered with no products and has no child terms; Task 12 threads it as `BrowseStageProps.empty`). Clear filters clears the taxonomy field, which drops the path to the root — the spec's return.
@@ -3219,4 +3271,4 @@ Read the product tile/row testIDs on `next` before finalising the regexes (`prod
 - Gallery, E2E, films, ledger → Tasks 15, 16.
 - Filter bar untouched → no task touches `v2/filter-bar.tsx` or `filter-bar/*` (Task 8 only imports from them). `level` still flips to `variations` for a product drill (Task 12 Step 4).
 
-Type consistency: `BrowseTerm`, `termKey`, `termTestId` (Tasks 2, 4) are used with those names in 5, 10, 11, 12; `BrowseTerms.{rootsOf, childrenOf, idsFor, quickFilterFor}` (Task 3) in 8 and 12; `useBrowsePath` returns `{ path, enter, backTo, root }` (Task 8) — Task 12 wraps `backTo` as `goBackTo`/`goRoot` and leaves `root` unused; `LevelAnswer`/`useLevelSnapshot` (Task 10) in 11 and 12, with the level props `answer`/`settled`/`crumb: { parents, here }`; `DrillIn.parents` (Task 9) as consumed in 12 (`drillParentsAt`); `useBrowseCounts` (Task 6) as consumed by the form.
+Type consistency: `BrowseTerm`, `termKey`, `termTestId` (Tasks 2, 4) are used with those names in 5, 10, 11, 12; `BrowseTerms.{rootsOf, childrenOf, idsFor, quickFilterFor}` (Task 3) in 8 and 12; `useBrowsePath` returns `{ path, enter, backTo, root }` (Task 8) — Task 12 wraps `backTo` as `goBackTo`/`goRoot` and leaves `root` unused; `LevelAnswer`/`useLevelSnapshot` (Task 10) in 11 and 12, with the level props `answer`/`settled`/`crumb: { parents, here }`; `DrillIn.parents` (Task 9) as consumed in 12 (`drillParentsFor`); `useBrowseCounts` (Task 6) as consumed by the form.
