@@ -889,8 +889,10 @@ function TermBody({ term }: { term: BrowseTerm }) {
 		);
 	}
 	if (!term.imageSrc) {
+		// The CARD is muted (`bg-muted` on the Pressable, Task 4 as landed), and the body fills it
+		// (`flex-1`, at least a square): in a row stretched by an image tile there is no strip.
 		return (
-			<View className="bg-muted aspect-square items-center justify-center gap-1 p-3">
+			<View className="aspect-square min-h-0 flex-1 items-center justify-center gap-1 p-3">
 				<Text className="text-center text-lg font-bold" numberOfLines={3} decodeHtml>
 					{term.name}
 				</Text>
@@ -1999,8 +2001,9 @@ export function useBrowsePath(source: Exclude<BrowseBy, 'all'>, terms: BrowseTer
 
 	// A path the query no longer carries is forgotten, and what it put there and is still there
 	// is taken back out (a search typed over a term or a shortcut must span the whole catalogue;
-	// the search itself stays).
-	React.useEffect(() => {
+	// the search itself stays). A LAYOUT effect, as the source teardown: the search results
+	// must not paint once under the old term's filter.
+	React.useLayoutEffect(() => {
 		if (stored.length > 0 && !live) {
 			setStored([]);
 			unproject();
@@ -2056,6 +2059,15 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
 ```
 
 ### Task 9: `DrillIn` takes its crumb's parents
+
+Also in this task: **`LevelBack`** — `DrillIn` owns the pane's Escape key (web `onKeyDown`) and the edge-swipe (`Gesture.Pan`, coarse pointer, `hitSlop` left 24, `activeOffsetX` 24, `onEnd` → `back()`); a term level needs exactly the same, so extract that wrapper from `DrillIn`'s render into `v2/level-back.tsx`:
+
+```tsx
+/** The way back a level owes beyond its crumb: Escape (web) and the edge swipe (touch). */
+export function LevelBack({ onBack, testID, children }: { onBack: () => void; testID?: string; children: React.ReactNode }) { /* DrillIn's GestureDetector + onKeyDown block, verbatim, calling onBack */ }
+```
+
+`DrillIn` uses it (`<LevelBack onBack={back} testID="products-variations-pane">`), and Tasks 10/11 wrap `TermLevelGrid`/`TermLevelTable` in it with `onBack={back}` / `onBack={() => goBackTo(depth - 1)}` so Escape and the swipe truncate the path through the hook (never a stack-internal dismissal that would leave the controlled `detail` live). `drill-in.test.tsx`'s Escape/swipe tests keep passing unchanged; add one each to the level tests.
 
 **Files:**
 - Modify: `packages/core/src/screens/main/pos/products/v2/drill-in.tsx:22-60`
@@ -2168,7 +2180,7 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
   ```
   Behaviour: slot 0 = `ParentTermTile`; then one `DealCell` per child term; then one per product; the grid shows `useLevelSnapshot(answer, settled)` — its own last answer, held while a child level is over it and while the query gathers its set again on the way back — so tiles never morph into another level's products; the crumb is a row of its own above the grid, in a `DealFade` (exactly as `DrillIn` does with `tiles` on `next` since #2396: never over the grid, never inside a card), the grid reports the node its slots rest in with `useDeal().placeGrid` (as `variations-grid.tsx` does — `testID="variations-slots"` is the pattern), and the crumb's detail is `N products` from the snapshot's `total` (the query total, not the loaded window).
 
-  The products query is windowed (the grid's `useGuardedExtendLimit`, #1221): a level with more products than the window extends it as the cashier nears the end of the scroller — `useGuardedExtendLimit(actions.extendLimit, shown?.hits.length ?? 0, binding)` called from an `onScroll` near-end check (the scroller is an `Animated.ScrollView`, which has no `onEndReached`), so a category of 300 products does not stop at the first 100. The level with `term.kind === 'all'` (All products) is this same component with no children: the All products tile deals to slot 0 and is the way back, exactly like a term.
+  The products query is windowed (the grid's `useGuardedExtendLimit`, #1221): a level with more products than the window extends it as the cashier nears the end — `useGuardedExtendLimit(actions.extendLimit, shown?.hits.length ?? 0, binding)` on the list's `onEndReached` — so a category of 300 products does not stop at the first 100. **The level's scroller is an `Animated.FlatList` of rows** (`useAnimatedRef<Animated.FlatList<…>>` + `useScrollViewOffset`, which accepts a FlatList ref), not an `Animated.ScrollView`: a category can be thousands of products and the grid must not keep every `DealCell` mounted as the window grows — rows virtualise exactly as the products grid's `VirtualizedList` does, and a `DealCell` in a row that has scrolled out is simply unmounted (its deal timing is by index, nothing is lost). The first row carries `FRONT` as today. The level with `term.kind === 'all'` (All products) is this same component with no children: the All products tile deals to slot 0 and is the way back, exactly like a term.
 
   Why not `useDeal().dealt`: a level stays `dealt` while a grandchild is over it, and `ObservableResource.reload` (query-bindings `useObservableResource`) keeps the previous answer while the re-projected query loads, with no loading flag — so neither "am I dealt" nor "is the answer defined" says whose answer this is. The stage attributes the answer (Task 12) and says which level is settled.
 
@@ -2294,9 +2306,9 @@ it('holds placeholders for products until the query answers', () => {
 
 it('extends the query window when the cashier nears the end of the level', () => {
 	render(<TermLevelGrid {...(base as never)} />);
-	fireEvent.scroll(screen.getByTestId('browse-level-scroller'), {
-		nativeEvent: { contentOffset: { y: 900 }, contentSize: { height: 1200 }, layoutMeasurement: { height: 300 } },
-	});
+	// The list's onEndReached: call it as the products grid's test does (reach the prop through
+	// the Animated.FlatList mock the sibling tests use, or fire the list's end-reached event).
+	fireEvent(screen.getByTestId('browse-level-scroller'), 'endReached');
 	expect(base.actions.extendLimit).toHaveBeenCalled();
 });
 
@@ -2370,7 +2382,6 @@ export function useAnswerOf<T>(source$: Observable<T>): T | undefined {
 (`import type { Observable } from 'rxjs';` at the top.)
 
 ```tsx
-import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import Animated, { useAnimatedRef, useScrollViewOffset } from 'react-native-reanimated';
 import { of } from 'rxjs';
 import { Breadcrumb } from '@wcpos/components/breadcrumb';
@@ -2387,8 +2398,8 @@ import { useT } from '../../../../../../contexts/translations';
 type Crumb = { label: string; onPress: () => void; testID?: string };
 // How many product placeholders a cold level holds: a row's worth, so the deal goes out with shape.
 const PLACEHOLDER_ROWS = 1;
-// The products grid's onEndReachedThreshold, as a fraction of the content height.
-const END_REACHED_FRACTION = 0.1;
+// The products grid's onEndReachedThreshold.
+const END_REACHED_THRESHOLD = 0.1;
 
 /** A product that has not arrived yet: its slot is held, in a tile's own shape. */
 function ProductPlaceholder() {
@@ -2437,7 +2448,7 @@ export function TermLevelGrid({
 	// on the stage it is inset from (as variations-grid.tsx).
 	const { placeGrid } = useDeal();
 	const slotsNode = React.useRef<React.ComponentRef<typeof View>>(null);
-	const scroller = useAnimatedRef<Animated.ScrollView>();
+	const scroller = useAnimatedRef<Animated.FlatList<number[]>>();
 	const scroll = useScrollViewOffset(scroller);
 	const { uiSettings } = useUISettings('pos-products');
 	const columns = useDocField(uiSettings, (value) => value.gridColumns);
@@ -2458,13 +2469,9 @@ export function TermLevelGrid({
 		: shown === undefined
 			? Array.from({ length: columns * PLACEHOLDER_ROWS }, () => null)
 			: shown.hits.map((hit) => hit.record);
-	// The query is windowed; the level asks for more as the cashier nears its end (as the
-	// products grid does through onEndReached — an Animated.ScrollView has no such prop).
+	// The query is windowed; the level asks for more as the cashier nears its end, as the
+	// products grid does through onEndReached.
 	const extend = useGuardedExtendLimit(actions.extendLimit, shown?.hits.length ?? 0, binding as never);
-	const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-		const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-		if (contentOffset.y + layoutMeasurement.height >= contentSize.height * (1 - END_REACHED_FRACTION)) extend();
-	};
 	// Answered with nothing to show: the way back stays in slot 0, the empty state (with its Clear
 	// filters) sits under it. A level whose products are hidden by its display type is not empty.
 	const isEmpty = showProducts && shown !== undefined && shown.hits.length === 0 && children.length === 0;
@@ -2489,9 +2496,16 @@ export function TermLevelGrid({
 				testID="browse-level-slots"
 				onLayout={() => placeGrid(slotsNode.current as Measurable)}
 			>
-			<Animated.ScrollView ref={scroller} className="flex-1" testID="browse-level-scroller" onScroll={onScroll} scrollEventThrottle={16}>
-				{rows.map((row, rowIndex) => (
-					<View key={rowIndex} className="flex-row" style={rowIndex === 0 ? FRONT : undefined}>
+			<Animated.FlatList
+				ref={scroller}
+				className="flex-1"
+				testID="browse-level-scroller"
+				data={rows}
+				keyExtractor={(_, rowIndex) => String(rowIndex)}
+				onEndReachedThreshold={END_REACHED_THRESHOLD}
+				onEndReached={extend}
+				renderItem={({ item: row, index: rowIndex }) => (
+					<View className="flex-row" style={rowIndex === 0 ? FRONT : undefined}>
 						{row.map((index) => {
 							if (index >= count) return <View key={index} className="m-1 flex-1" />;
 							let cell: React.ReactNode;
@@ -2513,8 +2527,8 @@ export function TermLevelGrid({
 							);
 						})}
 					</View>
-				))}
-			</Animated.ScrollView>
+				)}
+			/>
 			{isEmpty && <View className="flex-1">{empty}</View>}
 			</View>
 			</View>
@@ -2529,7 +2543,7 @@ export function TermLevelGrid({
 }
 ```
 
-(Run the formatter; the nesting above is written flat to keep the diff readable.) `variations-grid.tsx` on `next` is the reference for the surface/slots/scroller nesting — copy its shape, not the pre-#2396 one with `contentContainerStyle={{ paddingTop: top }}`.
+(Run the formatter; the nesting above is written flat to keep the diff readable.) `variations-grid.tsx` on `next` is the reference for the surface/slots/scroller nesting — copy its shape (with `Animated.FlatList` in place of its `Animated.ScrollView`; `useScrollViewOffset` takes either ref), not the pre-#2396 one with `contentContainerStyle={{ paddingTop: top }}`. If `Animated.FlatList` and `DealCell`'s `scroll` shared value do not cooperate in jest, mock `Animated.FlatList` as a plain list that renders every row (the variations tests show how Reanimated is stubbed).
 
 Note `VariableProductTile` reads `DealStagedContext` itself to lift the tapped product; the context value at a level is whatever the level's own `DealStack` stages (Task 11 stages `{ record }` for a product and `{ term }` for a term, so both tiles can read it). `ProductTile` inside a dealt cell must grow to the row: if the tile's `flex-1` leaves it heightless in a cell, give `ProductTile` the same `grow` treatment `VariationTile` has (`TILE` constant in `variation-tile.tsx:33`) via a `className` prop rather than a copy of the tile.
 
@@ -3309,6 +3323,9 @@ Read the product tile/row testIDs on `next` before finalising the regexes (`prod
 - A level's rows/tiles are its own while covered or gathering → `useLevelSnapshot` (Task 10) in both the grid and the table; the stage attributes the shared answer to the `result$` that emitted it (`useAnswerOf`, Task 10/12).
 - A term deleted or hidden while open drops the path → Task 8 liveness requires the term in `terms.all` (unknown while the source has not answered).
 - Product drill inside a term: the term crumb closes it; every path move clears it → Task 12 (`drillParentsFor`, `goBackTo`).
+- Escape and the edge swipe go back one level → `LevelBack` (Task 9) around every level and the drill.
+- A level's scroller virtualises (`Animated.FlatList`) and extends the window on `onEndReached` → Task 10.
+- A dropped path's projection is taken out before paint (`useLayoutEffect`) → Task 8.
 - `browseBy` in the per-device hydration rule → Task 2 Step 5b (`ENUM_VOCABULARIES`, two `utils.test.ts` tests).
 - Count strings are `_one`/`_other` pairs → Task 2 Step 5.
 - Empty states: nothing-matches with Clear filters → the search-displaced root has it inside `renderProducts`; a term level has it through the `empty` prop (Tasks 10, 11: `index.tsx`'s `noDataMessage`, shown under slot 0 / handed to `DataTable` when the level answered with no products and has no child terms; Task 12 threads it as `BrowseStageProps.empty`). Clear filters clears the taxonomy field, which drops the path to the root — the spec's return.
