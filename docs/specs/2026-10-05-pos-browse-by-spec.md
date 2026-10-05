@@ -165,7 +165,9 @@ to the root term set. The scanner's add-to-cart on an exact barcode match is unc
 
 ## Platforms and layout
 
-One component, both layouts (`isPhoneWindow`): phones use the phone grid columns. Web, Electron,
+One component, both layouts (`isPhoneWindow`): the term grids take `gridColumns` exactly as the
+products grid does (there is no separate phone column count today; if one is ever added it is
+added to both grids together). Web, Electron,
 iOS and Android. The deal and the pane are the existing motion contracts; **film the category deal
 and its return on web and on the Pixel before calling it done** (design rule 6; the variations deal
 needed three Android first-frame fixes in #2398).

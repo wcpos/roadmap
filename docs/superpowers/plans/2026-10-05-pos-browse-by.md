@@ -1934,8 +1934,11 @@ export function useBrowsePath(source: Exclude<BrowseBy, 'all'>, terms: BrowseTer
 	);
 
 	// The projection belongs to the source that made it: a source change or an unmount (Browse
-	// by → All products) takes it back out, or the next screen starts restricted by the last.
-	React.useEffect(
+	// by → All products) takes it back out, or the next screen starts restricted by the last. A
+	// LAYOUT effect: its cleanup runs in the commit, before paint, so the All products screen's
+	// first painted frame already carries the cleared query (the products then refresh exactly as
+	// they do after any pill is cleared today).
+	React.useLayoutEffect(
 		() => () => {
 			unproject();
 			setStored([]);
@@ -2913,7 +2916,7 @@ import { displayTypeOf } from './term-tree';
 import { useBrowsePath, type PathEntry } from './use-browse-path';
 import { useBrowseTerms, type BrowseTerms } from './use-browse-terms';
 
-type ProductDrill = { kind: 'product'; record: EngineRecord<'products'>; depth: number; search: string; source: BrowseBy; target?: Measurable };
+type ProductDrill = { kind: 'product'; record: EngineRecord<'products'>; depth: number; under: PathEntry | undefined; search: string; source: BrowseBy; target?: Measurable };
 // By identity: DealStack re-arms whenever `detail !== staged`, so a level's detail is the stored
 // path entry or the drill object itself, never a fresh literal.
 type Detail = PathEntry | ProductDrill;
@@ -2956,21 +2959,24 @@ export function BrowseStage(props: BrowseStageProps) {
 	const [drill, setDrill] = React.useState<ProductDrill | null>(null);
 	// Shown only for the source, depth and search it opened under — judged in the same render, so
 	// a source change never hands the old product to the new root stack for a frame.
-	const drilled = drill && drill.source === source && drill.search === state.search && drill.depth === path.length ? drill : null;
+	// …and under the very path entry it opened in (`under`, by identity): a path dropped by a pill
+	// or Clear filters and a new one opened at the same depth must not bring the old drill back.
+	const drilled =
+		drill && drill.source === source && drill.search === state.search && drill.depth === path.length && path[drill.depth - 1] === drill.under ? drill : null;
 	React.useEffect(() => onDrilledChange(drilled !== null), [drilled, onDrilledChange]);
 	// A drill whose search has moved, or whose source has changed, is forgotten — not merely
 	// hidden: restoring the same search later must show the results, not the old variations.
 	// (Every source shares this one stage instance, so an unmount cleanup cannot do it.)
 	React.useEffect(() => {
-		if (drill && (drill.search !== state.search || drill.source !== source)) setDrill(null);
-	}, [drill, state.search, source]);
+		if (drill && (drill.search !== state.search || drill.source !== source || path[drill.depth - 1] !== drill.under)) setDrill(null);
+	}, [drill, state.search, source, path]);
 	// Stable: it is baked into the tiles' component identity through renderProducts, and a new
 	// handler per keystroke would remount every tile under the search.
-	const where = React.useRef({ depth: path.length, search: state.search, source });
-	where.current = { depth: path.length, search: state.search, source };
+	const where = React.useRef({ depth: path.length, under: path[path.length - 1], search: state.search, source });
+	where.current = { depth: path.length, under: path[path.length - 1], search: state.search, source };
 	const drillProduct = React.useCallback<DrillHandler>(
 		(record, target) =>
-			setDrill(record ? { kind: 'product', record, depth: where.current.depth, search: where.current.search, source: where.current.source, target } : null),
+			setDrill(record ? { kind: 'product', record, depth: where.current.depth, under: where.current.under, search: where.current.search, source: where.current.source, target } : null),
 		[]
 	);
 	// The products answer as state: a level never suspends (a tile swapped for a skeleton
@@ -3222,7 +3228,7 @@ import { ensureGridView, ensureTableView } from './pos-view-mode';
 
 test('categories first: the root shows the category, drilling in shows the probe, the crumb goes back, search spans everything', async ({ posPage: page, request }, testInfo) => {
 	test.skip(!productWriterCredentialsConfigured(), 'E2E_PRODUCT_WRITER_USER/_PASS not configured — the categories-first drill needs a product the spec created');
-	// …choose a ROOT category with members (`parent === 0`; a nested one renders inside its ancestor's level, not at browse-root — pick with the same store-API read product-category-filter.spec.ts uses, filtered on parent 0 and count > 0, else test.skip with the reason), create the probe in it (token from mintSearchProbeToken), wait for it to be searchable (searchAndWaitForServer)
+	// …choose a ROOT category with members that SHOWS products (`parent === 0`, `count > 0`, and `display !== 'subcategories'` — a subcategories-only root renders child terms, not products; a nested one renders inside its ancestor's level, not at browse-root — pick with the same store-API read product-category-filter.spec.ts uses, else test.skip with the reason), create the probe in it (token from mintSearchProbeToken), wait for it to be searchable (searchAndWaitForServer)
 	await ensureRegisterOpen(page);
 	await setBrowseBy(page, 'categories');
 	try {
