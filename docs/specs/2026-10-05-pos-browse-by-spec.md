@@ -111,7 +111,7 @@ Grid: the term set as tiles, **All products first**, in the source's order. No c
 today's grid has none, and the All products tile says where you are. Tiles are the product tile's
 size and columns (`gridColumns`), so `useFitPageSize` and the skeleton count stay valid.
 
-- Term with an image: image area (same proportion as the product tile's), then name (500 weight)
+- Term with an image: image area (same proportion as the product tile's), then name (the product tile's weight — one family)
   and `N products` muted — `N` is the term's `count`, omitted when it is 0 (above).
 - Term without an image: the name centred on a `bg-muted` card, 18 px 600, `N products` under it
   (omitted likewise).
