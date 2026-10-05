@@ -95,7 +95,7 @@ const termTile = ({ n, c, img, hue, d }, to, kind) => {
 	}</${tag}>`;
 };
 const allTile = (to) =>
-	`<label class="tile term all" for="${to}"><div class="plainbody">${I.all}<div class="nm">All products</div><div class="sub">${all.length} products</div></div></label>`;
+	`<label class="tile term all" for="${to}"><div class="plainbody">${I.all}<div class="nm">All products</div></div></label>`;
 
 const parentTermTile = (t, backTo) => {
 	const inner = t.all
@@ -123,7 +123,7 @@ const parentTile = (id, backTo) => {
 const termRow = ({ n, c, img, hue, d }, to, kind) =>
 	`<${to ? 'label' : 'div'} class="row term${to ? '' : ' static'}"${to ? ` for="${to}"` : ''} style="--h:${hue}"><div class="thumb ${img ? 'photo' : 'plain'}">${img ? I.photo : n[0]}</div><div class="cell grow"><div>${n}</div><div class="sub">${d ?? `${c} products`}</div></div><div class="cell r chev">${I.chev}</div></${to ? 'label' : 'div'}>`;
 const allRow = (to) =>
-	`<label class="row term all" for="${to}"><div class="thumb plain">${I.all}</div><div class="cell grow"><div>All products</div><div class="sub">${all.length} products</div></div><div class="cell r chev">${I.chev}</div></label>`;
+	`<label class="row term all" for="${to}"><div class="thumb plain">${I.all}</div><div class="cell grow"><div>All products</div></div><div class="cell r chev">${I.chev}</div></label>`;
 const productRow = (id, dealTo) => {
 	const p = products[id];
 	const variable = !!p.v;
@@ -234,10 +234,10 @@ const cap = {
 	'cat-lv1': '<b>Drinks.</b> What WooCommerce calls display type <i>both</i>: the child categories first (Hot, Cold), then every product under Drinks including the children\'s, because a parent archive includes its descendants. Tapping Drinks dealt these out of the Drinks tile, which walked to the first slot and is the way back — the same deal as variations. The crumb is the existing component, unchanged. A category set to <i>subcategories</i> shows only the child tiles; one set to <i>products</i> shows only products.',
 	'cat-lv2': '<b>Hot.</b> A leaf: products only. Latte and Tea carry a variations count and › instead of +; tapping one is the existing deal.',
 	'cat-lv3': '<b>Latte dealt.</b> Unchanged from today\'s variations deal: Latte walks to the first slot and is the way back; its three sizes come out from under it; the Hot products fade underneath and stay mounted. The crumb just grew one segment.',
-	'cat-lvall': '<b>All products, inside categories mode.</b> The escape the issue asks for: the plain grid dealt out of the All products tile, which is the way back; the crumb reads Categories › All products. This is also where search and barcode land: typing or scanning drops the drill-in and shows matches across the whole catalogue, and the crumb comes back when the search is cleared.',
+	'cat-lvall': '<b>All products, inside categories mode.</b> The escape the issue asks for: the plain grid dealt out of the All products tile, which is the way back; the crumb reads Categories › All products. This is also where search and barcode land: typing or scanning drops the drill-in and shows matches across the whole catalogue with no crumb; clearing the search returns to the root tiles.',
 	'tag-lv0': '<b>Tags.</b> Flat, no images in WooCommerce, so every tile is the name on a tinted card. Same component, depth 1.',
 	'tag-lv1': '<b>Vegan.</b> Products carrying the tag. Crumb Tags › Vegan.',
-	'brand-lv0': '<b>Brands.</b> WooCommerce brands carry a thumbnail and can nest, so this is the categories component with the brand taxonomy. Brand pill hidden.',
+	'brand-lv0': '<b>Brands.</b> WooCommerce brands carry a thumbnail and can nest, so this is the categories component with the brand taxonomy. Filter bar unchanged.',
 	'brand-lv1': '<b>Monmouth.</b> Products of the brand.',
 	'short-lv0': '<b>Shortcuts.</b> The saved quick filters as tiles, in the merchant\'s order, each with its rule in one line. This is the curated-grid shape (Square Favorites, Lightspeed Quick Keys) built from what the filter bar already stores — The filter bar is unchanged; a tapped shortcut lights its chip in the bar as a quick-filter press does today.',
 	'short-lv1': '<b>Breakfast.</b> The quick filter applied: Hot Food + Bakery, in stock, with the crumb saying so. Tapping another shortcut replaces it, as a quick-filter press does today.',
@@ -544,7 +544,7 @@ ${LEVELS.map((l, i) => `<input type="radio" name="lv" id="${l}"${i === 0 ? ' che
       <div class="f"><div class="lab">View</div><div class="seg"><label for="v-grid">Grid</label><label for="v-table">Table</label></div></div>
       <div class="f"><div class="lab">Browse by</div>
         <div class="opts">
-          <label for="m-all">${I.check}All products<span class="d">today</span></label>
+          <label for="m-all">${I.check}All products</label>
           <label for="m-cat">${I.check}Categories<span class="d">5 categories</span></label>
           <label for="m-tag">${I.check}Tags<span class="d">8 tags</span></label>
           <label for="m-brand">${I.check}Brands<span class="d">6 brands</span></label>

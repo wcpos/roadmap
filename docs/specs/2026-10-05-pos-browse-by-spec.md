@@ -174,7 +174,7 @@ Product tiles and rows keep their ids. The setting rows: `ui-settings-browse-by-
 - **Component (jest-expo):** root renders All products first and the ordered set; `subcategories`
   / `products` / `both` render the right mix; tapping a term writes the id set to the query
   state; the crumb's `parents` after two levels; a search clears the path and clearing the search
-  restores it; a source with no terms is dimmed in the settings form with its reason; the
+  shows the root term set; a source with no terms is dimmed in the settings form with its reason; the
   shortcuts source renders the stored quick filters in order and a tap applies one.
 - **Gallery:** term tile (image / no image / All products / shortcut) and term row stories — the
   gallery check is required on `next`; label after the push run settles.
