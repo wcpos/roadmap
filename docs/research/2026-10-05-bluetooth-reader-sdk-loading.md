@@ -163,7 +163,51 @@ That is perhaps 2–6 a year beyond what we already ship. A store build is not s
 5. A spike to put one vendor SDK in an Expo-prebuilt dynamic feature module.
 6. PSP answers on ProximityReader tokens without their SDK.
 
+## Measured, 2026-10-05 to 06: Square beside Stripe and SumUp
+
+Follow-up 1, run in part after Paul's ruling. Branch `spike/square-sdk-combo` on `wcpos/monorepo` (three commits off `next` at `1e78a5f23`, pushed, no PR, not for merge): Square's `mobile-payments-sdk-react-native` 2026.8.1 added to the app with a config plugin adapted from Square's own Expo sample. Five EAS development builds were spent. Every line below is **Observed** unless it says otherwise.
+
+**iOS: the three SDKs compile and link into one app.**
+- EAS build `6c5f6a7a` finished. One Podfile installed SquareMobilePaymentsSDK 2.6.0, MockReaderUI 2.6.0, StripeTerminal 5.7.0 and SumUpSDK 7.1.2.
+- `use_frameworks!` was not needed. #114 listed it as Square's project-wide cost; Square's bare sample makes it optional and its Expo sample does not set it.
+- **As built, the app crashed at launch** on a simulator: `Library not loaded: @rpath/SquareReader.framework`. The 1 October build without Square (`71c269b7`) started normally on the same simulator.
+- Cause: Square's setup build phase ran before CocoaPods' "Embed Pods Frameworks" phase, so it found nothing to unpack and left three frameworks nested inside the SDK. Square's sample plugin adds the phase from `post_install`, which is too early.
+- With those three frameworks moved by hand to where the setup script would have put them, **the app started and stayed up** (35 s, the dev-client launcher on screen), with Square, SquareReader, MockReaderUI, StripeTerminal and SumUpSDK all loaded in the one process.
+- The spike plugin now adds the phase from `post_integrate`. That fix is **Unverified**: the Podfile generates and parses, but no build has run with it.
+- At launch, with a placeholder application ID, Square's SDK called `api.squareupsandbox.com` for feature flags and sent a Bugsnag session. So every merchant's app would contact Square at start, whether or not they use Square.
+
+**Size (simulator debug build, two architectures; not a store figure).**
+
+| | 1 Oct, no Square (`71c269b7`) | Spike (`6c5f6a7a`) |
+|---|---|---|
+| Build artifact, compressed | 162 MB | 201 MB |
+| App bundle | 585 MB | 684 MB |
+
+Frameworks inside the spike app: Square 96 MB, Stripe 69 MB, SumUp 67 MB. The baseline is 108 commits older, so the difference is approximate. Store-build size and cold-start time are still **Not evaluated**.
+
+**Android: not proven either way.**
+- Three builds (`0608cd3a`, `cbb99962`, `11af8044`) ended with "lost connection to the worker" before Gradle started. No native code was compiled.
+- The first two died inside the JavaScript export in the post-install hook. With that export skipped, the third died in the next step, the runtime-version (fingerprint) calculation, which took 2 s in the 1 October build.
+- The same calculation on this Mac took 2.9 s and 190 MB, so it does not reproduce off the worker.
+- The 1 October Android build (`35c2ebb1`) passed on the same worker image. No Android build of `next` has run since, 108 commits ago. Whether Square or the current `next` tip is the cause is **unknown**; a build of plain `next` would separate them.
+- Configuration did generate cleanly: Square's Maven repository, its start-up call in `MainApplication`, and the Kotlin metadata flag Square's sample needs.
+
+**Costs of adding Square that the setup exposed.**
+- Square's sample plugin broke SumUp's plugin: both edit the same `allprojects` block in `android/build.gradle`. Fixed in the spike. Each added SDK plugin can collide with the others like this.
+- Square must be started at process launch on both platforms with our Square application ID.
+- New Android permissions for every merchant: `RECORD_AUDIO` and `READ_PHONE_STATE`. On iOS Square wants microphone access for magstripe readers; the app's microphone text currently says WCPOS does not use the microphone.
+- Square's Android minimum (API 28) costs nothing: the generated project already enforces 29.
+
+**Not evaluated:** any Square payment or reader pairing; the app's JavaScript running in this build (no Metro was attached); Square's React Native module on the new architecture (Square's Expo sample turns it off, and the app cannot); a device or store build; Zettle and Adyen.
+
+The first iOS build (`4614dbb6`) failed on a dispatch error, not on Square: it was started without `EAS_BUILD_PROFILE=development` in the local environment, which the repo's `build.yml` always sets.
+
 ## Rulings
 1. **#115, "one build carrying every shipped SDK": amended (Paul, 2026-10-05).** A native SDK is the last tier after cloud and handoff. Exception: the most popular providers get their native SDK in the app even where another route exists, because the SDK may offer more. Named: Stripe, SumUp, Square, and "maybe a few more… the really big ones". Recorded on [#115](https://github.com/wcpos/roadmap/issues/115).
 2. **Handoff to the provider's own app for long-tail providers: accepted** by ruling 1.
-3. **Open:** should the native-SDK combination build (follow-up 1) be run before the next native driver lands? Stripe and SumUp build together today; Square is the known risk.
+3. **The combination build: run for Square (Paul, 2026-10-05), half answered.** iOS compiles, links and starts with all three once Square's packaging step is ordered correctly. Android is unproven. See "Measured" above.
+
+## Questions for the morning (2026-10-06)
+1. Spend one Android build of plain `next` to learn whether `next` or Square is what kills the Android worker? It also tells us whether `next` can still build for Android at all.
+2. Spend one iOS build to prove the `post_integrate` fix, or leave that until a Square driver is scheduled?
+3. Square's SDK contacts Square at every app start and adds microphone and phone-state permissions for every merchant. Is that acceptable for merchants who do not use Square?
