@@ -1531,6 +1531,30 @@ Then `gh pr create --base next` with title `feat(pos): Browse by — setting and
 
 ## Slice 2 — the drill-in: nested deal and pane, crumb, descendants, display type, search reset
 
+### Task 8a: The existence read is bounded, baseline-filtered and not live; the dialog reads residents only
+
+Found by the Slice 1 independent review (2026-10-06); the two Important items it wants fixed before `next`→`main`.
+
+**Files:**
+- Modify: `packages/core/src/query/query-bindings.ts` (`useProductsCarryingTermsBinding`, `useAllTermsBinding`)
+- Modify: `packages/core/src/screens/main/pos/products/v2/browse/use-browse-terms.ts` (`useTaxonomyTerms`, `useBrowseCounts`)
+- Test: `packages/core/src/screens/main/pos/products/v2/browse/use-browse-terms.test.tsx`, `packages/core/src/query/query-bindings.test.ts` (or the file that tests the bindings — find it with the other `useEngineBinding` tests)
+
+**What is wrong today:**
+- The existence read (`useProductsCarryingTermsBinding`) materialises every local product carrying any zero-count term. Categories/brands filter on promoted indexed fields (cheap when nothing matches); `tags` is a payload field, so its filter is an `$or` of one `$elemMatch` per zero-count tag id — a full scan in any shop with unused tags; on an all-POS-only store every term has count 0 and the read loads the whole catalogue. It is a live query, so it re-runs after every product write (each sale's stock write). The settings dialog mounts it three times whenever it is open, in `all` mode too.
+- The read ignores the baseline filters (`status: 'publish'`, the `stock_status` rule), so a term carried only by a draft or an out-of-stock product (with "hide out of stock" on) is lifted and would open onto "nothing matches".
+- `useBrowseCounts` → `useAllTermsBinding` declares a `refresh` demand (priority 700) for categories, tags AND brands every time the dialog opens, in every mode; thousands of tags pull on a settings tap; on WooCommerce < 9.4 the brands route 404s each time.
+
+**Do:**
+1. Promote `tags` to an indexed id array the way `categoryIds`/`brandIds` are (`collection-map.ts`), so the tag existence filter is an indexed `$in`, not a payload scan. (Check the migration story: a promoted field is computed on write — follow how `categoryIds` is populated.)
+2. The existence read applies the baseline filters (`status: 'publish'`, and `stock_status: 'instock'` unless `showOutOfStock`) — pass them into `compileQuery` with the taxonomy filter — so a lifted term is one that would show something when opened.
+3. The existence read answers from ids, not records: project only the term-id arrays (if the engine supports a field projection — `read` descriptor — use it; otherwise keep the record read but cap it: `limit` = the number of zero-count ids is NOT enough, so instead read per batch of ids with `limit: 1` per id — pick whichever the engine makes cheap and say which in the report), and make it a one-shot-plus-throttled re-check rather than a live subscription: subscribe, take the first answer, resubscribe at most once per `EXISTENCE_RECHECK_MS` (a named constant, 30 s, with the reason) while mounted.
+4. `useBrowseCounts` reads local residents only: `useAllTermsBinding(collection, enabled, { demand: [] })` (or an equivalent "no refresh" option), leaving fetching to the stage's own binding. Keep the stage's `useAllTermsBinding` fetching as today.
+5. Tests: the tag filter compiles to an indexed selector; the baseline filters are in the compiled existence read; the dialog bindings declare no demand; the existence read does not resubscribe on a product write within the throttle window (fake timers).
+
+Commit: `fix(pos): the existence read is bounded, baseline-filtered and not live; the settings dialog reads resident terms only`.
+
+
 ### Task 8: `use-browse-path.ts`
 
 **Files:**
@@ -3121,6 +3145,7 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
 
 - [ ] Run `pnpm --filter @wcpos/core test -- --maxWorkers=2 src/screens/main/pos/products src/query` and `pnpm typecheck --force`.
 - [ ] `/codex-review` the diff against `origin/next`; fix; re-run.
+- [ ] Task 8a is in this slice: its two items are the Slice 1 review's "before `next`→`main`" conditions.
 - [ ] Push and open the PR against `next`: title `feat(pos): Browse by — drill-in, crumb, descendants, display type (slice 2 of roadmap#392)`; body names the spec, lists the walk from Step 6 with what was filmed, and the test commands. Babysit to merge.
 
 ---
