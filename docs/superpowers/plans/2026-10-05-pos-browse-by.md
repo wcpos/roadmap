@@ -130,7 +130,8 @@ describe('visibleTerms', () => {
 describe('rootTerms and childrenOf', () => {
 	const terms = [T(1, 'Drinks', { menu_order: 1 }), T(2, 'Hot', { parent: 1, menu_order: 2 }), T(3, 'Cold', { parent: 1, menu_order: 1 }), T(4, 'Orphan', { parent: 99 }), T(5, 'Empty', { parent: 1, count: 0 })];
 	it('roots are parentless or orphaned, ordered and visible', () => {
-		expect(rootTerms(terms).map((t) => t.name)).toEqual(['Drinks', 'Orphan']);
+		// Orphan has no menu_order (0), Drinks has 1: the rule puts Orphan first.
+		expect(rootTerms(terms).map((t) => t.name)).toEqual(['Orphan', 'Drinks']);
 	});
 	it('an empty parent with a POS-only child is a root, and the child is its child', () => {
 		const posOnly = [T(1, 'Org', { count: 0 }), T(2, 'Leaf', { parent: 1, count: 0 })];
@@ -267,7 +268,7 @@ export function displayTypeOf(term: TermLike): DisplayType {
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run the Step 2 command. Expected: PASS, 18 tests.
+Run the Step 2 command. Expected: PASS, 22 tests.
 
 - [ ] **Step 5: Commit**
 
@@ -1133,8 +1134,9 @@ export function BrowseRootGrid({
 	const { uiSettings } = useUISettings('pos-products');
 	const columns = useDocField(uiSettings, (value) => value.gridColumns);
 	// The term whose copy is out on the stage steps aside, as a dealt product tile does.
-	const staged = React.useContext(DealStagedContext) as { term?: BrowseTerm } | null;
-	const lifted = staged?.term ? termKey(staged.term) : null;
+	// The stage stages the path entry itself (`{ kind: 'term', term, target }`, Task 8/12).
+	const staged = React.useContext(DealStagedContext) as { kind?: string; term?: BrowseTerm } | null;
+	const lifted = staged?.kind === 'term' && staged.term ? termKey(staged.term) : null;
 	const cells = [ALL, ...terms];
 	const rows = Array.from({ length: Math.ceil(cells.length / columns) }, (_, row) =>
 		cells.slice(row * columns, row * columns + columns)
@@ -1367,18 +1369,19 @@ jest.mock('../../../../../../query', () => ({
 }));
 
 it('opens on the root term set, not the products, in grid and table', () => {
-	const { rerender } = render(<BrowseStage source="categories" viewMode="grid" products={<Text testID="products">products</Text>} />);
+	const renderProducts = () => <Text testID="products">products</Text>;
+	const { rerender } = render(<BrowseStage source="categories" viewMode="grid" renderProducts={renderProducts} />);
 	expect(screen.getByTestId('browse-root')).toBeTruthy();
 	expect(screen.getByTestId('browse-term-1')).toBeTruthy();
 	expect(screen.queryByTestId('products')).toBeNull();
-	rerender(<BrowseStage source="categories" viewMode="table" products={<Text testID="products">products</Text>} />);
+	rerender(<BrowseStage source="categories" viewMode="table" renderProducts={renderProducts} />);
 	expect(screen.getByTestId('browse-root')).toBeTruthy();
 	expect(screen.queryByTestId('products')).toBeNull();
 });
 
 it('a search displaces the term set with the catalogue-wide products', () => {
 	search = 'lat';
-	render(<BrowseStage source="categories" viewMode="grid" products={<Text testID="products">products</Text>} />);
+	render(<BrowseStage source="categories" viewMode="grid" renderProducts={() => <Text testID="products">products</Text>} />);
 	expect(screen.getByTestId('products')).toBeTruthy();
 	expect(screen.queryByTestId('browse-root')).toBeNull();
 	search = '';
@@ -1399,8 +1402,11 @@ import { useBrowseTerms } from './use-browse-terms';
 export type BrowseStageProps = {
 	source: Exclude<BrowseBy, 'all'>;
 	viewMode: 'grid' | 'table';
-	/** Today's products grid or table. Rendered under All products and inside a term (Task 8). */
-	products: React.ReactNode;
+	/**
+	 * Today's products grid or table, wired to the given drill handler. The stage shows it when
+	 * a search has displaced the term set (Task 12 drills from it into the stage's own drill).
+	 */
+	renderProducts: (onDrill: (record: EngineRecord<'products'> | null, target?: Measurable) => void) => React.ReactNode;
 };
 
 /**
@@ -1408,14 +1414,15 @@ export type BrowseStageProps = {
  * (grid) or pushing (table) its contents, products inside. Task 8 adds the levels; here the
  * root alone, so the setting has something to show.
  */
-export function BrowseStage({ source, viewMode, products }: BrowseStageProps) {
+export function BrowseStage({ source, viewMode, renderProducts }: BrowseStageProps) {
 	const terms = useBrowseTerms(source);
 	const { search } = useQueryState<'products'>();
 	const roots = terms.rootsOf();
 	const open = () => {};
+	const noDrill = () => {};
 	// A search spans the catalogue, not the term set: the products show, with no crumb (spec,
 	// "Search"). The filter bar's own clear brings the term set back.
-	if (search !== '') return <>{products}</>;
+	if (search !== '') return <>{renderProducts(noDrill)}</>;
 	return viewMode === 'grid' ? (
 		<BrowseRootGrid terms={roots} onOpen={open} />
 	) : (
@@ -1424,7 +1431,7 @@ export function BrowseStage({ source, viewMode, products }: BrowseStageProps) {
 }
 ```
 
-with `import { useQueryState } from '../../../../../../query';` among the imports.
+with `import { useQueryState } from '../../../../../../query';`, `import type { EngineRecord } from '@wcpos/query';` and `import type { Measurable } from '../deal-stack';` among the imports.
 
 - [ ] **Step 6: Mount it in `index.tsx`**
 
@@ -1434,11 +1441,28 @@ In `POSProductsContent`, after `const variationsStyle = …` add:
 	const browseBy = readBrowseBy(useDocField(uiSettings, (value) => value.browseBy));
 ```
 
+Then make the products element a function of its drill handler. Today `const products = (<Suspense …>…</Suspense>)` bakes `setDrilled` in (through `VariableTile` for the grid and `onDrill={setDrilled}` for the table). Extract it, in the same file, as a component so the tile component identity stays stable per handler exactly as it is today:
+
+```tsx
+/** Today's products grid or table, drilling variable products through `onDrill`. */
+function ProductsView({ onDrill, ...rest }: { onDrill: (record: EngineRecord<'products'> | null, target?: Measurable) => void; /* every value the element reads today: viewMode, binding, tableActions, noDataMessage, loading, state.sort, variationsStyle, cellsForRow, tableConfig */ }) {
+	const VariableTile = React.useCallback(
+		(props: React.ComponentProps<typeof ProductTile>) => (
+			<VariableProductTile {...props} variationsStyle={rest.variationsStyle} onDrill={onDrill} />
+		),
+		[rest.variationsStyle, onDrill]
+	);
+	return ( /* the existing `products` JSX, with `VariableTile` above and `onDrill={onDrill}` on VariableProductRow */ );
+}
+```
+
+and in `POSProductsContent`: `const renderProducts = React.useCallback((onDrill) => <ProductsView onDrill={onDrill} viewMode={viewMode} … />, [viewMode, binding, tableActions, noDataMessage, loading, state.sort, variationsStyle, tableConfig]);` then `const products = renderProducts(setDrilled);` so the `all` mode is unchanged. Move the `VariableTile` `useCallback` out of `POSProductsContent` into `ProductsView` (it is the same code). Run `index.test.tsx` after: it must pass unchanged.
+
 and replace the block from `{/* Tiles are dealt out of the tile that was tapped; rows slide in as a pane. */}` through the closing `)}` of the grid/table conditional (inside `<ErrorBoundary>` in `POSProductsContent`; line numbers drift, anchor on the text) with:
 
 ```tsx
 								{browseBy !== 'all' ? (
-									<BrowseStage source={browseBy} viewMode={viewMode} products={products} />
+									<BrowseStage source={browseBy} viewMode={viewMode} renderProducts={renderProducts} />
 								) : viewMode === 'grid' ? (
 									<DealStack
 										testID="products-pane-stack"
@@ -1504,7 +1528,7 @@ Then `gh pr create --base next` with title `feat(pos): Browse by — setting and
 - Consumes: `useQueryState`, `useQueryStateActions` from `../../../../../../query` (the root products provider); `isQuickFilterActive`, `quickFilterToQueryPatch` from `../../filter-bar/apply-quick-filter`; `getPOSProductSort` from `../../pos-product-sort`; `BrowseTerms` (Task 3); `taxonomyField` below.
 - Produces:
   ```ts
-  export type PathEntry = { term: BrowseTerm; target?: Measurable };
+  export type PathEntry = { kind: 'term'; term: BrowseTerm; target?: Measurable };   // `kind` so a DealStack's staged detail can be told from a product drill
   export type BrowsePath = {
     /** The live path: entries whose projection the root query still carries. [] at the root. */
     path: PathEntry[];
@@ -1520,6 +1544,7 @@ Then `gh pr create --base next` with title `feat(pos): Browse by — setting and
   - `{kind:'all'}` → `clearFilter(field)`; shown while `state.filters[field]` is empty/undefined and `state.search === ''`.
   - shortcut → the chip's exact sequence: `resetFilters(); clearSearch(); setFilter(each patch field); if (patch.search) setSearch(patch.search); setSort(quickFilter.sort ?? settingsSort)`; shown while `isQuickFilterActive(quickFilter, state, resetState)` (a shortcut's own `search` condition is allowed, so the `search === ''` rule does not apply to it).
   - `backTo(depth)` re-projects the new deepest entry (or clears the field when the path empties).
+  - **The projection belongs to the path that made it.** The hook records what it put into the query (`projected`: the taxonomy field and id set, or the shortcut's quick filter) and `unproject()` undoes exactly that, and only what is still there: a taxonomy field still equal to the projected id set is cleared; a shortcut's patch fields still equal to the patch are cleared one by one, its `search` cleared if still the patch's, its sort restored to the settings sort if still the quick filter's. Leaving a shortcut level (`backTo(0)`), a dropped path (search, pill), a source change (`source` prop moves while a path is stored) and unmount (Browse by → All products) all go through `unproject()` — so the next source, or All products, never starts restricted by the last one, and a search typed over a shortcut spans the catalogue (the search survives; the patch does not).
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1624,13 +1649,45 @@ it('a shortcut applies the quick filter exactly as its chip does and is shown wh
 	expect(result.current.path.map((entry) => entry.term)).toEqual([breakfast]);
 	act(() => actions.setFilter('on_sale', true));
 	expect(result.current.path).toEqual([]);
+	// The pill the cashier pressed stays; the shortcut's own patch, still there, goes.
+	expect(state.filters).toEqual({ status: 'publish', on_sale: true });
+});
+
+it('leaving a shortcut level takes its patch back out; a search typed over it keeps the search and drops the patch', () => {
+	const { result } = renderHook(() => useBrowsePath('shortcuts', terms as never));
+	act(() => result.current.enter(breakfast));
+	act(() => result.current.root());
+	expect(state.filters).toEqual({ status: 'publish' });
+	act(() => result.current.enter(breakfast));
+	act(() => actions.setSearch('lat'));
+	expect(result.current.path).toEqual([]);
+	expect(state.search).toBe('lat');
+	expect(state.filters).toEqual({ status: 'publish' });
+});
+
+it('changing the source clears the projection the old source made', () => {
+	const { result, rerender } = renderHook(({ source }) => useBrowsePath(source, terms as never), {
+		initialProps: { source: 'categories' as 'categories' | 'tags' },
+	});
+	act(() => result.current.enter(drinks));
+	expect(state.filters.categories).toEqual([1, 2]);
+	rerender({ source: 'tags' });
+	expect(state.filters.categories).toBeUndefined();
+	expect(result.current.path).toEqual([]);
+});
+
+it('unmounting clears the projection (Browse by → All products)', () => {
+	const { result, unmount } = renderHook(() => useBrowsePath('categories', terms as never));
+	act(() => result.current.enter(drinks));
+	unmount();
+	expect(state.filters.categories).toBeUndefined();
 });
 ```
 
 - [ ] **Step 2: Run it to verify it fails**
 
 Run: `pnpm --filter @wcpos/core test -- --maxWorkers=2 src/screens/main/pos/products/v2/browse/use-browse-path.test.tsx`
-Expected: FAIL — module not found.
+Expected: FAIL — module not found. (The fake store's `clearFilter` deletes the key, as written, so `toBeUndefined` and the `toEqual` on `filters` hold.)
 
 - [ ] **Step 3: Implement**
 
@@ -1640,6 +1697,8 @@ import * as React from 'react';
 
 import { useDocField } from '@wcpos/query';
 
+import isEqual from 'lodash/isEqual';
+
 import { useQueryState, useQueryStateActions } from '../../../../../../query';
 import { useUISettings } from '../../../../contexts/ui-settings';
 import { isQuickFilterActive, quickFilterToQueryPatch } from '../../filter-bar/apply-quick-filter';
@@ -1648,9 +1707,10 @@ import { type BrowseBy, type BrowseTerm } from './browse-source';
 
 import type { Measurable } from '../deal-stack';
 import type { FiltersOf } from '../../../../../../query/query-state-types';
+import type { QuickFilter } from '../../filter-bar/filter-bar-layout';
 import type { BrowseTerms } from './use-browse-terms';
 
-export type PathEntry = { term: BrowseTerm; target?: Measurable };
+export type PathEntry = { kind: 'term'; term: BrowseTerm; target?: Measurable };
 export type BrowsePath = {
 	path: PathEntry[];
 	enter: (term: BrowseTerm, target?: Measurable) => void;
@@ -1658,12 +1718,20 @@ export type BrowsePath = {
 	root: () => void;
 };
 
+type TaxonomyField = 'categories' | 'tags' | 'brands';
+/** What the path put into the query, so that exactly that can be taken back out. */
+type Projection =
+	| { kind: 'taxonomy'; field: TaxonomyField; ids: number[] }
+	| { kind: 'shortcut'; quickFilter: QuickFilter };
+
 export function taxonomyField(source: BrowseBy): 'categories' | 'tags' | 'brands' | null {
 	return source === 'categories' || source === 'tags' || source === 'brands' ? source : null;
 }
 
 const sameSet = (left: unknown, right: number[]) =>
 	Array.isArray(left) && left.length === right.length && right.every((id) => left.includes(id));
+const sameSort = (left: { field: string; direction: string }, right: { field: string; direction: string }) =>
+	left.field === right.field && left.direction === right.direction;
 
 /**
  * The browse path and its projection into the ONE products query. The path is state, but what
@@ -1679,20 +1747,47 @@ export function useBrowsePath(source: Exclude<BrowseBy, 'all'>, terms: BrowseTer
 	const sortDirection = useDocField(uiSettings, (value) => value.sortDirection);
 	const field = taxonomyField(source);
 	const [stored, setStored] = React.useState<PathEntry[]>([]);
+	const settingsSort = getPOSProductSort(sortBy, sortDirection);
+
+	// What the stored path has put into the query. A ref, not state: it is read by cleanups that
+	// run after the render that moved the source or unmounted the stage.
+	const projected = React.useRef<Projection | null>(null);
+	const latest = React.useRef({ state, actions, settingsSort });
+	latest.current = { state, actions, settingsSort };
+
+	// Take back out exactly what the path put in, and only what is still there: a pill the
+	// cashier pressed inside a level is theirs and stays.
+	const unproject = React.useCallback(() => {
+		const current = projected.current;
+		projected.current = null;
+		if (!current) return;
+		const { state: now, actions: act, settingsSort: baseline } = latest.current;
+		if (current.kind === 'taxonomy') {
+			if (sameSet(now.filters[current.field], current.ids)) act.clearFilter(current.field);
+			return;
+		}
+		const patch = quickFilterToQueryPatch(current.quickFilter);
+		for (const [key, value] of Object.entries(patch.filters))
+			if (isEqual(now.filters[key as keyof FiltersOf<'products'>], value))
+				act.clearFilter(key as keyof FiltersOf<'products'>);
+		if (patch.search && now.search === patch.search) act.clearSearch();
+		if (current.quickFilter.sort && sameSort(now.sort, current.quickFilter.sort))
+			act.setSort(baseline.field, baseline.direction);
+	}, []);
 
 	const project = React.useCallback(
 		(entry: PathEntry | undefined) => {
-			if (!entry) {
-				if (field) actions.clearFilter(field);
+			unproject();
+			if (!entry || entry.term.kind === 'all') {
+				// Nothing to put in: the whole catalogue. (A taxonomy field the path left is gone
+				// already — unproject — and one the cashier set stays.)
 				return;
 			}
 			const { term } = entry;
-			if (term.kind === 'all') {
-				if (field) actions.clearFilter(field);
-				return;
-			}
 			if (term.kind === 'term' && field) {
-				actions.setFilter(field, terms.idsFor(term) as never);
+				const ids = terms.idsFor(term);
+				actions.setFilter(field, ids as never);
+				projected.current = { kind: 'taxonomy', field, ids };
 				return;
 			}
 			const quickFilter = terms.quickFilterFor(term);
@@ -1704,10 +1799,21 @@ export function useBrowsePath(source: Exclude<BrowseBy, 'all'>, terms: BrowseTer
 			for (const [key, value] of Object.entries(patch.filters))
 				actions.setFilter(key as keyof FiltersOf<'products'>, value as never);
 			if (patch.search) actions.setSearch(patch.search);
-			const sort = quickFilter.sort ?? getPOSProductSort(sortBy, sortDirection);
+			const sort = quickFilter.sort ?? settingsSort;
 			actions.setSort(sort.field, sort.direction);
+			projected.current = { kind: 'shortcut', quickFilter };
 		},
-		[actions, field, terms, sortBy, sortDirection]
+		[actions, field, terms, settingsSort, unproject]
+	);
+
+	// The projection belongs to the source that made it: a source change or an unmount (Browse
+	// by → All products) takes it back out, or the next screen starts restricted by the last.
+	React.useEffect(
+		() => () => {
+			unproject();
+			setStored([]);
+		},
+		[source, unproject]
 	);
 
 	// Is the deepest entry still what the query carries?
@@ -1728,19 +1834,19 @@ export function useBrowsePath(source: Exclude<BrowseBy, 'all'>, terms: BrowseTer
 	}
 	const path = live ? stored : [];
 
-	// A path the query no longer carries is forgotten, and a taxonomy filter it left behind is
-	// cleared (a search typed over a term must span the whole catalogue).
+	// A path the query no longer carries is forgotten, and what it put there and is still there
+	// is taken back out (a search typed over a term or a shortcut must span the whole catalogue;
+	// the search itself stays).
 	React.useEffect(() => {
 		if (stored.length > 0 && !live) {
 			setStored([]);
-			if (field && deepest?.term.kind === 'term' && sameSet(state.filters[field], terms.idsFor(deepest.term)))
-				actions.clearFilter(field);
+			unproject();
 		}
-	}, [stored.length, live, field, deepest, state.filters, terms, actions]);
+	}, [stored.length, live, unproject]);
 
 	const enter = React.useCallback(
 		(term: BrowseTerm, target?: Measurable) => {
-			const entry = { term, target };
+			const entry: PathEntry = { kind: 'term', term, target };
 			project(entry);
 			setStored((current) => (live ? [...current, entry] : [entry]));
 		},
@@ -1760,11 +1866,11 @@ export function useBrowsePath(source: Exclude<BrowseBy, 'all'>, terms: BrowseTer
 }
 ```
 
-The `resetState` for a shortcut must be what the chip uses: open `v2/filter-bar.tsx` `QuickFilterButton` and copy its `resetState` construction (it derives from `initialFilters` and `settingsSort`); if the chip takes `initialFilters` as a prop, give `useBrowsePath` the same `initialFilters` parameter and thread it from `index.tsx` (it already has `initialFilters`). The test's `resetFilters` fake sets `{status:'publish'}` to match.
+The `resetState` for a shortcut must be what the chip uses: open `v2/filter-bar.tsx` `QuickFilterButton` and copy its `resetState` construction (it derives from `initialFilters` and `settingsSort`); if the chip takes `initialFilters` as a prop, give `useBrowsePath` the same `initialFilters` parameter and thread it from `index.tsx` (it already has `initialFilters`). The test's `resetFilters` fake sets `{status:'publish'}` to match. `getPOSProductSort` is called on every render for `settingsSort`; if it is not a cheap pure function, memoise on `[sortBy, sortDirection]`.
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run the Step 2 command. Expected: PASS, 6 tests. If the "entering a child" test shows `path` lagging one render, the guard is reading stale `state` — `enter` must call `project` BEFORE `setStored` (it does) and the fake store must emit synchronously (it does); fix the hook, not the test.
+Run the Step 2 command. Expected: PASS, 9 tests. (`project` runs `unproject` first, so entering a child from a parent clears the parent's set and then sets the child's — the test's `toHaveBeenLastCalledWith` sees the second.) If the "entering a child" test shows `path` lagging one render, the guard is reading stale `state` — `enter` must call `project` BEFORE `setStored` (it does) and the fake store must emit synchronously (it does); fix the hook, not the test.
 
 - [ ] **Step 5: Commit**
 
@@ -1878,10 +1984,13 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
     onOpenTerm: (term: BrowseTerm, target?: Measurable) => void;
     onDrillProduct: (record: EngineRecord<'products'>, target?: Measurable) => void;
     variationsStyle: string;
-    binding: ReturnType<typeof useRelationalCollectionBinding>;   // for the footer
+    binding: ReturnType<typeof useRelationalCollectionBinding>;   // for the footer and the window guard
+    actions: { extendLimit: () => void };                        // the root query's actions: the level extends the window as the cashier scrolls
   }): JSX.Element;
   ```
   Behaviour: slot 0 = `ParentTermTile`; then one `DealCell` per child term; then one per product; the grid shows `useLevelSnapshot(answer, settled)` — its own last answer, held while a child level is over it and while the query gathers its set again on the way back — so tiles never morph into another level's products; the crumb is a row of its own above the grid, in a `DealFade` (exactly as `DrillIn` does with `tiles` on `next` since #2396: never over the grid, never inside a card), the grid reports the node its slots rest in with `useDeal().placeGrid` (as `variations-grid.tsx` does — `testID="variations-slots"` is the pattern), and the crumb's detail is `N products` from the snapshot's `total` (the query total, not the loaded window).
+
+  The products query is windowed (the grid's `useGuardedExtendLimit`, #1221): a level with more products than the window extends it as the cashier nears the end of the scroller — `useGuardedExtendLimit(actions.extendLimit, shown?.hits.length ?? 0, binding)` called from an `onScroll` near-end check (the scroller is an `Animated.ScrollView`, which has no `onEndReached`), so a category of 300 products does not stop at the first 100. The level with `term.kind === 'all'` (All products) is this same component with no children: the All products tile deals to slot 0 and is the way back, exactly like a term.
 
   Why not `useDeal().dealt`: a level stays `dealt` while a grandchild is over it, and `ObservableResource.reload` (query-bindings `useObservableResource`) keeps the previous answer while the re-projected query loads, with no loading flag — so neither "am I dealt" nor "is the answer defined" says whose answer this is. The stage attributes the answer (Task 12) and says which level is settled.
 
@@ -1953,7 +2062,9 @@ const base = {
 	onDrillProduct: jest.fn(),
 	variationsStyle: 'drill',
 	binding: {} as never,
+	actions: { extendLimit: jest.fn() },
 };
+jest.mock('../../../../../../query', () => ({ useGuardedExtendLimit: (extend: () => void) => extend }));
 
 it('deals the parent first, then child terms, then products', () => {
 	render(<TermLevelGrid {...(base as never)} />);
@@ -1982,6 +2093,21 @@ it('shows only child terms for a subcategories display type', () => {
 it('holds placeholders for products until the query answers', () => {
 	render(<TermLevelGrid {...(base as never)} answer={undefined} />);
 	expect(screen.getAllByTestId('product-placeholder').length).toBeGreaterThan(0);
+});
+
+it('extends the query window when the cashier nears the end of the level', () => {
+	render(<TermLevelGrid {...(base as never)} />);
+	fireEvent.scroll(screen.getByTestId('browse-level-scroller'), {
+		nativeEvent: { contentOffset: { y: 900 }, contentSize: { height: 1200 }, layoutMeasurement: { height: 300 } },
+	});
+	expect(base.actions.extendLimit).toHaveBeenCalled();
+});
+
+it('is the All products level too: the All products tile in slot 0, no children', () => {
+	render(<TermLevelGrid {...(base as never)} term={{ kind: 'all' }} children={[]} />);
+	expect(screen.getByTestId('browse-parent')).toBeTruthy();
+	expect(screen.queryByTestId('browse-term-2')).toBeNull();
+	expect(screen.getByTestId('product-f')).toBeTruthy();
 });
 ```
 
@@ -2022,9 +2148,11 @@ export function useLevelSnapshot(
 ```
 
 ```tsx
+import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import Animated, { useAnimatedRef, useScrollViewOffset } from 'react-native-reanimated';
 import { Breadcrumb } from '@wcpos/components/breadcrumb';
 import type { EngineRecord } from '@wcpos/query';
+import { useGuardedExtendLimit } from '../../../../../../query';
 import { DealCell, DealFade, FRONT, type Measurable, useDeal } from '../deal-stack';
 import { ProductTile, type GridFields } from '../grid/product-tile';
 import { VariableProductTile } from '../grid/variable-product-tile';
@@ -2036,6 +2164,8 @@ import { useT } from '../../../../../../contexts/translations';
 type Crumb = { label: string; onPress: () => void; testID?: string };
 // How many product placeholders a cold level holds: a row's worth, so the deal goes out with shape.
 const PLACEHOLDER_ROWS = 1;
+// The products grid's onEndReachedThreshold, as a fraction of the content height.
+const END_REACHED_FRACTION = 0.1;
 
 /** A product that has not arrived yet: its slot is held, in a tile's own shape. */
 function ProductPlaceholder() {
@@ -2063,6 +2193,7 @@ export function TermLevelGrid({
 	onDrillProduct,
 	variationsStyle,
 	binding,
+	actions,
 }: {
 	term: BrowseTerm;
 	children: BrowseTerm[];
@@ -2074,7 +2205,8 @@ export function TermLevelGrid({
 	onOpenTerm: (term: BrowseTerm, target?: Measurable) => void;
 	onDrillProduct: (record: EngineRecord<'products'>, target?: Measurable) => void;
 	variationsStyle: string;
-	binding: { active$: unknown; total$: unknown; sync: unknown };
+	binding: { active$: unknown; total$: unknown; sync: unknown; pending$?: unknown; exhausted$?: unknown };
+	actions: { extendLimit: () => void };
 }) {
 	// The slots rest inside this node; the stage measures it so the deal lands on the grid, not
 	// on the stage it is inset from (as variations-grid.tsx).
@@ -2085,7 +2217,8 @@ export function TermLevelGrid({
 	const { uiSettings } = useUISettings('pos-products');
 	const columns = useDocField(uiSettings, (value) => value.gridColumns);
 	const gridFields = useDocField(uiSettings, (value) => value.gridFields) as GridFields;
-	const staged = React.useContext(DealStagedContext) as { term?: BrowseTerm; record?: EngineRecord<'products'> } | null;
+	// The stage stages the path entry itself (`{ kind: 'term', term, target }`) or the product drill.
+	const staged = React.useContext(DealStagedContext) as { kind?: string; term?: BrowseTerm } | null;
 	const t = useT();
 
 	// This level's own answer, held while the shared query is another level's (level-snapshot.ts).
@@ -2097,6 +2230,13 @@ export function TermLevelGrid({
 		: shown === undefined
 			? Array.from({ length: columns * PLACEHOLDER_ROWS }, () => null)
 			: shown.hits.map((hit) => hit.record);
+	// The query is windowed; the level asks for more as the cashier nears its end (as the
+	// products grid does through onEndReached — an Animated.ScrollView has no such prop).
+	const extend = useGuardedExtendLimit(actions.extendLimit, shown?.hits.length ?? 0, binding as never);
+	const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+		const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+		if (contentOffset.y + layoutMeasurement.height >= contentSize.height * (1 - END_REACHED_FRACTION)) extend();
+	};
 	const count = 1 + children.length + products.length;
 	const rows = Array.from({ length: Math.ceil(count / columns) }, (_, row) =>
 		Array.from({ length: columns }, (_, column) => row * columns + column)
@@ -2118,7 +2258,7 @@ export function TermLevelGrid({
 				testID="browse-level-slots"
 				onLayout={() => placeGrid(slotsNode.current as Measurable)}
 			>
-			<Animated.ScrollView ref={scroller} className="flex-1" testID="browse-level-scroller">
+			<Animated.ScrollView ref={scroller} className="flex-1" testID="browse-level-scroller" onScroll={onScroll} scrollEventThrottle={16}>
 				{rows.map((row, rowIndex) => (
 					<View key={rowIndex} className="flex-row" style={rowIndex === 0 ? FRONT : undefined}>
 						{row.map((index) => {
@@ -2127,7 +2267,7 @@ export function TermLevelGrid({
 							if (index === 0) cell = <ParentTermTile term={term} onPress={back} />;
 							else if (index <= children.length) {
 								const child = children[index - 1];
-								cell = <TermTile term={child} onPress={onOpenTerm} lifted={!!staged?.term && termKey(staged.term) === termKey(child)} />;
+								cell = <TermTile term={child} onPress={onOpenTerm} lifted={staged?.kind === 'term' && !!staged.term && termKey(staged.term) === termKey(child)} />;
 							} else {
 								const record = products[index - 1 - children.length];
 								if (!record) cell = <ProductPlaceholder />;
@@ -2160,7 +2300,7 @@ Note `VariableProductTile` reads `DealStagedContext` itself to lift the tapped p
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run the Step 2 command. Expected: PASS, 5 tests.
+Run the Step 2 command. Expected: PASS, 7 tests. `useScrollViewOffset` on the Animated.ScrollView and an `onScroll` handler coexist (Reanimated merges them); if the mock environment complains, check `variations-grid.test.tsx` for how it stubs Reanimated and copy that. `ParentTermTile` must render `{ kind: 'all' }` as the All products card (Task 4's `TermBody` already does for the root tile).
 
 - [ ] **Step 5: Commit**
 
@@ -2190,7 +2330,7 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
     binding; state; actions;   // the root products binding/state/actions, as index.tsx passes DataTable
   }): JSX.Element;
   ```
-  Behaviour: crumb above (not over) the rows as `DrillIn` does without `tiles`; child term rows on top of the `DataTable`'s rows via `ListHeaderComponent`; products rows from `tableConfig={{ data: shown.hits }}` where `shown = useLevelSnapshot(answer, settled)` — the pane holds its own rows while a child pane is pushed over it and while the query gathers its set again on the pop, exactly as the grid does (Task 10 says why `dealt`/"is the answer defined" cannot stand in); a `DataTableSkeleton` with `rowCount` = children + 4 until the snapshot exists.
+  Behaviour: crumb above (not over) the rows as `DrillIn` does without `tiles`; the level with `term.kind === 'all'` is this same component with no child rows (All products as a pane); child term rows on top of the `DataTable`'s rows via `ListHeaderComponent`; products rows from `tableConfig={{ data: shown.hits }}` where `shown = useLevelSnapshot(answer, settled)` — the pane holds its own rows while a child pane is pushed over it and while the query gathers its set again on the pop, exactly as the grid does (Task 10 says why `dealt`/"is the answer defined" cannot stand in); a `DataTableSkeleton` with `rowCount` = children + 4 until the snapshot exists.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -2355,7 +2495,7 @@ export function TermLevelTable({
 }
 ```
 
-Check `DataTable`'s props in `components/data-table/v2/index.tsx`: `tableConfig={{ data }}` is how `VariationsTable` hands it rows; `ListHeaderComponent` — if the v2 `DataTable` does not forward it to the list, add that one prop pass-through (it already forwards `ListFooterComponent`, see `variations-pane.tsx:135`). `cellsForRow` is the export from `../../index`; the `tableConfig` expanding meta (expanded rows for inline variations) is not needed at a term level because `variationsStyle === 'inline'` renders `InlineRow` which manages its own expansion — confirm by reading `components/product/variable-product-row.tsx` before relying on it; if it needs the `meta` from `index.tsx`'s `tableConfig`, pass the same `tableConfig` object down from `index.tsx` instead of `{ data }` alone (merge: `{ ...tableConfig, data }`).
+Check `DataTable`'s props in `components/data-table/v2/index.tsx`: `tableConfig={{ data }}` is how `VariationsTable` hands it rows; confirm its `handleEndReached` still extends the window with the `binding`/`actions` it is given when rows come from `tableConfig.data` (it should — the guard reads the binding, not the rows); if it keys the guard on `resource` hits, pass `onEndReached` through as the grid level does; `ListHeaderComponent` — if the v2 `DataTable` does not forward it to the list, add that one prop pass-through (it already forwards `ListFooterComponent`, see `variations-pane.tsx:135`). `cellsForRow` is the export from `../../index`; the `tableConfig` expanding meta (expanded rows for inline variations) is not needed at a term level because `variationsStyle === 'inline'` renders `InlineRow` which manages its own expansion — confirm by reading `components/product/variable-product-row.tsx` before relying on it; if it needs the `meta` from `index.tsx`'s `tableConfig`, pass the same `tableConfig` object down from `index.tsx` instead of `{ data }` alone (merge: `{ ...tableConfig, data }`).
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
@@ -2382,7 +2522,7 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
   {
     source: Exclude<BrowseBy, 'all'>;
     viewMode: 'grid' | 'table';
-    products: React.ReactNode;                  // today's products element, for All products
+    renderProducts: (onDrill) => React.ReactNode;   // today's products element wired to the STAGE's drill, shown when a search displaces the term set
     initialFilters: Record<string, unknown>;
     variationsStyle: string;
     stockStatus?: string;
@@ -2390,11 +2530,13 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
     onDrilledChange: (drilled: boolean) => void; // so index.tsx can set the filter bar's level
   }
   ```
-  A level's detail is `type Detail = { term: BrowseTerm; target?: Measurable } | { record: EngineRecord<'products'>; target?: Measurable }`. The stage keeps ONE product drill `{ record, depth, search, target }` (shown only at `depth === path.length` and while `search === state.search`, the existing rule); every move of the path (`openTerm`, `goBackTo`, `goRoot`) clears it first, and a drilled product's crumb ends with the current term, whose press closes the drill.
+  A level's detail is `type Detail = PathEntry | ProductDrill` — the stored path entry (`{ kind: 'term', term, target }`, Task 8) or the stage's product drill (`{ kind: 'product', record, depth, search, target }`) **by identity**: `DealStack` re-arms its deal whenever `detail !== staged`, so a detail built fresh on each render would re-deal every render. `detailAt(depth)` returns `path[depth]`, else the drill object itself. The stage keeps ONE product drill (shown only at `depth === path.length` and while `search === state.search`, the existing rule); `drillProduct` reads the current depth/search from a ref so its identity is stable (it is baked into tile components through `renderProducts`); every move of the path (`openTerm`, `goBackTo`, `goRoot`) clears it first, and a drilled product's crumb ends with the current term, whose press closes the drill.
+
+  All products is a level like any term: `TermLevelGrid`/`TermLevelTable` with `term={{ kind: 'all' }}` and no children, so in the grid the All products tile deals to slot 0 and is the way back, and in the table it is a pushed pane with the crumb above. A product drilled there, or in the search-displaced root, drills into the STAGE's drill (`renderProducts(drillProduct)`), never `index.tsx`'s — the outer stack that consumed that state is not mounted in browse mode.
 
   The stage also owns two readings of the shared products query that the levels cannot make for themselves:
   - **Attribution.** `ObservableResource.reload` keeps the previous answer while a re-projected query loads (query-bindings `useObservableResource`), so the answer object is paired with the query key it arrived under; `answer` is `undefined` while the current key has no answer of its own. Edge: an emission of the old query that lands in the same render as a key change is attributed to the new key — one wrong frame, which the level snapshot then replaces; noted, not guarded.
-  - **Search displacement.** With the path empty and `state.search !== ''`, depth 0 is today's products element (`props.products`, which reads the query itself) with no crumb — the spec's search contract; clearing the search shows the root term set again because the path was already dropped.
+  - **Search displacement.** With the path empty and `state.search !== ''`, depth 0 is today's products element (`props.renderProducts(drillProduct)`, which reads the query itself) with no crumb — the spec's search contract; clearing the search shows the root term set again because the path was already dropped.
 
 - [ ] **Step 1: Extend the stage test**
 
@@ -2454,11 +2596,28 @@ it('a search typed inside a term shows the catalogue-wide products with no crumb
 	expect(screen.queryByTestId('products')).toBeNull();
 	expect(screen.getByTestId('browse-term-1')).toBeTruthy();
 });
+
+it('a product drilled from the search-displaced root opens in the stage', () => {
+	render(<BrowseStage {...stageProps} source="categories" viewMode="grid" />);
+	act(() => queryActions.setSearch('lat'));
+	fireEvent.press(screen.getByTestId('products'));
+	expect(screen.getByTestId('drill-in')).toBeTruthy();
+});
+
+it('All products is a dealt level with the All products tile in slot 0', () => {
+	render(<BrowseStage {...stageProps} source="categories" viewMode="grid" />);
+	fireEvent.press(screen.getByTestId('browse-all-products'));
+	expect(screen.getByTestId('browse-level')).toBeTruthy();
+	expect(screen.getByTestId('browse-parent')).toBeTruthy();
+	expect(screen.getByTestId('products-breadcrumb')).toBeTruthy();
+});
 ```
+
+The first test's last four lines (press `browse-all-products`, expect `products` and the crumb) become: expect `browse-level` and `browse-parent` (the `products` element is only the search-displaced root now).
 
 The `DrillIn` mock gains a pressable for its last parent: `<Pressable testID="drill-in-last-parent" onPress={parents[parents.length - 1].onPress} />` beside the `Text`. `queryActions` is the Task 8 fake store's `actions` object, exported from the test's mock factory (hoist it with `jest.mock`'s factory returning the same object both tests import).
 
-`stageProps` is a fixture in the test file with `products={<Text testID="products" />}`, `total$: of(80)`, a `binding` whose `resource.valueRef$$.value.current.hits` holds one variable product and one simple product, `state`, `actions` fakes, `initialFilters: { status: 'publish' }`, `variationsStyle: 'drill'`, `onDrilledChange: jest.fn()`; the `useBrowseTerms` mock returns Drinks at the root with Hot as its child and `idsFor` → `[1,2]` / `[2]`; the `use-browse-path` module is NOT mocked (its own test covers it; here the query mock from Task 6's test is extended with a working `setFilter`/`clearFilter` fake exactly as in Task 8's test so the guard sees what `enter` wrote).
+`stageProps` is a fixture in the test file with `renderProducts={(onDrill) => <Pressable testID="products" onPress={() => onDrill(variable)} />}` (so a drill from the search-displaced root can be asserted to open `drill-in`), `actions: { extendLimit: jest.fn(), … }`, `total$: of(80)`, a `binding` whose `resource.valueRef$$.value.current.hits` holds one variable product and one simple product, `state`, `actions` fakes, `initialFilters: { status: 'publish' }`, `variationsStyle: 'drill'`, `onDrilledChange: jest.fn()`; the `useBrowseTerms` mock returns Drinks at the root with Hot as its child and `idsFor` → `[1,2]` / `[2]`; the `use-browse-path` module is NOT mocked (its own test covers it; here the query mock from Task 6's test is extended with a working `setFilter`/`clearFilter` fake exactly as in Task 8's test so the guard sees what `enter` wrote).
 
 - [ ] **Step 2: Run it to verify it fails**
 
@@ -2489,14 +2648,16 @@ import { displayTypeOf } from './term-tree';
 import { useBrowsePath, type PathEntry } from './use-browse-path';
 import { useBrowseTerms, type BrowseTerms } from './use-browse-terms';
 
-type Detail =
-	| { kind: 'term'; entry: PathEntry }
-	| { kind: 'product'; record: EngineRecord<'products'>; target?: Measurable };
+type ProductDrill = { kind: 'product'; record: EngineRecord<'products'>; depth: number; search: string; target?: Measurable };
+// By identity: DealStack re-arms whenever `detail !== staged`, so a level's detail is the stored
+// path entry or the drill object itself, never a fresh literal.
+type Detail = PathEntry | ProductDrill;
+type DrillHandler = (record: EngineRecord<'products'> | null, target?: Measurable) => void;
 
 export type BrowseStageProps = {
 	source: Exclude<BrowseBy, 'all'>;
 	viewMode: 'grid' | 'table';
-	products: React.ReactNode;
+	renderProducts: (onDrill: DrillHandler) => React.ReactNode;
 	variationsStyle: string;
 	stockStatus?: string;
 	binding: {
@@ -2506,7 +2667,7 @@ export type BrowseStageProps = {
 		sync: unknown;
 	};
 	state: { sort: unknown };
-	actions: unknown;
+	actions: { extendLimit: () => void };
 	onDrilledChange: (drilled: boolean) => void;
 };
 
@@ -2526,13 +2687,17 @@ export function BrowseStage(props: BrowseStageProps) {
 	const { path, enter, backTo } = useBrowsePath(source, terms);
 	const state = useQueryState<'products'>();
 	// The product drill remembers its depth and the search it opened under (the existing rule).
-	const [drill, setDrill] = React.useState<{ record: EngineRecord<'products'>; depth: number; search: string; target?: Measurable } | null>(null);
+	const [drill, setDrill] = React.useState<ProductDrill | null>(null);
 	const drilled = drill && drill.search === state.search && drill.depth === path.length ? drill : null;
 	React.useEffect(() => onDrilledChange(drilled !== null), [drilled, onDrilledChange]);
-	const drillProduct = React.useCallback(
-		(record: EngineRecord<'products'> | null, target?: Measurable) =>
-			setDrill(record ? { record, depth: path.length, search: state.search, target } : null),
-		[path.length, state.search]
+	// Stable: it is baked into the tiles' component identity through renderProducts, and a new
+	// handler per keystroke would remount every tile under the search.
+	const where = React.useRef({ depth: path.length, search: state.search });
+	where.current = { depth: path.length, search: state.search };
+	const drillProduct = React.useCallback<DrillHandler>(
+		(record, target) =>
+			setDrill(record ? { kind: 'product', record, depth: where.current.depth, search: where.current.search, target } : null),
+		[]
 	);
 	// The products answer as state: a level never suspends (a tile swapped for a skeleton
 	// mid-deal would lose its place).
@@ -2560,12 +2725,10 @@ export function BrowseStage(props: BrowseStageProps) {
 	// A search over an empty path has displaced the term set: the catalogue-wide products show.
 	const searchDisplaced = path.length === 0 && state.search !== '';
 
-	// What is on stage at `depth`: the next path entry, or the product drilled here.
-	const detailAt = (depth: number): Detail | null => {
-		if (path[depth]) return { kind: 'term', entry: path[depth] };
-		if (drilled && drilled.depth === depth) return { kind: 'product', record: drilled.record, target: drilled.target };
-		return null;
-	};
+	// What is on stage at `depth`: the next path entry, or the product drilled here — the stored
+	// objects themselves (identity, see Detail).
+	const detailAt = (depth: number): Detail | null =>
+		path[depth] ?? (drilled && drilled.depth === depth ? drilled : null);
 	// The crumb's ancestors for the level at `depth`: the source, then the path above it.
 	const crumbParentsAt = (depth: number) => [
 		{ label: rootLabel, onPress: goRoot },
@@ -2582,7 +2745,7 @@ export function BrowseStage(props: BrowseStageProps) {
 	// Level `depth` (0 = the root) with whatever is dealt over it.
 	const renderLevel = (depth: number): React.ReactNode => {
 		const detail = detailAt(depth);
-		const content = depth === 0 ? (searchDisplaced ? props.products : renderRoot()) : renderTerm(path[depth - 1], depth);
+		const content = depth === 0 ? (searchDisplaced ? props.renderProducts(drillProduct) : renderRoot()) : renderTerm(path[depth - 1], depth);
 		const renderDetail = (d: Detail) =>
 			d.kind === 'term' ? renderLevel(depth + 1) : (
 				<DrillIn
@@ -2593,9 +2756,8 @@ export function BrowseStage(props: BrowseStageProps) {
 					parents={drillParentsAt(depth)}
 				/>
 			);
-		const staged = detail?.kind === 'term' ? { term: detail.entry.term } : detail?.kind === 'product' ? detail.record : null;
 		return viewMode === 'grid' ? (
-			<DealStack testID={depth === 0 ? 'products-pane-stack' : `browse-stack-${depth}`} detail={detail} target={detail?.kind === 'term' ? detail.entry.target : detail?.target} renderDetail={renderDetail}>
+			<DealStack testID={depth === 0 ? 'products-pane-stack' : `browse-stack-${depth}`} detail={detail} target={detail?.target} renderDetail={renderDetail}>
 				{content}
 			</DealStack>
 		) : (
@@ -2614,19 +2776,13 @@ export function BrowseStage(props: BrowseStageProps) {
 		// The query is this level's own only while it is the deepest (a product drill over it
 		// does not move the products query).
 		const settled = depth === path.length;
-		if (term.kind === 'all') {
-			// The plain products, with the crumb above (table) or over (grid) — as the existing DrillIn.
-			return (
-				<AllProductsLevel crumb={{ ...crumb, detail: answer?.total === undefined ? undefined : t('pos_products.n_products', { count: answer.total }) }} tiles={viewMode === 'grid'}>
-					{props.products}
-				</AllProductsLevel>
-			);
-		}
+		// All products is a level with no children: the whole catalogue under the crumb, its tile
+		// in slot 0 of the deal.
 		const display = term.kind === 'term' ? displayTypeOf(term) : 'products';
 		const children = display === 'products' ? [] : terms.childrenOf(term);
 		const showProducts = display !== 'subcategories' || children.length === 0;
 		return viewMode === 'grid' ? (
-			<TermLevelGrid term={term} children={children} answer={answer} settled={settled} showProducts={showProducts} crumb={crumb} back={() => goBackTo(depth - 1)} onOpenTerm={openTerm} onDrillProduct={drillProduct} variationsStyle={props.variationsStyle} binding={binding as never} />
+			<TermLevelGrid term={term} children={children} answer={answer} settled={settled} showProducts={showProducts} crumb={crumb} back={() => goBackTo(depth - 1)} onOpenTerm={openTerm} onDrillProduct={drillProduct} variationsStyle={props.variationsStyle} binding={binding as never} actions={props.actions} />
 		) : (
 			<TermLevelTable term={term} children={children} answer={answer} settled={settled} showProducts={showProducts} crumb={crumb} onOpenTerm={openTerm} onDrillProduct={drillProduct} variationsStyle={props.variationsStyle} binding={binding as never} state={props.state as never} actions={props.actions as never} />
 		);
@@ -2636,9 +2792,7 @@ export function BrowseStage(props: BrowseStageProps) {
 }
 ```
 
-`AllProductsLevel` is a small component in the same file: a `View className="flex-1"` holding the `Breadcrumb` as a row above (`<DealFade>{crumb}</DealFade>` when `tiles`, the bare crumb otherwise) and then `children` in a `View className="flex-1"`. Copy the crumb-placement block from `DrillIn`'s render (`drill-in.tsx`, the `{tiles ? (<DealFade>{crumb}</DealFade>) : crumb}` block and the `flex-1` wrapper under it) rather than importing `DrillIn` — `DrillIn` is a product's pane.
-
-In `TermLevelGrid`/`BrowseRootGrid`, the `DealStagedContext` value is whatever the enclosing `DealStack` stages: `DealStack` provides `staged` (the `Detail` object) via `DealStagedContext` — so `staged?.term` reads a term detail and `VariableProductTile`'s `staged?.uuid` check must read `detail.record?.uuid`. Adjust `variable-product-tile.tsx`'s one line to `const stagedRecord = (staged as { record?: EngineRecord<'products'> } | EngineRecord<'products'> | null); lifted = (stagedRecord && ('record' in stagedRecord ? stagedRecord.record?.uuid : stagedRecord.uuid)) === props.record.uuid` so the root (`all` mode) stage, which stages the record itself, and a browse level, which stages `{ kind:'product', record }`, both lift the right tile.
+In `TermLevelGrid`/`BrowseRootGrid`, the `DealStagedContext` value is whatever the enclosing `DealStack` stages: the `Detail` object — a path entry (`kind: 'term'`) or the product drill (`kind: 'product'`). The term tiles read `staged?.kind === 'term' && staged.term` (Tasks 5, 10); `VariableProductTile`'s `staged?.uuid` check must also read a drill. Adjust `variable-product-tile.tsx`'s one line to `const stagedRecord = (staged as { record?: EngineRecord<'products'> } | EngineRecord<'products'> | null); lifted = (stagedRecord && ('record' in stagedRecord ? stagedRecord.record?.uuid : stagedRecord.uuid)) === props.record.uuid` so the root (`all` mode) stage, which stages the record itself, and a browse level, which stages `{ kind: 'product', record, … }`, both lift the right tile.
 
 - [ ] **Step 4: Wire `index.tsx`**
 
@@ -2648,7 +2802,7 @@ Replace the Task 6 `BrowseStage` mount with:
 									<BrowseStage
 										source={browseBy}
 										viewMode={viewMode}
-										products={products}
+										renderProducts={renderProducts}
 										variationsStyle={variationsStyle}
 										stockStatus={stockStatusFilter}
 										binding={binding as never}
@@ -2827,8 +2981,12 @@ Read the product tile/row testIDs on `next` before finalising the regexes (`prod
 - Root: All first, no crumb, tile anatomy, no per-term colour → Tasks 4, 5.
 - Inside a term: deal with parent at slot 0, children then products, crumb as the existing component, nested levels, crumb ancestors return in one pass → Tasks 10, 12 (`backTo` truncates the path; every intermediate `DealStack` sees its `detail` go `null` on the same render).
 - Table: pane push, crumb above, child rows then product rows → Task 11.
-- All products as a term → Task 12 `AllProductsLevel`.
-- Search/scan reset to products while non-empty, root on clear → Task 8 (guard + effect), Tasks 6 and 12 (`searchDisplaced`: depth 0 is `props.products` while the path is empty and the search non-empty), Task 12 (`drill.search`).
+- All products as a term → Task 12: `TermLevelGrid`/`TermLevelTable` with `term={{ kind: 'all' }}`, so the tile deals to slot 0 and is the way back (no separate component).
+- A product drilled under All products or the search-displaced root opens in the stage → `renderProducts(drillProduct)` (Tasks 6, 12); the drill handler is identity-stable so tiles do not remount per keystroke.
+- A level's detail is the stored object (path entry / drill) by identity → `DealStack` re-arms only on a real change (Task 12 `detailAt`).
+- The projection belongs to the path: source change, unmount, leaving a shortcut, a dropped path all `unproject()` exactly what is still there → Task 8.
+- Levels extend the query window near the end of the scroller → Task 10 (`useGuardedExtendLimit` + `onScroll`), Task 11 (DataTable's own end-reached).
+- Search/scan reset to products while non-empty, root on clear → Task 8 (guard + effect), Tasks 6 and 12 (`searchDisplaced`: depth 0 is `renderProducts(drillProduct)` while the path is empty and the search non-empty), Task 12 (`drill.search`).
 - A term is visible when any descendant is (POS-only branch under an organising parent) → Task 1 `visibleTerms` lifts ancestors; the tile shows no count at `count === 0` → Task 4.
 - Crumb detail is the query total → the stage reads `binding.total$`; each level snapshots `{ hits, total }` together (Tasks 10, 11, 12).
 - A level's rows/tiles are its own while covered or gathering → `useLevelSnapshot` (Task 10) in both the grid and the table; the stage attributes the shared answer to its query key (Task 12).
