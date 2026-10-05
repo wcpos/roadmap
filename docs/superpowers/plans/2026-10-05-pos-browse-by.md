@@ -724,7 +724,7 @@ export function useBrowseTerms(source: BrowseBy): BrowseTerms {
 
 Check `describeQuickFilter`'s real signature in `filter-bar-layout.ts:209` and pass exactly what it takes (it needs the translator and currency formatter per ledger line 12); adjust the call above to its parameter list — do not change `describeQuickFilter`.
 
-**Zero-count terms a synced product carries.** `projectTerms` takes a third argument `knownNonEmpty: ReadonlySet<number>` and passes it through to `rootTerms`/`childrenOf`/`visibleTerms`; `useTaxonomyTerms` builds it with one more binding over `products` whose selector is `{ [source]: { $elemMatch: { id: { $in: zeroCountIds } } } }` (the product payload stores `categories`/`tags`/`brands` as `{ id, name, slug }[]`; check `collection-map.ts` for the exact field path and use `useEngineBinding` as `useAllTermsBinding` does, `limit` = the number of zero-count ids × 1 is not expressible, so read the hits and collect the term ids they carry into the Set). The products binding is skipped (selector `null`/binding disabled) when there are no zero-count terms. The read carries **no `limit`**: `execute-query.ts` applies a limit only when one is given, so an unlimited read returns every synced product carrying any of the ids — a rare zero-count term is never crowded out of a window by a common one. (Do not add a page size to this query.) Add to the test file: `projectTerms(records, 'categories', new Set([4]))` keeps `Empty` (count 0) in `rootsOf()`.
+**Zero-count terms a synced product carries.** `projectTerms` takes a third argument `knownNonEmpty: ReadonlySet<number>` and passes it through to `rootTerms`/`childrenOf`/`visibleTerms`; `useTaxonomyTerms` builds it with one more binding over `products` whose selector is `{ [source]: { $elemMatch: { id: { $in: zeroCountIds } } } }` (the product payload stores `categories`/`tags`/`brands` as `{ id, name, slug }[]`; check `collection-map.ts` for the exact field path and use `useEngineBinding` as `useAllTermsBinding` does, `limit` = the number of zero-count ids × 1 is not expressible, so read the hits and collect the term ids they carry into the Set). `knownNonEmpty` is `undefined` while the existence read is still pending (there are zero-count ids and the products binding has no answer yet), and `projectTerms` then reports the source as unanswered (`all: undefined`, `rootsOf()` → `[]`) rather than hiding every zero-count term for a moment — a source made only of POS-only terms would otherwise flash empty and dim its settings row. (In the landed code this is a fix on top of Task 3: `useTaxonomyTerms` passes `undefined` until the binding has answered or is disabled; `useBrowseCounts` already treats `all === undefined` as loading.) The products binding is skipped (selector `null`/binding disabled) when there are no zero-count terms. The read carries **no `limit`**: `execute-query.ts` applies a limit only when one is given, so an unlimited read returns every synced product carrying any of the ids — a rare zero-count term is never crowded out of a window by a common one. (Do not add a page size to this query.) Add to the test file: `projectTerms(records, 'categories', new Set([4]))` keeps `Empty` (count 0) in `rootsOf()`.
 
 Three bindings always mounted is acceptable: the Brand/Tag/Category pills already hold the same collections; if `useAllTermsBinding` turns out to subscribe three queries per products panel and that shows in the products-panel perf gate, split `useBrowseTerms` into a per-source hook mounted by the stage only for the active source (the hook order stays unconditional because the stage mounts one component per source).
 
@@ -1717,6 +1717,16 @@ it('a term that leaves the source drops the path to the root', () => {
 	expect(actions.clearFilter).toHaveBeenLastCalledWith('categories');
 });
 
+it('a parent reparented or deleted under an open child drops the path', () => {
+	let all: unknown[] = [drinks, hot];
+	const { result, rerender } = renderHook(() => useBrowsePath('categories', { ...terms, all } as never));
+	act(() => { result.current.enter(drinks); result.current.enter(hot); });
+	expect(result.current.path.length).toBe(2);
+	all = [drinks, { ...hot, parent: 99 }];            // Hot now belongs elsewhere
+	rerender();
+	expect(result.current.path).toEqual([]);
+});
+
 it('unmounting clears the projection (Browse by → All products)', () => {
 	const { result, unmount } = renderHook(() => useBrowsePath('categories', terms as never));
 	act(() => result.current.enter(drinks));
@@ -1773,6 +1783,20 @@ const sameSet = (left: unknown, right: number[]) =>
 	Array.isArray(left) && left.length === right.length && right.every((id) => left.includes(id));
 const sameSort = (left: { field: string; direction: string }, right: { field: string; direction: string }) =>
 	left.field === right.field && left.direction === right.direction;
+
+/** Every stored term is still in the source, and each is still the child of the one before. */
+function chainStands(stored: PathEntry[], all: BrowseTerm[] | undefined): boolean {
+	if (all === undefined) return true;
+	let previous: number | undefined;
+	for (const { term } of stored) {
+		if (term.kind !== 'term') continue;
+		const known = all.find((candidate) => termKey(candidate) === termKey(term));
+		if (!known || known.kind !== 'term') return false;
+		if (previous !== undefined && known.parent !== previous) return false;
+		previous = known.id;
+	}
+	return true;
+}
 
 /**
  * The browse path and its projection into the ONE products query. The path is state, but what
@@ -1888,14 +1912,15 @@ export function useBrowsePath(source: Exclude<BrowseBy, 'all'>, terms: BrowseTer
 		const { term } = deepest;
 		if (term.kind === 'all') live = state.search === '' && (!field || !(state.filters[field] as number[] | undefined)?.length);
 		else if (term.kind === 'term')
-			// …and the term itself must still be in the source: one deleted on the server, or
-			// hidden because its last product went, is not a level to stand on. While the source
-			// has not answered (`all === undefined`) it is unknown, not gone.
+			// …and the whole chain must still stand in the source: every stored term present, each
+			// still the child of the one before (a parent deleted or reparented on the server
+			// leaves the child a root, or someone else's). While the source has not answered
+			// (`all === undefined`) it is unknown, not gone.
 			live =
 				state.search === '' &&
 				!!field &&
 				sameSet(state.filters[field], terms.idsFor(term)) &&
-				(terms.all === undefined || terms.all.some((known) => termKey(known) === termKey(term)));
+				chainStands(stored, terms.all);
 		else {
 			const quickFilter = terms.quickFilterFor(term);
 			live = !!quickFilter && isQuickFilterActive(quickFilter, state, resetState);
@@ -1939,7 +1964,7 @@ The `resetState` above is the chip's own (`v2/filter-bar.tsx` `QuickChip`: empty
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run the Step 2 command. Expected: PASS, 11 tests (make the in-stock baseline case two `it.each` rows over `showOutOfStock` true/false by mocking `useUISettings` per row; assert `clearFilter('stock_status')` for true and `setFilter('stock_status', 'instock')` for false). (`project` runs `unproject` first, so entering a child from a parent clears the parent's set and then sets the child's — the test's `toHaveBeenLastCalledWith` sees the second.) If the "entering a child" test shows `path` lagging one render, the guard is reading stale `state` — `enter` must call `project` BEFORE `setStored` (it does) and the fake store must emit synchronously (it does); fix the hook, not the test.
+Run the Step 2 command. Expected: PASS, 12 tests (make the in-stock baseline case two `it.each` rows over `showOutOfStock` true/false by mocking `useUISettings` per row; assert `clearFilter('stock_status')` for true and `setFilter('stock_status', 'instock')` for false). (`project` runs `unproject` first, so entering a child from a parent clears the parent's set and then sets the child's — the test's `toHaveBeenLastCalledWith` sees the second.) If the "entering a child" test shows `path` lagging one render, the guard is reading stale `state` — `enter` must call `project` BEFORE `setStored` (it does) and the fake store must emit synchronously (it does); fix the hook, not the test.
 
 - [ ] **Step 5: Commit**
 
@@ -2474,7 +2499,9 @@ jest.mock('../../../../../../contexts/translations', () => ({ useT: () => (key: 
 jest.mock('../../../../components/data-table/v2', () => ({
 	DataTable: ({ tableConfig, ListHeaderComponent, renderItem, noDataMessage }: { tableConfig: { data: { record: { uuid: string } }[] }; ListHeaderComponent: React.ComponentType; renderItem: (args: { item: { original: { record: { uuid: string; payload: { type: string } } } }; index: number; table: unknown }) => React.ReactNode; noDataMessage?: React.ReactNode }) => {
 		const { View } = jest.requireActual('react-native');
-		return <View testID="table"><ListHeaderComponent />{tableConfig.data.length === 0 ? noDataMessage : tableConfig.data.map((row, index) => <View key={row.record.uuid}>{renderItem({ item: { original: row }, index, table: {} })}</View>)}</View>;
+		const { Text } = jest.requireActual('react-native');
+		// As the real DataTable: an `undefined` message falls back to the translated default.
+		return <View testID="table"><ListHeaderComponent />{tableConfig.data.length === 0 ? (noDataMessage === undefined ? <Text>common.no_results_found</Text> : noDataMessage) : tableConfig.data.map((row, index) => <View key={row.record.uuid}>{renderItem({ item: { original: row }, index, table: {} })}</View>)}</View>;
 	},
 }));
 jest.mock('../../../../components/data-table/v2/skeleton', () => ({ DataTableSkeleton: () => { const { View } = jest.requireActual('react-native'); return <View testID="skeleton" />; } }));
@@ -2516,6 +2543,13 @@ it('hands the empty state to the table when the level answered with nothing and 
 	expect(screen.getByTestId('no-data-message')).toBeTruthy();
 });
 
+it('shows neither the empty state nor the table fallback under child rows with no products', () => {
+	render(<TermLevelTable {...(base as never)} answer={{ hits: [], total: 0 }} />);
+	expect(screen.getByTestId('browse-term-2')).toBeTruthy();
+	expect(screen.queryByTestId('no-data-message')).toBeNull();
+	expect(screen.queryByText('common.no_results_found')).toBeNull();
+});
+
 it('keeps its own rows while a child pane is over it', () => {
 	const { rerender } = render(<TermLevelTable {...(base as never)} />);
 	rerender(<TermLevelTable {...(base as never)} settled={false} answer={{ hits: [{ record: { uuid: 'x', payload: { type: 'simple' } } }], total: 1 }} />);
@@ -2548,6 +2582,8 @@ type Crumb = { label: string; onPress: () => void; testID?: string };
 type Hit = { record: EngineRecord<'products'> };
 // Skeleton rows for a cold level beyond its child rows: a screen's worth is more than a pane shows.
 const SKELETON_PRODUCT_ROWS = 4;
+// A level with child rows and no products is not empty: the table shows nothing under the rows.
+const NOTHING = <></>;
 
 /**
  * One term's contents as a pane: the crumb above, its child terms as rows at the top of the
@@ -2615,7 +2651,8 @@ export function TermLevelTable({
 						cellsForRow={cellsForRow}
 						// A level with child rows is not empty when its products are; one with neither
 						// shows the empty state (with its Clear filters) under the crumb.
-						noDataMessage={children.length === 0 && showProducts ? (empty as React.ReactElement) : undefined}
+						// Never `undefined` here: DataTable would fall back to "No results" under valid child rows.
+						noDataMessage={children.length === 0 && showProducts ? (empty as React.ReactElement) : NOTHING}
 						ListHeaderComponent={Header}
 						renderItem={({ item, index, table }) => (
 							<VirtualizedList.Item>
@@ -2642,7 +2679,7 @@ Check `DataTable`'s props in `components/data-table/v2/index.tsx`: `noDataMessag
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run the Step 2 command. Expected: PASS, 3 tests.
+Run the Step 2 command. Expected: PASS, 5 tests.
 
 - [ ] **Step 5: Commit**
 
@@ -2765,6 +2802,14 @@ it('a level stays rendered from its staged entry while its stack gathers after t
 	fireEvent.click(screen.getAllByTestId('products-breadcrumb-parent-0')[1]);   // Categories: path → []
 	expect(screen.getAllByTestId('browse-level').length).toBe(2);               // both levels still on stage, gathering
 	expect(screen.queryByText('undefined')).toBeNull();
+});
+
+it('a product drilled inside a term keeps its crumb while it gathers after the path was cut from under it', () => {
+	render(<BrowseStage {...stageProps} source="categories" viewMode="grid" />);
+	fireEvent.click(screen.getByTestId('browse-term-1'));
+	fireEvent.click(screen.getByTestId('variable-product-drill'));
+	act(() => queryActions.setSearch('lat'));           // path → [], drill hidden; both stacks still gathering
+	expect(screen.getByTestId('drill-in')).toBeTruthy();  // no crash, still rendered from its staged entry
 });
 
 it('All products is a dealt level with the All products tile in slot 0', () => {
@@ -2902,10 +2947,11 @@ export function BrowseStage(props: BrowseStageProps) {
 			onPress: () => goBackTo(index + 1),
 		})),
 	];
-	// A product drilled at `depth` sits inside path[depth - 1]: that term is the last crumb parent,
-	// and pressing it closes the drill (the path stays where it is).
-	const drillParentsAt = (depth: number) =>
-		depth === 0 ? undefined : [...crumbParentsAt(depth - 1), { label: labelOf(path[depth - 1].term), onPress: () => drillProduct(null) }];
+	// A product drilled at `depth` sits inside the level's own entry (handed down from the staged
+	// detail, never read from `path[depth - 1]`: the path may already be shorter while the drill
+	// gathers): that term is the last crumb parent, and pressing it closes the drill.
+	const drillParentsAt = (depth: number, entry?: PathEntry) =>
+		depth === 0 || !entry ? undefined : [...crumbParentsAt(depth - 1), { label: labelOf(entry.term), onPress: () => drillProduct(null) }];
 
 	// Level `depth` (0 = the root) with whatever is dealt over it.
 	// `entry` is the term this level shows — handed down from the stack's STAGED detail, not read
@@ -2922,7 +2968,7 @@ export function BrowseStage(props: BrowseStageProps) {
 					back={() => drillProduct(null)}
 					stockStatus={props.stockStatus}
 					tiles={viewMode === 'grid'}
-					parents={drillParentsAt(depth)}
+					parents={drillParentsAt(depth, entry)}
 				/>
 			);
 		return viewMode === 'grid' ? (
