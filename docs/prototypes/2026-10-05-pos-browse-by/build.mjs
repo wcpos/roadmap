@@ -107,10 +107,12 @@ const parentTermTile = (t, backTo) => {
 };
 const productTile = (id, dealTo) => {
 	const p = products[id];
-	const variable = !!p.v;
+	// Only Latte's deal is built; other variable products keep the › but do not navigate.
+	if (id !== 'latte') dealTo = null;
+	const variable = !!p.v && !!dealTo;
 	const tag = variable ? `label` : `div`;
 	const attr = variable ? ` for="${dealTo}"` : '';
-	return `<${tag} class="tile product${variable ? ' variable' : ''}"${attr}><div class="img${p.img ? '' : ' none'}">${p.img ? I.photo : ''}${variable ? `<span class="vbadge">${p.v}</span>` : ''}</div><div class="tx"><div class="nm">${p.n}</div><div class="pr">${p.p}</div></div><div class="addc">${variable ? I.chev : I.plus}</div></${tag}>`;
+	return `<${tag} class="tile product${p.v ? ' variable' : ''}${p.v && !variable ? ' static' : ''}"${attr}><div class="img${p.img ? '' : ' none'}">${p.img ? I.photo : ''}${p.v ? `<span class="vbadge">${p.v}</span>` : ''}</div><div class="tx"><div class="nm">${p.n}</div><div class="pr">${p.p}</div></div><div class="addc">${p.v ? I.chev : I.plus}</div></${tag}>`;
 };
 const variationTile = (n, price, stock) =>
 	`<div class="tile product"><div class="img"></div><div class="tx"><div class="nm">${n}</div><div class="pr">${price}</div>${stock ? `<div class="sub low">${stock}</div>` : ''}</div><div class="addc">${I.plus}</div></div>`;
@@ -126,10 +128,11 @@ const allRow = (to) =>
 	`<label class="row term all" for="${to}"><div class="thumb plain">${I.all}</div><div class="cell grow"><div>All products</div></div><div class="cell r chev">${I.chev}</div></label>`;
 const productRow = (id, dealTo) => {
 	const p = products[id];
-	const variable = !!p.v;
+	if (id !== 'latte') dealTo = null;
+	const variable = !!p.v && !!dealTo;
 	const tag = variable ? 'label' : 'div';
 	const attr = variable ? ` for="${dealTo}"` : '';
-	return `<${tag} class="row product"${attr}><div class="thumb ${p.img ? 'photo' : 'plain'}">${p.img ? I.photo : ''}</div><div class="cell grow"><div>${p.n}</div>${variable ? `<div class="sub">${p.v} variations</div>` : ''}</div><div class="cell r num">${p.p}</div><div class="add${variable ? ' chev' : ''}">${variable ? I.chev : I.plus}</div></${tag}>`;
+	return `<${tag} class="row product"${attr}><div class="thumb ${p.img ? 'photo' : 'plain'}">${p.img ? I.photo : ''}</div><div class="cell grow"><div>${p.n}</div>${p.v ? `<div class="sub">${p.v} variations</div>` : ''}</div><div class="cell r num">${p.p}</div><div class="add${p.v ? ' chev' : ''}">${p.v ? I.chev : I.plus}</div></${tag}>`;
 };
 const variationRow = (n, price, stock) =>
 	`<div class="row product var"><div class="thumb plain sm"></div><div class="cell grow"><div>Latte</div><div class="sub">${n}</div></div><div class="cell r num">${price}${stock ? ` <span class="pillo low">${stock}</span>` : ''}</div><div class="add">${I.plus}</div></div>`;
@@ -157,7 +160,7 @@ function stateFor(mode, lv) {
 		return { kind: 'deal', crumb: [...from, { label: 'Latte', to: 'lv3' }], detail: '3 variations', backTo: from[from.length - 1].to, under: mode === 'cat' ? hot : mode === 'all' ? all : drinks.slice(0, 8) };
 	}
 	if (mode === 'all') return { kind: 'products', crumb: null, items: all };
-	if (lv === 'lvall') return { kind: 'products', crumb: [R, { label: 'All products', to: 'lvall' }], detail: `${all.length} products`, items: all, parent: parentTermTile({ n: 'All products', all: true }, 'lv0') };
+	if (lv === 'lvall') return { kind: 'products', crumb: [R, { label: 'All products', to: 'lvall' }], detail: `${all.length} products`, items: all, parent: parentTermTile({ n: 'All products', all: true }, 'lv0'), noDeal: true };
 	if (mode === 'cat') {
 		if (lv === 'lv0') return { kind: 'terms', crumb: null, terms: cats.map((c, i) => termTile(c, i ? null : 'lv1', 'cat')), rows: cats.map((c, i) => termRow(c, i ? null : 'lv1', 'cat')), withAll: true };
 		if (lv === 'lv1') return { kind: 'mixed', crumb: [R, { label: 'Drinks', to: 'lv1' }], detail: '12 products', parent: parentTermTile(cats[0], 'lv0'), terms: [termTile({ n: 'Hot', c: 6, img: true, hue: 20 }, 'lv2', 'cat'), termTile({ n: 'Cold', c: 6, hue: 200 }, null, 'cat')], rows: [termRow({ n: 'Hot', c: 6, img: true, hue: 20 }, 'lv2'), termRow({ n: 'Cold', c: 6, hue: 200 }, null)], items: drinks };
@@ -180,7 +183,7 @@ function renderGrid(s) {
 	let body = '';
 	if (s.kind === 'terms') body = `<div class="tiles">${s.withAll ? allTile('lvall') : ''}${s.terms.join('')}</div>`;
 	else if (s.kind === 'mixed') body = `<div class="tiles">${s.parent ?? ''}${s.terms.join('')}${s.items.map((id) => productTile(id, 'lv3')).join('')}</div>`;
-	else if (s.kind === 'products') body = `<div class="tiles">${s.parent ?? ''}${s.items.map((id) => productTile(id, 'lv3')).join('')}</div>`;
+	else if (s.kind === 'products') body = `<div class="tiles">${s.parent ?? ''}${s.items.map((id) => productTile(id, s.noDeal ? null : 'lv3')).join('')}</div>`;
 	else if (s.kind === 'deal')
 		body = `<div class="tiles dealt">${parentTile('latte', s.backTo)}${LATTE_VARS.map((v) => variationTile(...v)).join('')}</div><div class="tiles under">${s.under.map((id) => productTile(id, 'lv3')).join('')}</div>`;
 	const c = s.crumb ? `<div class="crumbwrap">${crumb(s.crumb, s.detail)}</div>` : '';
@@ -197,7 +200,7 @@ function renderTable(s) {
 	const head = `<div class="row th"><div class="thumb h"></div><div class="cell grow">Product</div><div class="cell r">Price</div><div class="add h"></div></div>`;
 	if (s.kind === 'terms') rows = `${s.withAll ? allRow('lvall') : ''}${s.rows.join('')}`;
 	else if (s.kind === 'mixed') rows = head + s.rows.join('') + s.items.map((id) => productRow(id, 'lv3')).join('');
-	else if (s.kind === 'products') rows = head + s.items.map((id) => productRow(id, 'lv3')).join('');
+	else if (s.kind === 'products') rows = head + s.items.map((id) => productRow(id, s.noDeal ? null : 'lv3')).join('');
 	else if (s.kind === 'deal') rows = `<div class="row th"><div class="thumb h"></div><div class="cell grow">Variation</div><div class="cell r">Price</div><div class="add h"></div></div>` + LATTE_VARS.map((v) => variationRow(...v)).join('');
 	const c = s.crumb ? crumb(s.crumb, s.detail) : '';
 	return `${c}<div class="card"><div class="scroller">${rows}</div><div class="foot"><span class="l">Tax based on: shop base address</span><span>${footCount(s)}</span></div></div>`;
@@ -234,7 +237,7 @@ const cap = {
 	'cat-lv1': '<b>Drinks.</b> What WooCommerce calls display type <i>both</i>: the child categories first (Hot, Cold), then every product under Drinks including the children\'s, because a parent archive includes its descendants. Tapping Drinks dealt these out of the Drinks tile, which walked to the first slot and is the way back — the same deal as variations. The crumb is the existing component, unchanged. A category set to <i>subcategories</i> shows only the child tiles; one set to <i>products</i> shows only products.',
 	'cat-lv2': '<b>Hot.</b> A leaf: products only. Latte and Tea carry a variations count and › instead of +; tapping one is the existing deal.',
 	'cat-lv3': '<b>Latte dealt.</b> Unchanged from today\'s variations deal: Latte walks to the first slot and is the way back; its three sizes come out from under it; the Hot products fade underneath and stay mounted. The crumb just grew one segment.',
-	'cat-lvall': '<b>All products, inside categories mode.</b> The escape the issue asks for: the plain grid dealt out of the All products tile, which is the way back; the crumb reads Categories › All products. This is also where search and barcode land: typing or scanning drops the drill-in and shows matches across the whole catalogue with no crumb; clearing the search returns to the root tiles.',
+	'cat-lvall': '<b>All products, inside a browse mode.</b> The escape the issue asks for: the plain grid dealt out of the All products tile, which is the way back; the crumb reads the source\'s name › All products (Categories › All products here, Tags › All products in Tags, and so on). Search lands near here too: typing, or a scan that is not an exact barcode match, drops the drill-in and shows matches across the whole catalogue with no crumb; clearing the search returns to the root tiles. An exact barcode match adds to the cart as it does today, wherever the cashier is.',
 	'tag-lv0': '<b>Tags.</b> Flat, no images in WooCommerce, so every tile is the name on a tinted card. Same component, depth 1.',
 	'tag-lv1': '<b>Vegan.</b> Products carrying the tag. Crumb Tags › Vegan.',
 	'brand-lv0': '<b>Brands.</b> WooCommerce brands carry a thumbnail and can nest, so this is the categories component with the brand taxonomy. Filter bar unchanged.',

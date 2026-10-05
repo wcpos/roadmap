@@ -61,7 +61,7 @@ All paths under `packages/core/src/screens/main/pos/products/v2/` unless stated.
   export type TermLike = { id: number; name: string; parent?: number; menu_order?: number; count?: number; display?: string };
   export type DisplayType = 'products' | 'subcategories' | 'both';
   export function orderTerms<T extends TermLike>(terms: T[], hierarchical: boolean): T[];
-  export function visibleTerms<T extends TermLike>(terms: T[]): T[];          // count > 0
+  export function visibleTerms<T extends TermLike>(terms: T[], knownNonEmpty?: ReadonlySet<number>): T[]; // count > 0, or a synced product carries it
   export function childrenOf<T extends TermLike>(terms: T[], parentId: number): T[]; // ordered, visible
   export function rootTerms<T extends TermLike>(terms: T[]): T[];            // parent missing/0/orphaned, ordered, visible
   export function descendantIds(terms: TermLike[], id: number): number[];     // [id, ...all descendants], no duplicates, cycle-safe
@@ -108,11 +108,14 @@ describe('orderTerms', () => {
 });
 
 describe('visibleTerms', () => {
-	it('hides terms with no published products, as the shop does', () => {
+	it('hides terms with no catalog count and no synced product', () => {
 		expect(visibleTerms([T(1, 'A', { count: 0 }), T(2, 'B', { count: 3 })]).map((t) => t.id)).toEqual([2]);
 	});
 	it('hides a term with no count at all', () => {
 		expect(visibleTerms([{ id: 1, name: 'A' }])).toEqual([]);
+	});
+	it('keeps a zero-count term a synced product carries (POS-only products are not in the catalog recount)', () => {
+		expect(visibleTerms([T(1, 'A', { count: 0 }), T(2, 'B', { count: 0 })], new Set([2])).map((t) => t.id)).toEqual([2]);
 	});
 });
 
@@ -191,21 +194,26 @@ export function orderTerms<T extends TermLike>(terms: T[], hierarchical: boolean
 	);
 }
 
-export function visibleTerms<T extends TermLike>(terms: T[]): T[] {
-	return terms.filter((term) => (term.count ?? 0) > 0);
+/**
+ * WooCommerce's `count` is the catalog recount, which leaves out products hidden from the
+ * catalog — the POS-only products a till sells. So a zero-count term stays if a synced product
+ * carries it (`knownNonEmpty`, from one local products query for the zero-count ids).
+ */
+export function visibleTerms<T extends TermLike>(terms: T[], knownNonEmpty?: ReadonlySet<number>): T[] {
+	return terms.filter((term) => (term.count ?? 0) > 0 || !!knownNonEmpty?.has(term.id));
 }
 
-export function rootTerms<T extends TermLike>(terms: T[]): T[] {
+export function rootTerms<T extends TermLike>(terms: T[], knownNonEmpty?: ReadonlySet<number>): T[] {
 	const ids = new Set(terms.map((term) => term.id));
 	return orderTerms(
-		visibleTerms(terms).filter((term) => !term.parent || !ids.has(term.parent)),
+		visibleTerms(terms, knownNonEmpty).filter((term) => !term.parent || !ids.has(term.parent)),
 		true
 	);
 }
 
-export function childrenOf<T extends TermLike>(terms: T[], parentId: number): T[] {
+export function childrenOf<T extends TermLike>(terms: T[], parentId: number, knownNonEmpty?: ReadonlySet<number>): T[] {
 	return orderTerms(
-		visibleTerms(terms).filter((term) => term.parent === parentId),
+		visibleTerms(terms, knownNonEmpty).filter((term) => term.parent === parentId),
 		true
 	);
 }
@@ -235,7 +243,7 @@ export function displayTypeOf(term: TermLike): DisplayType {
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run the Step 2 command. Expected: PASS, 14 tests.
+Run the Step 2 command. Expected: PASS, 15 tests.
 
 - [ ] **Step 5: Commit**
 
@@ -633,6 +641,8 @@ export function useBrowseTerms(source: BrowseBy): BrowseTerms {
 ```
 
 Check `describeQuickFilter`'s real signature in `filter-bar-layout.ts:209` and pass exactly what it takes (it needs the translator and currency formatter per ledger line 12); adjust the call above to its parameter list — do not change `describeQuickFilter`.
+
+**Zero-count terms a synced product carries.** `projectTerms` takes a third argument `knownNonEmpty: ReadonlySet<number>` and passes it through to `rootTerms`/`childrenOf`/`visibleTerms`; `useTaxonomyTerms` builds it with one more binding over `products` whose selector is `{ [source]: { $elemMatch: { id: { $in: zeroCountIds } } } }` (the product payload stores `categories`/`tags`/`brands` as `{ id, name, slug }[]`; check `collection-map.ts` for the exact field path and use `useEngineBinding` as `useAllTermsBinding` does, `limit` = the number of zero-count ids × 1 is not expressible, so read the hits and collect the term ids they carry into the Set). The products binding is skipped (selector `null`/binding disabled) when there are no zero-count terms. Add to the test file: `projectTerms(records, 'categories', new Set([4]))` keeps `Empty` (count 0) in `rootsOf()`.
 
 Three bindings always mounted is acceptable: the Brand/Tag/Category pills already hold the same collections; if `useAllTermsBinding` turns out to subscribe three queries per products panel and that shows in the products-panel perf gate, split `useBrowseTerms` into a per-source hook mounted by the stage only for the active source (the hook order stays unconditional because the stage mounts one component per source).
 
@@ -2570,7 +2580,7 @@ Read the product tile/row testIDs on `next` before finalising the regexes (`prod
 ## Self-review against the spec
 
 - Setting, default `all`, dimmed sources with reason, no header control → Tasks 2, 6.
-- Sources table (collections, hierarchy, image, order, hidden, product set) → Tasks 1, 3.
+- Sources table (collections, hierarchy, image, order, hidden, product set) → Tasks 1, 3; "empty for the till, not the storefront" → `knownNonEmpty` in Tasks 1, 3 and `useBrowseCounts` (Task 6 reads `rootsOf()`, which already applies it).
 - Brands on WC < 9.4 → empty collection → dimmed `No brands yet` → Task 6 (`useBrowseCounts` → 0).
 - Display type, descendants → Tasks 1, 12 (`renderTerm`), 10/11 (`showProducts`, `children`).
 - Root: All first, no crumb, tile anatomy, no per-term colour → Tasks 4, 5.

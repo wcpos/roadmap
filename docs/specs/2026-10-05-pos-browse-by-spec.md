@@ -63,11 +63,18 @@ footer and the variations drill-in are reused unchanged.
 
 | Source | Collection | Hierarchy | Image | Order | Hidden | Product set of a term |
 |---|---|---|---|---|---|---|
-| categories | `products/categories` | `parent` | `image.src` | `menu_order` asc, then `name` | `count === 0` | `categories: [id, …descendants]` |
-| brands | `products/brands` | `parent` | `image.src` | `menu_order` asc, then `name` | `count === 0` | `brands: [id, …descendants]` |
-| tags | `products/tags` | flat | none | `name` asc | `count === 0` | `tags: [id]` |
+| categories | `products/categories` | `parent` | `image.src` | `menu_order` asc, then `name` | empty (below) | `categories: [id, …descendants]` |
+| brands | `products/brands` | `parent` | `image.src` | `menu_order` asc, then `name` | empty (below) | `brands: [id, …descendants]` |
+| tags | `products/tags` | flat | none | `name` asc | empty (below) | `tags: [id]` |
 | shortcuts | `uiSettings.filterBar` quick filters | flat | none | stored order | never | the quick filter, applied by `apply-quick-filter.ts` exactly as a chip press |
 
+- **Empty means empty for the till, not for the storefront.** WooCommerce's term `count` is its
+  catalog recount, which excludes products hidden from the catalog (`exclude-from-catalog`) — and
+  POS-only products are exactly those. So a term is hidden only when `count === 0` **and** no
+  product the till has synced carries it (one local query over the products collection for the
+  zero-count ids, re-run as products arrive). A term that is empty for the till but not the shop
+  cannot occur; one that is empty for the shop but holds POS-only products shows as soon as one of
+  them is local. The settings row's count and its dimming use the same predicate.
 - "Descendants" is the transitive closure over `parent` in the local collection, computed by a pure
   function (`term-tree.ts`: `childrenOf`, `descendantsOf`, `orderTerms`, `displayTypeOf`) with unit
   tests. A term whose `parent` points at a missing term is treated as a root.
