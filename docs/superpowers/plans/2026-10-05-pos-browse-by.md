@@ -1434,7 +1434,7 @@ In `POSProductsContent`, after `const variationsStyle = …` add:
 	const browseBy = readBrowseBy(useDocField(uiSettings, (value) => value.browseBy));
 ```
 
-and replace the block at lines 419-438 (`{/* Tiles are dealt … */}` through the closing `)}`) with:
+and replace the block from `{/* Tiles are dealt out of the tile that was tapped; rows slide in as a pane. */}` through the closing `)}` of the grid/table conditional (inside `<ErrorBoundary>` in `POSProductsContent`; line numbers drift, anchor on the text) with:
 
 ```tsx
 								{browseBy !== 'all' ? (
@@ -1881,7 +1881,7 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
     binding: ReturnType<typeof useRelationalCollectionBinding>;   // for the footer
   }): JSX.Element;
   ```
-  Behaviour: slot 0 = `ParentTermTile`; then one `DealCell` per child term; then one per product; the grid shows `useLevelSnapshot(answer, settled)` — its own last answer, held while a child level is over it and while the query gathers its set again on the way back — so tiles never morph into another level's products; the crumb is a `DealFade` over the top (sets `top` via `useDeal().setTop`) exactly as `DrillIn` does with `tiles`, and its detail is `N products` from the snapshot's `total` (the query total, not the loaded window).
+  Behaviour: slot 0 = `ParentTermTile`; then one `DealCell` per child term; then one per product; the grid shows `useLevelSnapshot(answer, settled)` — its own last answer, held while a child level is over it and while the query gathers its set again on the way back — so tiles never morph into another level's products; the crumb is a row of its own above the grid, in a `DealFade` (exactly as `DrillIn` does with `tiles` on `next` since #2396: never over the grid, never inside a card), the grid reports the node its slots rest in with `useDeal().placeGrid` (as `variations-grid.tsx` does — `testID="variations-slots"` is the pattern), and the crumb's detail is `N products` from the snapshot's `total` (the query total, not the loaded window).
 
   Why not `useDeal().dealt`: a level stays `dealt` while a grandchild is over it, and `ObservableResource.reload` (query-bindings `useObservableResource`) keeps the previous answer while the re-projected query loads, with no loading flag — so neither "am I dealt" nor "is the answer defined" says whose answer this is. The stage attributes the answer (Task 12) and says which level is settled.
 
@@ -1933,7 +1933,7 @@ jest.mock('../deal-stack', () => {
 		DealFade: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
 		FRONT: {},
 		DealStagedContext: React.createContext(null),
-		useDeal: () => ({ top: 0, setTop: () => {}, dealt: true }),
+		useDeal: () => ({ grid: null, placeGrid: () => {}, dealt: true }),
 	};
 });
 
@@ -2025,7 +2025,7 @@ export function useLevelSnapshot(
 import Animated, { useAnimatedRef, useScrollViewOffset } from 'react-native-reanimated';
 import { Breadcrumb } from '@wcpos/components/breadcrumb';
 import type { EngineRecord } from '@wcpos/query';
-import { DealCell, DealFade, FRONT, useDeal } from '../deal-stack';
+import { DealCell, DealFade, FRONT, type Measurable, useDeal } from '../deal-stack';
 import { ProductTile, type GridFields } from '../grid/product-tile';
 import { VariableProductTile } from '../grid/variable-product-tile';
 import { ProductsFooter } from '../footer';
@@ -2034,8 +2034,6 @@ import { ParentTermTile } from './term-tile';
 import { useT } from '../../../../../../contexts/translations';
 
 type Crumb = { label: string; onPress: () => void; testID?: string };
-// Over the grid, which scrolls underneath it (as drill-in.tsx).
-const CRUMB_OVER = { zIndex: 1 };
 // How many product placeholders a cold level holds: a row's worth, so the deal goes out with shape.
 const PLACEHOLDER_ROWS = 1;
 
@@ -2078,7 +2076,10 @@ export function TermLevelGrid({
 	variationsStyle: string;
 	binding: { active$: unknown; total$: unknown; sync: unknown };
 }) {
-	const { top, setTop } = useDeal();
+	// The slots rest inside this node; the stage measures it so the deal lands on the grid, not
+	// on the stage it is inset from (as variations-grid.tsx).
+	const { placeGrid } = useDeal();
+	const slotsNode = React.useRef<React.ComponentRef<typeof View>>(null);
 	const scroller = useAnimatedRef<Animated.ScrollView>();
 	const scroll = useScrollViewOffset(scroller);
 	const { uiSettings } = useUISettings('pos-products');
@@ -2106,19 +2107,18 @@ export function TermLevelGrid({
 
 	return (
 		<View className="flex-1" testID="browse-level">
-			<DealFade
-				className="bg-background absolute inset-x-0 top-0"
-				style={CRUMB_OVER}
-				onLayout={(event) => setTop(event.nativeEvent.layout.height)}
-			>
+			{/* The crumb is a row of its own on the ground above the grid (drill-in.tsx). */}
+			<DealFade>
 				<Breadcrumb parents={parents} here={crumb.here} detail={detail} autoFocus testID="products-breadcrumb" />
 			</DealFade>
-			<Animated.ScrollView
-				ref={scroller}
-				className="flex-1"
-				testID="browse-level-scroller"
-				contentContainerStyle={{ paddingTop: top ?? 0 }}
+			<View className="min-h-0 flex-1 px-1" testID="browse-level-surface">
+			<View
+				ref={slotsNode}
+				className="min-h-0 flex-1"
+				testID="browse-level-slots"
+				onLayout={() => placeGrid(slotsNode.current as Measurable)}
 			>
+			<Animated.ScrollView ref={scroller} className="flex-1" testID="browse-level-scroller">
 				{rows.map((row, rowIndex) => (
 					<View key={rowIndex} className="flex-row" style={rowIndex === 0 ? FRONT : undefined}>
 						{row.map((index) => {
@@ -2144,6 +2144,8 @@ export function TermLevelGrid({
 					</View>
 				))}
 			</Animated.ScrollView>
+			</View>
+			</View>
 			<DealFade>
 				<ProductsFooter collectionName="products" active$={binding.active$ as never} total$={binding.total$ as never} sync={binding.sync as never} count={products.filter(Boolean).length} />
 			</DealFade>
@@ -2151,6 +2153,8 @@ export function TermLevelGrid({
 	);
 }
 ```
+
+(Run the formatter; the nesting above is written flat to keep the diff readable.) `variations-grid.tsx` on `next` is the reference for the surface/slots/scroller nesting — copy its shape, not the pre-#2396 one with `contentContainerStyle={{ paddingTop: top }}`.
 
 Note `VariableProductTile` reads `DealStagedContext` itself to lift the tapped product; the context value at a level is whatever the level's own `DealStack` stages (Task 11 stages `{ record }` for a product and `{ term }` for a term, so both tiles can read it). `ProductTile` inside a dealt cell must grow to the row: if the tile's `flex-1` leaves it heightless in a cell, give `ProductTile` the same `grow` treatment `VariationTile` has (`TILE` constant in `variation-tile.tsx:33`) via a `className` prop rather than a copy of the tile.
 
@@ -2162,7 +2166,7 @@ Run the Step 2 command. Expected: PASS, 5 tests.
 
 ```bash
 git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by add packages/core/src/screens/main/pos/products/v2/browse/level-snapshot.ts packages/core/src/screens/main/pos/products/v2/browse/level-snapshot.test.tsx packages/core/src/screens/main/pos/products/v2/browse/term-grid.tsx packages/core/src/screens/main/pos/products/v2/browse/term-level-grid.test.tsx
-git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "feat(pos): a term's dealt grid — parent, child terms, products, crumb over the top"
+git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "feat(pos): a term's dealt grid — parent, child terms, products, crumb above"
 ```
 
 ### Task 11: `TermLevelTable` — a term's pane
@@ -2406,7 +2410,7 @@ jest.mock('../deal-stack', () => {
 		DealCell: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
 		DealFade: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
 		FRONT: {},
-		useDeal: () => ({ top: 0, setTop: () => {}, dealt: true }),
+		useDeal: () => ({ grid: null, placeGrid: () => {}, dealt: true }),
 	};
 });
 jest.mock('@wcpos/components/pane-stack', () => {
@@ -2632,7 +2636,7 @@ export function BrowseStage(props: BrowseStageProps) {
 }
 ```
 
-`AllProductsLevel` is a small component in the same file: a `View className="flex-1"` holding the `Breadcrumb` (as a `DealFade` over the top with `setTop` when `tiles`, else above) and `children`. Copy the crumb-placement block from `drill-in.tsx:57-80` rather than importing `DrillIn` — `DrillIn` is a product's pane.
+`AllProductsLevel` is a small component in the same file: a `View className="flex-1"` holding the `Breadcrumb` as a row above (`<DealFade>{crumb}</DealFade>` when `tiles`, the bare crumb otherwise) and then `children` in a `View className="flex-1"`. Copy the crumb-placement block from `DrillIn`'s render (`drill-in.tsx`, the `{tiles ? (<DealFade>{crumb}</DealFade>) : crumb}` block and the `flex-1` wrapper under it) rather than importing `DrillIn` — `DrillIn` is a product's pane.
 
 In `TermLevelGrid`/`BrowseRootGrid`, the `DealStagedContext` value is whatever the enclosing `DealStack` stages: `DealStack` provides `staged` (the `Detail` object) via `DealStagedContext` — so `staged?.term` reads a term detail and `VariableProductTile`'s `staged?.uuid` check must read `detail.record?.uuid`. Adjust `variable-product-tile.tsx`'s one line to `const stagedRecord = (staged as { record?: EngineRecord<'products'> } | EngineRecord<'products'> | null); lifted = (stagedRecord && ('record' in stagedRecord ? stagedRecord.record?.uuid : stagedRecord.uuid)) === props.record.uuid` so the root (`all` mode) stage, which stages the record itself, and a browse level, which stages `{ kind:'product', record }`, both lift the right tile.
 
