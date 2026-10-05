@@ -23,21 +23,24 @@
   .note b{font-weight:600}
   .note ul{margin:6px 0 0;padding-left:18px}
   .note li{margin:3px 0}
+  .waiting{border-color:var(--primary)}
   .board{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;margin-top:14px}
   .opt{width:520px;flex:none}
   .opt.phone{width:360px}
+  .opt.wide{width:840px}
+  .opt.wide .pane{padding-right:340px}
   .opt .cap{margin-top:10px;font-size:13px;color:var(--muted-fg);padding:0 4px}
   .opt .cap b{color:var(--foreground);font-weight:600}
   .opt .cap .rec{display:inline-block;background:var(--primary);color:#fff;border-radius:999px;padding:1px 9px;font-size:11px;font-weight:600;margin-left:6px;vertical-align:1px}
   /* the real pane (terminal-leg-view.tsx), light theme, rehosted */
   .frame{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.02)}
-  .pane{padding:14px 20px 18px;display:flex;flex-direction:column;align-items:center;gap:16px;min-height:640px}
+  .pane{padding:14px 20px 18px;display:flex;flex-direction:column;align-items:center;gap:16px;min-height:600px}
   .pane .meta{width:100%;display:flex;justify-content:space-between;font-size:12px;color:var(--muted-fg)}
   .pane .eyebrow{font-size:11px;font-weight:600;letter-spacing:.12em;color:var(--muted-fg);margin-top:18px}
   .pane .amt{font-size:64px;font-weight:700;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
   .phone .pane .amt{font-size:48px}
-  .badge{display:inline-flex;align-items:center;gap:8px;font-size:14px}
-  .badge i{width:9px;height:9px;border-radius:50%;background:var(--muted-fg);display:inline-block}
+  .badge{display:inline-flex;align-items:center;gap:8px;font-size:14px;text-align:center}
+  .badge i{width:9px;height:9px;border-radius:50%;background:var(--muted-fg);display:inline-block;flex:none}
   .badge.err i{background:var(--destructive)}
   .badge.warn{color:var(--warning)}
   .badge.warn i{background:var(--warning)}
@@ -48,44 +51,53 @@
   .mark svg{width:52px;height:52px}
   .mark.fail{background:var(--destructive-soft);color:var(--destructive)}
   .mark.void{background:var(--muted);color:var(--muted-fg)}
-  .mark.ok{background:var(--success);color:#fff}
   .mark svg path{stroke-dasharray:40;stroke-dashoffset:40;animation:draw .35s .1s ease-out forwards}
   .mark svg path+path{animation-delay:.3s}
   @keyframes draw{to{stroke-dashoffset:0}}
-  /* the reader card */
+  /* the reader card, horizontal stepper as chosen on 2026-09-11 */
   .tcard{width:100%;max-width:440px;background:var(--muted);border-radius:16px;padding:16px}
-  .tcard .head{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted-fg);gap:8px;flex-wrap:wrap}
+  .tcard .head{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted-fg);gap:8px;flex-wrap:wrap}
   .tcard .head .conn{display:inline-flex;align-items:center;gap:6px}
   .tcard .head .conn i{width:8px;height:8px;border-radius:50%;background:var(--success);display:inline-block}
-  .steps{margin-top:10px}
-  .step{display:grid;grid-template-columns:20px 1fr auto;column-gap:10px;min-height:40px;align-items:start}
-  .step .rail{display:flex;flex-direction:column;align-items:center;height:100%;padding-top:7px}
-  .step .rail i{width:9px;height:9px;border-radius:50%;background:var(--border);display:block;flex:none}
-  .step.done .rail i{background:var(--success)}
-  .step.now .rail i{background:var(--success);box-shadow:0 0 0 4px rgba(15,138,86,.15)}
-  .step .rail .line{width:1px;flex:1;background:var(--border);margin-top:5px}
-  .step:last-child .rail .line{display:none}
-  .step .lbl{font-size:14px;color:var(--muted-fg);padding-top:3px}
-  .step.now .lbl,.step.fail .lbl,.step.void .lbl{color:var(--foreground);font-weight:600}
-  .step .lbl small{display:block;font-weight:400;font-size:12px;color:var(--muted-fg);margin-top:1px}
-  .step.fail .lbl small[style*="destructive"]{color:var(--destructive)}
-  .step .time{font-size:12px;color:var(--muted-fg);font-variant-numeric:tabular-nums;padding-top:5px}
-  .step.fail .rail i,.step.void .rail i{width:18px;height:18px;margin:-4px 0 0 0;background:none;display:flex;align-items:center;justify-content:center}
-  .step.fail .rail i svg,.step.void .rail i svg{width:18px;height:18px}
-  .step.fail .rail i{color:var(--destructive)}
-  .step.void .rail i{color:var(--muted-fg)}
-  .x{display:inline-flex}
+  .hsteps{display:flex;margin-top:16px}
+  .hst{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:13px;color:var(--muted-fg);position:relative}
+  .hst i{width:18px;height:18px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;z-index:1;color:#fff}
+  .hst i svg{width:18px;height:18px}
+  .hst.done i{background:var(--success)}
+  .hst.now i{background:var(--card);border:3px solid var(--primary);box-shadow:0 0 0 4px rgba(10,98,180,.14)}
+  .hst.now{color:var(--foreground);font-weight:600}
+  .hst.fail i{background:var(--destructive);width:22px;height:22px;margin:-2px 0}
+  .hst.fail{color:var(--destructive);font-weight:600}
+  .hst.void i{background:var(--muted-fg);width:22px;height:22px;margin:-2px 0}
+  .hst.void{color:var(--foreground);font-weight:600}
+  .hst:not(:last-child)::after{content:"";position:absolute;top:8px;left:50%;width:100%;height:2px;background:var(--border)}
+  .hst.done:not(:last-child)::after{background:var(--success)}
+  .phone .hst{font-size:12px;white-space:nowrap}
+  .phone .tcard{padding:14px 10px}
+  .phone .tcard .head{font-size:12px;padding:0 4px}
+  .phone .nowline{font-size:12px;flex-wrap:wrap;row-gap:2px}
+  .phone .badge{font-size:13px}
+  /* the latest line under the stepper (option A) */
+  .nowline{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:14px;font-size:13px;color:var(--muted-fg);text-align:center}
+  .nowline b{font-weight:500;color:var(--foreground)}
+  .nowline.err b{color:var(--destructive)}
+  .nowline.warn b{color:var(--warning)}
+  .nowline .ic{width:16px;height:16px;display:inline-flex;flex:none}
+  .nowline.err .ic{color:var(--destructive)}
+  .nowline.warn .ic{color:var(--warning)}
+  .nowline .ic svg{width:16px;height:16px}
   /* actions */
   .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
   .btn{height:48px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;padding:0 22px;font-size:16px;font-weight:600;border:1px solid var(--border);background:var(--card);color:var(--foreground)}
   .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
   .btn.sm{height:36px;font-size:13px;padding:0 12px;border-radius:10px}
   .btn.ghost{border-color:transparent;background:transparent;color:var(--muted-fg)}
+  .btn svg{width:14px;height:14px}
   /* the log, shared row */
   .toggle{font-size:14px;color:var(--muted-fg);display:inline-flex;align-items:center;gap:6px}
   .toggle svg{width:14px;height:14px}
   .log{width:100%;max-width:440px}
-  .log .lh{display:flex;justify-content:space-between;align-items:center;padding:0 2px 8px;font-size:12px;color:var(--muted-fg)}
+  .log .lh{display:flex;justify-content:space-between;align-items:center;padding:0 2px 6px;font-size:12px;color:var(--muted-fg)}
   .log .lh b{color:var(--foreground);font-weight:600;font-size:13px}
   .row{display:grid;grid-template-columns:18px 1fr auto;column-gap:10px;padding:8px 2px;border-top:1px solid var(--border);align-items:start}
   .row:first-of-type{border-top:0}
@@ -102,100 +114,109 @@
   .row .t{font-size:12px;color:var(--muted-fg);font-variant-numeric:tabular-nums;padding-top:2px}
   .raw{width:100%;max-width:440px;font:12px/1.5 var(--mono);color:var(--muted-fg);word-break:break-all}
   .raw .e{color:var(--destructive)}
-  /* option C tabs */
-  .tabs{display:flex;background:var(--card);border-radius:10px;padding:3px;margin-top:12px;font-size:13px}
-  .tabs span{flex:1;text-align:center;padding:7px 0;border-radius:8px;color:var(--muted-fg)}
-  .tabs span.on{background:var(--muted);color:var(--foreground);font-weight:600;box-shadow:inset 0 0 0 1px var(--border)}
-  .tabs span em{font-style:normal;display:inline-block;min-width:18px;padding:0 5px;border-radius:999px;background:var(--destructive);color:#fff;font-size:11px;margin-left:6px}
-  /* option D sheet */
-  .sheetwrap{position:relative;min-height:640px}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12px;color:var(--muted-fg);margin-top:8px}
+  .kv code{font:11px var(--mono);color:var(--foreground);word-break:break-all}
+  .inner{margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+  .inner .row{border-top-color:rgba(0,0,0,.05)}
+  /* sheet / side panel */
+  .sheetwrap{position:relative;min-height:600px}
   .scrim{position:absolute;inset:0;background:rgba(27,34,48,.28);border-radius:18px}
   .sheet{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-radius:18px 18px 0 0;padding:10px 20px 20px;box-shadow:0 -6px 24px rgba(0,0,0,.08)}
   .sheet .grab{width:36px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 12px}
-  .sheet .sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-  .sheet .sh b{font-size:16px;font-weight:600}
+  .sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .sh b{font-size:16px;font-weight:600}
   .side{position:absolute;top:0;right:0;bottom:0;width:320px;background:var(--card);border-left:1px solid var(--border);padding:16px 18px;border-radius:0 18px 18px 0}
-  .opt.wide{width:840px}
-  .opt.wide .pane{padding-right:340px}
-  .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12px;color:var(--muted-fg);margin-top:8px}
-  .kv code{font:11px var(--mono);color:var(--foreground);word-break:break-all}
+  .vsteps .step{display:grid;grid-template-columns:20px 1fr;column-gap:10px;min-height:40px}
+  .vsteps .step .rail{display:flex;flex-direction:column;align-items:center;padding-top:7px}
+  .vsteps .step .rail i{width:9px;height:9px;border-radius:50%;background:var(--border);display:block}
+  .vsteps .step.done .rail i,.vsteps .step.now .rail i{background:var(--success)}
+  .vsteps .step .rail .line{width:1px;flex:1;background:var(--border);margin-top:5px}
+  .vsteps .step:last-child .rail .line{display:none}
+  .vsteps .step .lbl{font-size:14px;color:var(--muted-fg);padding-top:3px}
+  .vsteps .step.now .lbl{color:var(--foreground);font-weight:600}
   .changes{font-size:13px;color:var(--muted-fg)}
   .changes li{margin:2px 0}
+  table{border-collapse:collapse;width:100%;font-size:13px}
+  th{text-align:left;padding:4px 8px 6px 0;font-weight:600}
+  td{padding:3px 8px 3px 0;vertical-align:top}
 </style>
 </head>
 <body>
 <div class="page">
   <h1>The terminal moment: a log area that reads</h1>
-  <p class="lede">From the first SumUp Solo run (2026-10-05): <em>"The log also sucks. We are going to need a nice, consistent log area. Can you mock up some examples."</em> Four options below, each the real <code>terminal-leg-view.tsx</code> rehosted in the state you saw (11,00 € declined on Paul Solo), then the recommended one in two more states and on a phone.</p>
+  <p class="lede">From the first SumUp Solo run (2026-10-05): <em>"The log also sucks. We are going to need a nice, consistent log area."</em> Then: <em>"On the original mockups the terminal progress was horizontal. I think I prefer that."</em> So every option below starts from the stepper chosen on 2026-09-11 (<code>docs/prototypes/2026-09-11-tender-pane-mockups</code>): four nodes on a line, <b>connected · 82%</b> in the card head. The app shipped a vertical list instead; that goes back to the mockup regardless of which log option wins.</p>
+
+  <div class="note waiting">
+    <b>Waiting on Paul</b>
+    <ul>
+      <li>Pick the log shape: <b>A</b> the latest line under the stepper with Details, <b>B</b> the list always under the card, or <b>C</b> a sheet / side panel.</li>
+      <li>Failure node: red cross <b>on the stepper node</b> plus the ring-sized cross above the card (shown), or the ring-sized cross only?</li>
+    </ul>
+  </div>
 
   <div class="note">
     <b>What every option changes, before the log itself</b>
     <ul>
-      <li><b>A red cross at the ring's size</b> when the leg fails, where the spinner was. The Paid beat has a 96 pt tick; failure gets the same weight, red. A cancel or time-out gets a grey minus at the same size, not red: nobody lost money.</li>
-      <li><b>The failed step is marked, not left green.</b> "On terminal" was shown green-and-bold after the decline as if still live.</li>
-      <li><b>Words, not wire.</b> <code>Reader action rdr_20XY…:4297… created on rdr_20XY…</code> becomes <b>Sent to Paul Solo</b>; the ids move to a muted mono line only where the log is open. One message catalogue maps every server and client event to cashier copy; unknown messages fall through unchanged.</li>
+      <li><b>The stepper is horizontal again</b>, as chosen: done nodes green with a green line behind them, the live node a white disc with a blue ring, the failed node a red cross, a cancelled node a grey minus.</li>
+      <li><b>A red cross at the ring's size</b> when the leg fails, where the spinner was. The Paid beat has a 96 pt tick; failure gets the same weight, red. A cancel or time-out gets a grey minus at the same size: nobody lost money.</li>
+      <li><b>Words, not wire.</b> <code>Reader action rdr_20XY…:4297… created on rdr_20XY…</code> becomes <b>Sent to Paul Solo</b>; the ids move to a muted mono line only where the log is open. One message catalogue (bottom of the page) maps every server and client event to cashier copy; unknown messages fall through unchanged.</li>
       <li><b>"Declined or cancelled on the terminal"</b> when the provider cannot tell them apart (SumUp reports both as <code>FAILED</code>). "Cancelled on the terminal" after a declined card is wrong copy.</li>
-      <li><b>One row shape everywhere</b>: level mark · message · time. Same row in the Logs screen, the register closure, the printer log.</li>
+      <li><b>One row shape everywhere</b>: level mark · message · time, ids in mono underneath. Same row in the Logs screen, the register closure, the printer log.</li>
     </ul>
   </div>
 
   <h2>Today <small>what you saw, for reference</small></h2>
   <div class="board">
-    <div class="opt"><div class="frame" id="today"></div><div class="cap">Green dot on the failed step, a monospace dump with reader ids twice per line, and a Copy button the size of a tile.</div></div>
+    <div class="opt"><div class="frame" id="today"></div><div class="cap">Vertical list (not the mockup), green dot on the failed step, a monospace dump with reader ids twice per line, a Copy button the size of a tile.</div></div>
   </div>
 
-  <h2>A · The steps are the log <small>recommended</small></h2>
-  <p class="lede">The four steps carry their own time and a one-line detail; anything that happens between steps (a cancel request, a wobble) attaches under the step it happened in. There is no second list. <b>Details</b> unfolds the ids and the copy action for support.</p>
+  <h2>A · The latest line under the stepper <small>recommended</small></h2>
+  <p class="lede">The stepper tells the shape; one line under it says what just happened, in words, with its time. That line is the top of the log. <b>Details</b> unfolds the full list inside the card (same rows as B) with the ids and Copy/Share. Nothing else moves.</p>
   <div class="board">
-    <div class="opt"><div class="frame" id="a-failed"></div><div class="cap"><b>Declined</b><span class="rec">recommended</span><br>The step list already is the log; it just never said when or why. Cost: the catalogue (~25 messages) and a step-attach rule for off-step events.</div></div>
-    <div class="opt"><div class="frame" id="a-unstable"></div><div class="cap"><b>On the terminal, connection unstable</b><br>The warning lives under the live step with its own mark, not as a separate orange line under the badge.</div></div>
-    <div class="opt"><div class="frame" id="a-voided"></div><div class="cap"><b>Cancelled from the till</b><br>Grey minus at the ring's size, the step says who cancelled. No red: no money moved.</div></div>
-    <div class="opt phone"><div class="frame" id="a-phone"></div><div class="cap"><b>Phone</b><br>Same component; the time column stays, the detail line wraps.</div></div>
+    <div class="opt"><div class="frame" id="a-failed"></div><div class="cap"><b>Declined</b><span class="rec">recommended</span><br>The cashier reads one line; support unfolds the rest. Cost: the catalogue (~25 messages) and a collapsible inside the card.</div></div>
+    <div class="opt"><div class="frame" id="a-unstable"></div><div class="cap"><b>On the terminal, connection unstable</b><br>The warning is the latest line, amber, in the same slot; no separate orange sentence under the badge.</div></div>
+    <div class="opt"><div class="frame" id="a-voided"></div><div class="cap"><b>Cancelled from the till, Details open</b><br>Grey minus at the ring's size and on the node. The list unfolds in the card; Copy and Share sit at its foot.</div></div>
+    <div class="opt phone"><div class="frame" id="a-phone"></div><div class="cap"><b>Phone</b><br>Four nodes still fit at 360; labels shrink to 12 px, never wrap.</div></div>
   </div>
 
-  <h2>B · A proper list under the card</h2>
-  <p class="lede">The step list stays as it is (with the cross). "Show log" opens a real list: level mark, words, time, muted ids on a second line, <b>Copy</b> in the list header. This is the Logs screen's row, so it is the cheapest consistent answer.</p>
+  <h2>B · The list under the card, always</h2>
+  <p class="lede">Stepper as chosen; below the buttons the log is a real list (mark · words · time, ids in mono), Copy in its header, no toggle. What "Show log" was trying to be.</p>
   <div class="board">
-    <div class="opt"><div class="frame" id="b-failed"></div><div class="cap"><b>Declined, log open</b><br>Cheapest: a row component and the catalogue; the step list is untouched. Cost: two views of the same five events.</div></div>
+    <div class="opt"><div class="frame" id="b-failed"></div><div class="cap"><b>Declined</b><br>Cheapest build: a row component and the catalogue. Cost: the pane grows by a row per event, and the list repeats what the stepper says.</div></div>
   </div>
 
-  <h2>C · Status | Log inside the card</h2>
-  <p class="lede">MoonPay's idiom: the reader card gets a segmented control. <b>Status</b> is the step list, <b>Log</b> is the row list, and the Log tab carries a red count when there is an error. Nothing below the buttons.</p>
+  <h2>C · A sheet</h2>
+  <p class="lede">Stepper as chosen; "Show log" opens a side panel on a tablet and a bottom sheet on a phone, with the list, the ids as key–value, and <b>Copy</b> / <b>Share</b> in its header. The pane behind never grows.</p>
   <div class="board">
-    <div class="opt"><div class="frame" id="c-failed"></div><div class="cap"><b>Declined, Log tab</b><br>Keeps the pane short and the card self-contained. Cost: a tab control at the moment the cashier least wants to explore.</div></div>
-  </div>
-
-  <h2>D · A sheet</h2>
-  <p class="lede">"Show log" opens a bottom sheet on a phone and a side panel on a tablet, with the list, the ids as key–value, and <b>Copy</b> / <b>Share</b> in its header. The pane behind never grows.</p>
-  <div class="board">
-    <div class="opt wide"><div class="frame" id="d-tablet"></div><div class="cap"><b>Tablet: side panel</b><br>Best for support calls (everything in one place, share from the header). Cost: a sheet primitive on both platforms; the log is one tap further away.</div></div>
-    <div class="opt phone"><div class="frame" id="d-phone"></div><div class="cap"><b>Phone: bottom sheet</b></div></div>
+    <div class="opt wide"><div class="frame" id="c-tablet"></div><div class="cap"><b>Tablet: side panel</b><br>Best for a support call. Cost: a sheet primitive on both platforms; the log is one tap further away.</div></div>
+    <div class="opt phone"><div class="frame" id="c-phone"></div><div class="cap"><b>Phone: bottom sheet</b></div></div>
   </div>
 
   <h2>The catalogue <small>wire message → words</small></h2>
   <div class="note" style="max-width:1100px">
-    <table style="border-collapse:collapse;width:100%;font-size:13px">
-      <tr><th style="text-align:left;padding:4px 8px 6px 0">Written today</th><th style="text-align:left;padding:4px 8px 6px">Shown</th><th style="text-align:left;padding:4px 0 6px">Mark</th></tr>
-      <tr><td style="padding:3px 8px 3px 0"><code>Reader action &lt;reader&gt;:&lt;id&gt; created on &lt;reader&gt;</code></td><td style="padding:3px 8px">Sent to <b>{reader label}</b></td><td>green dot</td></tr>
-      <tr><td style="padding:3px 8px 3px 0"><code>Reader action pending</code></td><td style="padding:3px 8px">On the terminal, waiting for the customer</td><td>green dot</td></tr>
-      <tr><td style="padding:3px 8px 3px 0"><code>Approved 1.00 EUR</code></td><td style="padding:3px 8px">Approved 1,00 €</td><td>green dot</td></tr>
-      <tr><td style="padding:3px 8px 3px 0"><code>Reader action cancelled</code> (no cashier cancel)</td><td style="padding:3px 8px">Declined or cancelled on the terminal</td><td>red cross</td></tr>
-      <tr><td style="padding:3px 8px 3px 0"><code>Reader action failed: card_declined</code></td><td style="padding:3px 8px">Card declined</td><td>red cross</td></tr>
-      <tr><td style="padding:3px 8px 3px 0"><code>Cancel requested by cashier</code> / <code>Cancel requested: cashier</code></td><td style="padding:3px 8px">Cancelled from the till</td><td>grey minus</td></tr>
-      <tr><td style="padding:3px 8px 3px 0"><code>Cancel requested: expired</code> · <code>Deadline reached</code></td><td style="padding:3px 8px">Timed out after 5 minutes</td><td>grey minus</td></tr>
-      <tr><td style="padding:3px 8px 3px 0"><code>Reader action voided</code> / <code>Reader action voided: &lt;reason&gt;</code></td><td style="padding:3px 8px">Terminal confirmed the cancel</td><td>grey dot</td></tr>
-      <tr><td style="padding:3px 8px 3px 0"><code>Connection unstable</code></td><td style="padding:3px 8px">Connection unstable, still trying</td><td>amber triangle</td></tr>
-      <tr><td style="padding:3px 8px 3px 0"><code>Capture failed: &lt;reason&gt;</code></td><td style="padding:3px 8px">Authorised but not captured: {reason}</td><td>red cross</td></tr>
-      <tr><td style="padding:3px 8px 3px 0"><code>Ignored stale &lt;status&gt; after &lt;from&gt;</code></td><td style="padding:3px 8px">Late update ignored</td><td>grey dot (Details only)</td></tr>
-      <tr><td style="padding:3px 8px 3px 0"><code>Leg released</code></td><td style="padding:3px 8px">Payment released: check the terminal before taking it again</td><td>amber triangle</td></tr>
-      <tr><td style="padding:3px 8px 3px 0">Provider 4xx on intent (e.g. SumUp 422)</td><td style="padding:3px 8px">{provider's message}, e.g. "This merchant can only accept EUR"</td><td>red cross</td></tr>
+    <table>
+      <tr><th>Written today</th><th>Shown</th><th>Mark</th></tr>
+      <tr><td><code>Reader action &lt;reader&gt;:&lt;id&gt; created on &lt;reader&gt;</code></td><td>Sent to <b>{reader label}</b></td><td>green dot</td></tr>
+      <tr><td><code>Reader action pending</code></td><td>On the terminal, waiting for the customer</td><td>green dot</td></tr>
+      <tr><td><code>Approved 1.00 EUR</code></td><td>Approved 1,00 €</td><td>green dot</td></tr>
+      <tr><td><code>Reader action cancelled</code> (no cashier cancel)</td><td>Declined or cancelled on the terminal</td><td>red cross</td></tr>
+      <tr><td><code>Reader action failed: card_declined</code></td><td>Card declined</td><td>red cross</td></tr>
+      <tr><td><code>Cancel requested by cashier</code> / <code>Cancel requested: cashier</code></td><td>Cancelled from the till</td><td>grey minus</td></tr>
+      <tr><td><code>Cancel requested: expired</code> · <code>Deadline reached</code></td><td>Timed out after 5 minutes</td><td>grey minus</td></tr>
+      <tr><td><code>Reader action voided</code> / <code>Reader action voided: &lt;reason&gt;</code></td><td>Terminal confirmed the cancel</td><td>grey dot</td></tr>
+      <tr><td><code>Connection unstable</code></td><td>Connection unstable, still trying</td><td>amber triangle</td></tr>
+      <tr><td><code>Capture failed: &lt;reason&gt;</code></td><td>Authorised but not captured: {reason}</td><td>red cross</td></tr>
+      <tr><td><code>Ignored stale &lt;status&gt; after &lt;from&gt;</code></td><td>Late update ignored</td><td>grey dot (Details only)</td></tr>
+      <tr><td><code>Leg released</code></td><td>Payment released: check the terminal before taking it again</td><td>amber triangle</td></tr>
+      <tr><td>Provider 4xx on intent (e.g. SumUp 422)</td><td>{provider's message}, e.g. "This merchant can only accept EUR"</td><td>red cross</td></tr>
     </table>
     <p style="margin-top:10px;font-size:13px;color:var(--muted-fg)">Ids (reader, action, transaction code) never appear in a message. They sit on the muted mono line under the row, or in the Details key–value, and they are what <b>Copy</b> copies, together with the time and the words.</p>
   </div>
 
   <h2>Change log</h2>
   <ul class="changes">
-    <li><b>2026-10-05</b> · first board: A–D, the catalogue, the ring-sized failure mark. Precedents: Cash App, Brex and Too Good To Go timelines (tick per step, time under the label); MoonPay's Status | Details segmented card.</li>
+    <li><b>2026-10-05 · round 2</b> · the stepper is horizontal on every option, per Paul (<em>"On the original mockups the terminal progress was horizontal. I think I prefer that."</em>). Options are now A latest-line + Details, B list under the card, C sheet. The Status | Log tabs option is dropped. Noted that the shipped vertical list deviates from the chosen mockup.</li>
+    <li><b>2026-10-05 · round 1</b> · first board: A–D, the catalogue, the ring-sized failure mark. Precedents: Cash App, Brex and Too Good To Go timelines; MoonPay's Status | Details segmented card.</li>
   </ul>
 </div>
 
@@ -203,7 +224,8 @@
 const SVG = {
   cross: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M7 7l10 10"/><path d="M17 7L7 17"/></svg>',
   minus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 12h12"/></svg>',
-  tick:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  nodex: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M8 8l8 8"/><path d="M16 8l-8 8"/></svg>',
+  nodem: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M7 12h10"/></svg>',
   xs:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9" fill="currentColor" stroke="none" opacity=".14"/><path d="M8.5 8.5l7 7"/><path d="M15.5 8.5l-7 7"/></svg>',
   ms:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9" fill="currentColor" stroke="none" opacity=".14"/><path d="M8 12h8"/></svg>',
   warn:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l9 16H3z"/><path d="M12 10v4"/><path d="M12 17.5v.1"/></svg>',
@@ -211,34 +233,27 @@ const SVG = {
   up:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>',
   copy:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 011-1h10"/></svg>'
 };
-const READER = 'rdr_20XYBCYC8C9SSVPYWEE63K88JX', ACTION = '4297f22d-23fb-43bf-bae8-40f53379d400';
+const READER = 'rdr_20XYBCYC8C9SSVPYWEE63K88JX', ACTION = '4297f22d-23fb-43bf-bae8-40f53379d400', PAYMENT = '96694462-e514-4eb5-a479-d54c7d403589';
+const sent = {t:'15:14:45', lvl:'ok', msg:'Sent to Paul Solo', raw:`Reader action ${READER}:${ACTION} created on ${READER}`, ids:`action ${ACTION.slice(0,8)} · reader ${READER}`};
+const pending = {t:'15:14:46', lvl:'ok', msg:'On the terminal, waiting for the customer', raw:'Reader action pending'};
 // Real events from order #113007 (declined 11,00 €), plus the client events the leg can add.
 const STATES = {
   failed: { amount:'11,00 €', badge:{cls:'err', text:'Payment failed: Declined or cancelled on the terminal'}, mark:'fail', step:1, outcome:'fail',
-    events:[
-      {t:'15:14:45', lvl:'ok',  msg:'Sent to Paul Solo', raw:`Reader action ${READER}:${ACTION} created on ${READER}`, ids:`action ${ACTION.slice(0,8)} · reader ${READER}`, step:0},
-      {t:'15:14:46', lvl:'ok',  msg:'On the terminal, waiting for the customer', raw:'Reader action pending', step:1},
-      {t:'15:14:54', lvl:'err', msg:'Declined or cancelled on the terminal', raw:'Reader action cancelled', ids:'SumUp reports a decline and a cancel the same way', step:1}
-    ], actions:['Try again','Choose another way'] },
+    events:[sent, pending, {t:'15:14:54', lvl:'err', msg:'Declined or cancelled on the terminal', raw:'Reader action cancelled', ids:'SumUp reports a decline and a cancel the same way'}],
+    actions:['Try again','Choose another way'] },
   unstable: { amount:'11,00 €', badge:{cls:'', text:'Waiting for the customer on the terminal'}, mark:'ring', step:1, outcome:null,
-    events:[
-      {t:'15:14:45', lvl:'ok',  msg:'Sent to Paul Solo', raw:`Reader action ${READER}:${ACTION} created on ${READER}`, ids:`action ${ACTION.slice(0,8)} · reader ${READER}`, step:0},
-      {t:'15:14:46', lvl:'ok',  msg:'On the terminal, waiting for the customer', raw:'Reader action pending', step:1},
-      {t:'15:15:12', lvl:'warn', msg:'Connection unstable, still trying', raw:'Connection unstable', step:1}
-    ], actions:['Cancel on terminal'] },
+    events:[sent, pending, {t:'15:15:12', lvl:'warn', msg:'Connection unstable, still trying', raw:'Connection unstable'}],
+    actions:['Cancel on terminal'] },
   voided: { amount:'11,00 €', badge:{cls:'', text:'Payment cancelled'}, mark:'void', step:1, outcome:'void',
-    events:[
-      {t:'15:14:45', lvl:'ok',  msg:'Sent to Paul Solo', raw:`Reader action ${READER}:${ACTION} created on ${READER}`, ids:`action ${ACTION.slice(0,8)} · reader ${READER}`, step:0},
-      {t:'15:14:46', lvl:'ok',  msg:'On the terminal, waiting for the customer', raw:'Reader action pending', step:1},
-      {t:'15:15:03', lvl:'void', msg:'Cancelled from the till', raw:'Cancel requested by cashier', step:1},
-      {t:'15:15:05', lvl:'muted', msg:'Terminal confirmed the cancel', raw:'Reader action voided', step:1}
-    ], actions:['Try again','Choose another way'] }
+    events:[sent, pending, {t:'15:15:03', lvl:'void', msg:'Cancelled from the till', raw:'Cancel requested by cashier'}, {t:'15:15:05', lvl:'muted', msg:'Terminal confirmed the cancel', raw:'Reader action voided'}],
+    actions:['Try again','Choose another way'] }
 };
 const STEPS = ['Sent','On terminal','Approved','Captured'];
 const rowIcon = l => l==='err' ? SVG.xs : l==='warn' ? SVG.warn : l==='void' ? SVG.ms : '<i></i>';
 const rowCls = l => l==='err' ? 'err' : l==='warn' ? 'warn' : l==='ok' ? 'ok' : '';
+const rows = s => s.events.map(e=>`<div class="row ${rowCls(e.lvl)}"><div class="ic">${rowIcon(e.lvl)}</div><div class="msg">${e.msg}${e.ids?`<small>${e.ids}</small>`:''}</div><div class="t">${e.t}</div></div>`).join('');
 
-function shell(s, inner, {phone=false, meta=true}={}) {
+function shell(s, inner, {meta=true}={}) {
   const mark = s.mark==='ring' ? '<div class="ring"></div>' : s.mark==='fail' ? `<div class="mark fail">${SVG.cross}</div>` : `<div class="mark void">${SVG.minus}</div>`;
   return `<div class="pane">
     ${meta ? '<div class="meta"><span>Order #113007 · 1 item</span><span>Payment 1 of 1</span></div>' : ''}
@@ -249,19 +264,28 @@ function shell(s, inner, {phone=false, meta=true}={}) {
     ${inner}
   </div>`;
 }
-function head(){ return `<div class="head"><span>SumUp Terminal · Paul Solo</span><span class="conn"><i></i>connected</span></div>`; }
-function actions(s){ return `<div class="actions">${s.actions.map((a,i)=>`<span class="btn ${i===0&&s.actions.length>1?'primary':''}">${a}</span>`).join('')}</div>`; }
+const head = () => `<div class="head"><span>SumUp Terminal · Paul Solo</span><span class="conn"><i></i>connected · 82%</span></div>`;
+const actions = s => `<div class="actions">${s.actions.map((a,i)=>`<span class="btn ${i===0&&s.actions.length>1?'primary':''}">${a}</span>`).join('')}</div>`;
+function stepper(s, {times=false}={}){
+  return `<div class="hsteps">${STEPS.map((l,i)=>{
+    let cls = i<s.step?'done':i===s.step?'now':'';
+    if (i===s.step && s.outcome==='fail') cls='fail';
+    if (i===s.step && s.outcome==='void') cls='void';
+    const icon = cls==='fail'?SVG.nodex:cls==='void'?SVG.nodem:'';
+    return `<div class="hst ${cls}"><i>${icon}</i>${l}</div>`;
+  }).join('')}</div>`;
+}
 
-// Today: the real screen as shipped.
+// Today: the real screen as shipped (vertical list).
 function today(s){
-  const steps = STEPS.map((l,i)=>`<div class="step ${i<s.step?'done':i===s.step?'now':''}"><div class="rail"><i></i><div class="line"></div></div><div class="lbl">${l}</div><div></div></div>`).join('');
+  const steps = STEPS.map((l,i)=>`<div class="step ${i<s.step?'done':i===s.step?'now':''}"><div class="rail"><i></i><div class="line"></div></div><div class="lbl">${l}</div></div>`).join('');
   const raw = s.events.map(e=>`<div class="${e.lvl==='err'?'e':''}">${e.t} · ${e.raw}</div>`).join('');
   return `<div class="pane">
     <div class="meta"><span>Order #113007 · 1 item</span><span>Payment 1 of 1</span></div>
     <div class="eyebrow">ON THE TERMINAL</div>
     <div class="amt">${s.amount}</div>
     <div class="badge err"><i></i>Payment failed: Cancelled on the terminal</div>
-    <div class="tcard">${head()}<div class="steps">${steps}</div></div>
+    <div class="tcard"><div class="head"><span>SumUp Terminal · Paul Solo</span><span class="conn"><i></i>connected</span></div><div class="vsteps" style="margin-top:10px">${steps}</div></div>
     ${actions(s)}
     <div class="toggle">Hide log ${SVG.up}</div>
     <div class="raw">${raw}</div>
@@ -269,71 +293,43 @@ function today(s){
   </div>`;
 }
 
-// A: the steps are the log.
-function optionA(s, {open=false, phone=false}={}){
-  const byStep = STEPS.map(()=>[]);
-  s.events.forEach(e=>byStep[e.step].push(e));
-  const steps = STEPS.map((l,i)=>{
-    const evs = byStep[i];
-    const last = evs[evs.length-1];
-    let cls = i<s.step?'done':i===s.step?'now':'';
-    if (i===s.step && s.outcome==='fail') cls='fail';
-    if (i===s.step && s.outcome==='void') cls='void';
-    const icon = cls==='fail' ? SVG.cross : cls==='void' ? SVG.minus : '';
-    const detail = evs.filter(e=>e.step===i && !(i===0&&e.lvl==='ok')).map(e=>`<small style="${e.lvl==='warn'?'color:var(--warning)':e.lvl==='err'?'color:var(--destructive)':''}">${e.msg}</small>`).join('');
-    const firstDetail = i===0 && evs[0] ? `<small>${evs[0].msg}</small>` : '';
-    return `<div class="step ${cls}"><div class="rail"><i>${icon}</i><div class="line"></div></div><div class="lbl">${l}${firstDetail}${detail}</div><div class="time">${last?last.t:''}</div></div>`;
-  }).join('');
-  const details = open ? `<div class="kv" style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
-      <span>Reader</span><code>${READER}</code><span>Action</span><code>${ACTION}</code><span>Payment</span><code>96694462-e514-4eb5-a479-d54c7d403589</code>
-      <span>Raw</span><code>${s.events.map(e=>e.t+' · '+e.raw).join('<br>')}</code></div>
-      <div style="display:flex;gap:8px;margin-top:10px"><span class="btn sm">${SVG.copy}&nbsp;Copy</span><span class="btn sm ghost">Share</span></div>` : '';
-  const toggle = `<div class="toggle" style="margin-top:10px;justify-content:center;width:100%">${open?'Hide details '+SVG.up:'Details '+SVG.chev}</div>`;
-  return shell(s, `<div class="tcard">${head()}<div class="steps">${steps}</div>${details}${toggle}</div>${actions(s)}`, {phone});
+// A: stepper + the latest line, Details unfolds the list inside the card.
+function optionA(s, {open=false}={}){
+  const last = s.events[s.events.length-1];
+  const cls = last.lvl==='err'?'err':last.lvl==='warn'?'warn':'';
+  const ic = last.lvl==='err'?SVG.xs:last.lvl==='warn'?SVG.warn:last.lvl==='void'?SVG.ms:'';
+  const now = `<div class="nowline ${cls}">${ic?`<span class="ic">${ic}</span>`:''}<b>${last.msg}</b><span>· ${last.t}</span></div>`;
+  const details = open ? `<div class="inner">${rows(s)}
+      <div class="kv"><span>Reader</span><code>${READER}</code><span>Action</span><code>${ACTION}</code><span>Payment</span><code>${PAYMENT}</code></div>
+      <div style="display:flex;gap:8px;margin-top:12px"><span class="btn sm">${SVG.copy}&nbsp;Copy</span><span class="btn sm ghost">Share</span></div></div>` : '';
+  const toggle = `<div class="toggle" style="margin-top:12px;justify-content:center;width:100%">${open?'Hide details '+SVG.up:'Details '+SVG.chev}</div>`;
+  return shell(s, `<div class="tcard">${head()}${stepper(s)}${now}${details}${toggle}</div>${actions(s)}`);
 }
 
-// B: list under the card.
+// B: stepper + the list under the card, always.
 function optionB(s){
-  const steps = STEPS.map((l,i)=>{
-    let cls = i<s.step?'done':i===s.step?'now':'';
-    if (i===s.step && s.outcome==='fail') cls='fail';
-    const icon = cls==='fail' ? SVG.cross : '';
-    return `<div class="step ${cls}"><div class="rail"><i>${icon}</i><div class="line"></div></div><div class="lbl">${l}</div><div></div></div>`;
-  }).join('');
-  const rows = s.events.map(e=>`<div class="row ${rowCls(e.lvl)}"><div class="ic">${rowIcon(e.lvl)}</div><div class="msg">${e.msg}${e.ids?`<small>${e.ids}</small>`:''}</div><div class="t">${e.t}</div></div>`).join('');
-  return shell(s, `<div class="tcard">${head()}<div class="steps">${steps}</div></div>${actions(s)}
-    <div class="log"><div class="lh"><b>Log</b><span style="display:flex;gap:10px;align-items:center"><span class="btn sm ghost">${SVG.copy}&nbsp;Copy</span><span class="toggle">Hide ${SVG.up}</span></span></div>${rows}</div>`);
+  return shell(s, `<div class="tcard">${head()}${stepper(s)}</div>${actions(s)}
+    <div class="log"><div class="lh"><b>Log</b><span class="btn sm ghost">${SVG.copy}&nbsp;Copy</span></div>${rows(s)}</div>`);
 }
 
-// C: Status | Log tabs in the card.
-function optionC(s){
-  const rows = s.events.map(e=>`<div class="row ${rowCls(e.lvl)}"><div class="ic">${rowIcon(e.lvl)}</div><div class="msg">${e.msg}${e.ids?`<small>${e.ids}</small>`:''}</div><div class="t">${e.t}</div></div>`).join('');
-  return shell(s, `<div class="tcard">${head()}<div class="tabs"><span>Status</span><span class="on">Log<em>1</em></span></div><div class="log" style="margin-top:6px">${rows}<div style="display:flex;justify-content:flex-end;margin-top:8px"><span class="btn sm ghost">${SVG.copy}&nbsp;Copy</span></div></div></div>${actions(s)}`);
-}
-
-// D: sheet / side panel.
-function optionD(s, {phone=false}={}){
-  const rows = s.events.map(e=>`<div class="row ${rowCls(e.lvl)}"><div class="ic">${rowIcon(e.lvl)}</div><div class="msg">${e.msg}</div><div class="t">${e.t}</div></div>`).join('');
-  const kv = `<div class="kv"><span>Reader</span><code>Paul Solo · ${READER}</code><span>Action</span><code>${ACTION}</code><span>Payment</span><code>96694462-e514-…</code></div>`;
+// C: sheet / side panel.
+function optionC(s, {phone=false}={}){
+  const list = s.events.map(e=>`<div class="row ${rowCls(e.lvl)}"><div class="ic">${rowIcon(e.lvl)}</div><div class="msg">${e.msg}</div><div class="t">${e.t}</div></div>`).join('');
+  const kv = `<div class="kv"><span>Reader</span><code>Paul Solo · ${READER}</code><span>Action</span><code>${ACTION}</code><span>Payment</span><code>${PAYMENT}</code></div>`;
   const header = `<div class="sh"><b>Payment log</b><span style="display:flex;gap:6px"><span class="btn sm ghost">${SVG.copy}&nbsp;Copy</span><span class="btn sm ghost">Share</span></span></div>`;
-  const steps = STEPS.map((l,i)=>{
-    let cls = i<s.step?'done':i===s.step?'now':''; if (i===s.step && s.outcome==='fail') cls='fail';
-    return `<div class="step ${cls}"><div class="rail"><i>${cls==='fail'?SVG.cross:''}</i><div class="line"></div></div><div class="lbl">${l}</div><div></div></div>`;
-  }).join('');
-  const base = shell(s, `<div class="tcard">${head()}<div class="steps">${steps}</div></div>${actions(s)}<div class="toggle">Show log ${SVG.chev}</div>`, {phone});
-  if (phone) return `<div class="sheetwrap">${base}<div class="scrim"></div><div class="sheet"><div class="grab"></div>${header}${rows}${kv}</div></div>`;
-  return `<div class="sheetwrap">${base}<div class="side">${header}${rows}${kv}</div></div>`;
+  const base = shell(s, `<div class="tcard">${head()}${stepper(s)}</div>${actions(s)}<div class="toggle">Show log ${SVG.chev}</div>`);
+  if (phone) return `<div class="sheetwrap">${base}<div class="scrim"></div><div class="sheet"><div class="grab"></div>${header}${list}${kv}</div></div>`;
+  return `<div class="sheetwrap">${base}<div class="side">${header}${list}${kv}</div></div>`;
 }
 
 document.getElementById('today').innerHTML = today(STATES.failed);
 document.getElementById('a-failed').innerHTML = optionA(STATES.failed);
 document.getElementById('a-unstable').innerHTML = optionA(STATES.unstable);
 document.getElementById('a-voided').innerHTML = optionA(STATES.voided, {open:true});
-document.getElementById('a-phone').innerHTML = optionA(STATES.failed, {phone:true});
+document.getElementById('a-phone').innerHTML = optionA(STATES.failed);
 document.getElementById('b-failed').innerHTML = optionB(STATES.failed);
-document.getElementById('c-failed').innerHTML = optionC(STATES.failed);
-document.getElementById('d-tablet').innerHTML = optionD(STATES.failed);
-document.getElementById('d-phone').innerHTML = optionD(STATES.failed, {phone:true});
+document.getElementById('c-tablet').innerHTML = optionC(STATES.failed);
+document.getElementById('c-phone').innerHTML = optionC(STATES.failed, {phone:true});
 </script>
 </body>
 </html>
