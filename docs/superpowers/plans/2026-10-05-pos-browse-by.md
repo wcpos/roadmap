@@ -1678,6 +1678,23 @@ it('leaving a shortcut level takes its patch back out; a search typed over it ke
 	expect(state.filters).toEqual({ status: 'publish' });
 });
 
+it('leaving a shortcut on in-stock restores the device baseline, not nothing', () => {
+	// showOutOfStock is true in this file's settings mock, so give the baseline a stock_status
+	// by hand through resetFilters: the fake sets what resetFilters leaves — adjust it for this
+	// case so the baseline carries stock_status: 'instock'.
+	actions.resetFilters.mockImplementationOnce(() => { state = { ...state, filters: { status: 'publish', stock_status: 'instock' } }; emit(); });
+	const instock = { type: 'quick', id: 'qf-2', label: 'In stock', conditions: [{ field: 'stock_status', value: 'instock' }] };
+	const withInstock = { ...terms, quickFilterFor: () => instock, rootsOf: () => [{ kind: 'shortcut', id: 'qf-2', name: 'In stock', description: '' }] };
+	const { result, rerender } = renderHook(({ t }) => useBrowsePath('shortcuts', t as never), { initialProps: { t: withInstock } });
+	act(() => result.current.enter({ kind: 'shortcut', id: 'qf-2', name: 'In stock', description: '' }));
+	act(() => result.current.root());
+	// Whether stock_status survives is the baseline's call (`resetState.filters.stock_status`),
+	// never a bare clear: with showOutOfStock true the baseline has none, so it is cleared;
+	// flip the settings mock to showOutOfStock: false in a sibling case and assert it is set back to 'instock'.
+	expect(state.filters.status).toBe('publish');
+	rerender({ t: withInstock });
+});
+
 it('changing the source clears the projection the old source made', () => {
 	const { result, rerender } = renderHook(({ source }) => useBrowsePath(source, terms as never), {
 		initialProps: { source: 'categories' as 'categories' | 'tags' },
@@ -1779,8 +1796,8 @@ export function useBrowsePath(source: Exclude<BrowseBy, 'all'>, terms: BrowseTer
 	// What the stored path has put into the query. A ref, not state: it is read by cleanups that
 	// run after the render that moved the source or unmounted the stage.
 	const projected = React.useRef<Projection | null>(null);
-	const latest = React.useRef({ state, actions, settingsSort });
-	latest.current = { state, actions, settingsSort };
+	const latest = React.useRef({ state, actions, resetState });
+	latest.current = { state, actions, resetState };
 
 	// Take back out exactly what the path put in, and only what is still there: a pill the
 	// cashier pressed inside a level is theirs and stays.
@@ -1788,18 +1805,24 @@ export function useBrowsePath(source: Exclude<BrowseBy, 'all'>, terms: BrowseTer
 		const current = projected.current;
 		projected.current = null;
 		if (!current) return;
-		const { state: now, actions: act, settingsSort: baseline } = latest.current;
+		const { state: now, actions: act, resetState: baseline } = latest.current;
 		if (current.kind === 'taxonomy') {
 			if (sameSet(now.filters[current.field], current.ids)) act.clearFilter(current.field);
 			return;
 		}
 		const patch = quickFilterToQueryPatch(current.quickFilter);
-		for (const [key, value] of Object.entries(patch.filters))
-			if (isEqual(now.filters[key as keyof FiltersOf<'products'>], value))
-				act.clearFilter(key as keyof FiltersOf<'products'>);
+		for (const [key, value] of Object.entries(patch.filters)) {
+			const field = key as keyof FiltersOf<'products'>;
+			if (!isEqual(now.filters[field], value)) continue;
+			// A key the baseline owns (status, stock_status under the device setting) goes back to
+			// its baseline value, not away: a shortcut on in-stock must not leave out-of-stock on.
+			const base = baseline.filters[field as keyof typeof baseline.filters];
+			if (base !== undefined && !(Array.isArray(base) && base.length === 0)) act.setFilter(field, base as never);
+			else act.clearFilter(field);
+		}
 		if (patch.search && now.search === patch.search) act.clearSearch();
 		if (current.quickFilter.sort && sameSort(now.sort, current.quickFilter.sort))
-			act.setSort(baseline.field, baseline.direction);
+			act.setSort(baseline.sort.field, baseline.sort.direction);
 	}, []);
 
 	const project = React.useCallback(
@@ -1897,7 +1920,7 @@ The `resetState` above is the chip's own (`v2/filter-bar.tsx` `QuickChip`: empty
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run the Step 2 command. Expected: PASS, 9 tests. (`project` runs `unproject` first, so entering a child from a parent clears the parent's set and then sets the child's — the test's `toHaveBeenLastCalledWith` sees the second.) If the "entering a child" test shows `path` lagging one render, the guard is reading stale `state` — `enter` must call `project` BEFORE `setStored` (it does) and the fake store must emit synchronously (it does); fix the hook, not the test.
+Run the Step 2 command. Expected: PASS, 10 tests (make the in-stock baseline case two `it.each` rows over `showOutOfStock` true/false by mocking `useUISettings` per row; assert `clearFilter('stock_status')` for true and `setFilter('stock_status', 'instock')` for false). (`project` runs `unproject` first, so entering a child from a parent clears the parent's set and then sets the child's — the test's `toHaveBeenLastCalledWith` sees the second.) If the "entering a child" test shows `path` lagging one render, the guard is reading stale `state` — `enter` must call `project` BEFORE `setStored` (it does) and the fake store must emit synchronously (it does); fix the hook, not the test.
 
 - [ ] **Step 5: Commit**
 
@@ -2612,8 +2635,15 @@ Add to `browse-stage.test.tsx` (its mocks already stub `useBrowseTerms`; import 
 jest.mock('../deal-stack', () => {
 	const React = jest.requireActual('react');
 	const { View } = jest.requireActual('react-native');
+	// As the real stack: the staged detail outlives a null `detail` by one render (the gather).
+	const DealStack = ({ detail, renderDetail, children, testID }: { detail: unknown; renderDetail: (d: unknown) => React.ReactNode; children: React.ReactNode; testID?: string }) => {
+		const staged = React.useRef(detail);
+		const shown = detail ?? staged.current;
+		React.useEffect(() => { staged.current = detail; });
+		return <View testID={testID}><View testID="stack-root">{children}</View>{shown ? <View testID="stack-detail">{renderDetail(shown)}</View> : null}</View>;
+	};
 	return {
-		DealStack: ({ detail, renderDetail, children, testID }: { detail: unknown; renderDetail: (d: unknown) => React.ReactNode; children: React.ReactNode; testID?: string }) => <View testID={testID}><View testID="stack-root">{children}</View>{detail ? <View testID="stack-detail">{renderDetail(detail)}</View> : null}</View>,
+		DealStack,
 		DealStagedContext: React.createContext(null),
 		DealCell: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
 		DealFade: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
@@ -2668,6 +2698,18 @@ it('a product drilled from the search-displaced root opens in the stage', () => 
 	act(() => queryActions.setSearch('lat'));
 	fireEvent.press(screen.getByTestId('products'));
 	expect(screen.getByTestId('drill-in')).toBeTruthy();
+});
+
+it('a level stays rendered from its staged entry while its stack gathers after the path was truncated', () => {
+	// The DealStack mock keeps rendering `renderDetail(staged)` for one render after `detail`
+	// goes null (as the real one does for the gather): extend the mock with a `staged` ref that
+	// outlives a null `detail` by one render, then assert the level is still there and whole.
+	render(<BrowseStage {...stageProps} source="categories" viewMode="grid" />);
+	fireEvent.click(screen.getByTestId('browse-term-1'));
+	fireEvent.click(screen.getByTestId('browse-term-2'));
+	fireEvent.click(screen.getAllByTestId('products-breadcrumb-parent-0')[1]);   // Categories: path → []
+	expect(screen.getAllByTestId('browse-level').length).toBe(2);               // both levels still on stage, gathering
+	expect(screen.queryByText('undefined')).toBeNull();
 });
 
 it('All products is a dealt level with the All products tile in slot 0', () => {
@@ -2757,6 +2799,13 @@ export function BrowseStage(props: BrowseStageProps) {
 	const [drill, setDrill] = React.useState<ProductDrill | null>(null);
 	const drilled = drill && drill.search === state.search && drill.depth === path.length ? drill : null;
 	React.useEffect(() => onDrilledChange(drilled !== null), [drilled, onDrilledChange]);
+	// A drill whose search has moved, or whose source has changed, is forgotten — not merely
+	// hidden: restoring the same search later must show the results, not the old variations.
+	// (Every source shares this one stage instance, so an unmount cleanup cannot do it.)
+	React.useEffect(() => {
+		if (drill && drill.search !== state.search) setDrill(null);
+	}, [drill, state.search]);
+	React.useEffect(() => { setDrill(null); }, [source]);
 	// Stable: it is baked into the tiles' component identity through renderProducts, and a new
 	// handler per keystroke would remount every tile under the search.
 	const where = React.useRef({ depth: path.length, search: state.search });
@@ -2810,11 +2859,15 @@ export function BrowseStage(props: BrowseStageProps) {
 		depth === 0 ? undefined : [...crumbParentsAt(depth - 1), { label: labelOf(path[depth - 1].term), onPress: () => drillProduct(null) }];
 
 	// Level `depth` (0 = the root) with whatever is dealt over it.
-	const renderLevel = (depth: number): React.ReactNode => {
+	// `entry` is the term this level shows — handed down from the stack's STAGED detail, not read
+	// from `path[depth - 1]`: a stack keeps its detail on stage for the gather after the path has
+	// already been truncated, and a level rendered from the path in that window would be
+	// rendering `undefined`.
+	const renderLevel = (depth: number, entry?: PathEntry): React.ReactNode => {
 		const detail = detailAt(depth);
-		const content = depth === 0 ? (searchDisplaced ? props.renderProducts(drillProduct) : renderRoot()) : renderTerm(path[depth - 1], depth);
+		const content = depth === 0 ? (searchDisplaced ? props.renderProducts(drillProduct) : renderRoot()) : renderTerm(entry as PathEntry, depth);
 		const renderDetail = (d: Detail) =>
-			d.kind === 'term' ? renderLevel(depth + 1) : (
+			d.kind === 'term' ? renderLevel(depth + 1, d) : (
 				<DrillIn
 					parent={d.record}
 					back={() => drillProduct(null)}
@@ -2840,9 +2893,10 @@ export function BrowseStage(props: BrowseStageProps) {
 	const renderTerm = (entry: PathEntry, depth: number) => {
 		const { term } = entry;
 		const crumb = { parents: crumbParentsAt(depth - 1), here: labelOf(term) };
-		// The query is this level's own only while it is the deepest (a product drill over it
-		// does not move the products query).
-		const settled = depth === path.length;
+		// The query is this level's own only while it is the deepest AND still on the path (a
+		// product drill over it does not move the products query; a level gathering after the
+		// path was truncated is neither, and holds its snapshot).
+		const settled = depth === path.length && path[depth - 1] === entry;
 		// All products is a level with no children: the whole catalogue under the crumb, its tile
 		// in slot 0 of the deal.
 		const display = term.kind === 'term' ? displayTypeOf(term) : 'products';
@@ -2955,7 +3009,9 @@ import { View } from 'react-native';
 import { ParentTermTile, TermTile } from './term-tile';
 import { TermRow } from './term-row';
 
-const drinks = { kind: 'term' as const, id: 1, name: 'Drinks', count: 12, imageSrc: 'https://placehold.co/400x400.png' };
+// A bundled, deterministic image: the gallery baseline must not depend on a network fetch.
+const SWATCH = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="#c7d2fe"/><circle cx="200" cy="200" r="110" fill="#6366f1"/></svg>');
+const drinks = { kind: 'term' as const, id: 1, name: 'Drinks', count: 12, imageSrc: SWATCH };
 const snacks = { kind: 'term' as const, id: 2, name: 'Snacks', count: 4 };
 const longName = { kind: 'term' as const, id: 3, name: 'Kaffeespezialitäten und Heißgetränke', count: 7 };
 const shortcut = { kind: 'shortcut' as const, id: 'qf', name: 'Breakfast', description: 'Hot Food + Bakery · in stock' };
