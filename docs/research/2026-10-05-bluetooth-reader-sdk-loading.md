@@ -163,7 +163,7 @@ That is perhaps 2–6 a year beyond what we already ship. A store build is not s
 5. A spike to put one vendor SDK in an Expo-prebuilt dynamic feature module.
 6. PSP answers on ProximityReader tokens without their SDK.
 
-## Rulings needed from Paul
-1. **#115, "one build carrying every shipped SDK":** confirm it, amended so that a native SDK is the last tier after cloud and handoff.
-2. Is handing the sale to the provider's own app acceptable for long-tail providers?
-3. Should the native-SDK combination build (follow-up 1) be run before the next native driver lands?
+## Rulings
+1. **#115, "one build carrying every shipped SDK": amended (Paul, 2026-10-05).** A native SDK is the last tier after cloud and handoff. Exception: the most popular providers get their native SDK in the app even where another route exists, because the SDK may offer more. Named: Stripe, SumUp, Square, and "maybe a few more… the really big ones". Recorded on [#115](https://github.com/wcpos/roadmap/issues/115).
+2. **Handoff to the provider's own app for long-tail providers: accepted** by ruling 1.
+3. **Open:** should the native-SDK combination build (follow-up 1) be run before the next native driver lands? Stripe and SumUp build together today; Square is the known risk.
