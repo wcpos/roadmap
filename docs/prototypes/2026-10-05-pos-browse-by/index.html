@@ -89,7 +89,7 @@
   /* tiles */
   .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 8px; }
   .tile { position: relative; display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 10px; background: var(--card); overflow: hidden; min-height: 150px; transition: opacity .22s ease-out, transform .22s ease-out; }
-  @starting-style { .screen .tile { opacity: 0; transform: scale(.94); } }
+  /* No entrance animation on tiles: nothing animates on mount; motion belongs to the deal alone. */
   .tile .img { aspect-ratio: 16/10; background: var(--img); display: grid; place-items: center; color: var(--muted-foreground); position: relative; }
   .tile .img svg { width: 26px; height: 26px; opacity: .55; }
   .tile .img.none { background: var(--muted); }

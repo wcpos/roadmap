@@ -724,7 +724,7 @@ export function useBrowseTerms(source: BrowseBy): BrowseTerms {
 
 Check `describeQuickFilter`'s real signature in `filter-bar-layout.ts:209` and pass exactly what it takes (it needs the translator and currency formatter per ledger line 12); adjust the call above to its parameter list — do not change `describeQuickFilter`.
 
-**Zero-count terms a synced product carries.** `projectTerms` takes a third argument `knownNonEmpty: ReadonlySet<number>` and passes it through to `rootTerms`/`childrenOf`/`visibleTerms`; `useTaxonomyTerms` builds it with one more binding over `products` whose selector is `{ [source]: { $elemMatch: { id: { $in: zeroCountIds } } } }` (the product payload stores `categories`/`tags`/`brands` as `{ id, name, slug }[]`; check `collection-map.ts` for the exact field path and use `useEngineBinding` as `useAllTermsBinding` does, `limit` = the number of zero-count ids × 1 is not expressible, so read the hits and collect the term ids they carry into the Set). The products binding is skipped (selector `null`/binding disabled) when there are no zero-count terms. Add to the test file: `projectTerms(records, 'categories', new Set([4]))` keeps `Empty` (count 0) in `rootsOf()`.
+**Zero-count terms a synced product carries.** `projectTerms` takes a third argument `knownNonEmpty: ReadonlySet<number>` and passes it through to `rootTerms`/`childrenOf`/`visibleTerms`; `useTaxonomyTerms` builds it with one more binding over `products` whose selector is `{ [source]: { $elemMatch: { id: { $in: zeroCountIds } } } }` (the product payload stores `categories`/`tags`/`brands` as `{ id, name, slug }[]`; check `collection-map.ts` for the exact field path and use `useEngineBinding` as `useAllTermsBinding` does, `limit` = the number of zero-count ids × 1 is not expressible, so read the hits and collect the term ids they carry into the Set). The products binding is skipped (selector `null`/binding disabled) when there are no zero-count terms. The read carries **no `limit`**: `execute-query.ts` applies a limit only when one is given, so an unlimited read returns every synced product carrying any of the ids — a rare zero-count term is never crowded out of a window by a common one. (Do not add a page size to this query.) Add to the test file: `projectTerms(records, 'categories', new Set([4]))` keeps `Empty` (count 0) in `rootsOf()`.
 
 Three bindings always mounted is acceptable: the Brand/Tag/Category pills already hold the same collections; if `useAllTermsBinding` turns out to subscribe three queries per products panel and that shows in the products-panel perf gate, split `useBrowseTerms` into a per-source hook mounted by the stage only for the active source (the hook order stays unconditional because the stage mounts one component per source).
 
@@ -1706,6 +1706,17 @@ it('changing the source clears the projection the old source made', () => {
 	expect(result.current.path).toEqual([]);
 });
 
+it('a term that leaves the source drops the path to the root', () => {
+	let all = [drinks, hot];
+	const { result, rerender } = renderHook(() => useBrowsePath('categories', { ...terms, all } as never));
+	act(() => result.current.enter(drinks));
+	expect(result.current.path.length).toBe(1);
+	all = [hot];
+	rerender();
+	expect(result.current.path).toEqual([]);
+	expect(actions.clearFilter).toHaveBeenLastCalledWith('categories');
+});
+
 it('unmounting clears the projection (Browse by → All products)', () => {
 	const { result, unmount } = renderHook(() => useBrowsePath('categories', terms as never));
 	act(() => result.current.enter(drinks));
@@ -1733,7 +1744,7 @@ import { useQueryState, useQueryStateActions } from '../../../../../../query';
 import { useUISettings } from '../../../../contexts/ui-settings';
 import { isQuickFilterActive, quickFilterToQueryPatch } from '../../filter-bar/apply-quick-filter';
 import { getPOSProductSort } from '../../pos-product-sort';
-import { type BrowseBy, type BrowseTerm } from './browse-source';
+import { type BrowseBy, type BrowseTerm, termKey } from './browse-source';
 
 import type { Measurable } from '../deal-stack';
 import type { FiltersOf } from '../../../../../../query/query-state-types';
@@ -1876,7 +1887,15 @@ export function useBrowsePath(source: Exclude<BrowseBy, 'all'>, terms: BrowseTer
 	if (deepest) {
 		const { term } = deepest;
 		if (term.kind === 'all') live = state.search === '' && (!field || !(state.filters[field] as number[] | undefined)?.length);
-		else if (term.kind === 'term') live = state.search === '' && !!field && sameSet(state.filters[field], terms.idsFor(term));
+		else if (term.kind === 'term')
+			// …and the term itself must still be in the source: one deleted on the server, or
+			// hidden because its last product went, is not a level to stand on. While the source
+			// has not answered (`all === undefined`) it is unknown, not gone.
+			live =
+				state.search === '' &&
+				!!field &&
+				sameSet(state.filters[field], terms.idsFor(term)) &&
+				(terms.all === undefined || terms.all.some((known) => termKey(known) === termKey(term)));
 		else {
 			const quickFilter = terms.quickFilterFor(term);
 			live = !!quickFilter && isQuickFilterActive(quickFilter, state, resetState);
@@ -1920,7 +1939,7 @@ The `resetState` above is the chip's own (`v2/filter-bar.tsx` `QuickChip`: empty
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run the Step 2 command. Expected: PASS, 10 tests (make the in-stock baseline case two `it.each` rows over `showOutOfStock` true/false by mocking `useUISettings` per row; assert `clearFilter('stock_status')` for true and `setFilter('stock_status', 'instock')` for false). (`project` runs `unproject` first, so entering a child from a parent clears the parent's set and then sets the child's — the test's `toHaveBeenLastCalledWith` sees the second.) If the "entering a child" test shows `path` lagging one render, the guard is reading stale `state` — `enter` must call `project` BEFORE `setStored` (it does) and the fake store must emit synchronously (it does); fix the hook, not the test.
+Run the Step 2 command. Expected: PASS, 11 tests (make the in-stock baseline case two `it.each` rows over `showOutOfStock` true/false by mocking `useUISettings` per row; assert `clearFilter('stock_status')` for true and `setFilter('stock_status', 'instock')` for false). (`project` runs `unproject` first, so entering a child from a parent clears the parent's set and then sets the child's — the test's `toHaveBeenLastCalledWith` sees the second.) If the "entering a child" test shows `path` lagging one render, the guard is reading stale `state` — `enter` must call `project` BEFORE `setStored` (it does) and the fake store must emit synchronously (it does); fix the hook, not the test.
 
 - [ ] **Step 5: Commit**
 
@@ -2022,6 +2041,7 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
   // level-snapshot.ts
   export type LevelAnswer = { hits: { record: EngineRecord<'products'> }[]; total: number | undefined };
   export function useLevelSnapshot(live: LevelAnswer | undefined, settled: boolean): LevelAnswer | undefined;
+  export function useAnswerOf<T>(source$: Observable<T>): T | undefined;   // the latest emission OF THIS observable; undefined until it has emitted (a new observable starts over)
   // term-grid.tsx
   export function TermLevelGrid(props: {
     term: BrowseTerm;                       // the dealt parent (slot 0)
@@ -2051,10 +2071,27 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
 // level-snapshot.test.tsx
 import { renderHook } from '@testing-library/react-native';
 
-import { useLevelSnapshot } from './level-snapshot';
+import { type Observable, Subject } from 'rxjs';
+
+import { useAnswerOf, useLevelSnapshot } from './level-snapshot';
 
 const own = { hits: [{ record: { uuid: 'a' } }], total: 1 } as never;
 const theirs = { hits: [{ record: { uuid: 'b' } }], total: 9 } as never;
+
+it('useAnswerOf pairs an emission with the observable it came from, and starts over on a new one', () => {
+	const first = new Subject<number>();
+	const second = new Subject<number>();
+	const { result, rerender } = renderHook(({ source$ }) => useAnswerOf(source$), { initialProps: { source$: first as Observable<number> } });
+	expect(result.current).toBeUndefined();
+	act(() => first.next(1));
+	expect(result.current).toBe(1);
+	rerender({ source$: second });
+	expect(result.current).toBeUndefined();           // a new query: no answer of its own yet
+	act(() => first.next(2));                         // a late emission of the OLD query
+	expect(result.current).toBeUndefined();
+	act(() => second.next(3));
+	expect(result.current).toBe(3);
+});
 
 it('takes the live answer while settled, holds it while not, and ignores a live answer that is not its own', () => {
 	const { result, rerender } = renderHook(({ live, settled }) => useLevelSnapshot(live, settled), {
@@ -2205,7 +2242,25 @@ export function useLevelSnapshot(
 	if (settled && live !== undefined) held.current = live;
 	return held.current;
 }
+
+/**
+ * The latest emission of THIS observable, paired with it: a new observable starts at
+ * `undefined` until it has emitted, and a late emission of the old one is dropped. The products
+ * binding's `result$` is a new observable per compiled query, so this is how an answer is known
+ * to belong to the projection on stage — `valueRef$$` keeps the previous answer across a reload
+ * and cannot say.
+ */
+export function useAnswerOf<T>(source$: Observable<T>): T | undefined {
+	const [answer, setAnswer] = React.useState<{ of: Observable<T>; value: T } | undefined>(undefined);
+	React.useEffect(() => {
+		const subscription = source$.subscribe((value) => setAnswer({ of: source$, value }));
+		return () => subscription.unsubscribe();
+	}, [source$]);
+	return answer?.of === source$ ? answer.value : undefined;
+}
 ```
+
+(`import type { Observable } from 'rxjs';` at the top.)
 
 ```tsx
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
@@ -2624,7 +2679,7 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
   All products is a level like any term: `TermLevelGrid`/`TermLevelTable` with `term={{ kind: 'all' }}` and no children, so in the grid the All products tile deals to slot 0 and is the way back, and in the table it is a pushed pane with the crumb above. A product drilled there, or in the search-displaced root, drills into the STAGE's drill (`renderProducts(drillProduct)`), never `index.tsx`'s — the outer stack that consumed that state is not mounted in browse mode.
 
   The stage also owns two readings of the shared products query that the levels cannot make for themselves:
-  - **Attribution.** `ObservableResource.reload` keeps the previous answer while a re-projected query loads (query-bindings `useObservableResource`), so the answer object is paired with the query key it arrived under; `answer` is `undefined` while the current key has no answer of its own. Edge: an emission of the old query that lands in the same render as a key change is attributed to the new key — one wrong frame, which the level snapshot then replaces; noted, not guarded.
+  - **Attribution.** `ObservableResource.reload` keeps the previous answer while a re-projected query loads (query-bindings `useObservableResource`), and `valueRef$$` does not say which query answered. But `binding.result$` is a memoised observable per compiled query (`useRelationalCollectionBinding`: a new `result$` whenever `compiled.read` moves), so the stage subscribes to THAT and pairs every emission with the observable it came from — `useAnswerOf(result$)` in `level-snapshot.ts`: `undefined` until the current `result$` has emitted, never an old query's rows under a new projection, whatever the timing.
   - **Search displacement.** With the path empty and `state.search !== ''`, depth 0 is today's products element (`props.renderProducts(drillProduct)`, which reads the query itself) with no crumb — the spec's search contract; clearing the search shows the root term set again because the path was already dropped.
 
 - [ ] **Step 1: Extend the stage test**
@@ -2725,7 +2780,7 @@ The first test's last four lines (press `browse-all-products`, expect `products`
 
 The `DrillIn` mock gains a pressable for its last parent: `<Pressable testID="drill-in-last-parent" onPress={parents[parents.length - 1].onPress} />` beside the `Text`. `queryActions` is the Task 8 fake store's `actions` object, exported from the test's mock factory (hoist it with `jest.mock`'s factory returning the same object both tests import).
 
-`stageProps` is a fixture in the test file with `empty={<Text testID="no-data-message" />}`, `renderProducts={(onDrill) => <Pressable testID="products" onPress={() => onDrill(variable)} />}` (so a drill from the search-displaced root can be asserted to open `drill-in`), `actions: { extendLimit: jest.fn(), … }`, `total$: of(80)`, a `binding` whose `resource.valueRef$$.value.current.hits` holds one variable product and one simple product, `state`, `actions` fakes, `initialFilters: { status: 'publish' }`, `variationsStyle: 'drill'`, `onDrilledChange: jest.fn()`; the `useBrowseTerms` mock returns Drinks at the root with Hot as its child and `idsFor` → `[1,2]` / `[2]`; the `use-browse-path` module is NOT mocked (its own test covers it; here the query mock from Task 6's test is extended with a working `setFilter`/`clearFilter` fake exactly as in Task 8's test so the guard sees what `enter` wrote).
+`stageProps` is a fixture in the test file with `binding.result$` a `BehaviorSubject` holding `{ hits: [variable, simple] }` (and `resource`/`active$`/`sync` fakes as DataTable needs), `empty={<Text testID="no-data-message" />}`, `renderProducts={(onDrill) => <Pressable testID="products" onPress={() => onDrill(variable)} />}` (so a drill from the search-displaced root can be asserted to open `drill-in`), `actions: { extendLimit: jest.fn(), … }`, `total$: of(80)`, a `binding` whose `resource.valueRef$$.value.current.hits` holds one variable product and one simple product, `state`, `actions` fakes, `initialFilters: { status: 'publish' }`, `variationsStyle: 'drill'`, `onDrilledChange: jest.fn()`; the `useBrowseTerms` mock returns Drinks at the root with Hot as its child and `idsFor` → `[1,2]` / `[2]`; the `use-browse-path` module is NOT mocked (its own test covers it; here the query mock from Task 6's test is extended with a working `setFilter`/`clearFilter` fake exactly as in Task 8's test so the guard sees what `enter` wrote).
 
 - [ ] **Step 2: Run it to verify it fails**
 
@@ -2749,7 +2804,7 @@ import { useQueryState } from '../../../../../../query';
 import { DealStack, type Measurable } from '../deal-stack';
 import { DrillIn } from '../drill-in';
 import { type BrowseBy, type BrowseTerm } from './browse-source';
-import type { LevelAnswer } from './level-snapshot';
+import { type LevelAnswer, useAnswerOf } from './level-snapshot';
 import { BrowseRootGrid, TermLevelGrid } from './term-grid';
 import { BrowseRootTable, TermLevelTable } from './term-table';
 import { displayTypeOf } from './term-tree';
@@ -2770,7 +2825,7 @@ export type BrowseStageProps = {
 	variationsStyle: string;
 	stockStatus?: string;
 	binding: {
-		resource: { valueRef$$: { value: { current: { hits: { record: EngineRecord<'products'> }[] } } | null } };
+		result$: Observable<{ hits: { record: EngineRecord<'products'> }[] }>;
 		active$: unknown;
 		total$: unknown;
 		sync: unknown;
@@ -2817,18 +2872,12 @@ export function BrowseStage(props: BrowseStageProps) {
 	);
 	// The products answer as state: a level never suspends (a tile swapped for a skeleton
 	// mid-deal would lose its place).
-	// eslint-disable-next-line wcpos/no-dollar-getter-into-observable-hooks -- ObservableResource exposes a stable BehaviorSubject property, not an RxDB $-getter; exception dated 2026-10-02.
-	useObservableEagerState(binding.resource.valueRef$$ as never);
-	const liveAnswer = binding.resource.valueRef$$.value;
 	const total = useObservableEagerState(binding.total$ as Observable<number | undefined>);
-	// Attributed: the resource keeps the previous answer while a re-projected query loads, so an
-	// answer object is paired with the query key it arrived under, and a key without an answer of
-	// its own is "gathering" (see the Interfaces note on the one-frame edge).
-	const queryKey = JSON.stringify([state.search, state.filters, state.sort]);
-	const attributed = React.useRef<{ key: string; answer: typeof liveAnswer }>({ key: queryKey, answer: undefined });
-	if (liveAnswer !== attributed.current.answer) attributed.current = { key: queryKey, answer: liveAnswer };
-	const answer: LevelAnswer | undefined =
-		attributed.current.key === queryKey && liveAnswer ? { hits: liveAnswer.current.hits, total } : undefined;
+	// Attributed to its query: `binding.result$` is a new observable per compiled query, and
+	// useAnswerOf pairs each emission with the observable it came from — `undefined` while the
+	// projection on stage has no answer of its own (see the Interfaces note).
+	const liveResult = useAnswerOf(binding.result$);
+	const answer: LevelAnswer | undefined = liveResult ? { hits: liveResult.hits, total } : undefined;
 	const t = useT();
 	const rootLabel = sourceLabel(source, t);
 	const labelOf = (term: BrowseTerm) => (term.kind === 'all' ? t('pos_products.browse_all_products') : term.name);
@@ -3113,7 +3162,8 @@ Read the product tile/row testIDs on `next` before finalising the regexes (`prod
 - Search/scan reset to products while non-empty, root on clear → Task 8 (guard + effect), Tasks 6 and 12 (`searchDisplaced`: depth 0 is `renderProducts(drillProduct)` while the path is empty and the search non-empty), Task 12 (`drill.search`).
 - A term is visible when any descendant is (POS-only branch under an organising parent) → Task 1 `visibleTerms` lifts ancestors; the tile shows no count at `count === 0` → Task 4.
 - Crumb detail is the query total → the stage reads `binding.total$`; each level snapshots `{ hits, total }` together (Tasks 10, 11, 12).
-- A level's rows/tiles are its own while covered or gathering → `useLevelSnapshot` (Task 10) in both the grid and the table; the stage attributes the shared answer to its query key (Task 12).
+- A level's rows/tiles are its own while covered or gathering → `useLevelSnapshot` (Task 10) in both the grid and the table; the stage attributes the shared answer to the `result$` that emitted it (`useAnswerOf`, Task 10/12).
+- A term deleted or hidden while open drops the path → Task 8 liveness requires the term in `terms.all` (unknown while the source has not answered).
 - Product drill inside a term: the term crumb closes it; every path move clears it → Task 12 (`drillParentsAt`, `goBackTo`).
 - `browseBy` in the per-device hydration rule → Task 2 Step 5b (`ENUM_VOCABULARIES`, two `utils.test.ts` tests).
 - Count strings are `_one`/`_other` pairs → Task 2 Step 5.
