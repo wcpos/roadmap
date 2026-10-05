@@ -1696,14 +1696,17 @@ it('leaving a shortcut on in-stock restores the device baseline, not nothing', (
 	rerender({ t: withInstock });
 });
 
-it('changing the source clears the projection the old source made', () => {
+it('changing the source clears the projection the old source made, and the path is empty in that same render', () => {
 	const { result, rerender } = renderHook(({ source }) => useBrowsePath(source, terms as never), {
 		initialProps: { source: 'categories' as 'categories' | 'tags' },
 	});
-	act(() => result.current.enter(drinks));
-	expect(state.filters.categories).toEqual([1, 2]);
+	act(() => result.current.enter({ kind: 'all' }));
+	expect(result.current.path.length).toBe(1);
 	rerender({ source: 'tags' });
-	expect(state.filters.categories).toBeUndefined();
+	expect(result.current.path).toEqual([]);              // not a render later: the new source never sees it
+	act(() => result.current.enter(drinks));
+	rerender({ source: 'categories' });
+	expect(state.filters.tags).toBeUndefined();
 	expect(result.current.path).toEqual([]);
 });
 
@@ -1840,7 +1843,15 @@ export function useBrowsePath(source: Exclude<BrowseBy, 'all'>, terms: BrowseTer
 	const settingsSort = useDocField(uiSettings, (value) => getPOSProductSort(value.sortBy, value.sortDirection));
 	const showOutOfStock = useDocField(uiSettings, (value) => value.showOutOfStock);
 	const field = taxonomyField(source);
-	const [stored, setStored] = React.useState<PathEntry[]>([]);
+	// The path is the SOURCE's: a path stored under Categories is nothing under Tags from the very
+	// render the source changes (the cleanup below then takes its projection out).
+	const [storedFor, setStoredFor] = React.useState<{ source: BrowseBy; entries: PathEntry[] }>({ source, entries: [] });
+	const stored = storedFor.source === source ? storedFor.entries : [];
+	const setStored = React.useCallback(
+		(update: PathEntry[] | ((current: PathEntry[]) => PathEntry[])) =>
+			setStoredFor((current) => ({ source, entries: typeof update === 'function' ? update(current.source === source ? current.entries : []) : update })),
+		[source]
+	);
 	const resetState = React.useMemo(
 		() => ({
 			filters: {
@@ -2894,7 +2905,7 @@ import { useT } from '../../../../../../contexts/translations';
 import { useQueryState } from '../../../../../../query';
 import { DealStack, type Measurable } from '../deal-stack';
 import { DrillIn } from '../drill-in';
-import { type BrowseBy, type BrowseTerm } from './browse-source';
+import { type BrowseBy, type BrowseTerm, termKey } from './browse-source';
 import { type LevelAnswer, useAnswerOf } from './level-snapshot';
 import { BrowseRootGrid, TermLevelGrid } from './term-grid';
 import { BrowseRootTable, TermLevelTable } from './term-table';
@@ -3038,7 +3049,9 @@ export function BrowseStage(props: BrowseStageProps) {
 	const renderTerm = (chain: PathEntry[]) => {
 		const depth = chain.length;
 		const entry = chain[depth - 1];
-		const { term } = entry;
+		// A live level renders the term as the source has it NOW (a rename, a changed display type
+		// or count); only a level gathering after the path was cut keeps its entry's snapshot.
+		const term = (path[depth - 1] === entry && terms.all?.find((known) => termKey(known) === termKey(entry.term))) || entry.term;
 		const crumb = { parents: crumbParentsFor(chain.slice(0, -1)), here: labelOf(term) };
 		// The query is this level's own only while it is the deepest AND still on the path (a
 		// product drill over it does not move the products query; a level gathering after the
@@ -3049,10 +3062,12 @@ export function BrowseStage(props: BrowseStageProps) {
 		const display = term.kind === 'term' ? displayTypeOf(term) : 'products';
 		const children = display === 'products' ? [] : terms.childrenOf(term);
 		const showProducts = display !== 'subcategories' || children.length === 0;
+		// Keyed by the term: a stack whose detail jumps from one term to another at the same depth
+		// (a sibling tapped before the gather ended) must not keep the first term's held answer.
 		return viewMode === 'grid' ? (
-			<TermLevelGrid term={term} children={children} answer={answer} settled={settled} showProducts={showProducts} crumb={crumb} back={() => goBackTo(depth - 1)} onOpenTerm={openTerm} onDrillProduct={drillProduct} variationsStyle={props.variationsStyle} binding={binding as never} actions={props.actions} empty={props.empty} />
+			<TermLevelGrid key={termKey(term)} term={term} children={children} answer={answer} settled={settled} showProducts={showProducts} crumb={crumb} back={() => goBackTo(depth - 1)} onOpenTerm={openTerm} onDrillProduct={drillProduct} variationsStyle={props.variationsStyle} binding={binding as never} actions={props.actions} empty={props.empty} />
 		) : (
-			<TermLevelTable term={term} children={children} answer={answer} settled={settled} showProducts={showProducts} crumb={crumb} onOpenTerm={openTerm} onDrillProduct={drillProduct} variationsStyle={props.variationsStyle} binding={binding as never} state={props.state as never} actions={props.actions as never} empty={props.empty} />
+			<TermLevelTable key={termKey(term)} term={term} children={children} answer={answer} settled={settled} showProducts={showProducts} crumb={crumb} onOpenTerm={openTerm} onDrillProduct={drillProduct} variationsStyle={props.variationsStyle} binding={binding as never} state={props.state as never} actions={props.actions as never} empty={props.empty} />
 		);
 	};
 

@@ -159,8 +159,13 @@ function stateFor(mode, lv) {
 		const from = { cat: [R, { label: 'Drinks', to: 'lv1' }, { label: 'Hot', to: 'lv2' }], tag: [R, { label: 'Vegan', to: 'lv1' }], brand: [R, { label: 'Monmouth', to: 'lv1' }], short: [R, { label: 'Breakfast', to: 'lv1' }], all: [{ label: 'Products', to: 'lv0' }] }[mode];
 		return { kind: 'deal', crumb: [...from, { label: 'Latte', to: 'lv3' }], detail: '3 variations', backTo: from[from.length - 1].to, under: mode === 'cat' ? hot : mode === 'all' ? all : drinks.slice(0, 8) };
 	}
+	// Latte dealt from All products inside a browse source: the crumb goes back through All products.
+	if (lv === 'lv3a') {
+		const from = mode === 'all' ? [{ label: 'Products', to: 'lv0' }] : [R, { label: 'All products', to: 'lvall' }];
+		return { kind: 'deal', crumb: [...from, { label: 'Latte', to: 'lv3a' }], detail: '3 variations', backTo: from[from.length - 1].to, under: all };
+	}
 	if (mode === 'all') return { kind: 'products', crumb: null, items: all };
-	if (lv === 'lvall') return { kind: 'products', crumb: [R, { label: 'All products', to: 'lvall' }], detail: `${all.length} products`, items: all, parent: parentTermTile({ n: 'All products', all: true }, 'lv0'), noDeal: true };
+	if (lv === 'lvall') return { kind: 'products', crumb: [R, { label: 'All products', to: 'lvall' }], detail: `${all.length} products`, items: all, parent: parentTermTile({ n: 'All products', all: true }, 'lv0'), dealTo: 'lv3a' };
 	if (mode === 'cat') {
 		if (lv === 'lv0') return { kind: 'terms', crumb: null, terms: cats.map((c, i) => termTile(c, i ? null : 'lv1', 'cat')), rows: cats.map((c, i) => termRow(c, i ? null : 'lv1', 'cat')), withAll: true };
 		if (lv === 'lv1') return { kind: 'mixed', crumb: [R, { label: 'Drinks', to: 'lv1' }], detail: '12 products', parent: parentTermTile(cats[0], 'lv0'), terms: [termTile({ n: 'Hot', c: 6, img: true, hue: 20 }, 'lv2', 'cat'), termTile({ n: 'Cold', c: 6, hue: 200 }, null, 'cat')], rows: [termRow({ n: 'Hot', c: 6, img: true, hue: 20 }, 'lv2'), termRow({ n: 'Cold', c: 6, hue: 200 }, null)], items: drinks };
@@ -183,7 +188,7 @@ function renderGrid(s) {
 	let body = '';
 	if (s.kind === 'terms') body = `<div class="tiles">${s.withAll ? allTile('lvall') : ''}${s.terms.join('')}</div>`;
 	else if (s.kind === 'mixed') body = `<div class="tiles">${s.parent ?? ''}${s.terms.join('')}${s.items.map((id) => productTile(id, 'lv3')).join('')}</div>`;
-	else if (s.kind === 'products') body = `<div class="tiles">${s.parent ?? ''}${s.items.map((id) => productTile(id, s.noDeal ? null : 'lv3')).join('')}</div>`;
+	else if (s.kind === 'products') body = `<div class="tiles">${s.parent ?? ''}${s.items.map((id) => productTile(id, s.dealTo ?? 'lv3')).join('')}</div>`;
 	else if (s.kind === 'deal')
 		body = `<div class="tiles dealt">${parentTile('latte', s.backTo)}${LATTE_VARS.map((v) => variationTile(...v)).join('')}</div><div class="tiles under">${s.under.map((id) => productTile(id, 'lv3')).join('')}</div>`;
 	const c = s.crumb ? `<div class="crumbwrap">${crumb(s.crumb, s.detail)}</div>` : '';
@@ -200,14 +205,14 @@ function renderTable(s) {
 	const head = `<div class="row th"><div class="thumb h"></div><div class="cell grow">Product</div><div class="cell r">Price</div><div class="add h"></div></div>`;
 	if (s.kind === 'terms') rows = `${s.withAll ? allRow('lvall') : ''}${s.rows.join('')}`;
 	else if (s.kind === 'mixed') rows = head + s.rows.join('') + s.items.map((id) => productRow(id, 'lv3')).join('');
-	else if (s.kind === 'products') rows = head + s.items.map((id) => productRow(id, s.noDeal ? null : 'lv3')).join('');
+	else if (s.kind === 'products') rows = head + s.items.map((id) => productRow(id, s.dealTo ?? 'lv3')).join('');
 	else if (s.kind === 'deal') rows = `<div class="row th"><div class="thumb h"></div><div class="cell grow">Variation</div><div class="cell r">Price</div><div class="add h"></div></div>` + LATTE_VARS.map((v) => variationRow(...v)).join('');
 	const c = s.crumb ? crumb(s.crumb, s.detail) : '';
 	return `${c}<div class="card"><div class="scroller">${rows}</div><div class="foot"><span class="l">Tax based on: shop base address</span><span>${footCount(s)}</span></div></div>`;
 }
 
 const MODES = ['all', 'cat', 'tag', 'brand', 'short'];
-const LEVELS = ['lv0', 'lv1', 'lv2', 'lv3', 'lvall'];
+const LEVELS = ['lv0', 'lv1', 'lv2', 'lv3', 'lvall', 'lv3a'];
 
 let blocks = '';
 let rules = '';
@@ -246,6 +251,7 @@ const cap = {
 	'short-lv1': '<b>Breakfast.</b> The quick filter applied: Hot Food + Bakery, in stock, with the crumb saying so. Tapping another shortcut replaces it, as a quick-filter press does today.',
 	'all-lv0': '<b>All products.</b> Today\'s screen, unchanged: this is the default and the setting\'s first option.',
 	'all-lv3': '<b>Latte dealt from All products.</b> Today\'s deal, for comparison: crumb Products › Latte.',
+	'cat-lv3a': '<b>Latte dealt from All products inside a source.</b> All products is the ordinary products grid/table: a variable product drills into its variations exactly as today, and the crumb goes back through All products — <i>Categories › All products › Latte</i>.',
 };
 let caps = '';
 for (const k of Object.keys(cap)) {
@@ -259,6 +265,8 @@ for (const m of ['tag', 'brand', 'short']) {
 	rules += `body:has(#m-${m}:checked):has(#lvall:checked) [data-c="cat-lvall"]{display:block}\n`;
 	rules += `body:has(#m-${m}:checked):has(#lv3:checked) [data-c="cat-lv3"]{display:block}\n`;
 }
+for (const m of ['cat', 'tag', 'brand', 'short']) rules += `body:has(#m-${m}:checked):has(#lv3a:checked) [data-c="cat-lv3a"]{display:block}\n`;
+rules += `body:has(#m-all:checked):has(#lv3a:checked) [data-c="all-lv3"]{display:block}\n`;
 for (const lv of ['lv1', 'lv2', 'lvall']) rules += `body:has(#m-all:checked):has(#${lv}:checked) [data-c="all-lv0"]{display:block}\n`;
 
 const html = `<!doctype html>
