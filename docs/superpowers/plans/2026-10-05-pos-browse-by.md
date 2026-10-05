@@ -1580,7 +1580,7 @@ jest.mock('../../../../../../query', () => ({
 	useQueryState: () => React.useSyncExternalStore((l) => { listeners.add(l); return () => listeners.delete(l); }, () => state),
 	useQueryStateActions: () => actions,
 }));
-jest.mock('../../../../contexts/ui-settings', () => ({ useUISettings: () => ({ uiSettings: { sortBy: 'name', sortDirection: 'asc' } }) }));
+jest.mock('../../../../contexts/ui-settings', () => ({ useUISettings: () => ({ uiSettings: { sortBy: 'name', sortDirection: 'asc', showOutOfStock: true } }) }));
 jest.mock('@wcpos/query', () => ({ ...jest.requireActual('@wcpos/query'), useDocField: (doc: Record<string, unknown>, read: (value: Record<string, unknown>) => unknown) => read(doc) }));
 
 import { useBrowsePath } from './use-browse-path';
@@ -1640,7 +1640,8 @@ it('a filter-bar change to the taxonomy drops the path', () => {
 	expect(result.current.path).toEqual([]);
 });
 
-it('All products projects nothing and is shown while the field is clear', () => {
+it('All products clears a pill on the source taxonomy so it opens, and is shown while the field stays clear', () => {
+	state = { ...state, filters: { ...state.filters, categories: [9] } };
 	const { result } = renderHook(() => useBrowsePath('categories', terms as never));
 	act(() => result.current.enter({ kind: 'all' }));
 	expect(actions.clearFilter).toHaveBeenLastCalledWith('categories');
@@ -1753,11 +1754,25 @@ export function useBrowsePath(source: Exclude<BrowseBy, 'all'>, terms: BrowseTer
 	const state = useQueryState<'products'>();
 	const actions = useQueryStateActions<'products'>();
 	const { uiSettings } = useUISettings('pos-products');
-	const sortBy = useDocField(uiSettings, (value) => value.sortBy);
-	const sortDirection = useDocField(uiSettings, (value) => value.sortDirection);
+	// Exactly what the chip reads (filter-bar.tsx QuickChip), so a shortcut is active for the
+	// path precisely when its chip lights.
+	const settingsSort = useDocField(uiSettings, (value) => getPOSProductSort(value.sortBy, value.sortDirection));
+	const showOutOfStock = useDocField(uiSettings, (value) => value.showOutOfStock);
 	const field = taxonomyField(source);
 	const [stored, setStored] = React.useState<PathEntry[]>([]);
-	const settingsSort = getPOSProductSort(sortBy, sortDirection);
+	const resetState = React.useMemo(
+		() => ({
+			filters: {
+				categories: [],
+				tags: [],
+				brands: [],
+				status: 'publish' as const,
+				...(showOutOfStock ? {} : { stock_status: 'instock' as const }),
+			},
+			sort: settingsSort,
+		}),
+		[showOutOfStock, settingsSort]
+	);
 
 	// What the stored path has put into the query. A ref, not state: it is read by cleanups that
 	// run after the render that moved the source or unmounted the stage.
@@ -1788,9 +1803,13 @@ export function useBrowsePath(source: Exclude<BrowseBy, 'all'>, terms: BrowseTer
 	const project = React.useCallback(
 		(entry: PathEntry | undefined) => {
 			unproject();
-			if (!entry || entry.term.kind === 'all') {
-				// Nothing to put in: the whole catalogue. (A taxonomy field the path left is gone
-				// already — unproject — and one the cashier set stays.)
+			if (!entry) return;
+			if (entry.term.kind === 'all') {
+				// The whole catalogue: a pill on the source's own taxonomy would contradict the tile
+				// the cashier just tapped, so it goes too (it is not restored — All products means
+				// all). Nothing is recorded: the level is live while the field stays empty.
+				if (field && (latest.current.state.filters[field] as number[] | undefined)?.length)
+					actions.clearFilter(field);
 				return;
 			}
 			const { term } = entry;
@@ -1835,10 +1854,6 @@ export function useBrowsePath(source: Exclude<BrowseBy, 'all'>, terms: BrowseTer
 		else if (term.kind === 'term') live = state.search === '' && !!field && sameSet(state.filters[field], terms.idsFor(term));
 		else {
 			const quickFilter = terms.quickFilterFor(term);
-			const resetState = {
-				filters: { status: 'publish' as const, ...(state.filters.stock_status ? { stock_status: state.filters.stock_status } : {}) },
-				sort: getPOSProductSort(sortBy, sortDirection),
-			};
 			live = !!quickFilter && isQuickFilterActive(quickFilter, state, resetState);
 		}
 	}
@@ -1876,7 +1891,7 @@ export function useBrowsePath(source: Exclude<BrowseBy, 'all'>, terms: BrowseTer
 }
 ```
 
-The `resetState` for a shortcut must be what the chip uses: open `v2/filter-bar.tsx` `QuickFilterButton` and copy its `resetState` construction (it derives from `initialFilters` and `settingsSort`); if the chip takes `initialFilters` as a prop, give `useBrowsePath` the same `initialFilters` parameter and thread it from `index.tsx` (it already has `initialFilters`). The test's `resetFilters` fake sets `{status:'publish'}` to match. `getPOSProductSort` is called on every render for `settingsSort`; if it is not a cheap pure function, memoise on `[sortBy, sortDirection]`.
+The `resetState` above is the chip's own (`v2/filter-bar.tsx` `QuickChip`: empty taxonomy arrays, `status: 'publish'`, `stock_status: 'instock'` unless `showOutOfStock`, the settings sort) — copied, not approximated, so the path's "active" is the chip's "lit". The test's `useUISettings` mock must therefore return `{ sortBy: 'name', sortDirection: 'asc', showOutOfStock: true }` and its `resetFilters` fake set `{ status: 'publish' }` (what `resetFilters` leaves with `showOutOfStock` on); `isQuickFilterActive` is the real module.
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
@@ -1996,6 +2011,7 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
     variationsStyle: string;
     binding: ReturnType<typeof useRelationalCollectionBinding>;   // for the footer and the window guard
     actions: { extendLimit: () => void };                        // the root query's actions: the level extends the window as the cashier scrolls
+    empty: React.ReactNode;                                       // index.tsx's noDataMessage: shown under slot 0 when the level has answered with no products and no child terms
   }): JSX.Element;
   ```
   Behaviour: slot 0 = `ParentTermTile`; then one `DealCell` per child term; then one per product; the grid shows `useLevelSnapshot(answer, settled)` — its own last answer, held while a child level is over it and while the query gathers its set again on the way back — so tiles never morph into another level's products; the crumb is a row of its own above the grid, in a `DealFade` (exactly as `DrillIn` does with `tiles` on `next` since #2396: never over the grid, never inside a card), the grid reports the node its slots rest in with `useDeal().placeGrid` (as `variations-grid.tsx` does — `testID="variations-slots"` is the pattern), and the crumb's detail is `N products` from the snapshot's `total` (the query total, not the loaded window).
@@ -2073,6 +2089,7 @@ const base = {
 	variationsStyle: 'drill',
 	binding: {} as never,
 	actions: { extendLimit: jest.fn() },
+	empty: <Text testID="no-data-message">nothing</Text>,
 };
 jest.mock('../../../../../../query', () => ({ useGuardedExtendLimit: (extend: () => void) => extend }));
 
@@ -2112,6 +2129,13 @@ it('extends the query window when the cashier nears the end of the level', () =>
 		nativeEvent: { contentOffset: { y: 900 }, contentSize: { height: 1200 }, layoutMeasurement: { height: 300 } },
 	});
 	expect(base.actions.extendLimit).toHaveBeenCalled();
+});
+
+it('shows the empty state under the parent tile when the level answered with nothing and has no children', () => {
+	render(<TermLevelGrid {...(base as never)} children={[]} answer={{ hits: [], total: 0 }} />);
+	expect(screen.getByTestId('browse-parent')).toBeTruthy();
+	expect(screen.getByTestId('no-data-message')).toBeTruthy();
+	expect(screen.queryByTestId('product-placeholder')).toBeNull();
 });
 
 it('is the All products level too: the All products tile in slot 0, no children', () => {
@@ -2161,6 +2185,7 @@ export function useLevelSnapshot(
 ```tsx
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import Animated, { useAnimatedRef, useScrollViewOffset } from 'react-native-reanimated';
+import { of } from 'rxjs';
 import { Breadcrumb } from '@wcpos/components/breadcrumb';
 import type { EngineRecord } from '@wcpos/query';
 import { useGuardedExtendLimit } from '../../../../../../query';
@@ -2205,6 +2230,7 @@ export function TermLevelGrid({
 	variationsStyle,
 	binding,
 	actions,
+	empty,
 }: {
 	term: BrowseTerm;
 	children: BrowseTerm[];
@@ -2218,6 +2244,7 @@ export function TermLevelGrid({
 	variationsStyle: string;
 	binding: { active$: unknown; total$: unknown; sync: unknown; pending$?: unknown; exhausted$?: unknown };
 	actions: { extendLimit: () => void };
+	empty: React.ReactNode;
 }) {
 	// The slots rest inside this node; the stage measures it so the deal lands on the grid, not
 	// on the stage it is inset from (as variations-grid.tsx).
@@ -2235,6 +2262,9 @@ export function TermLevelGrid({
 	// This level's own answer, held while the shared query is another level's (level-snapshot.ts).
 	const shown = useLevelSnapshot(answer, settled);
 	const detail = shown?.total === undefined ? undefined : t('pos_products.n_products', { count: shown.total });
+	// The footer's total is this level's too (as the variations footer takes its parent's count),
+	// not the live binding's, which may already be another level's.
+	const total$ = React.useMemo(() => of(shown?.total ?? 0), [shown?.total]);
 
 	const products: (EngineRecord<'products'> | null)[] = !showProducts
 		? []
@@ -2248,6 +2278,9 @@ export function TermLevelGrid({
 		const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
 		if (contentOffset.y + layoutMeasurement.height >= contentSize.height * (1 - END_REACHED_FRACTION)) extend();
 	};
+	// Answered with nothing to show: the way back stays in slot 0, the empty state (with its Clear
+	// filters) sits under it. A level whose products are hidden by its display type is not empty.
+	const isEmpty = showProducts && shown !== undefined && shown.hits.length === 0 && children.length === 0;
 	const count = 1 + children.length + products.length;
 	const rows = Array.from({ length: Math.ceil(count / columns) }, (_, row) =>
 		Array.from({ length: columns }, (_, column) => row * columns + column)
@@ -2295,12 +2328,13 @@ export function TermLevelGrid({
 					</View>
 				))}
 			</Animated.ScrollView>
+			{isEmpty && <View className="flex-1">{empty}</View>}
 			</View>
 			</View>
 			{/* No products footer over a level that shows only its subcategories. */}
 			{showProducts && (
 				<DealFade>
-					<ProductsFooter collectionName="products" active$={binding.active$ as never} total$={binding.total$ as never} sync={binding.sync as never} count={products.filter(Boolean).length} />
+					<ProductsFooter collectionName="products" active$={binding.active$ as never} total$={total$} sync={binding.sync as never} count={products.filter(Boolean).length} />
 				</DealFade>
 			)}
 		</View>
@@ -2342,6 +2376,7 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
     onDrillProduct: (record: EngineRecord<'products'>) => void;
     variationsStyle: string;
     binding; state; actions;   // the root products binding/state/actions, as index.tsx passes DataTable
+    empty: React.ReactNode;    // index.tsx's noDataMessage, handed to DataTable as noDataMessage when the level has no child rows
   }): JSX.Element;
   ```
   Behaviour: crumb above (not over) the rows as `DrillIn` does without `tiles`; the level with `term.kind === 'all'` is this same component with no child rows (All products as a pane); child term rows on top of the `DataTable`'s rows via `ListHeaderComponent`; products rows from `tableConfig={{ data: shown.hits }}` where `shown = useLevelSnapshot(answer, settled)` — the pane holds its own rows while a child pane is pushed over it and while the query gathers its set again on the pop, exactly as the grid does (Task 10 says why `dealt`/"is the answer defined" cannot stand in); a `DataTableSkeleton` with `rowCount` = children + 4 until the snapshot exists.
@@ -2357,9 +2392,9 @@ import { TermLevelTable } from './term-table';
 
 jest.mock('../../../../../../contexts/translations', () => ({ useT: () => (key: string) => key }));
 jest.mock('../../../../components/data-table/v2', () => ({
-	DataTable: ({ tableConfig, ListHeaderComponent, renderItem }: { tableConfig: { data: { record: { uuid: string } }[] }; ListHeaderComponent: React.ComponentType; renderItem: (args: { item: { original: { record: { uuid: string; payload: { type: string } } } }; index: number; table: unknown }) => React.ReactNode }) => {
+	DataTable: ({ tableConfig, ListHeaderComponent, renderItem, noDataMessage }: { tableConfig: { data: { record: { uuid: string } }[] }; ListHeaderComponent: React.ComponentType; renderItem: (args: { item: { original: { record: { uuid: string; payload: { type: string } } } }; index: number; table: unknown }) => React.ReactNode; noDataMessage?: React.ReactNode }) => {
 		const { View } = jest.requireActual('react-native');
-		return <View testID="table"><ListHeaderComponent />{tableConfig.data.map((row, index) => <View key={row.record.uuid}>{renderItem({ item: { original: row }, index, table: {} })}</View>)}</View>;
+		return <View testID="table"><ListHeaderComponent />{tableConfig.data.length === 0 ? noDataMessage : tableConfig.data.map((row, index) => <View key={row.record.uuid}>{renderItem({ item: { original: row }, index, table: {} })}</View>)}</View>;
 	},
 }));
 jest.mock('../../../../components/data-table/v2/skeleton', () => ({ DataTableSkeleton: () => { const { View } = jest.requireActual('react-native'); return <View testID="skeleton" />; } }));
@@ -2375,6 +2410,7 @@ const base = {
 	crumb: { parents: [{ label: 'Categories', onPress: jest.fn() }], here: 'Drinks' },
 	onOpenTerm: jest.fn(), onDrillProduct: jest.fn(), variationsStyle: 'drill',
 	binding: {} as never, state: { sort: { field: 'name', direction: 'asc' } } as never, actions: {} as never,
+	empty: <Text testID="no-data-message">nothing</Text>,
 };
 
 it('renders the crumb, then child term rows, then product rows', () => {
@@ -2395,6 +2431,11 @@ it('shows a skeleton until the products answer, and no products for subcategorie
 	expect(screen.getByTestId('browse-term-2')).toBeTruthy();
 });
 
+it('hands the empty state to the table when the level answered with nothing and has no children', () => {
+	render(<TermLevelTable {...(base as never)} children={[]} answer={{ hits: [], total: 0 }} />);
+	expect(screen.getByTestId('no-data-message')).toBeTruthy();
+});
+
 it('keeps its own rows while a child pane is over it', () => {
 	const { rerender } = render(<TermLevelTable {...(base as never)} />);
 	rerender(<TermLevelTable {...(base as never)} settled={false} answer={{ hits: [{ record: { uuid: 'x', payload: { type: 'simple' } } }], total: 1 }} />);
@@ -2411,6 +2452,7 @@ Expected: FAIL — not exported.
 - [ ] **Step 3: Implement `TermLevelTable`** (append to `term-table.tsx`)
 
 ```tsx
+import { of } from 'rxjs';
 import { Breadcrumb } from '@wcpos/components/breadcrumb';
 import type { EngineRecord } from '@wcpos/query';
 import { DataTable } from '../../../../components/data-table/v2';
@@ -2432,7 +2474,7 @@ const SKELETON_PRODUCT_ROWS = 4;
  * products table, then its products. The rows travel with their pane; none animates on its own.
  */
 export function TermLevelTable({
-	term, children, answer, settled, showProducts, crumb, onOpenTerm, onDrillProduct, variationsStyle, binding, state, actions,
+	term, children, answer, settled, showProducts, crumb, onOpenTerm, onDrillProduct, variationsStyle, binding, state, actions, empty,
 }: {
 	term: BrowseTerm;
 	children: BrowseTerm[];
@@ -2446,6 +2488,7 @@ export function TermLevelTable({
 	binding: React.ComponentProps<typeof DataTable>['binding'];
 	state: { sort: React.ComponentProps<typeof DataTable>['sort'] };
 	actions: React.ComponentProps<typeof DataTable>['actions'];
+	empty: React.ReactNode;
 }) {
 	const parents = crumb.parents.map((entry, index) =>
 		index === crumb.parents.length - 1 ? { ...entry, testID: 'products-breadcrumb-back' } : entry
@@ -2464,6 +2507,8 @@ export function TermLevelTable({
 	const shown = useLevelSnapshot(answer, settled);
 	const t = useT();
 	const detail = shown?.total === undefined ? undefined : t('pos_products.n_products', { count: shown.total });
+	// The table's total is this pane's own (as VariationsTable hands its parent's count).
+	const total$ = React.useMemo(() => of(shown?.total ?? 0), [shown?.total]);
 	const data = showProducts ? shown?.hits : [];
 	return (
 		<View className="flex-1" testID="browse-level">
@@ -2485,9 +2530,12 @@ export function TermLevelTable({
 						sort={state.sort}
 						actions={actions}
 						active$={binding.active$}
-						total$={binding.total$}
+						total$={total$}
 						sync={binding.sync}
 						cellsForRow={cellsForRow}
+						// A level with child rows is not empty when its products are; one with neither
+						// shows the empty state (with its Clear filters) under the crumb.
+						noDataMessage={children.length === 0 && showProducts ? (empty as React.ReactElement) : undefined}
 						ListHeaderComponent={Header}
 						renderItem={({ item, index, table }) => (
 							<VirtualizedList.Item>
@@ -2510,7 +2558,7 @@ export function TermLevelTable({
 }
 ```
 
-Check `DataTable`'s props in `components/data-table/v2/index.tsx`: `tableConfig={{ data }}` is how `VariationsTable` hands it rows; confirm its `handleEndReached` still extends the window with the `binding`/`actions` it is given when rows come from `tableConfig.data` (it should — the guard reads the binding, not the rows); if it keys the guard on `resource` hits, pass `onEndReached` through as the grid level does; `ListHeaderComponent` — if the v2 `DataTable` does not forward it to the list, add that one prop pass-through (it already forwards `ListFooterComponent`, see `variations-pane.tsx:135`). `cellsForRow` is the export from `../../index`; the `tableConfig` expanding meta (expanded rows for inline variations) is not needed at a term level because `variationsStyle === 'inline'` renders `InlineRow` which manages its own expansion — confirm by reading `components/product/variable-product-row.tsx` before relying on it; if it needs the `meta` from `index.tsx`'s `tableConfig`, pass the same `tableConfig` object down from `index.tsx` instead of `{ data }` alone (merge: `{ ...tableConfig, data }`).
+Check `DataTable`'s props in `components/data-table/v2/index.tsx`: `noDataMessage` is `string | React.ReactElement` and renders when the list is empty (line ~330) — with `undefined` it falls back to `common.no_results_found`, so when the level has child rows and no products pass a component that renders nothing (`<></>`) rather than `undefined`; `tableConfig={{ data }}` is how `VariationsTable` hands it rows; confirm its `handleEndReached` still extends the window with the `binding`/`actions` it is given when rows come from `tableConfig.data` (it should — the guard reads the binding, not the rows); if it keys the guard on `resource` hits, pass `onEndReached` through as the grid level does; `ListHeaderComponent` — if the v2 `DataTable` does not forward it to the list, add that one prop pass-through (it already forwards `ListFooterComponent`, see `variations-pane.tsx:135`). `cellsForRow` is the export from `../../index`; the `tableConfig` expanding meta (expanded rows for inline variations) is not needed at a term level because `variationsStyle === 'inline'` renders `InlineRow` which manages its own expansion — confirm by reading `components/product/variable-product-row.tsx` before relying on it; if it needs the `meta` from `index.tsx`'s `tableConfig`, pass the same `tableConfig` object down from `index.tsx` instead of `{ data }` alone (merge: `{ ...tableConfig, data }`).
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
@@ -2538,6 +2586,7 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
     source: Exclude<BrowseBy, 'all'>;
     viewMode: 'grid' | 'table';
     renderProducts: (onDrill) => React.ReactNode;   // today's products element wired to the STAGE's drill, shown when a search displaces the term set
+    empty: React.ReactNode;                         // index.tsx's noDataMessage, for a level that answered with nothing
     initialFilters: Record<string, unknown>;
     variationsStyle: string;
     stockStatus?: string;
@@ -2632,7 +2681,7 @@ The first test's last four lines (press `browse-all-products`, expect `products`
 
 The `DrillIn` mock gains a pressable for its last parent: `<Pressable testID="drill-in-last-parent" onPress={parents[parents.length - 1].onPress} />` beside the `Text`. `queryActions` is the Task 8 fake store's `actions` object, exported from the test's mock factory (hoist it with `jest.mock`'s factory returning the same object both tests import).
 
-`stageProps` is a fixture in the test file with `renderProducts={(onDrill) => <Pressable testID="products" onPress={() => onDrill(variable)} />}` (so a drill from the search-displaced root can be asserted to open `drill-in`), `actions: { extendLimit: jest.fn(), … }`, `total$: of(80)`, a `binding` whose `resource.valueRef$$.value.current.hits` holds one variable product and one simple product, `state`, `actions` fakes, `initialFilters: { status: 'publish' }`, `variationsStyle: 'drill'`, `onDrilledChange: jest.fn()`; the `useBrowseTerms` mock returns Drinks at the root with Hot as its child and `idsFor` → `[1,2]` / `[2]`; the `use-browse-path` module is NOT mocked (its own test covers it; here the query mock from Task 6's test is extended with a working `setFilter`/`clearFilter` fake exactly as in Task 8's test so the guard sees what `enter` wrote).
+`stageProps` is a fixture in the test file with `empty={<Text testID="no-data-message" />}`, `renderProducts={(onDrill) => <Pressable testID="products" onPress={() => onDrill(variable)} />}` (so a drill from the search-displaced root can be asserted to open `drill-in`), `actions: { extendLimit: jest.fn(), … }`, `total$: of(80)`, a `binding` whose `resource.valueRef$$.value.current.hits` holds one variable product and one simple product, `state`, `actions` fakes, `initialFilters: { status: 'publish' }`, `variationsStyle: 'drill'`, `onDrilledChange: jest.fn()`; the `useBrowseTerms` mock returns Drinks at the root with Hot as its child and `idsFor` → `[1,2]` / `[2]`; the `use-browse-path` module is NOT mocked (its own test covers it; here the query mock from Task 6's test is extended with a working `setFilter`/`clearFilter` fake exactly as in Task 8's test so the guard sees what `enter` wrote).
 
 - [ ] **Step 2: Run it to verify it fails**
 
@@ -2673,6 +2722,7 @@ export type BrowseStageProps = {
 	source: Exclude<BrowseBy, 'all'>;
 	viewMode: 'grid' | 'table';
 	renderProducts: (onDrill: DrillHandler) => React.ReactNode;
+	empty: React.ReactNode;
 	variationsStyle: string;
 	stockStatus?: string;
 	binding: {
@@ -2797,9 +2847,9 @@ export function BrowseStage(props: BrowseStageProps) {
 		const children = display === 'products' ? [] : terms.childrenOf(term);
 		const showProducts = display !== 'subcategories' || children.length === 0;
 		return viewMode === 'grid' ? (
-			<TermLevelGrid term={term} children={children} answer={answer} settled={settled} showProducts={showProducts} crumb={crumb} back={() => goBackTo(depth - 1)} onOpenTerm={openTerm} onDrillProduct={drillProduct} variationsStyle={props.variationsStyle} binding={binding as never} actions={props.actions} />
+			<TermLevelGrid term={term} children={children} answer={answer} settled={settled} showProducts={showProducts} crumb={crumb} back={() => goBackTo(depth - 1)} onOpenTerm={openTerm} onDrillProduct={drillProduct} variationsStyle={props.variationsStyle} binding={binding as never} actions={props.actions} empty={props.empty} />
 		) : (
-			<TermLevelTable term={term} children={children} answer={answer} settled={settled} showProducts={showProducts} crumb={crumb} onOpenTerm={openTerm} onDrillProduct={drillProduct} variationsStyle={props.variationsStyle} binding={binding as never} state={props.state as never} actions={props.actions as never} />
+			<TermLevelTable term={term} children={children} answer={answer} settled={settled} showProducts={showProducts} crumb={crumb} onOpenTerm={openTerm} onDrillProduct={drillProduct} variationsStyle={props.variationsStyle} binding={binding as never} state={props.state as never} actions={props.actions as never} empty={props.empty} />
 		);
 	};
 
@@ -2818,6 +2868,7 @@ Replace the Task 6 `BrowseStage` mount with:
 										source={browseBy}
 										viewMode={viewMode}
 										renderProducts={renderProducts}
+										empty={noDataMessage}
 										variationsStyle={variationsStyle}
 										stockStatus={stockStatusFilter}
 										binding={binding as never}
@@ -3008,7 +3059,7 @@ Read the product tile/row testIDs on `next` before finalising the regexes (`prod
 - Product drill inside a term: the term crumb closes it; every path move clears it → Task 12 (`drillParentsAt`, `goBackTo`).
 - `browseBy` in the per-device hydration rule → Task 2 Step 5b (`ENUM_VOCABULARIES`, two `utils.test.ts` tests).
 - Count strings are `_one`/`_other` pairs → Task 2 Step 5.
-- Empty states: nothing-matches with Clear filters → the existing `noDataMessage` inside `props.products`… **gap**: `TermLevelGrid`/`TermLevelTable` render their own rows from the snapshot and so do not show `noDataMessage` when its `hits` is `[]`. Fix inline: both accept an optional `empty: React.ReactNode` prop; Task 12 passes `noDataMessage` from `index.tsx` (add it to `BrowseStageProps` as `empty`), and each level renders it in place of the product cells/rows when `showProducts && shown?.hits.length === 0`. Added to Tasks 10, 11, 12 by this note; implementers treat it as part of those tasks.
+- Empty states: nothing-matches with Clear filters → the search-displaced root has it inside `renderProducts`; a term level has it through the `empty` prop (Tasks 10, 11: `index.tsx`'s `noDataMessage`, shown under slot 0 / handed to `DataTable` when the level answered with no products and has no child terms; Task 12 threads it as `BrowseStageProps.empty`). Clear filters clears the taxonomy field, which drops the path to the root — the spec's return.
 - Subcategories display with all children hidden → products instead → Task 12 (`showProducts = display !== 'subcategories' || children.length === 0`).
 - Test IDs, strings → Tasks 2, 4, 10, 11.
 - Gallery, E2E, films, ledger → Tasks 15, 16.
