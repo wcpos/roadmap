@@ -1242,7 +1242,7 @@ Open `ui-settings-form.test.tsx`, find how it renders the form and presses a seg
 ```tsx
 it('offers Browse by with All products first and dims a source with nothing to show', async () => {
 	// Render with the test's existing providers; the terms hook is mocked to an empty brands source.
-	jest.spyOn(browseTerms, 'useBrowseCounts').mockReturnValue({ categories: 5, tags: 8, brands: 0, shortcuts: 2 });
+	jest.spyOn(browseTerms, 'useBrowseCounts').mockReturnValue({ categories: 5, tags: undefined, brands: 0, shortcuts: 2 });
 	renderForm();
 	expect(screen.getByTestId('ui-settings-browse-by-all')).toBeTruthy();
 	expect(screen.getByTestId('ui-settings-browse-by-brands')).toHaveAccessibilityState({ disabled: true });
@@ -1255,21 +1255,28 @@ it('offers Browse by with All products first and dims a source with nothing to s
 `renderForm` / `lastSaved` are whatever that test file already uses to mount the form and observe the saved document — reuse them under their real names. Add to `use-browse-terms.ts`:
 
 ```ts
-/** How many terms each source would show — for the settings row's count and its dimming. */
-export function useBrowseCounts(): Record<Exclude<BrowseBy, 'all'>, number> {
+/**
+ * How many terms each source would show — for the settings row's count and its dimming.
+ * `undefined` until the source's collection has answered: a source that is still loading is
+ * not an empty one, and the dialog can open before the browse bindings have (All products).
+ */
+export function useBrowseCounts(): Record<Exclude<BrowseBy, 'all'>, number | undefined> {
 	const categories = useTaxonomyTerms('categories');
 	const tags = useTaxonomyTerms('tags');
 	const brands = useTaxonomyTerms('brands');
 	const { uiSettings } = useUISettings('pos-products');
 	const items = normalizeFilterBar(useDocField(uiSettings, (value) => value.filterBar));
+	const answered = (terms: BrowseTerms) => (terms.all === undefined ? undefined : terms.rootsOf().length);
 	return {
-		categories: categories.rootsOf().length,
-		tags: tags.rootsOf().length,
-		brands: brands.rootsOf().length,
+		categories: answered(categories),
+		tags: answered(tags),
+		brands: answered(brands),
 		shortcuts: items.filter((item) => item.type === 'quick-filter').length,
 	};
 }
 ```
+
+In the form test, assert the three states: Categories enabled with `5 categories`; Tags enabled with no count text and not dimmed (unanswered: `counts.tags === undefined`); Brands dimmed with `No brands yet`.
 
 - [ ] **Step 2: Run it to verify it fails**
 
@@ -1314,7 +1321,9 @@ function BrowseByField({ value, onChange }: { value: BrowseBy; onChange: (value:
 			<Text>{t('pos_products.browse_by')}</Text>
 			<View className="border-border overflow-hidden rounded-lg border">
 				{rows.map((row) => {
-					const disabled = row.value !== 'all' && counts[row.value as Exclude<BrowseBy, 'all'>] === 0;
+					// Dimmed only once the source has answered empty; a loading source is still a choice.
+					const count = row.value === 'all' ? undefined : counts[row.value];
+					const disabled = count === 0;
 					const on = row.value === value;
 					return (
 						<Pressable
@@ -1328,7 +1337,7 @@ function BrowseByField({ value, onChange }: { value: BrowseBy; onChange: (value:
 						>
 							<Icon name="check" className={on ? 'text-primary' : 'opacity-0'} />
 							<Text className={`flex-1 ${disabled ? 'text-muted-foreground' : ''}`}>{row.label}</Text>
-							<Text className="text-muted-foreground text-xs">{disabled ? row.empty : row.count}</Text>
+							<Text className="text-muted-foreground text-xs">{disabled ? row.empty : count === undefined ? '' : row.count}</Text>
 						</Pressable>
 					);
 				})}
@@ -2033,7 +2042,7 @@ jest.mock('../../../../contexts/ui-settings', () => ({ useUISettings: () => ({ u
 jest.mock('@wcpos/query', () => ({ ...jest.requireActual('@wcpos/query'), useDocField: (doc: Record<string, unknown>, read: (value: Record<string, unknown>) => unknown) => read(doc) }));
 jest.mock('../grid/product-tile', () => ({ ProductTile: ({ record, onDrill }: { record: { uuid: string; payload: { name: string } }; onDrill?: () => void }) => { const { Text } = jest.requireActual('react-native'); return <Text testID={`product-${record.uuid}`} onPress={onDrill}>{record.payload.name}</Text>; } }));
 jest.mock('../grid/variable-product-tile', () => ({ VariableProductTile: ({ record }: { record: { uuid: string; payload: { name: string } } }) => { const { Text } = jest.requireActual('react-native'); return <Text testID={`variable-${record.uuid}`}>{record.payload.name}</Text>; } }));
-jest.mock('../footer', () => ({ ProductsFooter: () => null }));
+jest.mock('../footer', () => ({ ProductsFooter: () => { const { View } = jest.requireActual('react-native'); return <View testID="products-footer" />; } }));
 jest.mock('../deal-stack', () => {
 	const React = jest.requireActual('react');
 	const { View } = jest.requireActual('react-native');
@@ -2084,10 +2093,11 @@ it('keeps its own products while a child level is over it', () => {
 	expect(screen.queryByTestId('product-x')).toBeNull();
 });
 
-it('shows only child terms for a subcategories display type', () => {
+it('shows only child terms, and no products footer, for a subcategories display type', () => {
 	render(<TermLevelGrid {...(base as never)} showProducts={false} />);
 	expect(screen.queryByTestId('product-f')).toBeNull();
 	expect(screen.getByTestId('browse-term-2')).toBeTruthy();
+	expect(screen.queryByTestId('products-footer')).toBeNull();
 });
 
 it('holds placeholders for products until the query answers', () => {
@@ -2286,9 +2296,12 @@ export function TermLevelGrid({
 			</Animated.ScrollView>
 			</View>
 			</View>
-			<DealFade>
-				<ProductsFooter collectionName="products" active$={binding.active$ as never} total$={binding.total$ as never} sync={binding.sync as never} count={products.filter(Boolean).length} />
-			</DealFade>
+			{/* No products footer over a level that shows only its subcategories. */}
+			{showProducts && (
+				<DealFade>
+					<ProductsFooter collectionName="products" active$={binding.active$ as never} total$={binding.total$ as never} sync={binding.sync as never} count={products.filter(Boolean).length} />
+				</DealFade>
+			)}
 		</View>
 	);
 }
@@ -2485,7 +2498,8 @@ export function TermLevelTable({
 							</VirtualizedList.Item>
 						)}
 						estimatedItemSize={100}
-						TableFooterComponent={(props) => <ProductsFooter {...props} count={data.length} />}
+						// No products footer under a level that shows only its subcategories.
+						TableFooterComponent={showProducts ? (props) => <ProductsFooter {...props} count={data.length} /> : undefined}
 						getItemType={(row) => row.original.record.payload.type}
 					/>
 				)}
@@ -2812,7 +2826,7 @@ Replace the Task 6 `BrowseStage` mount with:
 									/>
 ```
 
-with `const [browseDrilled, setBrowseDrilled] = React.useState(false);` near `drill`, and the filter bar's level becoming `level={drilled || browseDrilled ? 'variations' : 'products'}`.
+with `const [browseDrilled, setBrowseDrilled] = React.useState(false);` near `drill`, and the filter bar's level becoming `level={drilled || browseDrilled ? 'variations' : 'products'}`. A drill does not outlive its stage: in `index.tsx` add `React.useEffect(() => { setDrill(null); }, [browseBy]);` (a drill opened under All products is not shown under a browse source, nor restored when switching back), and in `BrowseStage` add `React.useEffect(() => () => onDrilledChange(false), [onDrilledChange]);` so an unmounting stage hands the filter bar's level back. Stage test: unmount while drilled → `onDrilledChange` last called with `false`.
 
 - [ ] **Step 5: Run the tests**
 
@@ -2936,7 +2950,7 @@ import { ensureGridView, ensureTableView } from './pos-view-mode';
 
 test('categories first: the root shows the category, drilling in shows the probe, the crumb goes back, search spans everything', async ({ posPage: page, request }, testInfo) => {
 	test.skip(!productWriterCredentialsConfigured(), 'E2E_PRODUCT_WRITER_USER/_PASS not configured — the categories-first drill needs a product the spec created');
-	// …choose a category, create the probe in it (token from mintSearchProbeToken), wait for it to be searchable (searchAndWaitForServer)
+	// …choose a ROOT category with members (`parent === 0`; a nested one renders inside its ancestor's level, not at browse-root — pick with the same store-API read product-category-filter.spec.ts uses, filtered on parent 0 and count > 0, else test.skip with the reason), create the probe in it (token from mintSearchProbeToken), wait for it to be searchable (searchAndWaitForServer)
 	await ensureRegisterOpen(page);
 	await setBrowseBy(page, 'categories');
 	try {
@@ -2976,7 +2990,7 @@ Read the product tile/row testIDs on `next` before finalising the regexes (`prod
 
 - Setting, default `all`, dimmed sources with reason, no header control → Tasks 2, 6.
 - Sources table (collections, hierarchy, image, order, hidden, product set) → Tasks 1, 3; "empty for the till, not the storefront" → `knownNonEmpty` in Tasks 1, 3 and `useBrowseCounts` (Task 6 reads `rootsOf()`, which already applies it).
-- Brands on WC < 9.4 → empty collection → dimmed `No brands yet` → Task 6 (`useBrowseCounts` → 0).
+- Brands on WC < 9.4 → empty collection → dimmed `No brands yet` → Task 6 (`useBrowseCounts` → 0 once answered; `undefined` while loading is not dimmed).
 - Display type, descendants → Tasks 1, 12 (`renderTerm`), 10/11 (`showProducts`, `children`).
 - Root: All first, no crumb, tile anatomy, no per-term colour → Tasks 4, 5.
 - Inside a term: deal with parent at slot 0, children then products, crumb as the existing component, nested levels, crumb ancestors return in one pass → Tasks 10, 12 (`backTo` truncates the path; every intermediate `DealStack` sees its `detail` go `null` on the same render).
