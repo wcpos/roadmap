@@ -83,14 +83,16 @@ const I = {
 };
 
 // ---------- tiles ----------
+// Only the demo term of each set navigates (one path through the prototype); the rest are static.
 const termTile = ({ n, c, img, hue, d }, to, kind) => {
-	const cls = `tile term ${img ? 'photo' : 'plain'} ${kind}`;
+	const cls = `tile term ${img ? 'photo' : 'plain'} ${kind}${to ? '' : ' static'}`;
 	const style = `--h:${hue}`;
 	const sub = d ?? `${c} products`;
-	return `<label class="${cls}" for="${to}" style="${style}">${
+	const tag = to ? 'label' : 'div';
+	return `<${tag} class="${cls}"${to ? ` for="${to}"` : ''} style="${style}">${
 		img ? `<div class="img">${I.photo}</div><div class="tx"><div class="nm">${n}</div><div class="sub">${sub}</div></div>`
 			: `<div class="plainbody"><div class="nm">${n}</div><div class="sub">${sub}</div></div>`
-	}</label>`;
+	}</${tag}>`;
 };
 const allTile = (to) =>
 	`<label class="tile term all" for="${to}"><div class="plainbody">${I.all}<div class="nm">All products</div><div class="sub">${all.length} products</div></div></label>`;
@@ -119,7 +121,7 @@ const parentTile = (id, backTo) => {
 
 // ---------- rows (table mode) ----------
 const termRow = ({ n, c, img, hue, d }, to, kind) =>
-	`<label class="row term" for="${to}" style="--h:${hue}"><div class="thumb ${img ? 'photo' : 'plain'}">${img ? I.photo : n[0]}</div><div class="cell grow"><div>${n}</div><div class="sub">${d ?? `${c} products`}</div></div><div class="cell r chev">${I.chev}</div></label>`;
+	`<${to ? 'label' : 'div'} class="row term${to ? '' : ' static'}"${to ? ` for="${to}"` : ''} style="--h:${hue}"><div class="thumb ${img ? 'photo' : 'plain'}">${img ? I.photo : n[0]}</div><div class="cell grow"><div>${n}</div><div class="sub">${d ?? `${c} products`}</div></div><div class="cell r chev">${I.chev}</div></${to ? 'label' : 'div'}>`;
 const allRow = (to) =>
 	`<label class="row term all" for="${to}"><div class="thumb plain">${I.all}</div><div class="cell grow"><div>All products</div><div class="sub">${all.length} products</div></div><div class="cell r chev">${I.chev}</div></label>`;
 const productRow = (id, dealTo) => {
@@ -157,20 +159,20 @@ function stateFor(mode, lv) {
 	if (mode === 'all') return { kind: 'products', crumb: null, items: all };
 	if (lv === 'lvall') return { kind: 'products', crumb: [R, { label: 'All products', to: 'lvall' }], detail: `${all.length} products`, items: all, parent: parentTermTile({ n: 'All products', all: true }, 'lv0') };
 	if (mode === 'cat') {
-		if (lv === 'lv0') return { kind: 'terms', crumb: null, terms: cats.map((c) => termTile(c, 'lv1', 'cat')), rows: cats.map((c) => termRow(c, 'lv1', 'cat')), withAll: true };
-		if (lv === 'lv1') return { kind: 'mixed', crumb: [R, { label: 'Drinks', to: 'lv1' }], detail: '12 products', parent: parentTermTile(cats[0], 'lv0'), terms: [termTile({ n: 'Hot', c: 6, img: true, hue: 20 }, 'lv2', 'cat'), termTile({ n: 'Cold', c: 6, hue: 200 }, 'lv2', 'cat')], rows: [termRow({ n: 'Hot', c: 6, img: true, hue: 20 }, 'lv2'), termRow({ n: 'Cold', c: 6, hue: 200 }, 'lv2')], items: drinks };
+		if (lv === 'lv0') return { kind: 'terms', crumb: null, terms: cats.map((c, i) => termTile(c, i ? null : 'lv1', 'cat')), rows: cats.map((c, i) => termRow(c, i ? null : 'lv1', 'cat')), withAll: true };
+		if (lv === 'lv1') return { kind: 'mixed', crumb: [R, { label: 'Drinks', to: 'lv1' }], detail: '12 products', parent: parentTermTile(cats[0], 'lv0'), terms: [termTile({ n: 'Hot', c: 6, img: true, hue: 20 }, 'lv2', 'cat'), termTile({ n: 'Cold', c: 6, hue: 200 }, null, 'cat')], rows: [termRow({ n: 'Hot', c: 6, img: true, hue: 20 }, 'lv2'), termRow({ n: 'Cold', c: 6, hue: 200 }, null)], items: drinks };
 		return { kind: 'products', crumb: [R, { label: 'Drinks', to: 'lv1' }, { label: 'Hot', to: 'lv2' }], detail: '6 products', items: hot, parent: parentTermTile({ n: 'Hot', c: 6, img: true, hue: 20 }, 'lv1') };
 	}
 	if (mode === 'tag') {
-		if (lv === 'lv0') return { kind: 'terms', crumb: null, terms: tags.map((t) => termTile(t, 'lv1', 'tag')), rows: tags.map((t) => termRow(t, 'lv1')), withAll: true };
+		if (lv === 'lv0') return { kind: 'terms', crumb: null, terms: tags.map((t, i) => termTile(t, i ? null : 'lv1', 'tag')), rows: tags.map((t, i) => termRow(t, i ? null : 'lv1')), withAll: true };
 		return { kind: 'products', crumb: [R, { label: 'Vegan', to: 'lv1' }], detail: '9 products', parent: parentTermTile(tags[0], 'lv0'), items: ['oj', 'lemon', 'cola', 'water', 'smoo', 'soup', 'flap', 'crisps', 'gran'] };
 	}
 	if (mode === 'brand') {
-		if (lv === 'lv0') return { kind: 'terms', crumb: null, terms: brands.map((b) => termTile(b, 'lv1', 'brand')), rows: brands.map((b) => termRow(b, 'lv1')), withAll: true };
+		if (lv === 'lv0') return { kind: 'terms', crumb: null, terms: brands.map((b, i) => termTile(b, i ? null : 'lv1', 'brand')), rows: brands.map((b, i) => termRow(b, i ? null : 'lv1')), withAll: true };
 		return { kind: 'products', crumb: [R, { label: 'Monmouth', to: 'lv1' }], detail: '6 products', parent: parentTermTile(brands[0], 'lv0'), items: ['latte', 'flat', 'amer', 'espr', 'beans', 'iced'] };
 	}
 	// shortcuts
-	if (lv === 'lv0') return { kind: 'terms', crumb: null, terms: shortcuts.map((s) => termTile({ n: s.n, d: s.d, hue: s.hue }, 'lv1', 'short')), rows: shortcuts.map((s) => termRow({ n: s.n, d: s.d, hue: s.hue }, 'lv1')), withAll: true };
+	if (lv === 'lv0') return { kind: 'terms', crumb: null, terms: shortcuts.map((s, i) => termTile({ n: s.n, d: s.d, hue: s.hue }, i ? null : 'lv1', 'short')), rows: shortcuts.map((s, i) => termRow({ n: s.n, d: s.d, hue: s.hue }, i ? null : 'lv1')), withAll: true };
 	return { kind: 'products', crumb: [R, { label: 'Breakfast', to: 'lv1' }], detail: '7 products · in stock', parent: parentTermTile({ n: shortcuts[0].n, d: shortcuts[0].d, hue: shortcuts[0].hue }, 'lv0'), items: ['toast', 'eggs', 'crois', 'gran', 'latte', 'flat', 'oj'] };
 }
 
@@ -360,6 +362,7 @@ const html = `<!doctype html>
   .tile .addc svg { width: 16px; height: 16px; stroke-width: 2.2; }
   .tile.variable .addc { color: var(--muted-foreground); }
   .tile .vbadge { position: absolute; top: 8px; right: 8px; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--card); border: 1px solid var(--border); color: var(--muted-foreground); }
+  .tile.static, .row.static { cursor: default; }
   .tile.parent { border-color: var(--primary); }
   .tile.parent .addc { color: var(--foreground); }
   .tiles.under { opacity: .18; pointer-events: none; }
@@ -484,7 +487,7 @@ ${LEVELS.map((l, i) => `<input type="radio" name="lv" id="${l}"${i === 0 ? ' che
   <span class="k">Theme</span><label for="light">Light</label><label for="dark">Dark</label>
   <span class="sep"></span>
   <label for="set">Settings sheet</label>
-  <span class="hint">Tap tiles, rows and crumbs inside the frame to navigate.</span>
+  <span class="hint">One path is live: the first tile of each set, Drinks › Hot › Latte, All products, and the crumbs. Switching Browse by keeps the current depth (no script).</span>
 </div>
 
 <div class="frame">

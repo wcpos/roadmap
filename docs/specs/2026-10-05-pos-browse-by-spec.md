@@ -75,6 +75,10 @@ footer and the variations drill-in are reused unchanged.
   field) — the translator's `taxonomy-many` entry takes an id set, so nothing in the engine or the
   browse-window seeder changes. The baseline filters (`status`, `stock_status`) and the sort setting
   apply as today, so a term shows what the All-products grid would show narrowed to the term.
+- Brands read the existing `products/brands` collection, which the Brand pill already fills; the
+  core `wc/v3/products/brands` route exists from WooCommerce 9.4.0, so on an older store (2.0
+  supports 9.0+) the collection stays empty and the Brands row is dimmed `No brands yet`. Whether
+  that sync failure surfaces anywhere is the Brand pill's existing behaviour, unchanged here.
 - Display type (`display` field, categories and brands): `products` → products only;
   `subcategories` → child tiles only; `both`, `default`, empty or unknown → child tiles then
   products. Tags and shortcuts have no children and always show products.
@@ -122,7 +126,8 @@ child term rows (per display type), then product rows on a `DataTable` with the 
 Nested levels push again; a product row drills into variations as today.
 
 All products (the first tile/row) is a term like any other: it deals/pushes the plain products
-grid/table with crumb `Categories › All products` and no taxonomy filter.
+grid/table with crumb `<source label> › All products` (`Categories › All products`,
+`Tags › All products`, …) and no taxonomy filter.
 
 ### Search and scanning
 
