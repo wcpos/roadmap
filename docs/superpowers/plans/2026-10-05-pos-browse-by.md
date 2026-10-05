@@ -14,6 +14,7 @@
 - Spec: `wcpos/roadmap` `docs/specs/2026-10-05-pos-browse-by-spec.md` (PR #403). Owner decisions: breadcrumb reused as is; **filter bar untouched in every mode**; scope = tiles and table; no per-term colour (image-less tiles are `bg-muted` with the name).
 - Design rules: `CODING_STANDARDS.md` § Design. Tap targets ≥ 44 pt; semantic tokens only (`bg-card`, `bg-muted`, `text-muted-foreground`…), never a hex; animate only `transform`/`opacity`; nothing animates on mount; no skeleton or spinner inside a moving surface.
 - Tests: ALWAYS `--maxWorkers=2`, one suite at a time. From the worktree root: `pnpm --filter @wcpos/core test -- --maxWorkers=2 <path>`; the hook `cap-test-workers.js` blocks uncapped runs. `pnpm typecheck --force` before every push.
+- The filter bar's stored quick filter is `{ type: 'quick', id, label, conditions, sort? }` (`filter-bar-layout.ts` `quickFilterSchema`; pills are `type: 'pill'`). A shortcut's `name` is the quick filter's `label`.
 - Strings: every user-facing string goes through `useT()` with a key in `packages/core/src/contexts/translations/locales/en/core.json`, sorted into the `pos_products.` block alphabetically like its neighbours.
 - Test IDs from the spec: `browse-root`, `browse-term-<id>`, `browse-shortcut-<id>`, `browse-all-products`, `browse-parent`, `ui-settings-browse-by-<value>`; the crumb keeps `products-breadcrumb` / `products-breadcrumb-back`.
 - Commit messages: `feat(pos): …` / `test(pos): …`, imperative, no trailing period. Do not push or open a PR from a task; the slice's final task does that.
@@ -552,15 +553,15 @@ describe('projectShortcuts', () => {
 	it('turns the stored quick filters into shortcut terms in order, described', () => {
 		const items = [
 			{ type: 'builtin', id: 'stock_status', visible: true },
-			{ type: 'quick-filter', id: 'qf-2', name: 'Breakfast', conditions: [{ field: 'categories', value: [3, 4] }] },
-			{ type: 'quick-filter', id: 'qf-1', name: 'Under 3', conditions: [{ field: 'price', value: { max: 3 } }] },
+			{ type: 'quick', id: 'qf-2', label: 'Breakfast', conditions: [{ field: 'categories', value: [3, 4] }] },
+			{ type: 'quick', id: 'qf-1', label: 'Under 3', conditions: [{ field: 'price', value: { max: 3 } }] },
 		];
 		const terms = projectShortcuts(items as never, (qf) => `desc:${qf.name}`);
 		expect(terms.rootsOf().map((t) => t.kind === 'shortcut' && [t.id, t.name, t.description])).toEqual([
 			['qf-2', 'Breakfast', 'desc:Breakfast'],
 			['qf-1', 'Under 3', 'desc:Under 3'],
 		]);
-		expect(terms.quickFilterFor(terms.rootsOf()[0])?.name).toBe('Breakfast');
+		expect(terms.quickFilterFor(terms.rootsOf()[0])?.label).toBe('Breakfast');
 		expect(terms.idsFor(terms.rootsOf()[0])).toEqual([]);
 	});
 });
@@ -670,11 +671,11 @@ export function projectShortcuts(
 	items: ReturnType<typeof normalizeFilterBar>,
 	describe: (quickFilter: QuickFilter) => string
 ): BrowseTerms {
-	const quickFilters = items.filter((item): item is QuickFilter => item.type === 'quick-filter');
+	const quickFilters = items.filter((item): item is QuickFilter => item.type === 'quick');
 	const terms: BrowseTerm[] = quickFilters.map((quickFilter) => ({
 		kind: 'shortcut',
 		id: quickFilter.id,
-		name: quickFilter.name,
+		name: quickFilter.label,
 		description: describe(quickFilter),
 	}));
 	return {
@@ -1271,7 +1272,7 @@ export function useBrowseCounts(): Record<Exclude<BrowseBy, 'all'>, number | und
 		categories: answered(categories),
 		tags: answered(tags),
 		brands: answered(brands),
-		shortcuts: items.filter((item) => item.type === 'quick-filter').length,
+		shortcuts: items.filter((item) => item.type === 'quick').length,
 	};
 }
 ```
@@ -1587,7 +1588,7 @@ import { useBrowsePath } from './use-browse-path';
 const drinks = { kind: 'term' as const, id: 1, name: 'Drinks', count: 12 };
 const hot = { kind: 'term' as const, id: 2, name: 'Hot', count: 6, parent: 1 };
 const breakfast = { kind: 'shortcut' as const, id: 'qf-1', name: 'Breakfast', description: '' };
-const quickFilter = { type: 'quick-filter', id: 'qf-1', name: 'Breakfast', conditions: [{ field: 'categories', value: [3] }] };
+const quickFilter = { type: 'quick', id: 'qf-1', label: 'Breakfast', conditions: [{ field: 'categories', value: [3] }] };
 const terms = {
 	all: [drinks, hot],
 	rootsOf: () => [drinks],
@@ -2873,7 +2874,7 @@ it('shortcuts: the stored quick filters are the root; tapping one applies it and
 });
 ```
 
-(The `useBrowseTerms` mock gains a `shortcuts` branch returning one shortcut `qf-1` with `quickFilterFor` → `{ type:'quick-filter', id:'qf-1', name:'Breakfast', conditions:[{ field:'categories', value:[3] }] }`; `queryActions` is the query mock's actions object.)
+(The `useBrowseTerms` mock gains a `shortcuts` branch returning one shortcut `qf-1` with `quickFilterFor` → `{ type:'quick', id:'qf-1', label:'Breakfast', conditions:[{ field:'categories', value:[3] }] }`; `queryActions` is the query mock's actions object.)
 
 - [ ] **Step 2: Run it** — expected PASS already if Tasks 3, 8 and 12 are complete; if it fails, the gap is in `isQuickFilterActive`'s `resetState` (Task 8 Step 3 note) — fix there.
 
