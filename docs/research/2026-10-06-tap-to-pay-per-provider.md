@@ -287,6 +287,30 @@ This maps onto the chosen keypad tender pane (I).
 
 **Marketing and docs:** WCPOS blog posts and release notes that announce it go to Apple first (§2).
 
+## 4b. Apple's requirements, from the guide Apple sent with the entitlement (added 2026-10-06)
+
+Apple granted WCPOS the **development** entitlement on 2026-10-06 (recorded on [#113](https://github.com/wcpos/roadmap/issues/113)). The grant came with Apple's *Tap to Pay on iPhone App & Marketing Requirements and Review Guide* v1.7 (Aug 2026) and a *App Review Requirements Checklist* v1.7. Both are kept locally (`~/Documents/wcpos-apple-tap-to-pay/`), not in this public repo. What follows is the condensed list of what the app must do before Apple grants the **publishing** entitlement; numbers are Apple's checklist numbers. **Sourced** from that guide.
+
+**Process.** Development entitlement → build to the requirements → reply to Apple's email with three videos (onboarding flow; enabling Tap to Pay and merchant education; checkout, filmed with a second device because the Tap to Pay screens block screen recording) and the completed checklist → publishing entitlement → App Store review, with a special Tap to Pay review on top. The publishing entitlement is also required for **TestFlight**, so no TestFlight build may carry Tap to Pay until then. The checklist asks for a single **PSP Name** per submission; whether a second provider means a second review is unverified.
+
+**General (1.x).** iPhone XS or later (1.1). Handle `osVersionNotSupported` below iOS 17.6 with an "update iOS" message (1.4). **Prepare and warm up the reader at launch and on every return to the foreground** (1.5). Read "has this merchant accepted the terms" from Apple via the PSP SDK, never from local state (1.6). Face ID / Touch ID login recommended (1.7). HIG and the marketing guidelines apply (1.8, 1.9).
+
+**Onboarding (2.x).** A new user must find how to get Tap to Pay (2.1); onboarding must be fully digital and completed on the iPhone (2.2); under 15 minutes to first payment for most users (2.3). Any system permission (location) needs a pre-alert screen and must be requested well before checkout. Business owners must be able to give employees restricted credentials. Apps with no in-app onboarding either distribute as Unlisted/Custom/Enterprise or request an exception with the publishing entitlement — relevant to WCPOS, where the merchant account exists in WordPress and the PSP account at the PSP.
+
+**Enabling (3.x).** At least one in-app awareness moment for every eligible user, best as a full-screen modal using Apple's copy (3.1–3.3); shown at the end of merchant onboarding (3.4); a clear action to accept the Terms and Conditions (3.5); enablement reachable from settings, not only at checkout (3.6); checkout either triggers enablement or requires it beforehand (3.7); **terms accepted only by an administrator or authorised party**, with a "contact an admin" message for anyone else (3.8, 3.8.1); a **configuration progress indicator** from the SDK's `updateProgress` while the reader is being prepared (3.9.1).
+
+**Education (4.x).** On iOS 18+ use Apple's `ProximityReaderDiscovery` for merchant education (4.1), shown right after terms acceptance (4.2) and reachable later from Settings or Help (4.3); it must cover contactless cards and Apple Pay (4.5, 4.6), PIN entry everywhere except JP and TW (4.7), and the fallback payment method in CA, GL, IE, IM, JE, UK, MX (4.8).
+
+**Checkout (5.x).** A prominent Tap to Pay button, reachable without scrolling and **first in the list when several payment options exist** (5.1, 5.2); never greyed out or hidden — pressing it before enablement opens the terms (5.3); Apple's localised button strings and only the `wave.3.right.circle` symbols (5.4, 5.5); the Tap to Pay UI must appear within one second 90% of the time (5.6); an "initializing" screen while configuring (5.7); processing then a clear approved / declined / timed-out outcome (5.8, 5.9); **a confidential digital receipt must be offerable whether approved or declined** (5.10); regional rules (5.11); **a notification if the user closed the app before seeing a non-approved result** (5.12, new in v1.7).
+
+**Regional.** Fallback payment method required in CA, GL, IE, IM, JE, UK, MX; surcharge display rules in AU and BR (`surchargeAmount` / `surchargePercent`, itemised on the receipt); IFR card-brand choice before tapping in BE, DE, DK, FR, NO; Xcode language set so Apple's screens localise.
+
+**App Store submission.** Declare the entitlement, describe the use case, give App Review a test account for the checkout, upload a checkout video or hi-fi wireframes, don't put "Tap to Pay" in the app name, and update only the product pages of regions where it is live.
+
+**Marketing (6.x), only after general availability.** A launch email to all eligible users (6.1), an in-app hero splash seen at least once (6.2), a push notification with Apple's "value proposition" copy (6.3); only Apple's toolkit assets, never our own imagery or icons; always "Tap to Pay on iPhone", never shortened.
+
+**What this means for WCPOS 2.0.** Beyond the Stripe driver (#235), the app owes: an admin-only terms step; a progress indicator; Apple's education flow; the button placement and wording rules in the tender pane (Tap to Pay first when present — a layout rule that collides with the tender pane's current ordering); a digital-receipt offer after declines; a local notification for a result missed after backgrounding; the pre-alert for location; and a pre-launch, pre-foreground reader warm-up, which is exactly the launch-time SDK activity the harness discussion in the loading note wanted to avoid for merchants who do not use Tap to Pay. That tension needs a ruling: warm up only on tills where Tap to Pay is enabled.
+
 ## 5. Recommendation: SDK set and order for Tap to Pay
 
 1. **Stripe Tap to Pay, iPhone and Android: first.**
