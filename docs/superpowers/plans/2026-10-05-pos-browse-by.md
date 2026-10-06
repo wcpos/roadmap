@@ -2022,7 +2022,9 @@ export function useBrowsePath(source: Exclude<BrowseBy, 'all'>, terms: BrowseTer
 	// moved on the server) is re-projected in place: the level stays, its products follow.
 	const derived = deepest?.term.kind === 'term' ? terms.idsFor(deepest.term) : undefined;
 	const derivedKey = derived?.join(',');
-	React.useEffect(() => {
+	// A layout effect, like the drop and the teardown: the level's new child tree and its
+	// product query must not paint out of step for a frame.
+	React.useLayoutEffect(() => {
 		const current = projected.current;
 		if (!live || !derived || !field || current?.kind !== 'taxonomy') return;
 		if (sameSet(current.ids, derived)) return;
@@ -2479,7 +2481,9 @@ export function TermLevelGrid({
 	const detail = shown?.total === undefined ? undefined : t('pos_products.n_products', { count: shown.total });
 	// The footer's total is this level's too (as the variations footer takes its parent's count),
 	// not the live binding's, which may already be another level's.
-	const total$ = React.useMemo(() => of(shown?.total ?? 0), [shown?.total]);
+	// Pending until the level has a total — never a fabricated 0 beside held slots (the footer
+	// renders no number for null, its contract for a binding that cannot vouch for a total).
+	const total$ = React.useMemo(() => of(shown?.total ?? null), [shown?.total]);
 
 	const products: (EngineRecord<'products'> | null)[] = !showProducts
 		? []
@@ -2746,7 +2750,9 @@ export function TermLevelTable({
 	const t = useT();
 	const detail = shown?.total === undefined ? undefined : t('pos_products.n_products', { count: shown.total });
 	// The table's total is this pane's own (as VariationsTable hands its parent's count).
-	const total$ = React.useMemo(() => of(shown?.total ?? 0), [shown?.total]);
+	// Pending until the level has a total — never a fabricated 0 beside held slots (the footer
+	// renders no number for null, its contract for a binding that cannot vouch for a total).
+	const total$ = React.useMemo(() => of(shown?.total ?? null), [shown?.total]);
 	const data = showProducts ? shown?.hits : [];
 	return (
 		// Escape and the edge swipe go back one level, as the variations pane's do (Task 9).
