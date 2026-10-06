@@ -6,6 +6,8 @@ Labels: **S** Sourced (primary page, repo or registry, linked in §6). **S†** 
 
 ## The short answer
 
+> **Corrected later on 2026-10-06:** Zettle does have a cloud route (Reader Connect, driving the PayPal Reader over Wi‑Fi), which [the SDK-or-cloud note](2026-10-06-sdk-vs-cloud-per-provider.md) found. That note reverses the "compile in next" verdict for Zettle below to "cloud first" and re-ranks Square on capability grounds. Read it after this one.
+
 **Realistically two more, not twenty.** On top of Stripe, SumUp and Square, only **Zettle (PayPal)** clearly earns a place in the app, and **Adyen** is a strong second if a merchant asks for it. That makes four or five native SDKs in total.
 
 I checked 40 providers. Three reasons rule most of them out:
