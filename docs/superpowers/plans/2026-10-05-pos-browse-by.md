@@ -3235,6 +3235,9 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
 - [ ] Run `pnpm --filter @wcpos/core test -- --maxWorkers=2 src/screens/main/pos/products src/query` and `pnpm typecheck --force`.
 - [ ] `/codex-review` the diff against `origin/next`; fix; re-run.
 - [ ] Task 8a is in this slice: its two items are the Slice 1 review's "before `next`→`main`" conditions.
+- [ ] **The stage owns search** (ruled 2026-10-06 at the Slice 2 whole-branch review): the Slice 1 interim gate in `index.tsx` (`browseBy !== 'all' && search is blank`) is removed — the stage mounts whenever `browseBy !== 'all'` and its `searchDisplaced` branch (`renderProducts(drillProduct)`) is the real search path. A shortcut's own `search` keeps the path live (its chip lights, no residue on exit); a search typed inside a level is not a hard cut of the whole stage.
+- [ ] A residents-only dialog binding declares one refresh demand only while it has zero residents (a fresh till is otherwise "No categories yet" forever); unanswered while that pull is pending.
+- [ ] **Film before merge** (Step 6; the reviewer's nine shots): root → category deal and return; a cold category; parent → child → grandchild then a crumb tap to the root; a variable product inside a level and back (drill and inline styles); the crumb count on entry; edge swipe on the Pixel and Escape on web at depth 2 and with a drill open; table push/pop nested, a cold table tap, a subcategories-only pane; a search typed inside a level then cleared, a pill pressed inside a level, Clear filters from an empty level; a shortcut with a search condition.
 - [ ] Push and open the PR against `next`: title `feat(pos): Browse by — drill-in, crumb, descendants, display type (slice 2 of roadmap#392)`; body names the spec, lists the walk from Step 6 with what was filmed, and the test commands. Babysit to merge.
 
 ---
