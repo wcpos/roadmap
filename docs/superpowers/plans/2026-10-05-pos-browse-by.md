@@ -2186,6 +2186,8 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
     empty: React.ReactNode;                                       // index.tsx's noDataMessage: shown under slot 0 when the level has answered with no products and no child terms
   }): JSX.Element;
   ```
+  (Also in this slice, on the ROOT components from Task 5: `BrowseRootGrid`/`BrowseRootTable` gain `binding` and render the shared `ProductsFooter` under the term set — the footer is reused unchanged everywhere, as the spec says and the prototype shows: the catalogue total, the tax basis line and the sync button are the till's, not a level's. Task 12 passes the root products binding. Count = the catalogue's loaded rows is not meaningful at the root, so pass `count={undefined}`/the total if the footer's prop allows, else the binding's total.)
+
   Behaviour: slot 0 = `ParentTermTile`; then one `DealCell` per child term; then one per product; the grid shows `useLevelSnapshot(answer, settled)` — its own last answer, held while a child level is over it and while the query gathers its set again on the way back — so tiles never morph into another level's products; the crumb is a row of its own above the grid, in a `DealFade` (exactly as `DrillIn` does with `tiles` on `next` since #2396: never over the grid, never inside a card), the grid reports the node its slots rest in with `useDeal().placeGrid` (as `variations-grid.tsx` does — `testID="variations-slots"` is the pattern), and the crumb's detail is `N products` from the snapshot's `total` (the query total, not the loaded window).
 
   The products query is windowed (the grid's `useGuardedExtendLimit`, #1221): a level with more products than the window extends it as the cashier nears the end — `useGuardedExtendLimit(actions.extendLimit, shown?.hits.length ?? 0, binding)` on the list's `onEndReached` — so a category of 300 products does not stop at the first 100. **The level's scroller is an `Animated.FlatList` of rows** (`useAnimatedRef<Animated.FlatList<…>>` + `useScrollViewOffset`, which accepts a FlatList ref), not an `Animated.ScrollView`: a category can be thousands of products and the grid must not keep every `DealCell` mounted as the window grows — rows virtualise exactly as the products grid's `VirtualizedList` does, and a `DealCell` in a row that has scrolled out is simply unmounted (its deal timing is by index, nothing is lost). The first row carries `FRONT` as today. The level with `term.kind === 'all'` (All products) is this same component with no children: the All products tile deals to slot 0 and is the way back, exactly like a term.
@@ -2996,7 +2998,7 @@ export type BrowseStageProps = {
 	binding: {
 		result$: Observable<{ hits: { record: EngineRecord<'products'> }[] }>;
 		active$: unknown;
-		total$: unknown;
+		total$: Observable<number | null>;
 		sync: unknown;
 	};
 	state: { sort: unknown };
@@ -3044,8 +3046,10 @@ export function BrowseStage(props: BrowseStageProps) {
 		[]
 	);
 	// The products answer as state: a level never suspends (a tile swapped for a skeleton
-	// mid-deal would lose its place).
-	const total = useObservableEagerState(binding.total$ as Observable<number | undefined>);
+	// mid-deal would lose its place). The total is attributed like the rows: `total$` is derived
+	// from the same memoised `result$` (a new observable per query), so useAnswerOf pairs it too
+	// — a new level never snapshots the previous level's count.
+	const total = useAnswerOf(binding.total$ as Observable<number | null>) ?? undefined;
 	// Attributed to its query: `binding.result$` is a new observable per compiled query, and
 	// useAnswerOf pairs each emission with the observable it came from — `undefined` while the
 	// projection on stage has no answer of its own (see the Interfaces note).
@@ -3054,10 +3058,16 @@ export function BrowseStage(props: BrowseStageProps) {
 	const t = useT();
 	const rootLabel = sourceLabel(source, t);
 	const labelOf = (term: BrowseTerm) => (term.kind === 'all' ? t('pos_products.browse_all_products') : term.name);
+	// A live entry's term as the source has it NOW (a rename follows); an entry no longer on the
+	// path (its level is gathering) keeps its snapshot.
+	const currentOf = (entry: PathEntry, depth: number): BrowseTerm =>
+		(path[depth] === entry && terms.all?.find((known) => termKey(known) === termKey(entry.term))) || entry.term;
 
 	// Every move of the path closes the product drill: a stale drill at a depth the path returns
 	// to would otherwise reappear.
 	const openTerm = React.useCallback((term: BrowseTerm, target?: Measurable) => { setDrill(null); enter(term, target); }, [enter]);
+	// Memoised so the root grid's rows memo hits (landed in Slice 1).
+	const roots = React.useMemo(() => terms.rootsOf(), [terms]);
 	const goBackTo = React.useCallback((depth: number) => { setDrill(null); backTo(depth); }, [backTo]);
 	const goRoot = React.useCallback(() => goBackTo(0), [goBackTo]);
 	// A search over an empty path has displaced the term set: the catalogue-wide products show.
@@ -3073,14 +3083,14 @@ export function BrowseStage(props: BrowseStageProps) {
 	const crumbParentsFor = (chain: PathEntry[]) => [
 		{ label: rootLabel, onPress: goRoot },
 		...chain.map((entry, index) => ({
-			label: labelOf(entry.term),
+			label: labelOf(currentOf(entry, index)),
 			onPress: () => goBackTo(index + 1),
 		})),
 	];
 	// A product drilled inside a level: the level's own entry is the last crumb parent, and
 	// pressing it closes the drill.
 	const drillParentsFor = (chain: PathEntry[]) =>
-		chain.length === 0 ? undefined : [...crumbParentsFor(chain.slice(0, -1)), { label: labelOf(chain[chain.length - 1].term), onPress: () => drillProduct(null) }];
+		chain.length === 0 ? undefined : [...crumbParentsFor(chain.slice(0, -1)), { label: labelOf(currentOf(chain[chain.length - 1], chain.length - 1)), onPress: () => drillProduct(null) }];
 
 	// Level `depth` (0 = the root) with whatever is dealt over it.
 	// `chain` is the staged entries from the root down to this level (its last element is the
@@ -3114,14 +3124,14 @@ export function BrowseStage(props: BrowseStageProps) {
 	};
 
 	const renderRoot = () =>
-		viewMode === 'grid' ? <BrowseRootGrid terms={terms.rootsOf()} onOpen={openTerm} /> : <BrowseRootTable terms={terms.rootsOf()} onOpen={openTerm} />;
+		viewMode === 'grid' ? <BrowseRootGrid terms={roots} onOpen={openTerm} binding={binding as never} /> : <BrowseRootTable terms={roots} onOpen={openTerm} binding={binding as never} />;
 
 	const renderTerm = (chain: PathEntry[]) => {
 		const depth = chain.length;
 		const entry = chain[depth - 1];
 		// A live level renders the term as the source has it NOW (a rename, a changed display type
 		// or count); only a level gathering after the path was cut keeps its entry's snapshot.
-		const term = (path[depth - 1] === entry && terms.all?.find((known) => termKey(known) === termKey(entry.term))) || entry.term;
+		const term = currentOf(entry, depth - 1);
 		const crumb = { parents: crumbParentsFor(chain.slice(0, -1)), here: labelOf(term) };
 		// The query is this level's own only while it is the deepest AND still on the path (a
 		// product drill over it does not move the products query; a level gathering after the
@@ -3337,7 +3347,7 @@ Read the product tile/row testIDs on `next` before finalising the regexes (`prod
 - Sources table (collections, hierarchy, image, order, hidden, product set) → Tasks 1, 3; "empty for the till, not the storefront" → `knownNonEmpty` in Tasks 1, 3 and `useBrowseCounts` (Task 6 reads `rootsOf()`, which already applies it).
 - Brands on WC < 9.4 → empty collection → dimmed `No brands yet` → Task 6 (`useBrowseCounts` → 0 once answered; `undefined` while loading is not dimmed).
 - Display type, descendants → Tasks 1, 12 (`renderTerm`), 10/11 (`showProducts`, `children`).
-- Root: All first, no crumb, tile anatomy, no per-term colour → Tasks 4, 5.
+- Root: All first, no crumb, tile anatomy, no per-term colour → Tasks 4, 5; the shared products footer under the root set → Task 10 note / Task 12.
 - Inside a term: deal with parent at slot 0, children then products, crumb as the existing component, nested levels, crumb ancestors return in one pass → Tasks 10, 12 (`backTo` truncates the path; every intermediate `DealStack` sees its `detail` go `null` on the same render).
 - Table: pane push, crumb above, child rows then product rows → Task 11.
 - All products as a term → Task 12: `TermLevelGrid`/`TermLevelTable` with `term={{ kind: 'all' }}`, so the tile deals to slot 0 and is the way back (no separate component).
