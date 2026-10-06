@@ -2075,7 +2075,7 @@ Also in this task: **`LevelBack`** — `DrillIn` owns the pane's Escape key (web
 export function LevelBack({ onBack, testID, children }: { onBack: () => void; testID?: string; children: React.ReactNode }) { /* DrillIn's GestureDetector + onKeyDown block, verbatim, calling onBack */ }
 ```
 
-`DrillIn` uses it (`<LevelBack onBack={back} testID="products-variations-pane">`), and Tasks 10/11 wrap `TermLevelGrid`/`TermLevelTable` in it with `onBack={back}` / `onBack={() => goBackTo(depth - 1)}` so Escape and the swipe truncate the path through the hook (never a stack-internal dismissal that would leave the controlled `detail` live). `drill-in.test.tsx`'s Escape/swipe tests keep passing unchanged; add one each to the level tests.
+`DrillIn`'s handler already calls `event.stopPropagation()` before `back()` (`drill-in.tsx`), so a nested `LevelBack` — a level inside a level, or a drill inside a level — handles one Escape at the deepest wrapper only; keep that line in the extraction. For the swipe, nested `Gesture.Pan`s: the inner must win — add a stage test (Task 12) with two levels open: one Escape → `goBackTo` called once with `depth - 1` of the deepest; if the pan fires on both in the gesture test harness, give the inner pan `.blocksExternalGesture(outer)` (or the outer `.requireExternalGestureToFail(inner)`) via a ref the wrapper exposes. `DrillIn` uses it (`<LevelBack onBack={back} testID="products-variations-pane">`), and Tasks 10/11 wrap `TermLevelGrid`/`TermLevelTable` in it with `onBack={back}` / `onBack={() => goBackTo(depth - 1)}` so Escape and the swipe truncate the path through the hook (never a stack-internal dismissal that would leave the controlled `detail` live). `drill-in.test.tsx`'s Escape/swipe tests keep passing unchanged; add one each to the level tests.
 
 **Files:**
 - Modify: `packages/core/src/screens/main/pos/products/v2/drill-in.tsx:22-60`
@@ -2938,6 +2938,15 @@ it('a product drilled inside a term keeps its crumb while it gathers after the p
 	expect(screen.getByTestId('drill-in')).toBeTruthy();  // no crash, still rendered from its staged entry
 });
 
+it('one Escape goes back exactly one level when levels are nested', () => {
+	render(<BrowseStage {...stageProps} source="categories" viewMode="grid" />);
+	fireEvent.click(screen.getByTestId('browse-term-1'));
+	fireEvent.click(screen.getByTestId('browse-term-2'));
+	const levels = screen.getAllByTestId('browse-level');
+	fireEvent.keyDown(levels[levels.length - 1], { key: 'Escape' });
+	expect(screen.getAllByTestId('browse-level').length).toBe(1);   // Hot gone, Drinks still open
+});
+
 it('All products is a dealt level with the All products tile in slot 0', () => {
 	render(<BrowseStage {...stageProps} source="categories" viewMode="grid" />);
 	fireEvent.press(screen.getByTestId('browse-all-products'));
@@ -3029,7 +3038,8 @@ export function BrowseStage(props: BrowseStageProps) {
 	// or Clear filters and a new one opened at the same depth must not bring the old drill back.
 	const drilled =
 		drill && drill.source === source && drill.search === state.search && drill.depth === path.length && path[drill.depth - 1] === drill.under ? drill : null;
-	React.useEffect(() => onDrilledChange(drilled !== null), [drilled, onDrilledChange]);
+	// A layout effect: the filter bar's level and the staged surface commit in the same frame.
+	React.useLayoutEffect(() => onDrilledChange(drilled !== null), [drilled, onDrilledChange]);
 	// A drill whose search has moved, or whose source has changed, is forgotten — not merely
 	// hidden: restoring the same search later must show the results, not the old variations.
 	// (Every source shares this one stage instance, so an unmount cleanup cannot do it.)
@@ -3177,7 +3187,7 @@ Replace the Task 6 `BrowseStage` mount with:
 									/>
 ```
 
-with `const [browseDrilled, setBrowseDrilled] = React.useState(false);` near `drill`, and the filter bar's level becoming `level={drilled || browseDrilled ? 'variations' : 'products'}`. The stage is keyed by `browseBy` (landed in Slice 1): a source change is a fresh stage, so no level of the old source ever gathers against the new source's terms. A drill does not outlive its stage: in `index.tsx` add `React.useEffect(() => { setDrill(null); }, [browseBy]);` (a drill opened under All products is not shown under a browse source, nor restored when switching back), and in `BrowseStage` add `React.useEffect(() => () => onDrilledChange(false), [onDrilledChange]);` so an unmounting stage hands the filter bar's level back. Stage test: unmount while drilled → `onDrilledChange` last called with `false`.
+with `const [browseDrilled, setBrowseDrilled] = React.useState(false);` near `drill`, and the filter bar's level becoming `level={drilled || browseDrilled ? 'variations' : 'products'}`. The stage is keyed by `browseBy` (landed in Slice 1): a source change is a fresh stage, so no level of the old source ever gathers against the new source's terms. A drill does not outlive its stage: in `index.tsx` add `React.useEffect(() => { setDrill(null); }, [browseBy]);` (a drill opened under All products is not shown under a browse source, nor restored when switching back), and in `BrowseStage` add `React.useLayoutEffect(() => () => onDrilledChange(false), [onDrilledChange]);` so an unmounting stage hands the filter bar's level back before paint. Stage test: unmount while drilled → `onDrilledChange` last called with `false`.
 
 - [ ] **Step 5: Run the tests**
 
@@ -3304,9 +3314,12 @@ import { ensureGridView, ensureTableView } from './pos-view-mode';
 
 test('categories first: the root shows the category, drilling in shows the probe, the crumb goes back, search spans everything', async ({ posPage: page, request }, testInfo) => {
 	test.skip(!productWriterCredentialsConfigured(), 'E2E_PRODUCT_WRITER_USER/_PASS not configured — the categories-first drill needs a product the spec created');
-	// …choose a ROOT category with members that SHOWS products (`parent === 0`, `count > 0`, and `display !== 'subcategories'` — a subcategories-only root renders child terms, not products; a nested one renders inside its ancestor's level, not at browse-root — pick with the same store-API read product-category-filter.spec.ts uses, else test.skip with the reason), create the probe in it (token from mintSearchProbeToken), wait for it to be searchable (searchAndWaitForServer)
-	await ensureRegisterOpen(page);
+	// …choose a ROOT category with members that SHOWS products (`parent === 0`, `count > 0`, and `display !== 'subcategories'` — a subcategories-only root renders child terms, not products; a nested one renders inside its ancestor's level, not at browse-root — pick with the same store-API read product-category-filter.spec.ts uses, else test.skip with the reason), then create the probe in it (token from mintSearchProbeToken)
+	// Everything after the probe exists runs inside the cleanup scope: a failure in the server
+	// wait or the register setup must still delete it.
 	try {
+		// …wait for the probe to be searchable (searchAndWaitForServer)
+		await ensureRegisterOpen(page);
 		await setBrowseBy(page, 'categories');
 		for (const view of [ensureGridView, ensureTableView]) {
 			await view(page);

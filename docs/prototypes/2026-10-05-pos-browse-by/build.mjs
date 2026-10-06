@@ -573,6 +573,11 @@ ${LEVELS.map((l, i) => `<input type="radio" name="lv" id="${l}"${i === 0 ? ' che
 
 ${caps}
 
+<script>
+// The one script in the prototype: choosing a source starts at that source's root, as the real
+// stage does (it remounts on a source change). Radios cannot reset another radio group in CSS.
+for (const input of document.querySelectorAll('input[name="m"]')) input.addEventListener('change', () => { document.getElementById('lv0').checked = true; });
+</script>
 </body>
 </html>
 `;
