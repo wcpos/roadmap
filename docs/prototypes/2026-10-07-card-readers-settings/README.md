@@ -20,9 +20,10 @@ on 2026-10-06: the US-location refusal, the stale SDK session, Bluetooth off.
 | C | A plain **list + detail** panel (side panel on tablet, a page on phone) | Apple Watch, Roku | Disconnect is one tap further away; a new primitive on phone |
 | D | **Readers, like printers**: rows are readers, the provider is a chip, "Connect a reader" picks the provider and scans in place; nothing connected is the Printers empty state | the app's own Printers page; Fitbit row anatomy | A provider with no reader is only reachable through "Connect a reader" |
 
-**Recommended: D.** It is the page the cashier already knows, one row for the common one-gateway
-one-reader store, and Tap to Pay fits as a "This iPhone" row without a special case. The draft PR
-in wcpos/monorepo is built from D and re-skins to the chosen direction.
+**Chosen: D** (Paul, 2026-10-07, *"Okay do as you recommend"*). It is the page the cashier already
+knows, one row for the common one-gateway one-reader store, and Tap to Pay fits as a "This iPhone"
+row without a special case. A, B and C were deleted from the board when D was chosen; the table
+above is their record. Built in wcpos/monorepo on `feat/card-readers-settings-page` (PR on #407).
 
 ## Also on the board
 
@@ -33,12 +34,15 @@ in wcpos/monorepo is built from D and re-skins to the chosen direction.
   reader and battery; not connected → a link to this page; the commit button disabled until then).
 - **Copy table**: one line per driver state, verbs with their object, no ids in a message.
 
-## Waiting on Paul
+## Judgement calls made during the build (for the morning)
 
-1. Pick a direction.
-2. Disconnect and Forget as two actions (drawn) or one.
-3. SumUp's row: one button that opens SumUp's own reader UI (drawn), or made to look like Stripe's.
-4. Ship the Tap to Pay row behind the entitlement before Apple's publishing grant?
+1. Disconnect and Forget are two actions; a remembered-but-disconnected row keeps Disconnect in
+   its ⋮ menu as the recovery for a held SDK session.
+2. SumUp's row has one button, *Open SumUp reader settings*; the SDK reports a saved reader as
+   connected, so the row says Connected.
+3. The Tap to Pay row ships on iOS behind the descriptor's `tap_to_pay` transport and the
+   `manage_woocommerce` gate; Apple's education screen is a follow-up (no SDK hook).
+4. Terminal location is not shown: the handoff carries only an id.
 
 ## Mobbin coverage check (2026-10-07)
 

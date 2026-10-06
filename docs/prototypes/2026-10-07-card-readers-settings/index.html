@@ -211,20 +211,21 @@
   </div>
 
   <div class="note waiting" id="waiting">
-    <b>Waiting on Paul</b>
+    <b>Chosen: D — readers, like printers</b> (Paul, 2026-10-07: <em>"do as you recommend"</em>). Directions A, B and C are deleted from this page; the README keeps a one-line record of each.
     <ul>
-      <li><b>Pick a direction</b> (A, B, C or D). My recommendation is <b>D — readers, like printers</b>; reasons under the board. The draft PR is built from D and re-skins to whichever you pick.</li>
-      <li><b>Forget vs Disconnect as two actions, or one?</b> Drawn as two: Disconnect releases the SDK and keeps the reader remembered (it reconnects next sale); Forget also drops the memory. The Alexa and Apple Watch pattern. Say if one "Disconnect" that forgets is simpler.</li>
-      <li><b>Where SumUp sits.</b> SumUp's SDK owns its own pairing screen, so its row/card has one button, <em>Open SumUp reader settings</em>, and shows the saved reader's serial and battery. Fine, or should it look identical to Stripe's with the SDK UI behind "Connect"?</li>
-      <li><b>Tap to Pay's row</b> appears only on an entitled iPhone build. The awareness modal and terms are Apple's copy and Apple's sheet; we own only the row, the admin gate and the progress line. OK to ship the row behind the entitlement before the publishing grant?</li>
+      <li><b>Built</b> in wcpos/monorepo on <code>feat/card-readers-settings-page</code> (PR linked from roadmap#407). Judgement calls made overnight, for the morning:</li>
+      <li><b>Disconnect and Forget are two actions.</b> Disconnect releases the SDK's reader and keeps it remembered (it reconnects at the next sale); Forget also drops the memory. A remembered-but-disconnected row keeps Disconnect in its ⋮ menu — that is the recovery for an SDK still holding a reader after a logout or store switch.</li>
+      <li><b>SumUp's row has one button</b>, <em>Open SumUp reader settings</em>; its SDK owns pairing. The SDK reports a saved reader as connected, so the row says Connected, not "Saved in the SumUp app".</li>
+      <li><b>Tap to Pay row</b> shows on iOS when the Stripe descriptor lists the <code>tap_to_pay</code> transport; only a known <code>manage_woocommerce</code> user sees Set up. Apple's awareness copy and Terms sheet come from the Stripe SDK on the first connect; the "How it works" education screen is not wired (the SDK exposes no hook for it) — listed as a follow-up.</li>
+      <li><b>Terminal location is not on the row.</b> The bootstrap handoff carries only an id (<code>tml_…</code>), and an id is not cashier copy. It can come when the plugin names the location.</li>
     </ul>
   </div>
 
-  <h2>The four directions <small>all switch together with the strip</small></h2>
+  <h2>The chosen direction <small>the strip switches state, width and theme</small></h2>
   <div class="board" id="board"></div>
 
   <div class="note" style="margin-top:22px">
-    <b>Recommendation: D — readers, like printers.</b>
+    <b>Why D (the recommendation Paul took).</b>
     <ul>
       <li>It is the page the cashier already knows: the Printers page lists printers, not printer brands. A list of <em>readers</em> with a provider chip reads the same way, and the empty state, the Add button and the row anatomy are the existing components.</li>
       <li>Most stores have one gateway and one reader; D shows them one row. A (provider rows) shows a provider with no reader as a permanent row, B's cards are tall for a row's worth of facts, and C puts Disconnect one tap further away for the case tonight proved matters most (the stale session).</li>
@@ -279,7 +280,8 @@
 
   <h2>Change log</h2>
   <ul class="changes">
-    <li><b>2026-10-07</b> — board created: directions A–D, Tap to Pay row states, checkout before/after, precedents, copy table. Draft PR in wcpos/monorepo built from D.</li>
+    <li><b>2026-10-07, later</b> — D chosen ("do as you recommend"); A, B and C removed from the page; the judgement calls made during the build listed at the top.</li>
+    <li><b>2026-10-07</b> — board created: directions A–D, Tap to Pay row states, checkout before/after, precedents, copy table.</li>
   </ul>
 </div>
 
@@ -478,10 +480,7 @@ function render(){
   document.querySelectorAll('.strip button').forEach(b => b.classList.toggle('on', P[b.dataset.k] === b.dataset.v));
   const s = P.state;
   document.getElementById('board').innerHTML = `
-    <div class="opt">${dirA(s)}<div class="cap"><b>A · Provider rows</b> — the Printers page, one row per card provider. Scan, progress and the found list unfold under the row; the provider stays even when no reader is connected.</div></div>
-    <div class="opt">${dirB(s)}<div class="cap"><b>B · Reader cards</b> — a card per provider with the state as the headline (Fitbit, Oura). Every fact visible at once; tall on a phone.</div></div>
-    <div class="opt">${dirC(s)}<div class="cap"><b>C · List + detail</b> — a plain list, every action on a detail panel (side panel on tablet, a page on phone; Apple Watch). Depth one tap away, Disconnect too.</div></div>
-    <div class="opt">${dirD(s)}<div class="cap"><b>D · Readers, like printers</b><span class="rec">recommended</span> — rows are <em>readers</em>, the provider is a chip, "Connect a reader" picks the provider and scans in place. Nothing connected is the Printers empty state.</div></div>`;
+    <div class="opt">${dirD(s)}<div class="cap"><b>D · Readers, like printers</b><span class="rec">chosen</span> — rows are <em>readers</em>, the provider is a chip, "Connect a reader" picks the provider and scans in place. Nothing connected is the Printers empty state.</div></div>`;
   document.getElementById('ttp').innerHTML = `
     <div class="opt">${ttpFrame(P.ttp)}<div class="cap"><b>Tap to Pay row in D</b> — ${({notset:'an administrator sees <b>Set up</b>; it opens Apple\'s awareness moment, then the SDK\'s Terms sheet.',nonadmin:'a cashier without <code>manage_woocommerce</code> sees why they cannot, and no button (3.8.1).',aware:'the awareness moment, full-screen on a phone, Apple\'s copy (3.1–3.3).',preparing:'the SDK\'s <code>updateProgress</code> as the progress line (3.9.1).',ready:'<b>How it works</b> opens Apple\'s education screen later (4.3). ⋮ carries Turn off.'})[P.ttp]}</div></div>`;
   document.getElementById('checkout').innerHTML = checkoutBoard();
