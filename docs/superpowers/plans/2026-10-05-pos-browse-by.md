@@ -3072,6 +3072,16 @@ export function BrowseStage(props: BrowseStageProps) {
 	// path (its level is gathering) keeps its snapshot.
 	const currentOf = (entry: PathEntry, depth: number): BrowseTerm =>
 		(path[depth] === entry && terms.all?.find((known) => termKey(known) === termKey(entry.term))) || entry.term;
+	// Each entry's last live child set, so a gathering level keeps the tiles it was dealt with.
+	const childrenSeen = React.useRef(new WeakMap<PathEntry, BrowseTerm[]>());
+	const childrenFor = (entry: PathEntry, depth: number, term: BrowseTerm): BrowseTerm[] => {
+		if (path[depth] === entry) {
+			const live = terms.childrenOf(term);
+			childrenSeen.current.set(entry, live);
+			return live;
+		}
+		return childrenSeen.current.get(entry) ?? [];
+	};
 
 	// Every move of the path closes the product drill: a stale drill at a depth the path returns
 	// to would otherwise reappear.
@@ -3150,7 +3160,10 @@ export function BrowseStage(props: BrowseStageProps) {
 		// All products is a level with no children: the whole catalogue under the crumb, its tile
 		// in slot 0 of the deal.
 		const display = term.kind === 'term' ? displayTypeOf(term) : 'products';
-		const children = display === 'products' ? [] : terms.childrenOf(term);
+		// A level still on the path reads its children from the source as it is now; a level
+		// gathering after the path was cut (deleted/reparented term, source sync) keeps the child
+		// set it was dealt with — the tiles travelling home must be the tiles that came out.
+		const children = display === 'products' ? [] : childrenFor(entry, depth - 1, term);
 		const showProducts = display !== 'subcategories' || children.length === 0;
 		// Keyed by the term: a stack whose detail jumps from one term to another at the same depth
 		// (a sibling tapped before the gather ended) must not keep the first term's held answer.
@@ -3314,7 +3327,7 @@ import { ensureGridView, ensureTableView } from './pos-view-mode';
 
 test('categories first: the root shows the category, drilling in shows the probe, the crumb goes back, search spans everything', async ({ posPage: page, request }, testInfo) => {
 	test.skip(!productWriterCredentialsConfigured(), 'E2E_PRODUCT_WRITER_USER/_PASS not configured — the categories-first drill needs a product the spec created');
-	// …choose a ROOT category with members that SHOWS products (`parent === 0`, `count > 0`, and `display !== 'subcategories'` — a subcategories-only root renders child terms, not products; a nested one renders inside its ancestor's level, not at browse-root — pick with the same store-API read product-category-filter.spec.ts uses, else test.skip with the reason), then create the probe in it (token from mintSearchProbeToken)
+	// …create a disposable ROOT category under the writer credentials (`POST products/categories` with the probe token as its name — parent 0, default display: it shows products; a store's existing categories are never assumed, so a clean CI store has coverage too), then create the probe product in it (token from mintSearchProbeToken); test.skip only when the writer credentials are not configured
 	// Everything after the probe exists runs inside the cleanup scope: a failure in the server
 	// wait or the register setup must still delete it.
 	try {
@@ -3340,6 +3353,7 @@ test('categories first: the root shows the category, drilling in shows the probe
 		// Two independent best-effort cleanups: a broken dialog must not keep the probe alive.
 		await setBrowseBy(page, 'all').catch(() => undefined);
 		await deleteSearchProbe({ /* best effort, as the other specs do */ }).catch(() => undefined);
+		await deleteProbeCategory({ /* DELETE products/categories/<id>?force=true, best effort */ }).catch(() => undefined);
 	}
 });
 ```

@@ -498,7 +498,7 @@ ${LEVELS.map((l, i) => `<input type="radio" name="lv" id="${l}"${i === 0 ? ' che
   <span class="k">Theme</span><label for="light">Light</label><label for="dark">Dark</label>
   <span class="sep"></span>
   <label for="set">Settings sheet</label>
-  <span class="hint">One path is live: the first tile of each set, Drinks › Hot › Latte, All products, and the crumbs. Switching Browse by keeps the current depth (no script).</span>
+  <span class="hint">One path is live: the first tile of each set, Drinks › Hot › Latte, All products, and the crumbs. Changing Browse by returns to that source's root, as the real stage does.</span>
 </div>
 
 <div class="frame">
