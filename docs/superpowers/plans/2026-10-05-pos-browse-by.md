@@ -1560,7 +1560,7 @@ Found by the Slice 1 independent review (2026-10-06); the two Important items it
 2. The existence read applies the baseline filters (`status: 'publish'`, and `stock_status: 'instock'` unless `showOutOfStock`) — pass them into `compileQuery` with the taxonomy filter — so a lifted term is one that would show something when opened.
 3. The existence read is not live: one answer at once on mount and on every new id set, then at most one re-check per `EXISTENCE_RECHECK_MS` (a named constant, 30 s, with the reason) while mounted. (The engine cannot project id fields only, so the read still materialises the matching products — bounded by the baseline filters and this throttle; measured on a large POS-only store before `next`→`main`.)
 4. `useBrowseCounts` reads local residents only: `useAllTermsBinding(collection, enabled, { demand: [] })` (or an equivalent "no refresh" option), leaving fetching to the stage's own binding. Keep the stage's `useAllTermsBinding` fetching as today.
-5. Tests: the tag filter compiles to an indexed selector; the baseline filters are in the compiled existence read; the dialog bindings declare no demand; the existence read does not resubscribe on a product write within the throttle window (fake timers).
+5. Tests: the tag filter compiles to today's payload selector (`$or` of `$elemMatch` on `payload.tags`) inside the published/in-stock baseline; the baseline filters are in the compiled existence read; the dialog bindings declare no demand; the existence read does not resubscribe on a product write within the throttle window (fake timers).
 
 Commit: `fix(pos): the existence read is bounded, baseline-filtered and not live; the settings dialog reads resident terms only`.
 
@@ -2521,7 +2521,8 @@ export function TermLevelGrid({
 				data={rows}
 				keyExtractor={(_, rowIndex) => String(rowIndex)}
 				onEndReachedThreshold={END_REACHED_THRESHOLD}
-				onEndReached={extend}
+				// A subcategories-only level has no products to page; its child list must not extend the query.
+				onEndReached={showProducts ? extend : undefined}
 				renderItem={({ item: row, index: rowIndex }) => (
 					<View className="flex-row" style={rowIndex === 0 ? FRONT : undefined}>
 						{row.map((index) => {
@@ -2583,7 +2584,7 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
 - Test: `packages/core/src/screens/main/pos/products/v2/browse/term-level-table.test.tsx`
 
 **Interfaces:**
-- Consumes: `DataTable` from `../../../../components/data-table/v2`, `DataTableSkeleton`; `ProductRow`, `VariableProductRow` from `../rows/*`; `TermRow`; `Breadcrumb`; `ProductsFooter`; `cellsForRow` from `../../index`.
+- Consumes: `DataTable` from `../../../../components/data-table/v2`; `ProductRow`, `VariableProductRow` from `../rows/*`; `TermRow`; `Breadcrumb`; `ProductsFooter`; `cellsForRow` from `../../index`.
 - Produces:
   ```tsx
   export function TermLevelTable(props: {
@@ -2599,7 +2600,7 @@ git -C /Users/kilbot/Projects/monorepo-v2-worktrees/pos-browse-by commit -m "fea
     empty: React.ReactNode;    // index.tsx's noDataMessage, handed to DataTable as noDataMessage when the level has no child rows
   }): JSX.Element;
   ```
-  Behaviour: crumb above (not over) the rows as `DrillIn` does without `tiles`; the level with `term.kind === 'all'` is this same component with no child rows (All products as a pane); child term rows on top of the `DataTable`'s rows via `ListHeaderComponent`; products rows from `tableConfig={{ data: shown.hits }}` where `shown = useLevelSnapshot(answer, settled)` — the pane holds its own rows while a child pane is pushed over it and while the query gathers its set again on the pop, exactly as the grid does (Task 10 says why `dealt`/"is the answer defined" cannot stand in); a `DataTableSkeleton` with `rowCount` = children + 4 until the snapshot exists.
+  Behaviour: crumb above (not over) the rows as `DrillIn` does without `tiles`; the level with `term.kind === 'all'` is this same component with no child rows (All products as a pane); child term rows on top of the `DataTable`'s rows via `ListHeaderComponent`; products rows from `tableConfig={{ data: shown.hits }}` where `shown = useLevelSnapshot(answer, settled)` — the pane holds its own rows while a child pane is pushed over it and while the query gathers its set again on the pop, exactly as the grid does (Task 10 says why `dealt`/"is the answer defined" cannot stand in); four held row-shaped slots (no shimmer — a moving surface carries no skeleton) under the child rows until the snapshot exists.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -2619,7 +2620,6 @@ jest.mock('../../../../components/data-table/v2', () => ({
 		return <View testID="table"><ListHeaderComponent />{tableConfig.data.length === 0 ? (noDataMessage === undefined ? <Text>common.no_results_found</Text> : noDataMessage) : tableConfig.data.map((row, index) => <View key={row.record.uuid}>{renderItem({ item: { original: row }, index, table: {} })}</View>)}</View>;
 	},
 }));
-jest.mock('../../../../components/data-table/v2/skeleton', () => ({ DataTableSkeleton: () => { const { View } = jest.requireActual('react-native'); return <View testID="skeleton" />; } }));
 jest.mock('../rows/product-row', () => ({ ProductRow: ({ item }: { item: { original: { record: { uuid: string } } } }) => { const { Text } = jest.requireActual('react-native'); return <Text testID={`row-${item.original.record.uuid}`}>row</Text>; } }));
 jest.mock('../rows/variable-product-row', () => ({ VariableProductRow: ({ item }: { item: { original: { record: { uuid: string } } } }) => { const { Text } = jest.requireActual('react-native'); return <Text testID={`vrow-${item.original.record.uuid}`}>row</Text>; } }));
 jest.mock('../footer', () => ({ ProductsFooter: () => null }));
@@ -2647,7 +2647,7 @@ it('renders the crumb, then child term rows, then product rows', () => {
 
 it('shows a skeleton until the products answer, and no products for subcategories display', () => {
 	const { rerender } = render(<TermLevelTable {...(base as never)} answer={undefined} />);
-	expect(screen.getByTestId('skeleton')).toBeTruthy();
+	expect(screen.getAllByTestId('row-placeholder').length).toBe(4);
 	rerender(<TermLevelTable {...(base as never)} showProducts={false} />);
 	expect(screen.queryByTestId('row-f')).toBeNull();
 	expect(screen.getByTestId('browse-term-2')).toBeTruthy();
@@ -2691,7 +2691,6 @@ import { of } from 'rxjs';
 import { Breadcrumb } from '@wcpos/components/breadcrumb';
 import type { EngineRecord } from '@wcpos/query';
 import { DataTable } from '../../../../components/data-table/v2';
-import { DataTableSkeleton } from '../../../../components/data-table/v2/skeleton';
 import { cellsForRow } from '../../index';
 import { ProductsFooter } from '../footer';
 import { ProductRow } from '../rows/product-row';
@@ -2755,9 +2754,14 @@ export function TermLevelTable({
 			<Breadcrumb parents={parents} here={crumb.here} detail={detail} autoFocus testID="products-breadcrumb" />
 			<View className="flex-1">
 				{data === undefined ? (
+					// Held rows, not a skeleton: the pane is pushed before the query answers, and a
+					// moving surface carries no shimmer. Row-shaped slots in the row's own height; the
+					// rows that arrive land in the same places (as the grid's ProductPlaceholder).
 					<>
 						<Header />
-						<DataTableSkeleton id="pos-products" rowCount={SKELETON_PRODUCT_ROWS} />
+						{Array.from({ length: SKELETON_PRODUCT_ROWS }, (_, index) => (
+							<View key={index} className="min-h-row border-border border-b" aria-busy testID="row-placeholder" />
+						))}
 					</>
 				) : (
 					<DataTable<Hit>
@@ -2799,7 +2803,7 @@ export function TermLevelTable({
 }
 ```
 
-Check `DataTable`'s props in `components/data-table/v2/index.tsx`: `noDataMessage` is `string | React.ReactElement` and renders when the list is empty (line ~330) — with `undefined` it falls back to `common.no_results_found`, so when the level has child rows and no products pass a component that renders nothing (`<></>`) rather than `undefined`; `tableConfig={{ data }}` is how `VariationsTable` hands it rows; confirm its `handleEndReached` still extends the window with the `binding`/`actions` it is given when rows come from `tableConfig.data` (it should — the guard reads the binding, not the rows); if it keys the guard on `resource` hits, pass `onEndReached` through as the grid level does; `ListHeaderComponent` — if the v2 `DataTable` does not forward it to the list, add that one prop pass-through (it already forwards `ListFooterComponent`, see `variations-pane.tsx:135`). `cellsForRow` is the export from `../../index`; the `tableConfig` expanding meta (expanded rows for inline variations) is not needed at a term level because `variationsStyle === 'inline'` renders `InlineRow` which manages its own expansion — confirm by reading `components/product/variable-product-row.tsx` before relying on it; if it needs the `meta` from `index.tsx`'s `tableConfig`, pass the same `tableConfig` object down from `index.tsx` instead of `{ data }` alone (merge: `{ ...tableConfig, data }`).
+Check `DataTable`'s props in `components/data-table/v2/index.tsx`: `noDataMessage` is `string | React.ReactElement` and renders when the list is empty (line ~330) — with `undefined` it falls back to `common.no_results_found`, so when the level has child rows and no products pass a component that renders nothing (`<></>`) rather than `undefined`; `tableConfig={{ data }}` is how `VariationsTable` hands it rows; confirm its `handleEndReached` still extends the window with the `binding`/`actions` it is given when rows come from `tableConfig.data` (it should — the guard reads the binding, not the rows); if it keys the guard on `resource` hits, pass `onEndReached` through as the grid level does; and when `showProducts` is false hand it `actions={{ ...actions, extendLimit: () => undefined }}` so a subcategories-only level's child rows never page the products query; `ListHeaderComponent` — if the v2 `DataTable` does not forward it to the list, add that one prop pass-through (it already forwards `ListFooterComponent`, see `variations-pane.tsx:135`). `cellsForRow` is the export from `../../index`; the `tableConfig` expanding meta (expanded rows for inline variations) is not needed at a term level because `variationsStyle === 'inline'` renders `InlineRow` which manages its own expansion — confirm by reading `components/product/variable-product-row.tsx` before relying on it; if it needs the `meta` from `index.tsx`'s `tableConfig`, pass the same `tableConfig` object down from `index.tsx` instead of `{ data }` alone (merge: `{ ...tableConfig, data }`).
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
@@ -3327,10 +3331,12 @@ import { ensureGridView, ensureTableView } from './pos-view-mode';
 
 test('categories first: the root shows the category, drilling in shows the probe, the crumb goes back, search spans everything', async ({ posPage: page, request }, testInfo) => {
 	test.skip(!productWriterCredentialsConfigured(), 'E2E_PRODUCT_WRITER_USER/_PASS not configured — the categories-first drill needs a product the spec created');
-	// …create a disposable ROOT category under the writer credentials (`POST products/categories` with the probe token as its name — parent 0, default display: it shows products; a store's existing categories are never assumed, so a clean CI store has coverage too), then create the probe product in it (token from mintSearchProbeToken); test.skip only when the writer credentials are not configured
-	// Everything after the probe exists runs inside the cleanup scope: a failure in the server
-	// wait or the register setup must still delete it.
+	// …create a disposable ROOT category under the writer credentials (`POST products/categories` with the probe token as its name — parent 0, default display: it shows products; a store's existing categories are never assumed, so a clean CI store has coverage too); test.skip only when the writer credentials are not configured
+	// Everything after the category exists runs inside the cleanup scope: a failure creating
+	// the probe, in the server wait or in the register setup must still delete what was made.
+	let probe: { id: number; token: string } | undefined;
 	try {
+		// …create the probe product in the category (token from mintSearchProbeToken); assign `probe`
 		// …wait for the probe to be searchable (searchAndWaitForServer)
 		await ensureRegisterOpen(page);
 		await setBrowseBy(page, 'categories');
@@ -3352,7 +3358,7 @@ test('categories first: the root shows the category, drilling in shows the probe
 	} finally {
 		// Two independent best-effort cleanups: a broken dialog must not keep the probe alive.
 		await setBrowseBy(page, 'all').catch(() => undefined);
-		await deleteSearchProbe({ /* best effort, as the other specs do */ }).catch(() => undefined);
+		if (probe) await deleteSearchProbe({ /* best effort, as the other specs do */ }).catch(() => undefined);
 		await deleteProbeCategory({ /* DELETE products/categories/<id>?force=true, best effort */ }).catch(() => undefined);
 	}
 });
