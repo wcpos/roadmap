@@ -856,7 +856,15 @@ import type { Measurable } from '../deal-stack';
 // A tile the deal has lifted off the grid: its copy is out on the stage.
 const LIFTED = { opacity: 0 };
 // The product tile's frame: same margin, border, radius, so term and product tiles share a grid.
-const TILE = 'bg-card border-border active:bg-muted m-1 flex-1 overflow-hidden rounded-lg border';
+// As landed in Slice 1 (monorepo#2401): a picture tile is a card and presses as a product tile
+// does; a muted tile (no image, All products, shortcut) is muted ALL OVER — the Pressable itself,
+// so a row stretched by a picture sibling shows no card-coloured strip — and its press dims it
+// (`active:bg-muted` would not show on a muted surface). `grow` in a dealt cell, `flex-1` in a row.
+const FRAME = 'border-border m-1 overflow-hidden rounded-lg border';
+const CARD = 'bg-card active:bg-muted';
+const MUTED = 'bg-muted active:opacity-70';
+const hasImage = (term: BrowseTerm): term is Extract<BrowseTerm, { kind: 'term' }> => term.kind === 'term' && !!term.imageSrc;
+const tileClass = (term: BrowseTerm, size: 'flex-1' | 'grow') => `${hasImage(term) ? CARD : MUTED} ${FRAME} ${size}`;
 
 export function termTestId(term: BrowseTerm): string {
 	if (term.kind === 'all') return 'browse-all-products';
@@ -941,7 +949,7 @@ export function TermTile({
 			style={lifted ? LIFTED : undefined}
 			accessibilityRole="button"
 			accessibilityLabel={label}
-			className={TILE}
+			className={tileClass(term, 'flex-1')}
 			testID={termTestId(term)}
 		>
 			<TermBody term={term} />
@@ -958,7 +966,7 @@ export function ParentTermTile({ term, onPress }: { term: BrowseTerm; onPress: (
 			accessibilityRole="button"
 			accessibilityLabel={t('common.back')}
 			// `grow`, not `flex-1`: inside a dealt cell the tile takes its row's height.
-			className="bg-card border-border active:bg-muted m-1 grow overflow-hidden rounded-lg border"
+			className={tileClass(term, 'grow')}
 			testID="browse-parent"
 		>
 			<View className="relative">
@@ -3288,8 +3296,8 @@ test('categories first: the root shows the category, drilling in shows the probe
 	test.skip(!productWriterCredentialsConfigured(), 'E2E_PRODUCT_WRITER_USER/_PASS not configured — the categories-first drill needs a product the spec created');
 	// …choose a ROOT category with members that SHOWS products (`parent === 0`, `count > 0`, and `display !== 'subcategories'` — a subcategories-only root renders child terms, not products; a nested one renders inside its ancestor's level, not at browse-root — pick with the same store-API read product-category-filter.spec.ts uses, else test.skip with the reason), create the probe in it (token from mintSearchProbeToken), wait for it to be searchable (searchAndWaitForServer)
 	await ensureRegisterOpen(page);
-	await setBrowseBy(page, 'categories');
 	try {
+		await setBrowseBy(page, 'categories');
 		for (const view of [ensureGridView, ensureTableView]) {
 			await view(page);
 			await expect(page.getByTestId('browse-root')).toBeVisible();
@@ -3306,8 +3314,9 @@ test('categories first: the root shows the category, drilling in shows the probe
 			await expect(page.getByTestId('browse-root')).toBeVisible();
 		}
 	} finally {
-		await setBrowseBy(page, 'all');
-		await deleteSearchProbe({ /* best effort, as the other specs do */ });
+		// Two independent best-effort cleanups: a broken dialog must not keep the probe alive.
+		await setBrowseBy(page, 'all').catch(() => undefined);
+		await deleteSearchProbe({ /* best effort, as the other specs do */ }).catch(() => undefined);
 	}
 });
 ```
