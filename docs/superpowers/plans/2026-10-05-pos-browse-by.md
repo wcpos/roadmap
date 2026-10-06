@@ -3082,15 +3082,20 @@ export function BrowseStage(props: BrowseStageProps) {
 	// path (its level is gathering) keeps its snapshot.
 	const currentOf = (entry: PathEntry, depth: number): BrowseTerm =>
 		(path[depth] === entry && terms.all?.find((known) => termKey(known) === termKey(entry.term))) || entry.term;
-	// Each entry's last live child set, so a gathering level keeps the tiles it was dealt with.
+	// Each entry's last child set. A level takes a NEW child set only when it takes a new answer
+	// (its projection has answered): children and products move in step — a descendant added,
+	// removed or moved under the open term re-projects the query, and until that query answers
+	// the level shows the old tiles beside the old products, then both new; a gathering level
+	// keeps the tiles it was dealt with.
 	const childrenSeen = React.useRef(new WeakMap<PathEntry, BrowseTerm[]>());
 	const childrenFor = (entry: PathEntry, depth: number, term: BrowseTerm): BrowseTerm[] => {
-		if (path[depth] === entry) {
+		const held = childrenSeen.current.get(entry);
+		if (path[depth] === entry && (answer !== undefined || held === undefined)) {
 			const live = terms.childrenOf(term);
 			childrenSeen.current.set(entry, live);
 			return live;
 		}
-		return childrenSeen.current.get(entry) ?? [];
+		return held ?? [];
 	};
 
 	// Every move of the path closes the product drill: a stale drill at a depth the path returns
