@@ -200,6 +200,20 @@ Frameworks inside the spike app: Square 96 MB, Stripe 69 MB, SumUp 67 MB. The ba
 
 **Not evaluated:** any Square payment or reader pairing; the app's JavaScript running in this build (no Metro was attached); Square's React Native module on the new architecture (Square's Expo sample turns it off, and the app cannot); a device or store build; Zettle and Adyen.
 
+**What is inside the three SDKs** (inspected 2026-10-06 in the spike's iOS simulator build; sizes carry two architectures; all **Observed**). All three are closed-source binaries; the only open parts are the React Native layers on top (Stripe's package, our own SumUp module).
+
+| | Square 2.6.0 | Stripe Terminal 5.7.0 | SumUp 7.1.2 |
+|---|---|---|---|
+| Binary / total | 85 MB / 96 MB, 41 resource bundles, 3 nested frameworks | 69 MB / 69 MB, no bundles | 35 MB / 67 MB, 9 bundles |
+| Classes found | 2,552 | 58 (an Objective-C API; Swift internals hidden) | 1,109 |
+| Carries | Square's whole in-house UI stack (Market, BlueprintUI, Listable, Modals), a SQLite layer (GRDB), ReactiveSwift, feature flags, App Attest, offline payments | the reader protocol and API client | its own UI kit (CircuitUI), Alamofire, Kingfisher image loading, SwiftProtobuf, remote config, MetricKit |
+| Telemetry inside | Datadog RUM, **Session Replay**, Trace and Crash Reporting; Bugsnag; PLCrashReporter; OpenTelemetry; own event logging | none found beyond Stripe's own API | OpenTelemetry SDK with HTTP exporter; "ObservabilityKit" |
+| Hosts named | squareup.com, notify/sessions.bugsnag.com, three Datadog intake hosts (incl. a `.gov` one), squareinsights.getfeedback.com, weebly.com | stripe.com hosts, api.emms.bbpos.com | sumup.com hosts, `sam-app.ro` hosts (SumUp infrastructure), **sumup.slack.com** |
+| Apple privacy manifest | declares no tracking and **no collected data types** | coarse location and product interaction, "analytics" and "app functionality" | declares no tracking |
+| System frameworks pulled in | 30, incl. WebKit, SafariServices, Contacts, MediaPlayer, SpriteKit, CoreTelephony, DeviceCheck, LocalAuthentication | 10 | 25, incl. MapKit, CallKit, WebKit, CoreTelephony |
+
+So Square ships a slice of the Square POS app, with a full observability stack that phones home at launch (observed above); Stripe ships a lean reader library; SumUp sits between. None of it can be edited: there is no source, and the vendor signs the frameworks. What can be changed is when each SDK is initialised and whether it is linked at launch; see "harness" in the survey note's follow-ups.
+
 The first iOS build (`4614dbb6`) failed on a dispatch error, not on Square: it was started without `EAS_BUILD_PROFILE=development` in the local environment, which the repo's `build.yml` always sets.
 
 ## Rulings
