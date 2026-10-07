@@ -42,7 +42,7 @@ above is their record. Built in wcpos/monorepo on `feat/card-readers-settings-pa
    connected, so the row says Connected.
 3. The Tap to Pay row ships on iOS behind the descriptor's `tap_to_pay` transport and the
    `manage_woocommerce` gate; Apple's education screen is a follow-up (no SDK hook).
-4. Terminal location is not shown: the handoff carries only an id.
+4. Terminal location is shown by name — Paul, later that night: *"yes show location"*. The Stripe extension names it in the descriptor and handoff (stripe-terminal-for-woocommerce#142); the row reads `provider_data.location_name`.
 
 ## Mobbin coverage check (2026-10-07)
 
