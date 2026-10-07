@@ -86,7 +86,8 @@ All in `includes/Payments/Contract/`, each with a PHPUnit case; ~120 non-test li
 - **The sweeper re-dispatches an action-less pending row.** For a `pending` row older than the
   threshold with no `provider_refs.action`, the sweeper calls `handler->intent()` once (idempotent
   by row id, so a provider that did accept returns the same action) and then proceeds as today; a
-  second failure fails the row. Covers browser death between create and response.
+  **determinate** refusal fails the row, an indeterminate result leaves it pending for the next run.
+  Covers browser death between create and response.
 - **Pending legs reserve the balance.** `intent()` for a **new** UUID refuses when
   `amount > total − counting − pending` and answers 409 `wcpos_payment_in_flight` with the live
   row's id, so a second tab or the app converges on the same leg instead of charging twice. Replay
@@ -163,9 +164,15 @@ its floor (question 4).
   an **adoption routine** once at upgrade: for every order carrying its old current-attempt meta
   with a non-final status, it calls Pro's `wcpos_pro_adopt_legacy_attempt( $order, $gateway_id,
   $provider_ref, $amount, $currency )`, which mints a `pending` row (`source: 'webview'`) with
-  `provider_refs.action = $provider_ref`; Free's sweeper and the webhook then finish it. Old meta is
-  left in place, inert. The template includes the hook; Mercado Pago and Windcave, with no merchants,
-  ship the routine as a no-op that proves the mechanism in tests.
+  `provider_refs.action = $provider_ref` and records the action → payment-id pair in an order-meta
+  lookup; the adapter's `verify_webhook()` consults `wcpos_pro_payment_id_for_action( $provider,
+  $ref )` when a webhook carries no `wcpos_payment_id` (an action created by the old plumbing never
+  will), so the webhook settles an adopted row before the sweeper does. Old meta is left in place,
+  inert. The template includes the hook; Mercado Pago and Windcave, with no merchants, ship the
+  routine as a no-op that proves the mechanism in tests.
+- **Lane.** Every extension change lands on that repository's `next` branch; `main` is the 1.10
+  line and stays untouched (Paul, 2026-10-07). Windcave and Mercado Pago have only `main` today, so
+  their slices begin by cutting `next` from it.
 
 ### 5. Certified providers: certify the transcript, and test it against the Pro that ships
 
@@ -173,8 +180,10 @@ What Windcave QA certifies is the wire exchange — HIT Purchase, Status, UI and
 sequence and their timing — produced by the adapter plus the base's cadence. So:
 
 - The conformance suite records a **golden transcript** per scenario for a certified provider: the
-  ordered provider requests the adapter emitted, with the base's timing parameters (poll interval,
-  deadline, cancel grace) as fixture inputs. The extension pins the fixtures.
+  ordered provider requests the adapter emitted, each with its delay since the previous request
+  (the suite drives a fake clock, so cadence and deadline changes show up as changed delays), with
+  the base's timing parameters (poll interval, deadline, cancel grace) as fixture inputs. The
+  prompt-and-answer exchange is one of the recorded scenarios. The extension pins the fixtures.
 - The extension's CI runs them against its pinned Pro floor; **Pro's own CI** runs every certified
   extension's pinned fixtures against the candidate Pro on each PR to `next` (a "downstream
   conformance" job that checks out the extension at its latest tag). A transcript change fails the
@@ -200,7 +209,8 @@ satisfied, so a user never sees a panel that answers 403:
 
 - the POS webview (`woocommerce_pos_request()`): the page URL carries the cashier's access token
   (*Observed*: the app appends `token=<jwt>`; the page's own POST already requires it), and the
-  controller lifts it into the `Authorization: Bearer` header, which is where Free reads it;
+  controller lifts it into the `Authorization: Bearer` header, which is where Free reads it, and
+  sends `X-WCPOS: 1` with every request as the app does;
 - WooCommerce's own order-pay page for a logged-in **POS user**: `access_woocommerce_pos` (Free's
   baseline REST gate, `API.php:407–446`) **and** `publish_shop_orders` (the route permission), using
   the REST cookie nonce. This is how a merchant takes a phone order at the counter; it is the
@@ -213,10 +223,14 @@ satisfied, so a user never sees a panel that answers 403:
 creating → polling → cancelling → final. Poll at the app's cadence; the deadline is the row's
 `expires_at` (five minutes from `Server_Handler`); at the deadline it voids and keeps polling until
 the provider confirms, because cancel is a request; on reload it reads the stored UUID and `…/status`
-and resumes the live row; a 409 `wcpos_payment_in_flight` makes it adopt that row's id; reader choice
-comes from the descriptor's curated list with `lock_to_default` honoured server-side; prompt lines
-and buttons render when `status` carries them, and an answer that comes back `wcpos_prompt_stale`
-redraws from the fresh observation.
+and resumes the live row; a 409 `wcpos_payment_in_flight` makes it adopt that row's id; a row that
+comes back `authorized` (a manual-capture provider) is captured at once through `…/{uuid}/capture`,
+as the app does; reader choice comes from the descriptor's curated list with `lock_to_default`
+honoured server-side; prompt lines and buttons render when `status` carries them, and an answer that
+comes back `wcpos_prompt_stale` redraws from the fresh observation. An order cancelled or failed from
+wp-admin while a leg is live is already handled: Pro's `Order_Status_Void` voids live `server` and
+`device` rows on `woocommerce_order_status_changed`, registered in `init_common()` outside the
+licence check, and it covers panel-started rows unchanged.
 
 **Completion.** On `captured` the controller **navigates to the received URL** the panel was
 rendered with (`wcpos-checkout/order-received/{id}?key=…`), never by submitting the pay form: Free's
@@ -228,16 +242,23 @@ received redirect; otherwise a failure notice. A reload of the order-pay page af
 already-paid page, as for every gateway today; the app's status backstop covers it.
 
 **Access-token expiry.** The token lives thirty minutes from issue, not from page open; a leg can
-start at minute 29. The controller treats `woocommerce_pos_auth_token_expired` (401) as **loss of
-sight, never as a payment outcome**: it stops polling, keeps the UUID, tells the cashier the payment
-continues on the terminal and will be recorded, and posts `wcpos-session-expired` to the host. The
+start at minute 29. Two guards. Before **starting** a leg the controller reads the token's `exp`
+claim (the payload is plain base64) and, when less than the deadline plus one minute remains, does
+not start: it posts `wcpos-session-expired` to the host and tells the cashier to reopen the payment.
+During a leg it treats `woocommerce_pos_auth_token_expired` (401) as **loss of sight, never as a
+payment outcome**: it stops polling, keeps the UUID, tells the cashier the payment continues on the
+terminal and will be recorded, and posts `wcpos-session-expired` to the host. The
 money is closed by the sweeper and the webhook regardless. A monorepo slice has the app answer that
 message by reloading the frame with a fresh token, which resumes the same row; until it lands the
 cashier reopens the payment from the register. The cookie path has no such cliff.
 
 **Refunds.** `process_refund()` becomes `wcpos_pro_order_pay_refund( $order, $amount, $reason )`.
-It binds the WooCommerce refund being created (the newest refund on the order whose amount matches,
-captured through `woocommerce_create_refund` as Mollie and Mercado Pago do today) and then:
+It binds the WooCommerce refund being created by **identity, not by amount**: Pro hooks
+`woocommerce_create_refund` (fired with the `WC_Order_Refund` object before it is saved, and before
+WooCommerce calls the gateway's `process_refund()` in the same request) and holds that object per
+order id in request state; the helper reads it back. No capture in the current request means the
+refund did not come through WooCommerce's refund flow and the helper refuses rather than guessing.
+Two equal-amount refunds in flight bind correctly because each request holds only its own. Then:
 
 - for an order with a counting `server`/`device` row for this gateway: allocates through Free's
   `Ledger::refund()` → `Server_Handler::refund()` → the adapter, recording `provider_ref`;
@@ -255,9 +276,13 @@ Only one path runs per refund: a POS refund goes through Pro's `Refund_Processor
 
 Lives in Pro (`tests/Conformance/`), an abstract PHPUnit case plus a fixture interface. An extension's
 CI checks out Pro (private; a read-only fine-grained token stored as an Actions secret in the
-extension repo) at its pinned floor and runs the case against its adapter with the provider's HTTP
-mocked through `pre_http_request` from the extension's fixture class. Scenarios, each a lesson one
-plugin paid for, driven through `Server_Handler` and a real `Ledger`:
+extension repo) at its pinned floor and runs the case against its adapter with the provider's
+transport faked by the extension's fixture class. The fixture owns the fake: `pre_http_request`
+suffices for adapters on the WordPress HTTP API (Mollie, Mercado Pago, Windcave), while an adapter
+over a vendored SDK client (Stripe's `StripeClient`, Square's scoped Guzzle) exposes a transport
+seam the fixture replaces — the suite only requires that every provider request pass through
+something the fixture can record and answer. Scenarios, each a lesson one plugin paid for, driven
+through `Server_Handler` and a real `Ledger`:
 
 1. Create succeeds; row pending with `provider_refs.action` and `expires_at`.
 2. Create accepted by the provider, response lost: the row exists `pending` without an action; a
@@ -273,8 +298,12 @@ plugin paid for, driven through `Server_Handler` and a real `Ledger`:
 10. Test-mode and live-mode credentials never poll each other's actions.
 11. Prompt: a stale `prompt_id` is refused; a delayed answer never reaches the provider.
 12. Refund succeeded / pending / failed on a server row, and on a historical webview row.
-13. Upgrade adoption: a live legacy attempt becomes a pending row the sweeper finishes.
-14. Certified provider: the request transcript of 1–13, with timing parameters, matches the fixture.
+13. Upgrade adoption: a live legacy attempt becomes a pending row; a webhook for the existing
+    action settles it through the action lookup before the sweeper runs, and the sweeper finishes
+    it when no webhook arrives.
+14. Order cancelled or failed from wp-admin while a leg is live: the leg is voided.
+15. Certified provider: the request transcript of 1–14, with per-request delays and the timing
+    parameters, matches the fixture.
 
 The per-plugin `docs/LESSONS.md` files are deleted on migration; their twelve shared themes map onto
 the scenarios above, and the provider-specific residue (HIT XML parsing, Mercado Pago's PDV switch)
@@ -288,6 +317,9 @@ on the WCPOS Pro settings page, capability- and nonce-gated, for every registere
 plugin and Pro versions, each gateway's masked settings and a health line from a new optional adapter
 method `diagnostics(): array` (default empty), the last twenty ledger rows with their events
 (redacted), and the tail of the WooCommerce log for `woocommerce-pos` and each provider's source.
+Every exported line, whichever source it came from, passes through Pro's `Redactor` on the way out
+(message patterns and key lists alike), and the bundle test asserts that a planted secret key,
+bearer token and card number in each source do not survive export.
 
 ## The starting template
 
