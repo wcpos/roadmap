@@ -79,10 +79,21 @@
   .unav li b{font-weight:600;color:var(--pay-fg)}
   .unav li .why{margin-left:auto;color:var(--pay-faint)}
   .unav.closed ul{display:none}
-  .helpers{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:10px;min-height:36px;flex-wrap:wrap}
+  .helpers{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:10px;min-height:36px;flex-wrap:wrap;flex:none}
   .helpers .reader{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--pay-dim);height:36px;padding:0 12px;border-radius:99px;background:var(--pay-2)}
   .helpers .reader svg{width:16px;height:16px}
   .helpers .reader a{color:var(--pay-fg);font-weight:600;cursor:pointer;margin-left:4px}
+  .fields{display:flex;flex-direction:column;gap:10px;width:100%;max-width:420px;margin:0 auto;text-align:left}
+  .fields .note{font-size:13px;color:var(--pay-dim)}
+  .fields label{display:block;font-size:12px;color:var(--pay-dim);margin-bottom:4px}
+  .fields .in{height:40px;border-radius:10px;border:1px solid var(--pay-2);background:var(--pay-2);color:var(--pay-fg);display:flex;align-items:center;padding:0 12px;font-size:15px}
+  .fields .cb{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--pay-fg)}
+  .fields .cb i{width:18px;height:18px;border-radius:4px;border:1px solid var(--pay-dim);display:inline-block}
+  .keys.inert .k{opacity:.35;cursor:default}
+  .pay.sent .tick{background:var(--pay-2);color:var(--pay-dim)}
+  .pay.sent .tick svg path{animation:none;stroke-dasharray:none;stroke-dashoffset:0}
+  .pay.sent .paidwrap .btn.white{background:var(--pay-fg);color:var(--pay-bg,#111)}
+  .pay.sent .paidwrap .btn.ghost{background:var(--pay-2);color:var(--pay-fg)}
   .plan{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
   .plan .pleg{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:99px;font-size:13px;font-variant-numeric:tabular-nums;border:1px solid var(--pay-3);color:var(--pay-dim)}
   .plan .pleg.done{background:var(--pay-accent);color:#0f1a15;border-color:transparent;font-weight:600}
@@ -263,6 +274,8 @@
     <button data-jump="terminal-cancel-requested">Cancel requested</button>
     <button data-jump="terminal-cancelling">Terminal cancelling</button>
     <button data-jump="paid">Paid</button>
+    <button data-jump="invoice">Email invoice</button>
+    <button data-jump="sent">Invoice sent</button>
     <button data-jump="unavail">Unavailable list open</button>
   </div>
   <div class="grp"><b>Network</b><button data-set="offline" data-val="0">online</button><button data-set="offline" data-val="1">offline</button></div>
@@ -313,6 +326,8 @@ const I = {
   close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
   del:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 6H8l-5 6 5 6h13z"/><path d="M12 9l6 6M18 9l-6 6"/></svg>',
   check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  invoice:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+  clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   wifi:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 8.5a15 15 0 0 1 20 0M5.5 12a10 10 0 0 1 13 0M9 15.5a5 5 0 0 1 6 0M12 19h.01"/><path d="M3 3l18 18"/></svg>'
 };
 const METHODS = [
@@ -323,6 +338,8 @@ const METHODS = [
   { id:'sim-r',  kind:'reader',   title:'Simulated reader',   device:true, reader:'M2', model:'Simulated M2', status:'connected', battery:64 },
   { id:'mollie', kind:'terminal', title:'Mollie', server:true, why:'no terminals set up' },
   { id:'stripe', kind:'reader',   title:'Stripe', device:true, why:'not available in the browser' },
+  // Contract 1.2: a gateway that declares its fields; the app draws them as helpers (roadmap#415).
+  { id:'invoice', kind:'invoice', title:'Email Invoice', gateway:true, verb:'Send invoice', note:"An email will be sent to the customer with a 'Pay for this order' link.", email:'customer@example.com' },
 ];
 const ITEMS = [ {id:'belt', name:'Belt', price:18.00}, {id:'scarf', name:'Scarf', price:22.00}, {id:'socks', name:'Socks', price:6.00} ];
 const TOTAL = ITEMS.reduce((a,i)=>a+i.price,0);
@@ -406,12 +423,15 @@ function keypadView(f){
     helpers = `<div class="quick">${notes.map(n=>`<span class="q ${entry===n?'on':''}" data-q="${n}">${fmt(n)}</span>`).join('')}<span class="q ${ghost?'on':''}" data-q="exact">Exact ${fmt(f.thisPay)}</span></div>`;
   } else if (m && (m.server || m.device)){
     helpers = `<span class="reader">${m.device ? I.reader : I.terminal} ${m.model} · ${m.reader} · <span class="dot"></span> connected${m.battery ? ' · ' + m.battery + '%' : ''} <a>Change</a></span><span class="q ${ghost?'on':''}" data-q="exact">Full balance ${fmt(f.thisPay)}</span>`;
+  } else if (m && m.gateway){
+    const email = S.email ?? m.email;
+    helpers = `<div class="fields"><span class="note">${m.note}</span><div><label>Email address</label><div class="in">${email || '<span style="color:var(--pay-dim)">Enter an email address</span>'}</div></div><span class="cb"><i></i>Save email to billing address</span></div>`;
   } else if (m){
     helpers = `<span class="q ${ghost?'on':''}" data-q="exact">Full balance ${fmt(f.thisPay)}</span>`;
   }
   const leftAfter = Math.round((f.remaining - applied)*100)/100;
   const tail = f.plan ? (f.plan.afterGroup ? (leftAfter > 0 ? ` · ${fmt(leftAfter)} left` : ' · pays it off') : (f.plan.ways > 1 ? ` · ${f.plan.n} of ${f.plan.ways}` : (leftAfter > 0 ? ` · ${fmt(leftAfter)} left` : ' · pays it off'))) : (leftAfter > 0 ? ` · ${fmt(leftAfter)} left` : '');
-  const commitLabel = !m ? 'Choose how the customer is paying' : ((m.server||m.device) ? `Send ${fmt(applied)} to ${m.title}` : `Take ${fmt(applied)} in ${m.title}`) + tail;
+  const commitLabel = !m ? 'Choose how the customer is paying' : (m.gateway ? `${m.verb} · ${fmt(applied)}` : (m.server||m.device) ? `Send ${fmt(applied)} to ${m.title}` : `Take ${fmt(applied)} in ${m.title}`) + tail;
   const planStrip = f.plan ? `<div class="plan">${f.plan.legs.map(l=>`<span class="pleg ${l.k==='rest'?'':l.k}" ${l.k==='rest'?'style="border-style:dashed"':''}>${l.k==='done' ? I.check : ''}${l.k==='rest' ? 'then ' : ''}${l.title ? l.title + ' ' : ''}${fmt(l.v)}</span>`).join('')}${f.plan.kind==='items' && f.plan.more ? `<span class="edit" data-split data-tab-open="item">Pick next items</span>` : ''}<span class="edit" data-split>Change split</span></div>` : '';
   const half = f.remaining/2, third = f.remaining/3, quarter = f.remaining/4;
   const sheet = '';
@@ -432,7 +452,7 @@ function keypadView(f){
   <div class="sel">${ons.map(x=>`<span class="m ${x.id===S.method?'on':''}" data-pick="${x.id}"><span class="ic">${I[x.kind]}</span>${x.title}${x.status ? `<span class="st"><i class="${S.offline?'off':''}"></i>${x.battery ? x.battery + '%' : ''}</span>` : ''}</span>`).join('')}</div>
   ${offs.length ? `<div class="unav ${S.unavailOpen?'':'closed'}"><span class="h" data-unavail><span class="car">${I.caret}</span>${offs.length} not available right now</span><ul>${offs.map(x=>`<li><span class="ic">${I[x.kind]}</span><b>${x.title}</b>${x.reader ? '<span class="st" style="margin-left:0"><i></i></span>' : ''}<span class="why" style="margin-left:auto">${x.why}</span></li>`).join('')}</ul></div>` : ''}
   <div class="helpers">${helpers}</div>
-  <div class="keys">${['1','2','3','4','5','6','7','8','9'].map(k=>`<span class="k" data-key="${k}">${k}</span>`).join('')}<span class="k sub" data-key="C">C</span><span class="k" data-key="0">0</span><span class="k sub" data-key="⌫">${I.del}</span></div>
+  <div class="keys ${m && m.gateway ? 'inert' : ''}">${['1','2','3','4','5','6','7','8','9'].map(k=>`<span class="k" data-key="${k}">${k}</span>`).join('')}<span class="k sub" data-key="C">C</span><span class="k" data-key="0">0</span><span class="k sub" data-key="⌫">${I.del}</span></div>
   <div class="commit"><span class="btn white ${canCommit?'':'disabled'}" ${canCommit && m ? `data-take="${m.id}"` : ''}>${commitLabel}</span></div>
   ${sheet}`;
 }
@@ -506,9 +526,22 @@ function paidView(f){
   </div>`;
 }
 
+/* Contract 1.2 §4.2: the same surface as Paid in a neutral state — no money arrived yet. */
+function sentView(f){
+  const m = METHODS.find(x=>x.gateway);
+  return `
+  <div class="paidwrap">
+    <div class="tick">${I.clock}</div>
+    <div class="h">Invoice sent</div>
+    <div class="s">to <b>${S.email ?? m.email}</b> · ${fmt(f.remaining)} due</div>
+    <div class="acts"><span class="btn white" data-new>Print receipt · New sale</span><span class="btn ghost" data-new>New sale</span></div>
+  </div>`;
+}
+
 function ledger(f){
   const rows = S.legs.map(l=>`<div class="payrow ${l.fresh?'new':''}"><div class="row"><span>${l.title}</span><span class="r">${fmt(l.amount)} <span class="sb">Captured</span></span></div><div class="s">${l.detail}</div></div>`).join('');
-  const waiting = S.view==='terminal' ? `<div class="payrow"><div class="row"><span>${METHODS.find(x=>x.id===S.term.method).title}</span><span class="r">${fmt(S.term.amount)} <span class="sb wait">Waiting</span></span></div><div class="s">On the terminal</div></div>` : '';
+  const waiting = S.view==='terminal' ? `<div class="payrow"><div class="row"><span>${METHODS.find(x=>x.id===S.term.method).title}</span><span class="r">${fmt(S.term.amount)} <span class="sb wait">Waiting</span></span></div><div class="s">On the terminal</div></div>`
+    : S.view==='sent' ? `<div class="payrow"><div class="row"><span>Email Invoice</span><span class="r">${fmt(f.remaining)} <span class="sb wait">Awaiting customer</span></span></div><div class="s">Invoice sent to ${S.email ?? METHODS.find(x=>x.gateway).email}</div></div>` : '';
   return `
   <div class="lh"><b>#102476</b> Guest</div>
   <div class="body">${ITEMS.map(i=>`<div class="line"><span>1 × ${i.name}${S.itemsPaid[i.id] ? ` <span class="sb" style="margin-left:6px">paid · ${S.itemsPaid[i.id]}</span>` : ''}</span><span class="r">${fmt(i.price)}</span></div>`).join('')}<div class="pl">Payments</div>${rows}${waiting}${!rows && !waiting ? '<div class="empty">No payments yet</div>' : ''}</div>
@@ -522,8 +555,8 @@ function render(){
   frame.className = 'frame ' + S.surface + (+S.phone ? ' phone' : '');
   document.getElementById('dot').className = 'dot' + (S.offline ? ' off' : '');
   const pay = document.getElementById('pay');
-  pay.className = 'pay' + (S.view==='paid' ? ' paid' : '');
-  pay.innerHTML = S.view==='terminal' ? terminalView(f) : S.view==='paid' ? paidView(f) : S.sheet ? splitView(f) : keypadView(f);
+  pay.className = 'pay' + (S.view==='paid' ? ' paid' : S.view==='sent' ? ' sent' : '');
+  pay.innerHTML = S.view==='terminal' ? terminalView(f) : S.view==='paid' ? paidView(f) : S.view==='sent' ? sentView(f) : S.sheet ? splitView(f) : keypadView(f);
   document.getElementById('ledger').innerHTML = ledger(f);
   document.getElementById('balbar').innerHTML = `<span><b>${f.paid>0?'Remaining':'Total'} ${fmt(f.remaining)}</b><div class="s">${f.paid>0 ? fmt(f.paid)+' paid · ' : ''}3 items · Guest</div></span><span class="q" style="background:var(--muted);color:var(--foreground)">Ledger</span>`;
   document.querySelectorAll('.strip button[data-set]').forEach(b => b.classList.toggle('on', String(S[b.dataset.set]) === b.dataset.val));
@@ -537,6 +570,7 @@ function take(id){
   if (applied <= 0) return;
   if (!m.change && entry > f.thisPay) return;
   if (S.plan && S.plan.kind==='custom') S.plan = { kind:'fixed', first:applied, from:S.plan.from };
+  if (m.gateway){ S.view = 'sent'; render(); return; }
   if (m.server || m.device){
     S.view = 'terminal'; S.term = { method:id, amount:applied, step:0 }; render();
     const tick = (n, ms) => S.timers.push(setTimeout(()=>{ if (S.view!=='terminal') return; S.term.step = n; updateTerminal(); if (n===4) S.timers.push(setTimeout(()=>land(m, applied, 0, `${m.model} · ${m.reader} · contactless`), 250)); }, ms));
@@ -573,6 +607,8 @@ function jump(name){
   if (name==='terminal'){ S.view='terminal'; S.term={method:'sumup', amount:TOTAL, step:1}; }
   if (name.startsWith('terminal-')){ const state = name.slice(9).replace(/-([a-z])/g,(_,c)=>c.toUpperCase()); S.view='terminal'; S.term={method:'sumup', amount:TOTAL, step:state==='failed'?2:1, state}; }
   if (name==='paid'){ S.legs=[{title:'Cash', amount:TOTAL, change:4, detail:'Tendered 50,00 £ · change 4,00 £'}]; S.view='paid'; }
+  if (name==='invoice') S.method = 'invoice';
+  if (name==='sent'){ S.method = 'invoice'; S.view = 'sent'; }
   render();
 }
 document.querySelector('.strip').addEventListener('click', e => {
