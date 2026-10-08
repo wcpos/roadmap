@@ -118,7 +118,7 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
 
 2. **stripe-php 22 breaks PaymentIntent creation.** The Dependabot bump (#143, merged to Stripe's `main` today, unreleased) pins Stripe API `2026-09-30.endive`, which removed the writable `payment_method_types`; every Terminal and phone-order intent would fail with `payment_method_types_no_longer_supported`. The SDK sends its pinned version on each request, so this is independent of the merchant's own API version. Fix on `main`: wcpos/stripe-terminal-for-woocommerce#149 (`allowed_payment_method_types`, which now accepts `card_present` and `interac_present`); the live smoke job that was red on `main` is green on the PR. `next` was reverted to stripe-php ^21 separately and is unaffected until it bumps.
 
-**Stripe on `next`, status:** #148 (Pro-only gate at 30, web checkout removed, E2E site runs Pro via the org bot token) merged at `303fd05`; #161 (PR B: POS order-pay onto Pro's panel with the MOTO carve-out, legacy adoption) merged at `5266900` after five review rounds; #163 merged at `2ecdc3b`. Conformance transcripts remain a third PR because they need Pro's suite under wp-env, which Stripe's plain-PHPUnit CI does not have yet.
+**Stripe on `next`, status:** #148 (Pro-only gate at 30, web checkout removed, E2E site runs Pro via the org bot token) merged at `303fd05`; #161 (PR B: POS order-pay onto Pro's panel with the MOTO carve-out, legacy adoption) merged at `5266900` after five review rounds; #163 merged at `2ecdc3b`; **#165 (conformance)** merged at `4e2bf12` after five review rounds: a `conformance` CI job (wp-env, sibling Pro via the org bot token, PHP 7.4 and 8.3) runs Pro's provider conformance suite against the real adapter over a scripted Stripe, 23 transcripts committed. The suite and the review found and fixed: unanswered creates and dispatches (and 5xx, and an idempotency conflict on a replay) dropping the leg, a failed dispatch retiring a paid intent, a decline by webhook swallowed (now applied against a fresh read and retired), the old panel's Retry on adopted intents, historical webview refunds (transaction id, charge ids for Interac), and the Phone Order recovery / old refund path / status check acting on the keypad leg's intent that Free now copies into the order transaction id. Not claimed: `expiry`, `cancel_unsupported`, `prompt`, `manual_capture`, `test_live_isolation`. Record on roadmap#95 (comment 6071383587).
 
 **SumUp on `next`, status:** #52 merged at `2154c6a`; #53 (PR B) merged at `53c57db`. Same conformance gap as Stripe.
 
@@ -129,9 +129,13 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
 - A dev-next `sim-prompt` reader; a browser/webview run of the order-pay panel; a real
   admin-post request against the bundle download.
 - Live WisePad 3 money-leg proofs — need Paul's test card and iPhone.
-- Stripe and SumUp conformance transcript PRs (a wp-env CI job with the sibling Pro checkout
-  in each repo first); a browser run of Pro's panel on each; nothing against a live SumUp
-  account yet.
+- SumUp conformance PR, after a small Pro companion: Pro's suite gains a `create_replay`
+  capability because SumUp's checkout has no idempotency and a busy reader refuses a second
+  checkout for ~60 s, so a lost create cannot resume the same action; design record on
+  roadmap#95 (comment after 6071383587), decided without Paul. SumUp's provider also needs the
+  unanswered-create rule, the webhook adoption fallback and the transaction-id refund fallback,
+  the same shapes as Stripe #165. A browser run of Pro's panel on each; nothing against a live
+  SumUp account yet.
 - Mollie, Square and Payarc ports from the template.
 
 ## Lessons recorded in memory
