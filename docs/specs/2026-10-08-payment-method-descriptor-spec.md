@@ -54,8 +54,12 @@ A sixth mode, named for how the money moves like its siblings: **Free runs the g
 - `capabilities` (R7): `amount.partial: false` (every `process_payment()` and every pay link acts on
   the order total; #110 D3), `change: false`, `refunds.via` from `supports('refunds')` as the
   webview handler does (`provider`, else `manual`), `refunds.partial` likewise, `tips: none`,
-  `offline: none`, `void: false`. The existing describe filters may override any of these except
-  `partial`, which is refused on this mode.
+  `offline: none`, `void: false`. These are fixed by the handler: there is no per-capability
+  override filter in Free (corrected 2026-10-08 after the first Codex pass found none). A gateway
+  that needs different capabilities registers its own handler class for the `gateway` key through
+  the existing `Capture_Mode_Registry` (last registration wins, logged), which is how every other
+  mode is specialised; `partial: true` is never valid on this mode because `submit` acts on the
+  order total.
 
 A gateway opts in through the existing `wcpos_payment_method_capture_mode` filter, answering
 `gateway`, or through a method on `Abstract_POS_Gateway`. `declared` is the glossary word for the UI
