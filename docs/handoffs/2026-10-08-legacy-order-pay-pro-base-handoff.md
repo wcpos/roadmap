@@ -54,9 +54,10 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   pass 3; merge blocked on the App secret like Mercado Pago.
 - woocommerce-pos-pro#621 merged at `53edef14f`: the five conformance rules settled by the two
   extensions, in Pro's conformance README.
-- Mercado Pago #13 has a queued follow-up (POS-only availability, refund amount verification,
-  observation-derived webhook event id) — same gaps the Windcave bots found.
-- **Slice 8a** (session-expired frame reload) brief written, waits for a free jest slot.
+- Mercado Pago #13 re-approved at `11845b6` (six passes) after the same three gaps the Windcave
+  bots found were applied there too.
+- **Slice 8a** (session-expired frame reload) in Codex implementation on monorepo worktree
+  `95-session-expired` (branch `feat/95-session-expired-reload` from `next`).
 
 ## Not done
 
