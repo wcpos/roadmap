@@ -55,15 +55,21 @@ A sixth mode, named for how the money moves like its siblings: **Free runs the g
   the order total; #110 D3), `change: false`, `refunds.via` from `supports('refunds')` as the
   webview handler does (`provider`, else `manual`), `refunds.partial` likewise, and the handler's
   `refund()` makes that true: a `recorded` row refunds through the gateway's own `process_refund()`
-  when it supports refunds (a `WP_Error` or `false` is `502 wcpos_provider_error`), else the entry
-  is marked succeeded at once as the manual handler does (handed back by hand), `tips: none`,
+  when it supports refunds (any truthy answer is a success, as `wc_refund_payment()` reads it; a
+  `WP_Error` or a falsy answer is `502 wcpos_provider_error`), else the entry is marked succeeded
+  at once as the manual handler does (handed back by hand); a gateway that is no longer installed
+  is `404 wcpos_payment_method_not_found`, never a silent success; `provider_ref` is `null`
+  because `process_refund()` answers a boolean, not a reference, `tips: none`,
   `offline: none`, `void: false`. These are fixed by the handler: there is no per-capability
   override filter in Free (corrected 2026-10-08 after the first Codex pass found none). A gateway
   that needs different capabilities registers its own handler class under the **scoped key**
   `gateway:<gateway id>` (the registry's existing `<mode>:<provider>` form; the mode filter
   answers `gateway:<gateway id>` and the builder resolves the scoped key before the bare one), so
   one gateway's handler never captures another gateway-mode method and two such extensions coexist
-  (review on wcpos/wiki#1201, 2026-10-08); `partial: true` is never valid on this mode because `submit` acts on the
+  (review on wcpos/wiki#1201, 2026-10-08). A scoped handler's `describe()` must set
+  `capture.provider` to the gateway id: the ledger dispatches later row operations (`refund`,
+  `void`, `status`) by the row's snapshotted `provider`, so a handler that leaves it `null` is used
+  for the descriptor only and Free's own handler serves the rows; `partial: true` is never valid on this mode because `submit` acts on the
   order total.
 
 A gateway opts in through the existing `wcpos_payment_method_capture_mode` filter, answering
@@ -140,8 +146,10 @@ Free, for a method in `gateway` mode and a POS order (`409 wcpos_invalid_transit
 `403 wcpos_payment_method_disabled` when not `pos_enabled`): first **validates the values against
 the declared schema** (`required`, string or boolean by component, `select` membership) and
 answers `wcpos_fields_invalid` keyed per component before the gateway sees anything; then gives the
-request a WooCommerce session if it has none (REST requests have none, and `wc_add_notice()` needs
-one; a request-scoped handler, never `init()`ed, so no cookie and no session row); sets
+request a WooCommerce session, customer and cart if it has none (REST requests have none;
+`wc_add_notice()` needs the session and WooCommerce's own BACS, cheque and COD call
+`WC()->cart->empty_cart()`; all request-scoped, the session never `init()`ed, so no cookie and no
+session row); sets
 `$_POST[id] = value` for each declared component (checkbox → `'1'` when true, unset when false; a
 value for an undeclared id is dropped); sets each string value **slashed** (`wp_slash()`, as WordPress does for every request global, so
 a gateway's `wp_unslash()` round-trips); calls the gateway's `validate_fields()`, collects
@@ -160,7 +168,7 @@ the outcome (§3.1). Response:
 | Code | Status | When |
 |---|---|---|
 | `wcpos_fields_invalid` | 400 | `validate_fields()` added error notices. `data.errors` is `{ "<id>": message }` for notices Free can key to a declared component (by the gateway's own `wc_add_notice` data, else the first required empty field), and `data.errors._form` for the rest. Nothing written. |
-| `wcpos_provider_error` | 502 | `process_payment()` returned anything but `result: success`, or threw. `data.detail` carries the gateway's notice. Nothing written. |
+| `wcpos_provider_error` | 502 | `process_payment()` returned anything but `result: success`, or threw, with no money observed; or it answered a redirect to another host (§3.1). `data.detail` carries the gateway's notice, the exception's message, or the host. Nothing written: the payment method assigned before the call is put back. |
 | `wcpos_order_already_paid` | 409 | The balance is zero. |
 | `wcpos_payment_conflict` | 409 | A live leg exists (the method is `partial: false`; the till should not have offered it). |
 | `wcpos_capture_mode_unsupported` | 501 | The method is not in `gateway` mode. |
@@ -168,9 +176,11 @@ the outcome (§3.1). Response:
 Idempotent on `attempt_id` for the life of the order: a replay of a known attempt returns the
 stored answer and never calls the gateway again. A `recorded` attempt is the row itself (the
 attempt id **is** the client-minted row id, so the row is `source: app` like every app row and the
-ledger's own replay rule applies); a `sent` attempt is remembered in the stamp's `attempts[]`,
-which **keeps every earlier attempt** when *Send again* overwrites the current one (capped at 20),
-so a delayed retry of an earlier send never sends twice.
+ledger's own replay rule applies); a `sent` attempt is remembered in the order's **attempt history**,
+`_wcpos_gateway_attempts` (`{ attempt_id: sent | cancelled }`, capped at 50), a meta of its own
+that the stamp's clearing never touches: a delayed retry of an earlier send answers `sent` again,
+and a retry of a send the till has cancelled answers `409 wcpos_payment_conflict`, so nothing sends
+twice for the life of the order.
 
 ### 2.2 Cancel (R8)
 
@@ -207,7 +217,7 @@ and `woocommerce_order_status_changed` for this order only:
 - **A redirect elsewhere is refused.** A hosted checkout (PayPal Standard and every off-site
   gateway) answers `result: success` with a `redirect` to the provider's page: neither record-now
   nor send-and-leave, and only a browser can follow it. When no money was observed and the
-  redirect's host is not this site's, Free answers `502 wcpos_provider_error` with `data.detail`
+  redirect's host is neither `home_url()`'s nor `site_url()`'s, Free answers `502 wcpos_provider_error` with `data.detail`
   naming the host, and writes nothing; a redirect on this site (the order-received page, a custom
   thank-you) is what a normal gateway returns and stays as above. (Paul, via roadmap-00,
   2026-10-08.)
@@ -221,8 +231,11 @@ stands.
 One order meta, `_wcpos_awaiting_customer`, written on `sent`:
 
 ```json
-{ "method_id": "wcpos_email_invoice", "destination": "x@y", "attempt_id": "…", "attempts": ["…"], "sent_at_gmt": "…", "cashier_id": 7 }
+{ "method_id": "wcpos_email_invoice", "destination": "x@y", "attempt_id": "…", "sent_at_gmt": "…", "cashier_id": 7 }
 ```
+
+Beside it, the attempt history `_wcpos_gateway_attempts` (`{ attempt_id: sent | cancelled }`)
+outlives the stamp (§2.1).
 
 `destination` is the value of the first `field` with `input: email` or `tel`, else `null`. While the
 stamp is set and no counting row exists, the ledger projection (ledger §3.3) and the two-status
@@ -278,8 +291,8 @@ state of the same name on the mockup.
 The order is found in Orders under its `pending`/`on-hold` status with the stamp's line. Opening it
 offers the keypad on the full balance (any counting row clears the stamp), **Send again** (the
 submit route with a new `attempt_id` and corrected values; the stamp's current attempt is replaced
-and the earlier ones stay in `attempts[]`) and **Cancel invoice** (§2.2, naming the current
-attempt). No new
+and every attempt stays in the history) and **Cancel invoice** (§2.2, naming the current attempt;
+the cancelled attempt is remembered so a late retry of it is refused). No new
 list, no banner in the cart.
 
 ## 5. The gateway author's side
