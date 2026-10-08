@@ -67,6 +67,27 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   red/green shown. The reviewer's one hardening point (set the flag in a layout cleanup) applied at
   `3bd7153`, approved independently. **Merged at `b2944e5`.**
 
+## Evening session (2026-10-08): the 2.0 stance for the older extensions
+
+- **Ruling (Paul):** terminal extensions are Pro-only at 2.0, Stripe and SumUp included; Stripe
+  drops web checkout; their POS order-pay moves onto Pro's panel with a MOTO carve-out (Stripe's
+  own panel stays while "Phone Order" is enabled). Recorded on #95; memory
+  `terminal-extensions-pro-only-at-2-0`.
+- **Stripe #148** (`next`): the gate and the removals. Codex stalled three times on the brief
+  (two readiness failures of mine: a vendor path that did not exist, and a parent-short-circuit
+  instruction that contradicted the removal); implemented by hand.
+- **Order of the rest:** Mercado Pago live first (Paul opens the seller account; Windcave is not
+  a priority), Stripe PR B then conformance PR, SumUp the same way, then Mollie, Square, Payarc
+  ports from the template.
+
+**Two defects found on the way:**
+
+1. **The Pro gate ran before Pro existed.** Every extension on `next` hooked its `wcpos_pro_requires()` gate at `plugins_loaded` priority 11, but Pro's `Activator` runs at 20 and that is what requires `wcpos-pro-functions.php`. So Mercado Pago #13 and Windcave #13 as merged this morning registered nothing on a Pro 2.0 site: notice shown, no provider, no gateway, no adoption. Their gate tests passed because they called `init()` from inside a test after Pro had loaded. Found by the independent review of wcpos/stripe-terminal-for-woocommerce#148, which had copied the bootstrap. Fixes, each a one-line move to priority 30 plus a test that pins it: Stripe #148, wcpos/mercadopago-terminal-for-woocommerce#14, wcpos/windcave-terminal-for-woocommerce#14, template `7426d0f`. Nothing reached merchants; both extensions are `next`-only.
+
+2. **stripe-php 22 breaks PaymentIntent creation.** The Dependabot bump (#143, merged to Stripe's `main` today, unreleased) pins Stripe API `2026-09-30.endive`, which removed the writable `payment_method_types`; every Terminal and phone-order intent would fail with `payment_method_types_no_longer_supported`. The SDK sends its pinned version on each request, so this is independent of the merchant's own API version. Fix on `main`: wcpos/stripe-terminal-for-woocommerce#149 (`allowed_payment_method_types`, which now accepts `card_present` and `interac_present`); the live smoke job that was red on `main` is green on the PR. `next` was reverted to stripe-php ^21 separately and is unaffected until it bumps.
+
+**Stripe on `next`, status:** #148 (Pro-only gate at 30, web checkout removed, E2E site runs Pro via the org bot token) awaiting its CI run after merging `next`; PR B (POS order-pay onto Pro's panel with the MOTO carve-out, legacy adoption) is briefed and starts when #148 merges; conformance transcripts are a third PR because they need Pro's suite under wp-env, which Stripe's plain-PHPUnit CI does not have yet.
+
 ## Not done
 
 - Slices 5–8: Mercado Pago 1.0.0 on `next` (first real fixture through the conformance suite),
