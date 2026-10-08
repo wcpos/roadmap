@@ -142,8 +142,10 @@ auth (`publish_shop_orders`) and error style.
 `POST wcpos/v2/orders/{id}/payment-methods/{method}/submit`
 `{ "attempt_id": uuid, "values": { "<id>": value } }`
 
-Free, for a method in `gateway` mode and a POS order (`409 wcpos_invalid_transition` otherwise;
-`403 wcpos_payment_method_disabled` when not `pos_enabled`): first **validates the values against
+Free, for a method in `gateway` mode and a POS order (`409 wcpos_invalid_transition` otherwise):
+answers a replay first (below), then refuses a **new** attempt on a method that is not
+`pos_enabled` (`403 wcpos_payment_method_disabled`; a lost response is replayed even after the
+merchant switched the method off), then **validates the values against
 the declared schema** (`required`, string or boolean by component, `select` membership) and
 answers `wcpos_fields_invalid` keyed per component before the gateway sees anything; then gives the
 request a WooCommerce session, customer and cart if it has none (REST requests have none;
