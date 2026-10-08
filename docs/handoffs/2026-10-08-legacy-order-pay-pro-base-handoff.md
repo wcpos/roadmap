@@ -64,7 +64,8 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   a payment settled during the refresh was otherwise missed) and approved it. Greptile's P1 on that
   commit (the poll chain could start after checkout closed and settle an old order onto the current
   screen) fixed at `bf677dd` with an unmounted guard on the refresh continuation and the poll;
-  red/green shown. Fresh independent review of `bf677dd` requested.
+  red/green shown. The reviewer's one hardening point (set the flag in a layout cleanup) applied at
+  `3bd7153`, approved independently. **Merged at `b2944e5`.**
 
 ## Not done
 
