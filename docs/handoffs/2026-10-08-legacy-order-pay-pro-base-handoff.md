@@ -39,8 +39,10 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
 - woocommerce-pos-pro#619 — webhook route accepts GET (Windcave FPRN) — merged at `7904f62`.
 - Mercado Pago and Windcave `next` branches cut from `main`.
 - **Slice 5**: wcpos/mercadopago-terminal-for-woocommerce#13 APPROVED after four independent passes
-  (head `3c28fa7`); merge blocked on the `WCPOS_MINI_APP_PRIVATE_KEY` secret (Paul) so CI can check
-  out Pro as a sibling. Decisions amended in review: `external_reference` = `wcpos_<uuid>`;
+  (head `3c28fa7`). CI first failed at the Pro-checkout token: the workflow named the wcpos-mini
+  App, whose key exists only as a repo secret on the Stripe repo. Swapped (`5424a7d`) to the
+  org-level `WCPOS_BOT_APP_ID`/`WCPOS_BOT_PRIVATE_KEY` secrets, already visible to every wcpos
+  repo, token scoped to contents:read on Pro; nothing for Paul to configure. CI green on 7.4 and 8.3. **Merged at `06af5ff`.** Decisions amended in review: `external_reference` = `wcpos_<uuid>`;
   `provider_refs.transaction_id` = MP order id; 409s classified by error code, with a busy
   terminal on a REPLAYED create treated as ambiguous; refund `processing` stays pending; currency
   provider-first; adoption paged (25 per `init`).
@@ -51,13 +53,18 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   from two independent passes (replayed-`PC` ambiguity reproduced through Free's ledger, refund
   polling with PJ grace and money verification, slot-mapped custom prompt buttons, POS-only
   availability gated on the POS capability, environment-only per-action context); APPROVED after
-  pass 3; merge blocked on the App secret like Mercado Pago.
+  pass 3. Same token swap as Mercado Pago (`092a7ed`); the template repo carries it too (`b3a5538`). **Merged at `148fde7`.**
 - woocommerce-pos-pro#621 merged at `53edef14f`: the five conformance rules settled by the two
   extensions, in Pro's conformance README.
 - Mercado Pago #13 re-approved at `11845b6` (six passes) after the same three gaps the Windcave
   bots found were applied there too.
-- **Slice 8a** (session-expired frame reload) in Codex implementation on monorepo worktree
-  `95-session-expired` (branch `feat/95-session-expired-reload` from `next`).
+- **Slice 8a** (session-expired frame reload): monorepo#2438 (branch `feat/95-session-expired-reload`
+  from `next`). Approved at `b15d413` after four passes; the Mac mini review agent then pushed
+  `c077160` (a successful refresh arms `pollServerTruth`, since the remount resets the load count and
+  a payment settled during the refresh was otherwise missed) and approved it. Greptile's P1 on that
+  commit (the poll chain could start after checkout closed and settle an old order onto the current
+  screen) fixed at `bf677dd` with an unmounted guard on the refresh continuation and the poll;
+  red/green shown. Fresh independent review of `bf677dd` requested.
 
 ## Not done
 
