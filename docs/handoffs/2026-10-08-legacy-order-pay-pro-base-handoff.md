@@ -73,9 +73,23 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   drops web checkout; their POS order-pay moves onto Pro's panel with a MOTO carve-out (Stripe's
   own panel stays while "Phone Order" is enabled). Recorded on #95; memory
   `terminal-extensions-pro-only-at-2-0`.
-- **Stripe #148** (`next`): the gate and the removals. Codex stalled three times on the brief
-  (two readiness failures of mine: a vendor path that did not exist, and a parent-short-circuit
+- **Stripe #148** merged at `303fd05` (the gate at `plugins_loaded` 30, web checkout removed, the
+  E2E site runs Pro through the org bot token). Codex stalled three times on the brief (two
+  readiness failures of mine: a vendor path that did not exist, and a parent-short-circuit
   instruction that contradicted the removal); implemented by hand.
+- **Stripe #161** merged at `5266900` (POS order-pay through Pro's panel with the Phone Order
+  carve-out, refunds through Pro for a counting server/device row, legacy adoption under Free's
+  order lock bounded to orders that existed at upgrade). Codex stalled a fourth time; implemented
+  by hand. Five review rounds; the reviewer found that Free already mints a `webview` row for
+  every old-panel sale (my first refund rule misrouted exactly the MOTO sales), and that the old
+  webhook and AJAX handlers would have recorded an adopted attempt twice. Both fixed with tests.
+- **Stripe #149** merged to `main` at `a4b8e1b` and **#163** (open, `next`): PaymentIntents use
+  `allowed_payment_method_types`, the parameter Stripe API 2026-09-30.endive (stripe-php 22)
+  requires. Another session had already reverted `main` to stripe-php 21, so no release carried
+  the break.
+- **Stripe, still to do:** conformance transcripts under wp-env (Stripe's CI is plain PHPUnit
+  with Pro stubs; the job needs the sibling-Pro shape Mercado Pago's has). Then SumUp the same
+  way, then the Mollie, Square and Payarc ports.
 - **Order of the rest:** Mercado Pago live first (Paul opens the seller account; Windcave is not
   a priority), Stripe PR B then conformance PR, SumUp the same way, then Mollie, Square, Payarc
   ports from the template.
