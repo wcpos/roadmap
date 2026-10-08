@@ -47,9 +47,15 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
 - **Slice 7 landed**: https://github.com/wcpos/terminal-extension-template (private template repo,
   `e0a390d`): bootstrap gate, thin Gateway, adapter skeleton with the shared rules written for
   real, fixture skeleton, sibling-Pro tests, CI, release, author README, `create-extension.sh`.
-- **Slice 6** (Windcave 1.0.0, first prompt-channel consumer) in Codex implementation against the
-  Pro tip that accepts GET; **slice 8a** (session-expired frame reload) brief written, waits for a
-  free jest slot (one suite at a time).
+- **Slice 6**: wcpos/windcave-terminal-for-woocommerce#13 open (head `5807753`), three fix rounds
+  from two independent passes (replayed-`PC` ambiguity reproduced through Free's ledger, refund
+  polling with PJ grace and money verification, slot-mapped custom prompt buttons, POS-only
+  availability gated on the POS capability, environment-only per-action context); pass 3 running.
+- woocommerce-pos-pro#621 merged at `53edef14f`: the five conformance rules settled by the two
+  extensions, in Pro's conformance README.
+- Mercado Pago #13 has a queued follow-up (POS-only availability, refund amount verification,
+  observation-derived webhook event id) — same gaps the Windcave bots found.
+- **Slice 8a** (session-expired frame reload) brief written, waits for a free jest slot.
 
 ## Not done
 
