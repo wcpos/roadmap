@@ -79,6 +79,8 @@ App (`wcpos/monorepo`, lane `next`, `packages/core`):
 
 ## What to build, in order
 
+**Status 2026-10-08:** step 1's decision ticket is open as [wcpos/roadmap#415](https://github.com/wcpos/roadmap/issues/415), linked from #120's Notes and its registration-model item. Steps 2 to 5 wait for Paul's ruling there and for the tender-pane slices on `next`.
+
 Each step is one PR on `next` of the repo named. Stop after step 1 and get Paul's word on the
 descriptor before any app code.
 
