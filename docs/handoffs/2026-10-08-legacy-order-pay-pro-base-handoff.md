@@ -36,9 +36,17 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
 
 - woocommerce-pos-pro#618 — support-bundle button moved onto each provider gateway's WooCommerce
   settings page; Pro submenu page removed. Independent review APPROVED; bot rounds in progress.
-- Mercado Pago and Windcave `next` branches cut from `main`; slice 5 (Mercado Pago 1.0.0) in
-  Codex implementation; slice 6 brief written (needs Pro's webhook route to accept GET for FPRN —
-  branch `feat/95-webhook-route-get`); slice 8a (session-expired frame reload) brief written.
+- woocommerce-pos-pro#619 — webhook route accepts GET (Windcave FPRN) — merged at `7904f62`.
+- Mercado Pago and Windcave `next` branches cut from `main`.
+- **Slice 5**: wcpos/mercadopago-terminal-for-woocommerce#13 APPROVED after four independent passes
+  (head `3c28fa7`); merge blocked on the `WCPOS_MINI_APP_PRIVATE_KEY` secret (Paul) so CI can check
+  out Pro as a sibling. Decisions amended in review: `external_reference` = `wcpos_<uuid>`;
+  `provider_refs.transaction_id` = MP order id; 409s classified by error code, with a busy
+  terminal on a REPLAYED create treated as ambiguous; refund `processing` stays pending; currency
+  provider-first; adoption paged (25 per `init`).
+- **Slice 6** (Windcave 1.0.0, first prompt-channel consumer) and **slice 7** (template repo) in
+  Codex implementation; **slice 8a** (session-expired frame reload) brief written, waits for a free
+  jest slot.
 
 ## Not done
 
