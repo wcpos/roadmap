@@ -50,7 +50,8 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
 - **Slice 6**: wcpos/windcave-terminal-for-woocommerce#13 open (head `5807753`), three fix rounds
   from two independent passes (replayed-`PC` ambiguity reproduced through Free's ledger, refund
   polling with PJ grace and money verification, slot-mapped custom prompt buttons, POS-only
-  availability gated on the POS capability, environment-only per-action context); pass 3 running.
+  availability gated on the POS capability, environment-only per-action context); APPROVED after
+  pass 3; merge blocked on the App secret like Mercado Pago.
 - woocommerce-pos-pro#621 merged at `53edef14f`: the five conformance rules settled by the two
   extensions, in Pro's conformance README.
 - Mercado Pago #13 has a queued follow-up (POS-only availability, refund amount verification,
