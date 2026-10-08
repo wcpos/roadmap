@@ -22,12 +22,23 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
 2. An unsupported cancel never forges a local void; the row waits for the provider's own expiry.
 3. Pro's downstream-conformance CI job (certified extensions' fixtures against candidate Pro) is
    deferred to the first certified extension's 1.0.0 (Windcave).
-4. The support bundle lives on a Pro submenu page (the gateway list is a React screen with no PHP
-   rendering slot).
+4. ~~The support bundle lives on a Pro submenu page~~ — **overruled by Paul in the morning** (*"Why
+   can't the support button be part of the WooCommerce > Settings > Payment > extension page?"*). It
+   can: Pro appends a row to every provider gateway's own WooCommerce settings page through the
+   settings-API form-fields filter (woocommerce-pos-pro#618). The rule from the Terminals-block
+   revert now covers buttons and tools, not only settings.
 5. Redactor trades false positives for leaks: a 13+ digit Luhn-valid `order_id`/`payment_ref` and
    a bare `key=VALUE` in prose are masked.
 6. Golden-transcript recording is an explicit in-process opt-in (`WCPOS_RECORD_TRANSCRIPTS=1` on
    the `wp-env run … env` command); a missing golden always fails.
+
+## Morning session (2026-10-08, Paul awake)
+
+- woocommerce-pos-pro#618 — support-bundle button moved onto each provider gateway's WooCommerce
+  settings page; Pro submenu page removed. Independent review APPROVED; bot rounds in progress.
+- Mercado Pago and Windcave `next` branches cut from `main`; slice 5 (Mercado Pago 1.0.0) in
+  Codex implementation; slice 6 brief written (needs Pro's webhook route to accept GET for FPRN —
+  branch `feat/95-webhook-route-get`); slice 8a (session-expired frame reload) brief written.
 
 ## Not done
 
