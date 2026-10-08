@@ -53,12 +53,17 @@ A sixth mode, named for how the money moves like its siblings: **Free runs the g
   method stays on the Legacy tab, and on older apps that is where it is found).
 - `capabilities` (R7): `amount.partial: false` (every `process_payment()` and every pay link acts on
   the order total; #110 D3), `change: false`, `refunds.via` from `supports('refunds')` as the
-  webview handler does (`provider`, else `manual`), `refunds.partial` likewise, `tips: none`,
+  webview handler does (`provider`, else `manual`), `refunds.partial` likewise, and the handler's
+  `refund()` makes that true: a `recorded` row refunds through the gateway's own `process_refund()`
+  when it supports refunds (a `WP_Error` or `false` is `502 wcpos_provider_error`), else the entry
+  is marked succeeded at once as the manual handler does (handed back by hand), `tips: none`,
   `offline: none`, `void: false`. These are fixed by the handler: there is no per-capability
   override filter in Free (corrected 2026-10-08 after the first Codex pass found none). A gateway
-  that needs different capabilities registers its own handler class for the `gateway` key through
-  the existing `Capture_Mode_Registry` (last registration wins, logged), which is how every other
-  mode is specialised; `partial: true` is never valid on this mode because `submit` acts on the
+  that needs different capabilities registers its own handler class under the **scoped key**
+  `gateway:<gateway id>` (the registry's existing `<mode>:<provider>` form; the mode filter
+  answers `gateway:<gateway id>` and the builder resolves the scoped key before the bare one), so
+  one gateway's handler never captures another gateway-mode method and two such extensions coexist
+  (review on wcpos/wiki#1201, 2026-10-08); `partial: true` is never valid on this mode because `submit` acts on the
   order total.
 
 A gateway opts in through the existing `wcpos_payment_method_capture_mode` filter, answering
@@ -102,8 +107,11 @@ Rules:
   `order.billing.email`, `order.billing.phone`, `customer.email`, `customer.phone`. The app fills
   the component from the source when it is non-empty, else from `default`. An unknown key is
   ignored and `default` is used.
-- An unknown `component` is skipped and logged on both sides, the open-vocabulary rule the
-  descriptor already applies to `capture.mode`.
+- An unknown `component` name within a known `fields.schema` is **display-only by rule** and is
+  skipped and logged on both sides. A new **value-bearing** component is a `fields.schema` bump: an
+  app that knows only schema 1 disables the method with `unsupported_fields` (*Update the app to
+  use …*) when `fields.schema` is higher, so it never submits without a value the gateway expects
+  (review on wcpos/wiki#1201).
 - `label`, `text` and option labels are the gateway's own translatable copy, exactly as `title` is.
   Nothing in the block is markup, a class, a style or a render function.
 - No grouping, no layout primitives, no conditional visibility (components may not depend on one
@@ -128,10 +136,20 @@ auth (`publish_shop_orders`) and error style.
 `POST wcpos/v2/orders/{id}/payment-methods/{method}/submit`
 `{ "attempt_id": uuid, "values": { "<id>": value } }`
 
-Free, for a method in `gateway` mode: sets `$_POST[id] = value` for each declared component
-(checkbox → `'1'` when true, unset when false; a value for an undeclared id is dropped), calls the
-gateway's `validate_fields()`, collects `wc_get_notices('error')` and clears them, then calls
-`process_payment( $order_id )` and reads the outcome (§3.1). Response:
+Free, for a method in `gateway` mode and a POS order (`409 wcpos_invalid_transition` otherwise;
+`403 wcpos_payment_method_disabled` when not `pos_enabled`): first **validates the values against
+the declared schema** (`required`, string or boolean by component, `select` membership) and
+answers `wcpos_fields_invalid` keyed per component before the gateway sees anything; then gives the
+request a WooCommerce session if it has none (REST requests have none, and `wc_add_notice()` needs
+one; a request-scoped handler, never `init()`ed, so no cookie and no session row); sets
+`$_POST[id] = value` for each declared component (checkbox → `'1'` when true, unset when false; a
+value for an undeclared id is dropped); sets each string value **slashed** (`wp_slash()`, as WordPress does for every request global, so
+a gateway's `wp_unslash()` round-trips); calls the gateway's `validate_fields()`, collects
+`wc_get_notices('error')` keyed by the notice's own `id` data else `_form`, and clears them (a
+`false` return with no notice is still a refusal, under `_form`);
+**assigns the gateway to the order** (`payment_method`, the descriptor's title) as WooCommerce's
+own pay form does before `process_payment()`; then calls `process_payment( $order_id )` and reads
+the outcome (§3.1). Response:
 
 ```json
 { "outcome": "sent" | "recorded", "payment": row | null, "order": summary }
@@ -147,15 +165,21 @@ gateway's `validate_fields()`, collects `wc_get_notices('error')` and clears the
 | `wcpos_payment_conflict` | 409 | A live leg exists (the method is `partial: false`; the till should not have offered it). |
 | `wcpos_capture_mode_unsupported` | 501 | The method is not in `gateway` mode. |
 
-Idempotent on `attempt_id`: a replay of a known attempt returns the stored answer and never calls
-the gateway again. Free keeps the last attempt per order in the awaiting-customer stamp (§3.2) and,
-for a `recorded` outcome, on the row's `provider_refs.attempt_id`.
+Idempotent on `attempt_id` for the life of the order: a replay of a known attempt returns the
+stored answer and never calls the gateway again. A `recorded` attempt is the row itself (the
+attempt id **is** the client-minted row id, so the row is `source: app` like every app row and the
+ledger's own replay rule applies); a `sent` attempt is remembered in the stamp's `attempts[]`,
+which **keeps every earlier attempt** when *Send again* overwrites the current one (capped at 20),
+so a delayed retry of an earlier send never sends twice.
 
 ### 2.2 Cancel (R8)
 
-`POST wcpos/v2/orders/{id}/payment-methods/{method}/cancel` `{ "reason"? }`
+`POST wcpos/v2/orders/{id}/payment-methods/{method}/cancel` `{ "attempt_id", "reason"? }`
 
-Clears the awaiting-customer stamp, returns the order to `pos-open` through the existing two-status
+`attempt_id` names the send the till means to undo: `409 wcpos_payment_conflict` when it is not the
+stamp's current attempt (a stale cancel after *Send again*, or another till's view), and
+`409 wcpos_invalid_transition` when `{method}` is not the stamp's method. Otherwise clears the
+awaiting-customer stamp, returns the order to `pos-open` through the existing two-status
 flip, adds an order note, and **does not call the gateway** (Woo gateways have no cancel hook; the
 pay link stops working on a `pos-open` order as it does today). Stock follows Woo's own status hooks.
 `409 wcpos_invalid_transition` when the order holds no stamp or a counting row exists.
@@ -169,14 +193,24 @@ window the passthrough uses around `process_payment()` and watches `woocommerce_
 and `woocommerce_order_status_changed` for this order only:
 
 - **`recorded`** — `payment_complete()` fired, or the gateway landed a status in
-  `wc_get_is_paid_statuses()`: Free mints a `captured` row (`source: app`, `capture_mode: gateway`,
-  `method_id`, `kind` from the descriptor, `amount` = the order total, `provider_refs.transaction_id`
-  from the order, `provider_refs.attempt_id`) through `Ledger`, derives, and answers with the row.
+  `wc_get_is_paid_statuses()`: Free mints a `captured` row (`id` = the attempt id, `source: app`,
+  `capture_mode: gateway`, `method_id`, `kind` from the descriptor, `amount` = the order total,
+  `provider_refs.transaction_id` from the order) through the passthrough's own minting, derives, and
+  answers with the row. **Observed money wins:** if the listener saw the order paid and
+  `process_payment()` then threw or returned anything but `success`, the row is still minted and the
+  answer is `recorded` (logged as a warning); a bad return value never discards money that moved.
   This is what the local custom-gateway template, Account Funds and any gateway that charges
   inside `process_payment()` produce.
 - **`sent`** — anything else: `result: success` with the order left where the gateway put it
   (`pending` for the email gateway, `on-hold` for a purchase-order gateway). No row. Free writes the
   stamp (§3.2) and answers with `payment: null`.
+- **A redirect elsewhere is refused.** A hosted checkout (PayPal Standard and every off-site
+  gateway) answers `result: success` with a `redirect` to the provider's page: neither record-now
+  nor send-and-leave, and only a browser can follow it. When no money was observed and the
+  redirect's host is not this site's, Free answers `502 wcpos_provider_error` with `data.detail`
+  naming the host, and writes nothing; a redirect on this site (the order-received page, a custom
+  thank-you) is what a normal gateway returns and stays as above. (Paul, via roadmap-00,
+  2026-10-08.)
 
 A `verb.kind` that disagrees with the outcome is accepted and logged at info; the money is the truth.
 `Orders::apply_unpaid_gateway_order_status()` does not run on this route: the gateway's own status
@@ -187,15 +221,18 @@ stands.
 One order meta, `_wcpos_awaiting_customer`, written on `sent`:
 
 ```json
-{ "method_id": "wcpos_email_invoice", "destination": "x@y", "attempt_id": "…", "sent_at_gmt": "…", "cashier_id": 7 }
+{ "method_id": "wcpos_email_invoice", "destination": "x@y", "attempt_id": "…", "attempts": ["…"], "sent_at_gmt": "…", "cashier_id": 7 }
 ```
 
 `destination` is the value of the first `field` with `input: email` or `tel`, else `null`. While the
 stamp is set and no counting row exists, the ledger projection (ledger §3.3) and the two-status
 cancel **leave the order's status alone**: a sent order is `pending` or `on-hold` with no live row
-and must never be re-projected to `pos-open`. The stamp clears when any counting row lands (the
-passthrough's row when the customer pays online, or a till payment when the customer returns), when
-the order reaches a terminal Woo status, or on the cancel route. The receipt, the orders list and
+and must never be re-projected to `pos-open`. A stamped order **counts as in progress** for the projection whatever status the gateway left it in
+(`on-hold` from a purchase-order gateway included), so the moment money lands the stamp clears and
+the order projects to `pos-partial` or completes, instead of staying `on-hold` beside a ledger that
+says otherwise. The stamp clears when any counting row lands (the passthrough's row when the
+customer pays online, or a till payment when the customer returns), when the order reaches a paid,
+`cancelled`, `refunded` or trashed status, or on the cancel route. The receipt, the orders list and
 the customer display read it for *Invoice sent to x@y on …*. No new registered order status.
 
 ### 3.3 Reports, receipts, display
@@ -240,7 +277,9 @@ state of the same name on the mockup.
 
 The order is found in Orders under its `pending`/`on-hold` status with the stamp's line. Opening it
 offers the keypad on the full balance (any counting row clears the stamp), **Send again** (the
-submit route with corrected values; the stamp is overwritten) and **Cancel invoice** (§2.2). No new
+submit route with a new `attempt_id` and corrected values; the stamp's current attempt is replaced
+and the earlier ones stay in `attempts[]`) and **Cancel invoice** (§2.2, naming the current
+attempt). No new
 list, no banner in the cart.
 
 ## 5. The gateway author's side
