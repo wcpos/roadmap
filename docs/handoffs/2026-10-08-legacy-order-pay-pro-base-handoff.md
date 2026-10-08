@@ -88,8 +88,28 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   requires. Another session had already reverted `main` to stripe-php 21, so no release carried
   the break.
 - **Stripe, still to do:** conformance transcripts under wp-env (Stripe's CI is plain PHPUnit
-  with Pro stubs; the job needs the sibling-Pro shape Mercado Pago's has). Then SumUp the same
-  way, then the Mollie, Square and Payarc ports.
+  with Pro stubs; the job needs the sibling-Pro shape Mercado Pago's has).
+- **SumUp #52** (`next`, open, approved at `feb06ad`, then the two Low findings taken at
+  `75e0aa5`): the Pro gate at 30 and the web-checkout removal; SumUp has no Blocks and no MOTO,
+  and no PHPUnit, only `tests/regression/*.php` scripts plus phpcs on a file list.
+- **SumUp PR B, designed, not started:** no MOTO carve-out, so the old order-pay panel goes
+  entirely: `payment_fields()` → `wcpos_pro_order_pay_panel()` after the description;
+  `enqueue_payment_scripts()`, `assets/js/payment.js` and the `sumup_create_checkout`,
+  `sumup_cancel_checkout`, `sumup_check_payment_status` AJAX actions deleted; `process_payment()`
+  → `is_paid()` short-circuit then `wcpos_pro_order_pay_process()`; no `process_refund` exists
+  (refunds are Pro's through the provider). Keep `sumup_pair_reader`/`unpair` (settings page) and
+  the legacy admin-ajax `sumup_webhook` with an adopted-intent skip. **Adoption** (Stripe's
+  shape: boundary, pass-start time, Free `Order_Lock`, fresh read): in flight means
+  `_sumup_checkout_status === 'PENDING'` with a transaction id (the old panel's
+  `client_transaction_id`) and `needs_payment()`; the action reference is
+  `_sumup_reader_id . ':' . transaction_id`, which `SumUp_Server_Provider::fetch()` understands;
+  without the provider's `checkout` marker fetch() never calls a leg cancelled on its own, so an
+  adopted attempt is captured when its transaction appears or voided at the deadline, never
+  wrong about money. The old panel never calls `payment_complete()` from its webhook alone (the
+  old JS did it through the form submit), so adoption is what sees a mid-flight attempt through.
+  Regression scripts to rewrite: `payment-interface-contract.php`,
+  `process-payment-requires-success.php`, `payment-status-*.php`.
+- Then the Mollie, Square and Payarc ports from the template.
 - **Order of the rest:** Mercado Pago live first (Paul opens the seller account; Windcave is not
   a priority), Stripe PR B then conformance PR, SumUp the same way, then Mollie, Square, Payarc
   ports from the template.
