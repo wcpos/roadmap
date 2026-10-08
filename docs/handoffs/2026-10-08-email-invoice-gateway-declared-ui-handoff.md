@@ -79,7 +79,7 @@ App (`wcpos/monorepo`, lane `next`, `packages/core`):
 
 ## What to build, in order
 
-**Status 2026-10-08:** step 1's decision ticket is open as [wcpos/roadmap#415](https://github.com/wcpos/roadmap/issues/415), linked from #120's Notes and its registration-model item. Steps 2 to 5 wait for Paul's ruling there and for the tender-pane slices on `next`.
+**Status 2026-10-08:** step 1's decision ticket is open as [wcpos/roadmap#415](https://github.com/wcpos/roadmap/issues/415), linked from #120's Notes and its registration-model item. Steps 2 to 5 wait for Paul's ruling there and for the tender-pane slices on `next`. **Later the same day** Paul asked for a survey of the gateway families first: #415 is blocked on the research ticket [wcpos/roadmap#416](https://github.com/wcpos/roadmap/issues/416), whose findings land at `docs/research/2026-10-08-pos-payment-method-families.md`; #415's proposal is re-grilled on them.
 
 Each step is one PR on `next` of the repo named. Stop after step 1 and get Paul's word on the
 descriptor before any app code.
