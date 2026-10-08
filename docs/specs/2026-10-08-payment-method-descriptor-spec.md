@@ -279,7 +279,11 @@ it stands and the balance due, with the stamp's line beneath; the display receiv
 Paid moment, no `checkout.completed` audit row is written (a `checkout.sent` row is), the receipt
 prints the balance due, the display drops to idle. A `recorded` outcome goes through the manual-leg
 predicate with the returned row and summary, exactly as a `manual` record does. The completion
-journal treats a `sent` attempt as decided on the response.
+journal treats a `sent` attempt as decided on the response. **The response's `order` summary is the
+truth for the moment shown:** a `sent` answer whose summary status is `pos-open` (a replay of an
+earlier send after a later one was cancelled at another till) shows no sent moment and writes no
+`checkout.sent` row; the pane stays on the order with its balance due (third review of
+wcpos/woocommerce-pos#2162).
 
 The sent moment's design is step 4's work under the tender-pane spec and the design rules: same
 surface, a neutral (not green) state, headline *Invoice sent*, sub-line *to x@y · 46,00 £ due*,
