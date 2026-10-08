@@ -82,7 +82,7 @@ App (`wcpos/monorepo`, lane `next`, `packages/core`):
 Each step is one PR on `next` of the repo named. Stop after step 1 and get Paul's word on the
 descriptor before any app code.
 
-1. **Decision ticket on #120, then the spec** (roadmap repo). Charter: the tender-method
+1. **Decision ticket on #120, then the spec** (roadmap repo). Charter: the payment-method
    descriptor. Decide and write down:
    - **The declared-UI schema**: a host-component tree with a closed component set for v1. Enough
      for this gateway and the next ten Woo gateways: `field` (text, email, tel, number), `checkbox`,
