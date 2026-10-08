@@ -83,36 +83,34 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   by hand. Five review rounds; the reviewer found that Free already mints a `webview` row for
   every old-panel sale (my first refund rule misrouted exactly the MOTO sales), and that the old
   webhook and AJAX handlers would have recorded an adopted attempt twice. Both fixed with tests.
-- **Stripe #149** merged to `main` at `a4b8e1b` and **#163** (open, `next`): PaymentIntents use
+- **Stripe #149** merged to `main` at `a4b8e1b` and **#163** merged to `next` at `2ecdc3b`: PaymentIntents use
   `allowed_payment_method_types`, the parameter Stripe API 2026-09-30.endive (stripe-php 22)
   requires. Another session had already reverted `main` to stripe-php 21, so no release carried
   the break.
 - **Stripe, still to do:** conformance transcripts under wp-env (Stripe's CI is plain PHPUnit
   with Pro stubs; the job needs the sibling-Pro shape Mercado Pago's has).
-- **SumUp #52** (`next`, open, approved at `feb06ad`, then the two Low findings taken at
-  `75e0aa5`): the Pro gate at 30 and the web-checkout removal; SumUp has no Blocks and no MOTO,
-  and no PHPUnit, only `tests/regression/*.php` scripts plus phpcs on a file list.
-- **SumUp PR B, designed, not started:** no MOTO carve-out, so the old order-pay panel goes
-  entirely: `payment_fields()` → `wcpos_pro_order_pay_panel()` after the description;
-  `enqueue_payment_scripts()`, `assets/js/payment.js` and the `sumup_create_checkout`,
-  `sumup_cancel_checkout`, `sumup_check_payment_status` AJAX actions deleted; `process_payment()`
-  → `is_paid()` short-circuit then `wcpos_pro_order_pay_process()`; no `process_refund` exists
-  (refunds are Pro's through the provider). Keep `sumup_pair_reader`/`unpair` (settings page) and
-  the legacy admin-ajax `sumup_webhook` with an adopted-intent skip. **Adoption** (Stripe's
-  shape: boundary, pass-start time, Free `Order_Lock`, fresh read): in flight means
-  `_sumup_checkout_status === 'PENDING'` with a transaction id (the old panel's
-  `client_transaction_id`) and `needs_payment()`; the action reference is
-  `_sumup_reader_id . ':' . transaction_id`, which `SumUp_Server_Provider::fetch()` understands;
-  without the provider's `checkout` marker fetch() never calls a leg cancelled on its own, so an
-  adopted attempt is captured when its transaction appears or voided at the deadline, never
-  wrong about money. The old panel never calls `payment_complete()` from its webhook alone (the
-  old JS did it through the form submit), so adoption is what sees a mid-flight attempt through.
-  Regression scripts to rewrite: `payment-interface-contract.php`,
-  `process-payment-requires-success.php`, `payment-status-*.php`.
+- **SumUp #52** merged to `next` at `2154c6a`: the Pro gate at 30 and the web-checkout
+  removal; SumUp has no Blocks and no MOTO, and no PHPUnit, only `tests/regression/*.php`
+  scripts plus phpcs on a file list.
+- **SumUp #53 (PR B)** merged to `next` at `53c57db`, independent review approved at `078474f`
+  after eight rounds. The POS order-pay page renders Pro's panel; the old panel, its script and
+  its three AJAX actions are gone; pairing and the legacy admin-ajax webhook stay.
+  `process_payment()` short-circuits a paid order then hands to `wcpos_pro_order_pay_process()`;
+  refunds stay Pro's through the provider. **Adoption** works a snapshotted queue
+  (id => `reader:client_transaction_id`) under Free's `Order_Lock`, 25 per request, seeding the
+  provider's checkout marker from the old panel's start time so an unpaid adopted attempt is
+  confirmed finished from the reader's activity, not voided at the deadline. **Recorded
+  successes** whose submit never landed (PAID/SUCCESSFUL meta, unpaid, statuses
+  `pending`/`failed`/`pos-open`/`pos-partial`) are completed on Free's ten-minute
+  `wcpos_payments_sweep` under the lock, only on SumUp's authenticated lookup saying SUCCESSFUL;
+  FAILED/CANCELLED on the matching id is the only final no, anything else retries on a
+  1/5/15/60 min/6 h backoff and ends with an order note for staff. The findings the rounds
+  closed are listed on the PR and on roadmap#95 (comment 6069228210). Not evaluated: Pro's
+  panel in a browser for SumUp; anything against a live SumUp account; conformance transcripts.
 - Then the Mollie, Square and Payarc ports from the template.
 - **Order of the rest:** Mercado Pago live first (Paul opens the seller account; Windcave is not
-  a priority), Stripe PR B then conformance PR, SumUp the same way, then Mollie, Square, Payarc
-  ports from the template.
+  a priority), the Stripe and SumUp conformance PRs (each needs a wp-env job with the sibling-Pro
+  shape Mercado Pago's has), then Mollie, Square, Payarc ports from the template.
 
 **Two defects found on the way:**
 
@@ -120,7 +118,9 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
 
 2. **stripe-php 22 breaks PaymentIntent creation.** The Dependabot bump (#143, merged to Stripe's `main` today, unreleased) pins Stripe API `2026-09-30.endive`, which removed the writable `payment_method_types`; every Terminal and phone-order intent would fail with `payment_method_types_no_longer_supported`. The SDK sends its pinned version on each request, so this is independent of the merchant's own API version. Fix on `main`: wcpos/stripe-terminal-for-woocommerce#149 (`allowed_payment_method_types`, which now accepts `card_present` and `interac_present`); the live smoke job that was red on `main` is green on the PR. `next` was reverted to stripe-php ^21 separately and is unaffected until it bumps.
 
-**Stripe on `next`, status:** #148 (Pro-only gate at 30, web checkout removed, E2E site runs Pro via the org bot token) awaiting its CI run after merging `next`; PR B (POS order-pay onto Pro's panel with the MOTO carve-out, legacy adoption) is briefed and starts when #148 merges; conformance transcripts are a third PR because they need Pro's suite under wp-env, which Stripe's plain-PHPUnit CI does not have yet.
+**Stripe on `next`, status:** #148 (Pro-only gate at 30, web checkout removed, E2E site runs Pro via the org bot token) merged at `303fd05`; #161 (PR B: POS order-pay onto Pro's panel with the MOTO carve-out, legacy adoption) merged at `5266900` after five review rounds; #163 merged at `2ecdc3b`. Conformance transcripts remain a third PR because they need Pro's suite under wp-env, which Stripe's plain-PHPUnit CI does not have yet.
+
+**SumUp on `next`, status:** #52 merged at `2154c6a`; #53 (PR B) merged at `53c57db`. Same conformance gap as Stripe.
 
 ## Not done
 
@@ -129,6 +129,10 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
 - A dev-next `sim-prompt` reader; a browser/webview run of the order-pay panel; a real
   admin-post request against the bundle download.
 - Live WisePad 3 money-leg proofs — need Paul's test card and iPhone.
+- Stripe and SumUp conformance transcript PRs (a wp-env CI job with the sibling Pro checkout
+  in each repo first); a browser run of Pro's panel on each; nothing against a live SumUp
+  account yet.
+- Mollie, Square and Payarc ports from the template.
 
 ## Lessons recorded in memory
 
