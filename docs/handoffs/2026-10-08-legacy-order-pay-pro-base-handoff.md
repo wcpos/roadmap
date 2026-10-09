@@ -198,12 +198,27 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   start, a Pro sweep for pending refunds, Pro's `adopt()` write order, the live Mollie assumptions).
   Local branches `feat/95-pro-only`, `feat/95-order-pay`, `feat/95-conformance` remain in the Mollie
   clone (squash-merged; `-D` is guarded). Docker daemon untouched; no wp-env left running.
-- **Square and Payarc are not started and are bigger than Mollie's port:** neither has a Pro server
+- **Square started (2026-10-09, Paul still to answer the briefing):** `next` cut from `main` at
+  `1bffc58`; wcpos/square-terminal-for-woocommerce#36 (draft) adds `Square_Server_Provider` for Pro's
+  base beside the untouched old plumbing, with Pro's conformance suite passing over a scripted Square
+  (28 lessons, 25 transcripts; CI on 8.1 and 8.3; the extension installed `--no-dev` there because its
+  PHPUnit 10 cannot share a process with Pro's PHPUnit 9). Square facts that shaped it: a checkout has
+  no decline state (money is read from the payment; a cancelled checkout with a captured payment is
+  money; one ended after a FAILED payment is a failure with the card's code); creates idempotent on the
+  row id with IDEMPOTENCY_KEY_REUSED unanswered; references carry the environment; the Mollie refund
+  re-ask rule applied from the start (key saved before the POST, cron replay under the same key); SDK
+  retries off for the adapter. Live sandbox must check: a declined attempt appears as a FAILED payment
+  in `payment_ids`; a cancel of a PENDING checkout answers CANCELED at once. Record: roadmap#95 comment
+  6080715996. Next for Square: the gate PR, then the panel with adoption (old checkout id
+  `_sqtwc_checkout_id`, reference `woocommerce_order_<id>`, abandoned list `_sqtwc_abandoned_checkout_ids`,
+  processed event ids, `OrderLock`, `PaymentSweeper`, `CheckoutReconciler`, the Square POS app hand-off
+  as a likely carve-out).
+- **Payarc is not started:** neither has a Pro server
   provider at all (no `includes/Server/`, no `wcpos_pro_*` reference), so each needs the template's
   adapter first (Square: the Terminal API checkouts through the scoped SDK with Guzzle, so the
   conformance fake sits on the SDK's HTTP client, PHP >= 8.1 only; Payarc: its terminal sale API),
-  then the gate, the panel with adoption, and conformance. Square also has no refund path yet. A day
-  each, with the review cadence seen tonight.
+  then the gate, the panel with adoption, and conformance. A day each, with the review cadence seen
+  tonight.
 
 ## Lessons recorded in memory
 
