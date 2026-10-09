@@ -111,14 +111,15 @@ result stands.
 
 ### 3.3 Tiers and order (R3)
 
-- **`guard`**: first-party only, runs **outermost**, may refuse, **fails closed** (§3.5).
-- **`extension`**: may observe and rewrite; a `deny` from an extension is ignored, logged and the
+- **`guard`**: first-party only, runs **innermost** (after every extension, before the writer), may refuse, **fails closed** (§3.5).
+- **`extension`**: runs **outermost**; may observe and rewrite; a `deny` from an extension is ignored, logged and the
   chain continues (no surveyed system gives untrusted code a veto; the sandboxed tier inherits
   this rule unchanged). **Fails open.**
-- The chain is `guards (by order) → extensions (by order) → bottom handler`. A guard that must judge
-  the *final* payload (after extensions rewrote it) registers with the highest `order` among guards
-  and judges in `e` as it reaches it, since rewrites flow inward; the README says so with an
-  example. A guard cannot refuse after `next` (the writer has run).
+- The chain is `extensions (by order) → guards (by order) → bottom handler` (**amended overnight
+  2026-10-09, Q5 on #421**: R3 said guards outermost, but then no guard ever sees an extension's
+  rewrite and an extension could rewrite a quantity after the stock guard passed it; guards now run
+  innermost and judge the payload the writer will write). A guard cannot refuse after `next` (the
+  writer has run); a refusal of its own after `next` is a strike and the inner answer stands.
 - v1 registers no `extension`-tier hooks except the audit observer (§8.3), which is first-party code
   deliberately registered as an extension to prove the lane.
 
@@ -155,7 +156,8 @@ export const ACTION_HOOK_STRIKES = 3;
 ```
 
 - **One budget per dispatch**, shared by every hook on it, started when the first hook is called.
-  A hook still pending when the budget ends is treated as timed out.
+  A hook still pending when the budget ends is treated as timed out. A hook's own timer stops once
+  it has called `next`: the time it spends waiting on the chain beneath is the inner hooks' to pay.
 - **On timeout or throw:** an `extension` hook is skipped and the chain continues; a `guard` hook
   refuses with `reasonKey: 'hook_timeout'` or `'hook_failed'` and the hook's `id` in `detail`.
 - **Strikes:** after `ACTION_HOOK_STRIKES` timeouts or throws in a session the hook is switched off
@@ -228,8 +230,13 @@ slices' pattern).
 
 ## 8. Build slices (one PR each on `next`, each under the 400-line non-test ceiling)
 
-1. **The primitive + the stock guard** (`wcpos/monorepo`). The `actions/` module (§4) and the
-   lint rule in allowlist mode. `useAddItemToOrder` and `useUpdateLineItem` dispatch `cart.line.add`
+1. **The primitive** (`wcpos/monorepo`), then **1b, the stock guard onto it** (split overnight
+   2026-10-09: the two together came to about 520 non-test lines, over the 400 ceiling, so the
+   primitive lands alone with its tests, README, LEDGER, export and glossary, and the stock-guard
+   move is the next PR). The lint rule moves to slice 3. Two semantics fixed while building: a
+   disabled **guard** is not skipped but refuses every dispatch (`actions.hook_disabled`), a
+   disabled extension is skipped; and `getActionHooks` keeps disabled guards for that reason.
+   The `actions/` module (§4). `useAddItemToOrder` and `useUpdateLineItem` dispatch `cart.line.add`
    / `cart.line.update` inside their queued mutation; `checkCartStock` becomes the `stock.guard`
    hook (`tier: 'guard'`), returning `{ deny: { reasonKey: stockRejectionKey } }` or `next(e)`, with
    the backorder toast moved to after `await next(e)`. Behaviour-preserving. Tests:
