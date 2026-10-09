@@ -216,11 +216,19 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   unanswered; the create body carries no translated string. Records: roadmap#95 comments 6080715996
   and the landing comment after it. **#37 (Pro-only gate, POS-only gateway, web checkout removed)
   merged at `908e744`** after two independent passes (memoized POS switch; child-process gate test
-  with Pro present and absent). Next for Square: the panel with adoption (old checkout id
-  `_sqtwc_checkout_id`, reference `woocommerce_order_<id>`, abandoned list `_sqtwc_abandoned_checkout_ids`,
-  processed event ids, `OrderLock`, `PaymentSweeper`, `CheckoutReconciler`, the Square POS app hand-off
-  as a likely carve-out).
-- **Payarc is not started:** neither has a Pro server
+  with Pro present and absent). **#38 (order-pay through Pro's panel, legacy adoption, Square POS
+  app carve-out) merged at `a6005e5`** after eleven independent passes and ten bot threads
+  (roadmap#95 comment 6085549425). Beyond the Mollie shape: adoption reads under BOTH locks with
+  caches cleared (Square's old lock waits five seconds, long enough for a completion); a one-hour
+  adoption window, an older unknown pointer holding the panel until the old sweep reads it unless
+  Pro's row reads live; the old attempt closes only once Pro's row is `captured`; the cashier's cancel
+  judged under the lock, the cleanup path unguarded; a live Pro row blocks an old-panel start under
+  either collection method and the POS app button on any return URL; a POS app transaction returned
+  for a paid order is noted as a possible second charge only when verified, naming the order in its
+  note, not another order's, at this location, in this currency. **Square is complete on `next`;
+  the old plumbing's removal is for its 1.0.0.** Not evaluated: Pro's panel in a browser on Square;
+  the upgrade pass on a real store; a live Square account (which note the POS app fills is unknown).
+- **Payarc is not started** (the last of the handoff's order): neither has a Pro server
   provider at all (no `includes/Server/`, no `wcpos_pro_*` reference), so each needs the template's
   adapter first (Square: the Terminal API checkouts through the scoped SDK with Guzzle, so the
   conformance fake sits on the SDK's HTTP client, PHP >= 8.1 only; Payarc: its terminal sale API),
