@@ -22,7 +22,8 @@
 > today's toast (verified), a cash sale's audit row carries the actor and `hookIds: []` (verified,
 > order #113034), the no-session refusal is NOT exercised live because every dev-next register has
 > an open session the E2E suite relies on (unit-covered). Electron waits for the promotion build.
-> Left: Q7, and the no-session check on a local wp-env store if wanted. Q7 (should a disabled
+> Q7 ruled (keep: a switched-off hook stays off until restart). Nothing is open on #421; the
+> no-session refusal can be seen live on a local wp-env store if ever wanted. Q7 (should a disabled
 > guard recover without a restart) is open on #421 with recommendation (a) keep it. The table
 > below is the overnight state before these merges.
 
