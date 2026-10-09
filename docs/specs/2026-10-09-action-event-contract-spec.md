@@ -204,11 +204,18 @@ export const ACTION_HOOK_STRIKES = 3;
   barrel, API pinned for the dogfood period (#124's lock, as slots).
 - **Static registration in code**, module level, no manifest; registration order is the import
   order of the first-party consumers, as slots.
-- **The lint fence:** an ESLint rule in `packages/eslint` (`wcpos/orders-write-through-actions`)
-  that reports `incrementalModify`, `incrementalPatch`, `patch`, `insert` and `bulkUpsert` on the
-  `orders` collection outside the four bottom handlers and the services already named sole writers
-  in their ledgers. Existing offenders go in the rule's allowlist with the ticket that burns each
-  down; the allowlist shrinks as consumers touch them, never grows.
+- **The write fence** (amended 2026-10-09, slice 3b, wcpos/monorepo#2459): a ratcheting scanner
+  under `packages/eslint` after the Uniwind precedent (`orders-write-scanner.mjs`,
+  `orders-write-fence.test.mjs`, `orders-write-allowlist.json`), not an ESLint rule — order writes
+  are too polymorphic (`localPatch({ document: order })`, `order.incrementalPatch`,
+  `collections.orders.insert`) for a type-blind rule, and the ratchet gives "shrinks, never grows"
+  for free. It records document writes (`incrementalModify`, `incrementalPatch`, `patch`, `update`)
+  on any identifier containing "order", `localPatch`/`localModify` on such a document, and the
+  `orders` collection's insert/upsert methods, under `screens/main/pos/` and `services/`. The four
+  bottom handlers and the leg/completion writers the tender handler delegates to are exempt by a
+  named list in the scanner with a reason each; every other writer is in the allowlist with its
+  count, burning down under #421 as each becomes a reserved event or moves behind a bottom
+  handler. Name-based: an order held under a name without the word escapes it (documented).
 
 ## 5. Logging
 
