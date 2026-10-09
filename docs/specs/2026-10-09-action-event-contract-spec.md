@@ -170,7 +170,10 @@ export const ACTION_HOOK_STRIKES = 3;
   refuses with `reasonKey: 'hook_timeout'` or `'hook_failed'` and the hook's `id` in `detail`.
 - **Strikes:** after `ACTION_HOOK_STRIKES` timeouts or throws in a session the hook is switched off
   for the session; one log row names it. The registry exposes `getActionHookState(id)` for the logs
-  screen.
+  screen. **Ruled 2026-10-09 (Q7 on #421, Paul, as recommended): a switched-off hook stays off until
+  the app restarts; there is no re-arm, timed or manual.** A guard that failed three times on a money
+  path is not re-armed silently, and a disabled guard refuses every dispatch until then (fail closed);
+  the cashier's recovery is a restart, which the `actions.hook.disabled` row names.
 - **No effects before `next`:** `ctx` in v1 is **read-only**: `ctx.log(level, event, data)`,
   `ctx.t(key)`, `ctx.read(collection, id)` (plain data), `ctx.settings` (plain data),
   `ctx.now()`. A hook that must act does so after `await next(e)`. A timed-out hook keeps running
