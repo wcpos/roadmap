@@ -178,18 +178,26 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   the order-status cleanup still cancels an adopted payment when the order is paid another way (Pro
   voids only on cancelled/failed). Refunds: Pro leg → Pro; the old path refunds the transaction id
   first (unless it is a Pro leg's), then the newest paid old-panel attempt. A webhook capture carries
-  the complete provider refs so Free sets the order's transaction id either way. **the conformance PR** (opened right after #37 merged; wp-env job with the sibling Pro, 24 transcripts; capabilities `cancel`,
+  the complete provider refs so Free sets the order's transaction id either way. **#38 merged at `00a6f03`** (five independent passes, eight bot threads; wp-env job with the sibling Pro, 24 transcripts; capabilities `cancel`,
   `cancel_final`, `cancel_requested_then_completed`, `webhook`, `webhook_money_only`, `refund`,
   `partial_refund`, `expiry`, `legacy_adoption`, `historical_webview_refund`; not claimed
   `cancel_unsupported`, `manual_capture`, `prompt`, `test_live_isolation`) found that the client threw
   one `RuntimeException` for transport loss, 5xx and 4xx alike, so a lost create response dropped the
   leg and a retry could charge twice: `MollieUnansweredException` now maps to Pro's `indeterminate()`
   on create, fetch and refund, and the replay reuses the `Idempotency-Key`. Also: `verify_webhook()`
-  resolves adopted actions through Pro's record; `refund()` falls back to the transaction reference
-  and takes the order from the refund record. The ten defect classes the three ports' reviews found
+  resolves adopted actions through Pro's record and answers a forged id with 404; `refund()` falls
+  back to the transaction reference and takes the order from the refund record; a refund POST Mollie
+  did not answer keeps its WooCommerce record as pending (an error made WooCommerce delete it and a
+  retry refund twice), carries the attempt id as `Idempotency-Key`, and the extension's own cron
+  re-asks until the refund is confirmed or gives up with a note. Nothing in Pro re-reads a pending
+  refund (Mollie's ordinary queued refunds included): a Pro-side question in the morning briefing. The ten defect classes the three ports' reviews found
   are in memory `terminal-port-review-lessons` for the Square and Payarc ports. **Not evaluated:**
   Pro's panel in a browser on Mollie; anything against a live Mollie account (its test profile has no
   point-of-sale method).
+- **Morning briefing posted on roadmap#95** (2026-10-09 ~06:20): four questions for Paul (Square/Payarc
+  start, a Pro sweep for pending refunds, Pro's `adopt()` write order, the live Mollie assumptions).
+  Local branches `feat/95-pro-only`, `feat/95-order-pay`, `feat/95-conformance` remain in the Mollie
+  clone (squash-merged; `-D` is guarded). Docker daemon untouched; no wp-env left running.
 - **Square and Payarc are not started and are bigger than Mollie's port:** neither has a Pro server
   provider at all (no `includes/Server/`, no `wcpos_pro_*` reference), so each needs the template's
   adapter first (Square: the Terminal API checkouts through the scoped SDK with Guzzle, so the
