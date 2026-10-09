@@ -17,9 +17,12 @@
 > rows carry `actions.hook.timeout` / `.failed` / `.disabled` with registry labels, and the §4 write
 > fence is a ratcheting scanner with a 16-file allowlist under `packages/eslint` (spec §4 amended;
 > four review rounds, one past the stated stop rule because round two's fix regressed the
-> `engine.write` match). **All build slices of the contract are on `next`.** Left: the spec §11
-> live checks on dev-next (add past stock with the guard on; a cash sale with no open session; a
-> cash sale's audit row with actor and empty hook list), and Q7. Q7 (should a disabled
+> `engine.write` match). **All build slices of the contract are on `next`.** Spec §11 live checks run on
+> dev-next (bundle from `b1dfc018`, Paul's "do as you recommend"): the over-stock add is refused with
+> today's toast (verified), a cash sale's audit row carries the actor and `hookIds: []` (verified,
+> order #113034), the no-session refusal is NOT exercised live because every dev-next register has
+> an open session the E2E suite relies on (unit-covered). Electron waits for the promotion build.
+> Left: Q7, and the no-session check on a local wp-env store if wanted. Q7 (should a disabled
 > guard recover without a restart) is open on #421 with recommendation (a) keep it. The table
 > below is the overnight state before these merges.
 
