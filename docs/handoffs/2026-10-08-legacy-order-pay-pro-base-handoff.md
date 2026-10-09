@@ -139,16 +139,27 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   once the provider reports the checkout ended unpaid, and a paid-but-unlisted checkout is never
   ended on a guess (new lesson `create_indeterminate_paid`). Decided without Paul; recorded on
   roadmap#95 (comments 6071392800, 6072130671).
-- **SumUp conformance PR open:** wcpos/sumup-terminal-for-woocommerce#54 (branch `feat/95-conformance`),
-  CI green on its first head, under independent review (round two at the time of writing). The
-  adapter now: keeps an unanswered checkout's leg pending; a replay sends nothing and returns
-  `reader:row-<row id>`; the held poll ends the leg only after the store's cancel (SumUp's delivery or a
-  120 s grace), or finds the paid transaction by `foreign_transaction_id` when affiliate keys exist;
-  markers live a day; event ids derive from the observation; the webhook resolves adopted rows and
-  does its local lookup before any outbound call; refunds fall back to the transaction id. Fixture
-  claims the three new capabilities plus `expiry`; not claimed: `cancel_final`, `cancel_unsupported`,
-  `manual_capture`, `prompt`, `test_live_isolation`. A browser run of Pro's panel on each extension and
-  anything against a live SumUp account (its listing delay most of all) remain not evaluated.
+- **SumUp conformance landed:** wcpos/sumup-terminal-for-woocommerce#54 merged to `next` at `02b58e9`
+  after three independent review rounds (approved at `151ef1d`, delta-approved at `e8ff94b`); a
+  `conformance` CI job (wp-env, sibling Pro via the org bot token, PHP 7.4 and 8.3) runs Pro's suite
+  against the real adapter over a scripted SumUp, 24 transcripts committed. The adapter now: keeps an
+  unanswered checkout's leg pending; a replay sends nothing and returns `reader:row-<row id>`; the
+  held poll ends the leg only after the store's own cancel (SumUp's delivery that the checkout ended,
+  or a 120 s grace), or finds the paid transaction by `foreign_transaction_id` when affiliate keys
+  exist, and a lookup SumUp cannot answer concludes nothing (logged); the held markers are
+  non-autoloaded options, never transients, so a persistent object cache cannot strand the leg or
+  block its refund; a replay whose start marker is gone treats the checkout as old, so a cancel never
+  terminates a reader that may be on another sale; the row's `ended` marker and the settled record
+  are written only for rows whose create went unanswered, against the authenticated lookup; event ids
+  derive from the observation; the webhook resolves adopted rows and does its local lookup before any
+  outbound call; refunds fall back to the transaction id. Fixture claims the three new capabilities
+  plus `expiry`; not claimed: `cancel_final`, `cancel_unsupported`, `manual_capture`, `prompt`,
+  `test_live_isolation`. Record on roadmap#95 (comment 6072583745).
+  **Not evaluated:** a browser run of Pro's panel on SumUp; anything against a live SumUp account.
+  Two assumptions a live run must check: SumUp lists a paid checkout within the 120 s grace, and SumUp
+  echoes `foreign_transaction_id` on its transaction (a transaction without the field still matches,
+  so a strict match cannot silently disable the path, but a wrong assumption here means the held poll
+  completes on the delivery alone).
 - Mollie, Square and Payarc ports from the template.
 
 ## Lessons recorded in memory
@@ -160,6 +171,6 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
 
 ## Housekeeping
 
-- Pro local branch `feat/95-conformance` still exists (squash-merged remotely; `git branch -d`
-  refuses). Safe to delete.
+- Local branches `feat/95-conformance` still exist in Pro and SumUp (squash-merged remotely;
+  `git branch -d` refuses, `-D` is guarded). Safe to delete.
 - wp-env project for the conformance worktree removed by the cleanup script; Docker daemon untouched.
