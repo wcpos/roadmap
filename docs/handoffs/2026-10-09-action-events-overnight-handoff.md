@@ -13,9 +13,13 @@
 > `extensions/actions/types.ts`. **Slice 3 merged** (wcpos/monorepo#2458, `b1cd0b55`): `checkout.complete`
 > around `finishSale`, the audit observer as the first extension-tier hook, `completeSale` taking
 > the caller's queue context, and the gate's stamped session id binding in the tender handler
-> (LEDGER 23–24); approved first round. The v1 event list is closed. **Slice 3b** is next: the §5
-> logs vocabulary (typed strike rows with registry labels) and the §4 ESLint fence, one tooling PR;
-> then the spec §11 live checks on dev-next. Q7 (should a disabled
+> (LEDGER 23–24); approved first round. The v1 event list is closed. **Slice 3b merged** (wcpos/monorepo#2459, `b1dfc018`): the strike
+> rows carry `actions.hook.timeout` / `.failed` / `.disabled` with registry labels, and the §4 write
+> fence is a ratcheting scanner with a 16-file allowlist under `packages/eslint` (spec §4 amended;
+> four review rounds, one past the stated stop rule because round two's fix regressed the
+> `engine.write` match). **All build slices of the contract are on `next`.** Left: the spec §11
+> live checks on dev-next (add past stock with the guard on; a cash sale with no open session; a
+> cash sale's audit row with actor and empty hook list), and Q7. Q7 (should a disabled
 > guard recover without a restart) is open on #421 with recommendation (a) keep it. The table
 > below is the overnight state before these merges.
 
