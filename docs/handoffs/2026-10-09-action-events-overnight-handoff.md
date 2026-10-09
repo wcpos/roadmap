@@ -10,9 +10,12 @@
 > rewritable in v1, a stale-balance refusal, the cash writer consuming the stamped ids; five
 > independent review rounds, LEDGER 19–22. CI lesson: the Logs event-label scanner reads dotted
 > literals in `pos/checkout` as log types, so the event name and guard ids are constants in
-> `extensions/actions/types.ts`. **Slice 3** (`checkout.complete` + the audit observer) is next from
-> `next`, opening with the reviewers' test-only notes (three loosened cash assertions, distinct stub
-> ids, a stale writer comment, `satisfies` for the event constant). Q7 (should a disabled
+> `extensions/actions/types.ts`. **Slice 3 merged** (wcpos/monorepo#2458, `b1cd0b55`): `checkout.complete`
+> around `finishSale`, the audit observer as the first extension-tier hook, `completeSale` taking
+> the caller's queue context, and the gate's stamped session id binding in the tender handler
+> (LEDGER 23–24); approved first round. The v1 event list is closed. **Slice 3b** is next: the §5
+> logs vocabulary (typed strike rows with registry labels) and the §4 ESLint fence, one tooling PR;
+> then the spec §11 live checks on dev-next. Q7 (should a disabled
 > guard recover without a restart) is open on #421 with recommendation (a) keep it. The table
 > below is the overnight state before these merges.
 
