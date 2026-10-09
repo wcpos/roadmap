@@ -129,13 +129,26 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
 - A dev-next `sim-prompt` reader; a browser/webview run of the order-pay panel; a real
   admin-post request against the bundle download.
 - Live WisePad 3 money-leg proofs — need Paul's test card and iPhone.
-- SumUp conformance PR, after a small Pro companion: Pro's suite gains a `create_replay`
-  capability because SumUp's checkout has no idempotency and a busy reader refuses a second
-  checkout for ~60 s, so a lost create cannot resume the same action; design record on
-  roadmap#95 (comment after 6071383587), decided without Paul. SumUp's provider also needs the
-  unanswered-create rule, the webhook adoption fallback and the transaction-id refund fallback,
-  the same shapes as Stripe #165. A browser run of Pro's panel on each; nothing against a live
-  SumUp account yet.
+- **Overnight 2026-10-09 (Paul asleep):** the Pro companion landed first: wcpos/woocommerce-pos-pro#625
+  merged at `acbc804` after five review rounds. Pro's suite gains `non_idempotent_create`,
+  `webhook_money_only` and `refund_synchronous` (opt-in capabilities with their own lessons; a second
+  simulated fixture claims all three). The design record's first replay rule ("busy on a replay is
+  indeterminate, create anew once dropped") fell in review: a provider that cannot see whether the
+  first checkout was paid must **never dispatch again** for that row; a replay hands back a reference
+  of its own, the first checkout settles by webhook, the leg ends only after the store's own cancel
+  once the provider reports the checkout ended unpaid, and a paid-but-unlisted checkout is never
+  ended on a guess (new lesson `create_indeterminate_paid`). Decided without Paul; recorded on
+  roadmap#95 (comments 6071392800, 6072130671).
+- **SumUp conformance PR open:** wcpos/sumup-terminal-for-woocommerce#54 (branch `feat/95-conformance`),
+  CI green on its first head, under independent review (round two at the time of writing). The
+  adapter now: keeps an unanswered checkout's leg pending; a replay sends nothing and returns
+  `reader:row-<row id>`; the held poll ends the leg only after the store's cancel (SumUp's delivery or a
+  120 s grace), or finds the paid transaction by `foreign_transaction_id` when affiliate keys exist;
+  markers live a day; event ids derive from the observation; the webhook resolves adopted rows and
+  does its local lookup before any outbound call; refunds fall back to the transaction id. Fixture
+  claims the three new capabilities plus `expiry`; not claimed: `cancel_final`, `cancel_unsupported`,
+  `manual_capture`, `prompt`, `test_live_isolation`. A browser run of Pro's panel on each extension and
+  anything against a live SumUp account (its listing delay most of all) remain not evaluated.
 - Mollie, Square and Payarc ports from the template.
 
 ## Lessons recorded in memory
