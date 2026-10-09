@@ -244,7 +244,9 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   traceId; an in-flight read is created/processing; a linked refund completes without the card.
   **Gate #28 merged at `7aec981`** (Pro-only at 2.0, web checkout removed; approved at 1d25f8b, two
   test-only rounds: PHP's array union keeps the LEFT operand's keys, so a fixture built as
-  `$base + array('enabled' => 'yes')` never set it). Next: the panel with adoption (old attempt meta
+  `$base + array('enabled' => 'yes')` never set it). **Panel #29 open at fb8fb31** (Pro's panel,
+  `Legacy_Adoption`, old start/poll/cancel/callback yield; 22 regression scripts, 8 mutation checks,
+  conformance green), independent review in progress. The panel with adoption (old attempt meta
   `_patwc_current_*`, `_patwc_attempt_history`, `PaymentLock`, `PaymentReconciler`, admin-ajax
   callback). Design facts: Pro's adopted row carries a five-minute deadline and the adapter's
   `cancel()` answers 'requested' on TRANSACTION_NOT_FOUND, so a stale pointer PayArc cannot see
