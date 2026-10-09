@@ -4,8 +4,15 @@
 > recommended. **Slice 1a merged** (wcpos/monorepo#2454, `d3ce5cc1`). **Slice 1b merged**
 > (wcpos/monorepo#2455, `8dbeecee`) after four review rounds that added refusal presentation,
 > a row per strike, a `category` option on `ctx.log`, a silenced log for a settled hook and
-> numeric-string hardening. **Slice 2** (`checkout.tender.commit` with the register and session
-> gates) is being built on `feat/action-events-tender-commit` from `next`. Q7 (should a disabled
+> numeric-string hardening. **Slice 2 merged** (wcpos/monorepo#2457, `1aae847f`): `checkout.tender.commit`
+> dispatched from `takeTender` inside the order queue, `register.gate` + `session.gate` as guards
+> (gate reads through `findOpenSession`, the handler writes), `requiredGuards`, amounts not
+> rewritable in v1, a stale-balance refusal, the cash writer consuming the stamped ids; five
+> independent review rounds, LEDGER 19–22. CI lesson: the Logs event-label scanner reads dotted
+> literals in `pos/checkout` as log types, so the event name and guard ids are constants in
+> `extensions/actions/types.ts`. **Slice 3** (`checkout.complete` + the audit observer) is next from
+> `next`, opening with the reviewers' test-only notes (three loosened cash assertions, distinct stub
+> ids, a stale writer comment, `satisfies` for the event constant). Q7 (should a disabled
 > guard recover without a restart) is open on #421 with recommendation (a) keep it. The table
 > below is the overnight state before these merges.
 
