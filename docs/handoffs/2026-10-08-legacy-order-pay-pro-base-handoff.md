@@ -228,7 +228,19 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   note, not another order's, at this location, in this currency. **Square is complete on `next`;
   the old plumbing's removal is for its 1.0.0.** Not evaluated: Pro's panel in a browser on Square;
   the upgrade pass on a real store; a live Square account (which note the POS app fills is unknown).
-- **Payarc is not started** (the last of the handoff's order): neither has a Pro server
+- **PayArc started (2026-10-09 evening):** `next` cut from `main` at `7816f6f`;
+  wcpos/payarc-terminal-for-woocommerce#27 (adapter + conformance, 24 transcripts, CI on 7.4/8.3) open,
+  independent review in progress. PayArc Connect V3 facts: sale accepted at once with a traceId and
+  decided on the terminal; TRANSACTION_NOT_FOUND for seconds after a sale = not visible yet; every
+  call carries X-Idempotency-Key (the sale's is the row id); cancel confirmed by the read, refused
+  once the card is processing; refunds are TERMINAL COMMANDS linked by the sale's 16-char
+  transactionId, decided on the terminal (pending until the callback, noted on the order); the
+  callback is authenticated by the plugin's URL token or PayArc's bearer. Order transaction id for a
+  Pro payment = traceId. Live-run assumptions: a replayed sale under the same key returns the same
+  traceId; an in-flight read is created/processing; a linked refund completes without the card.
+  Next: the gate PR (#28) and the panel with adoption (old attempt meta `_patwc_current_*`,
+  `_patwc_attempt_history`, `PaymentLock`, `PaymentReconciler`, admin-ajax callback).
+- **Payarc sizing before the port started** (kept for the record): neither has a Pro server
   provider at all (no `includes/Server/`, no `wcpos_pro_*` reference), so each needs the template's
   adapter first (Square: the Terminal API checkouts through the scoped SDK with Guzzle, so the
   conformance fake sits on the SDK's HTTP client, PHP >= 8.1 only; Payarc: its terminal sale API),
