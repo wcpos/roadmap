@@ -242,8 +242,16 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   callback is authenticated by the plugin's URL token or PayArc's bearer. Order transaction id for a
   Pro payment = traceId. Live-run assumptions: a replayed sale under the same key returns the same
   traceId; an in-flight read is created/processing; a linked refund completes without the card.
-  Next: the gate PR (#28) and the panel with adoption (old attempt meta `_patwc_current_*`,
-  `_patwc_attempt_history`, `PaymentLock`, `PaymentReconciler`, admin-ajax callback).
+  **Gate #28 merged at `7aec981`** (Pro-only at 2.0, web checkout removed; approved at 1d25f8b, two
+  test-only rounds: PHP's array union keeps the LEFT operand's keys, so a fixture built as
+  `$base + array('enabled' => 'yes')` never set it). Next: the panel with adoption (old attempt meta
+  `_patwc_current_*`, `_patwc_attempt_history`, `PaymentLock`, `PaymentReconciler`, admin-ajax
+  callback). Design facts: Pro's adopted row carries a five-minute deadline and the adapter's
+  `cancel()` answers 'requested' on TRANSACTION_NOT_FOUND, so a stale pointer PayArc cannot see
+  (a sale made under credentials since changed) must be HELD, not adopted; the old plugin has no
+  sweeper, so a stale pointer is read from PayArc once at adoption time (final → the old reconciler
+  settles it; processing → adopt; not found → hold; a trace-less start older than the in-flight
+  window is closed with a note).
 - **Payarc sizing before the port started** (kept for the record): neither has a Pro server
   provider at all (no `includes/Server/`, no `wcpos_pro_*` reference), so each needs the template's
   adapter first (Square: the Terminal API checkouts through the scoped SDK with Guzzle, so the
