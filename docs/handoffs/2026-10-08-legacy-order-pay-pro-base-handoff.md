@@ -160,7 +160,42 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   echoes `foreign_transaction_id` on its transaction (a transaction without the field still matches,
   so a strict match cannot silently disable the path, but a wrong assumption here means the held poll
   completes on the delivery alone).
-- Mollie, Square and Payarc ports from the template.
+- **Mollie port (overnight 2026-10-09, after SumUp #54):** same three-PR shape as SumUp, decided
+  without Paul and reversible. **#36** (gate at `plugins_loaded` 30 on `wcpos_pro_requires(2.0.0)`,
+  web checkout removed, POS → Settings → Checkout the only switch, applied by `is_available()` on the
+  plain order-pay page too) merged at `173e327` after two review rounds. **#37** (the POS order-pay
+  page through Pro's panel with legacy adoption) went three independent rounds plus thirteen bot
+  threads; the **QR carve-out** is the one product decision: Mollie's panel can show an on-screen
+  iDEAL/Bancontact QR code and Pro's cannot yet, so while any QR method is enabled the merchant keeps
+  Mollie's own panel (the same shape as Stripe's Phone Order carve-out) and nothing is adopted; with
+  none enabled, Pro's panel, which also adopts an open old attempt before it renders. Adoption is by
+  Mollie payment id (the provider polls and cancels it directly, no reader marker), snapshots order
+  ids only, runs under Free's lock and the old paths' completion claim, and Pro owns an adopted
+  payment only while Free's row for it is live (pending/authorized/captured): once Pro's leg ends
+  without money the old panel, webhook, sweep and abandoned-list resolver act as before, so an
+  order adopted while QR was off is not locked out when QR is switched on. Under Pro's panel no
+  old-panel start is accepted at all; the old panel's script stops on a 409 with a reload message;
+  the order-status cleanup still cancels an adopted payment when the order is paid another way (Pro
+  voids only on cancelled/failed). Refunds: Pro leg → Pro; the old path refunds the transaction id
+  first (unless it is a Pro leg's), then the newest paid old-panel attempt. A webhook capture carries
+  the complete provider refs so Free sets the order's transaction id either way. **the conformance PR** (opened right after #37 merged; wp-env job with the sibling Pro, 24 transcripts; capabilities `cancel`,
+  `cancel_final`, `cancel_requested_then_completed`, `webhook`, `webhook_money_only`, `refund`,
+  `partial_refund`, `expiry`, `legacy_adoption`, `historical_webview_refund`; not claimed
+  `cancel_unsupported`, `manual_capture`, `prompt`, `test_live_isolation`) found that the client threw
+  one `RuntimeException` for transport loss, 5xx and 4xx alike, so a lost create response dropped the
+  leg and a retry could charge twice: `MollieUnansweredException` now maps to Pro's `indeterminate()`
+  on create, fetch and refund, and the replay reuses the `Idempotency-Key`. Also: `verify_webhook()`
+  resolves adopted actions through Pro's record; `refund()` falls back to the transaction reference
+  and takes the order from the refund record. The ten defect classes the three ports' reviews found
+  are in memory `terminal-port-review-lessons` for the Square and Payarc ports. **Not evaluated:**
+  Pro's panel in a browser on Mollie; anything against a live Mollie account (its test profile has no
+  point-of-sale method).
+- **Square and Payarc are not started and are bigger than Mollie's port:** neither has a Pro server
+  provider at all (no `includes/Server/`, no `wcpos_pro_*` reference), so each needs the template's
+  adapter first (Square: the Terminal API checkouts through the scoped SDK with Guzzle, so the
+  conformance fake sits on the SDK's HTTP client, PHP >= 8.1 only; Payarc: its terminal sale API),
+  then the gate, the panel with adoption, and conformance. Square also has no refund path yet. A day
+  each, with the review cadence seen tonight.
 
 ## Lessons recorded in memory
 
