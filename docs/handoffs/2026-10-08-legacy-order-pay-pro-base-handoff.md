@@ -229,8 +229,12 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   the old plumbing's removal is for its 1.0.0.** Not evaluated: Pro's panel in a browser on Square;
   the upgrade pass on a real store; a live Square account (which note the POS app fills is unknown).
 - **PayArc started (2026-10-09 evening):** `next` cut from `main` at `7816f6f`;
-  wcpos/payarc-terminal-for-woocommerce#27 (adapter + conformance, 24 transcripts, CI on 7.4/8.3) open,
-  independent review in progress. PayArc Connect V3 facts: sale accepted at once with a traceId and
+  wcpos/payarc-terminal-for-woocommerce#27 (adapter + conformance, 24 transcripts, CI on 7.4/8.3)
+  **merged at `00720a8`** after nine independent passes (approved at f509ac3 with two Lows on the
+  in-flight sale guard; four more rounds closed them: one option per sale found by prefix from the
+  table, no `get_option()` in the scan, compare-and-delete, `$wpdb->last_error` = live; refund notes
+  decide "delete the record" by amount because Pro allocates one record across provider and cash
+  legs). Lessons 20 and 21 in memory `terminal-port-review-lessons`. PayArc Connect V3 facts: sale accepted at once with a traceId and
   decided on the terminal; TRANSACTION_NOT_FOUND for seconds after a sale = not visible yet; every
   call carries X-Idempotency-Key (the sale's is the row id); cancel confirmed by the read, refused
   once the card is processing; refunds are TERMINAL COMMANDS linked by the sale's 16-char
