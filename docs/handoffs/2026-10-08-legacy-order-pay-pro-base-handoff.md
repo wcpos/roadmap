@@ -214,7 +214,9 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   from the dashboard, never "refund again"; a refusal of a re-ask proves nothing unless the replay was
   byte-identical (401/403/IDEMPOTENCY_KEY_REUSED stay open); a success without a refund object is
   unanswered; the create body carries no translated string. Records: roadmap#95 comments 6080715996
-  and the landing comment after it. Next for Square: the gate PR, then the panel with adoption (old checkout id
+  and the landing comment after it. **#37 (Pro-only gate, POS-only gateway, web checkout removed)
+  merged at `908e744`** after two independent passes (memoized POS switch; child-process gate test
+  with Pro present and absent). Next for Square: the panel with adoption (old checkout id
   `_sqtwc_checkout_id`, reference `woocommerce_order_<id>`, abandoned list `_sqtwc_abandoned_checkout_ids`,
   processed event ids, `OrderLock`, `PaymentSweeper`, `CheckoutReconciler`, the Square POS app hand-off
   as a likely carve-out).
