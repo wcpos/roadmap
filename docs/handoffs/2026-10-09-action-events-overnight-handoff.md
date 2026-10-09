@@ -1,5 +1,14 @@
 # Overnight handoff: the action-event contract, 2026-10-09
 
+> **Morning update (Paul: "Do as you recommend. If you're happy you can merge it."):** Q1–Q7 taken as
+> recommended. **Slice 1a merged** (wcpos/monorepo#2454, `d3ce5cc1`). **Slice 1b merged**
+> (wcpos/monorepo#2455, `8dbeecee`) after four review rounds that added refusal presentation,
+> a row per strike, a `category` option on `ctx.log`, a silenced log for a settled hook and
+> numeric-string hardening. **Slice 2** (`checkout.tender.commit` with the register and session
+> gates) is being built on `feat/action-events-tender-commit` from `next`. Q7 (should a disabled
+> guard recover without a restart) is open on #421 with recommendation (a) keep it. The table
+> below is the overnight state before these merges.
+
 Paul went to bed after "Continue" on the #421 proposal and asked for the work to carry on
 overnight. This is the morning state. Read the questions first; everything else is done or parked.
 
