@@ -58,8 +58,10 @@ Closed list, `<domain>.<noun>.<verb>`, verb in the imperative, a `const` union i
 |---|---|---|---|---|---|---|
 | `cart.line.add` | `useAddItemToOrder` | `{ type: CartLineType, line: CartLine }` | `line` | yes | the existing mutation inside `enqueueOrderMutation` (`saveNewOrder` or `localPatch`) | `{ order, line }` |
 | `cart.line.update` | `useUpdateLineItem` | `{ type, lineId, patch }` | `patch` | yes | same | `{ order, line }` |
-| `checkout.tender.commit` | `takeTender` | `{ methodId, mode, amount, reference?, fields? }` | `amount`, `reference`, `fields` | yes | the manual row writer, or the server/device service's `intent` | `{ leg }` |
-| `checkout.complete` | `completeSale` | `{ attemptId, outcome: SaleOutcome, registerId, sessionId }` | nothing | yes, before `finishSale` only | `finishSale` | `{ order, presentation }` |
+| `checkout.tender.commit` | `takeTender`, from `prepareSale` onward (the zero-balance completion included, as `mode: 'zero-balance'`) | `{ methodId, mode, amountMinor, tenderedMinor, balanceMinor, completing, bindingStatus }` | `amountMinor`, `tenderedMinor` | yes | the existing sequence: `prepareSale`'s attempt record, the provenance stamp, then the leg (`recordManualPayment`, or the minted row and `service.begin`), or the zero-balance patch | the leg outcome |
+| `checkout.complete` | `completeSale` | `{ source, registerId?, sessionId? }` | nothing | **no** (money has moved; the completion attempt record is the only gate) | `finishSale` | `'completed' \| 'partial' \| 'not-completed'` |
+
+**Correction on reading the code (2026-10-09, overnight):** `requireOpenSession` and the choose-register check run in `takeTender` through `prepareSale`, before any leg and before the zero-balance completion, not inside `completeSale`; and the provenance stamp (`persistSaleProvenance`) is a **write** that must reach the store before the leg, so it is part of the writer's sequence, never a hook (hooks have no effects before `next`). The guards therefore sit on `checkout.tender.commit` (`register.gate`: refuse `pos_checkout.choose_register_first`; `session.gate`: refuse `pos_checkout.open_register_first`), and `checkout.complete` has no guard in v1. R7 and §8 below are amended to match; the ruling's intent (session gate and provenance as first-party consumers, behaviour-preserving) is unchanged, only their placement.
 
 **Admission test** for a fifth event, written into the registry README: (a) one writer function
 already exists for the action, (b) the event has a typed result, (c) a named consumer is waiting.
@@ -131,6 +133,10 @@ queue serialises the order's writes, a rewrite is always applied against an unch
 `checkout.complete` additionally runs under the completion attempt record that `completeSale` already
 keeps (a paid order cannot start a second completing attempt while its finish runs); the dispatcher
 does not add a lock of its own.
+
+`checkout.tender.commit` wrapping the tender in the order's queue means a cart edit for that order
+queues behind the commit (a manual leg's POST, or the moment a terminal leg is handed to the
+service). That is the intended effect: nothing edits a cart while its money is being taken.
 
 ### 3.5 Budget, strikes, effects (R4)
 
@@ -230,15 +236,19 @@ slices' pattern).
    `use-add-item-to-order.test`, `use-update-line-item.test`, `stock-guard.test`, plus new
    `registry.test.ts` and `dispatch.test.ts` (ordering, budget, strikes, frozen `e`, refusal after
    `next` is a failure, extension deny ignored, dispatch outside the queue throws).
-2. **Sale completion** (`wcpos/monorepo`). `completeSale` dispatches `checkout.complete`;
-   `requireOpenSession` and `persistSaleProvenance` leave `prepareSale` and register as
-   `session.gate` and `fiscal.provenance` guards in that order; the journal bridge dispatches with
-   `source: 'replay'`. Behaviour-preserving. Tests: `sale-completion.test`,
-   `completion-journal-bridge.test`, `use-complete-order-flow.test`, the terminal service's tests.
-3. **Tender commit + the audit observer** (`wcpos/monorepo`). `takeTender` dispatches
-   `checkout.tender.commit`; the hand-written log and audit calls on the two checkout events move
-   to one `audit.log` hook registered as `tier: 'extension'`, `order: 0`, writing the same rows plus
-   `actor` and hook ids; the §5 vocabulary lands. Behaviour-preserving. Tests: `use-tender-flow.test`,
+2. **Tender commit** (`wcpos/monorepo`). `takeTender` dispatches `checkout.tender.commit` inside
+   `enqueueOrderMutation(order.uuid, …)` from `prepareSale` onward; the choose-register check and
+   `requireOpenSession` leave `prepareSale` and register as the `register.gate` and `session.gate`
+   guards (`tier: 'guard'`, in that order); the attempt record, the provenance stamp and the leg
+   stay in the bottom handler in their current order; the caller maps the two refusals to the
+   toasts it shows today. Behaviour-preserving. Tests: `use-tender-flow.test`,
+   `sale-completion.test`, `use-checkout-session.test` (it also calls `prepareSale`).
+3. **Sale completion + the audit observer** (`wcpos/monorepo`). `completeSale` dispatches
+   `checkout.complete` around `finishSale` (no guard); the journal bridge dispatches with
+   `source: 'replay'`; the `checkout.completed` audit row moves to one `audit.log` hook registered
+   as `tier: 'extension'`, `order: 0`, writing the same row plus `actor` and hook ids; the §5
+   vocabulary lands. Behaviour-preserving. Tests: `sale-completion.test`,
+   `completion-journal-bridge.test`, `use-complete-order-flow.test`, the terminal service's tests,
    the logs vocabulary tests, a screenshot pair of the strike row on the logs screen.
 4. **Checkout conditions (#62)** — the first feature consumer, its own spec against this contract.
 
