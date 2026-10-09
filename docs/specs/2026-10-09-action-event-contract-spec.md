@@ -101,7 +101,7 @@ registerActionHook(event, hook, { id, tier, order? });
 | observe | `return next(e)` | nothing changes; the hook saw the event |
 | rewrite | `return next({ ...e, payload: { ...e.payload, line } })` | everything beneath sees the rewritten payload |
 | refuse | `return { deny: { reasonKey, detail? } }` without calling `next` | nothing beneath runs; the caller shows `reasonKey` |
-| after | `const r = await next(e); …; return r` | work after the writer ran, with the result |
+| after | `const r = await next(e); …; return r` | work after the chain beneath answered; the hook's own return is then ignored and the chain's answer stands (amended on the third review: an after-hook could otherwise replace or lose a guard's refusal) |
 
 `reasonKey` is a translation key the caller already knows how to show: the cart's toast for the
 two cart events, the tender pane's folded *not available* list and its commit-time toast for the
@@ -155,9 +155,15 @@ export const ACTION_BUDGET_MS: Record<ActionEvent, number> = {
 export const ACTION_HOOK_STRIKES = 3;
 ```
 
-- **One budget per dispatch**, shared by every hook on it, started when the first hook is called.
+- **One budget per tier on a dispatch** (amended overnight on the third review of #2454: with
+  extensions running first, a shared budget let a slow extension starve a guard into a timeout and
+  three of those disabled it — an extension veto by the clock), started when that tier's first hook
+  is called and shared by the tier's hooks; total hook latency is bounded by two budgets.
   A hook still pending when the budget ends is treated as timed out. A hook's own timer stops once
   it has called `next`: the time it spends waiting on the chain beneath is the inner hooks' to pay.
+  After-work (once the chain beneath has answered) gets a fresh budget of the same length; a hook
+  that never returns is struck and the inner answer stands, so the dispatch and the order's queue
+  behind it never hang (amended overnight on the bot review of #2454's third head).
 - **On timeout or throw:** an `extension` hook is skipped and the chain continues; a `guard` hook
   refuses with `reasonKey: 'hook_timeout'` or `'hook_failed'` and the hook's `id` in `detail`.
 - **Strikes:** after `ACTION_HOOK_STRIKES` timeouts or throws in a session the hook is switched off
