@@ -26,9 +26,21 @@
 > for the complete shape rather than a tidy-up, wcpos/monorepo#2464 merged at `9d4b9844`: the
 > gateway-contract checkout and the pay page dispatch `checkout.tender.commit` through
 > `commitGatewaySale`, `prepareSale`/`gateSale`/`useCartStockGuard` are deleted, the two tender
-> gates are the only register and session rules (LEDGER 26 meets line 19). Nothing is open on
-> #421; the no-session refusal can be seen live on a local wp-env store if ever wanted. The table
-> below is the overnight state before these merges.
+> gates are the only register and session rules (LEDGER 26 meets line 19). **Later on 2026-10-12**
+> (Paul: "start work on all of these", "as you recommend" on void): the cart domain landed in three
+> PRs, A #2468 (`cart.line.remove`, fee and shipping edits on `cart.line.update`), B #2471
+> (`cart.coupon.apply` / `cart.coupon.remove` through one writer), C #2473 (`cart.customer.set`
+> through one writer, the link bridge's stamp as a system action); the void was extracted (D #2472)
+> and admitted as `cart.order.void` with a `payments.gate` that refuses a void with live or captured
+> legs and an `order.voided` audit row (E #2476, CI on its final head at the time of writing); F
+> #2477 made every queued cart writer land on the saved record a first add left on the slot. The
+> fence allowlist went from 16 files to 6. Every PR had a fresh Opus review with mutation checks;
+> the reviews found and the PRs fixed: a coupon race (validated against a cart that moved while
+> waiting in the queue), a form overwriting an existing shipping address with `{}`, a refused void
+> writing a "voided" row, a session resolver that throws when sessions are on and none is open, and
+> a remembered record outliving a closed database. Nothing else is open on #421; the no-session
+> refusal can be seen live on a local wp-env store if ever wanted. The table below is the overnight
+> state before these merges.
 
 Paul went to bed after "Continue" on the #421 proposal and asked for the work to carry on
 overnight. This is the morning state. Read the questions first; everything else is done or parked.
