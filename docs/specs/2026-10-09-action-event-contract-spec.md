@@ -71,6 +71,32 @@ Receipt print, register open/close, discount apply and customer set fail (a) tod
 in the README as candidates, not events. No past-tense notification events: `await next(e)` is the
 after-hook (§3.2).
 
+**Amended 2026-10-12, the cart domain (Paul: "start work on all of these"):** with every sale on
+`checkout.tender.commit` (wcpos/monorepo#2464), the price-affecting cart writes that still bypass the
+chain are admitted. The consumer is the plugin-integration family that needs to see every price
+change, not only line adds: Discount Rules (#163), loyalty points (#86), Smart Coupons store credit
+(#88), gift cards as tender (#87). Each has one writer today (the §4 fence allowlist names them).
+
+| Event | Raised by | Payload | Rewrite allowed on | Refuse allowed | Bottom handler | Result |
+|---|---|---|---|---|---|---|
+| `cart.line.remove` | `useRemoveLineItem` (`line_items`, `fee_lines`, `shipping_lines`, `coupon_lines`) | `{ type, lineUuid, line, lineItems }` | nothing | yes | the existing null-out-or-drop patch | the patched order or `false` |
+| `cart.line.update` (extended) | `useUpdateFeeLine`, `useUpdateShippingLine` join `useUpdateLineItem`; the payload gains `type: CartLineType` | `{ type, lineUuid, changes, line, lineItems, options }` | `changes` | yes | each hook's existing `calculateCartLine` + patch | as today |
+| `cart.coupon.apply` | `useAddCoupon` and `useAddQuickDiscount`, through one writer `applyCouponLine` (a quick discount IS a coupon line carrying its intent meta) | `{ couponLine, lineItems, couponLines }` | nothing in v1 (the discount is recalculated by the writer; a rewriting consumer first makes the recalculation read the payload) | yes | validate (catalog coupon) or the exclusivity check (quick discount), then `recalculate` + patch | `{ success, error? }` |
+| `cart.coupon.remove` | `useRemoveCoupon` | `{ code, couponLine, lineItems, couponLines }` | nothing | yes | `recalculate` + patch | the patched order or `false` |
+| `cart.customer.set` | one writer `setCartCustomer` (today three: `add-customer.tsx`, `edit-cart-customer.tsx`, `use-add-customer.ts`; unified first) | `{ customerId, previousCustomerId, billing, shipping }` | `billing`, `shipping` | yes | the existing `localPatch` | the patched order or `false` |
+
+Rules carried over: every dispatch runs inside `enqueueOrderMutation` for its order (these writers
+called `localPatch` directly; the queue serialises them with the tender commit, which LEDGER 20 wants);
+Undo on a removed line dispatches `cart.line.add` with the restored line as its own action, so a guard
+sees the restore; the stock guard passes every `type` other than `line_items` straight through; the
+fence allowlist burns down by each writer moved. No new log rows: the writers keep their toasts and
+rows. Built as three PRs on `next` under the 400-line ceiling: **A** `cart.line.remove` + fee and
+shipping onto `cart.line.update`; **B** the two coupon events with the shared writer; **C** the
+customer unification and `cart.customer.set`. Each needs the `independent-review` status on its final
+head. Rounding (#66, #84: the tender amounts become rewritable), register session open/close and
+refund are not admitted by this amendment; they wait for their consumers to be scheduled. Void is
+being researched separately (its six writes sit in a component, failing (a)).
+
 ## 3. The hook (R2, R3, R4)
 
 ### 3.1 Shape
