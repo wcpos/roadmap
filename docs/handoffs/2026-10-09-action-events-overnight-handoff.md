@@ -22,9 +22,12 @@
 > today's toast (verified), a cash sale's audit row carries the actor and `hookIds: []` (verified,
 > order #113034), the no-session refusal is NOT exercised live because every dev-next register has
 > an open session the E2E suite relies on (unit-covered). Electron waits for the promotion build.
-> Q7 ruled (keep: a switched-off hook stays off until restart). Nothing is open on #421; the
-> no-session refusal can be seen live on a local wp-env store if ever wanted. Q7 (should a disabled
-> guard recover without a restart) is open on #421 with recommendation (a) keep it. The table
+> Q7 ruled (keep: a switched-off hook stays off until restart). **2026-10-12:** on Paul's call
+> for the complete shape rather than a tidy-up, wcpos/monorepo#2464 merged at `9d4b9844`: the
+> gateway-contract checkout and the pay page dispatch `checkout.tender.commit` through
+> `commitGatewaySale`, `prepareSale`/`gateSale`/`useCartStockGuard` are deleted, the two tender
+> gates are the only register and session rules (LEDGER 26 meets line 19). Nothing is open on
+> #421; the no-session refusal can be seen live on a local wp-env store if ever wanted. The table
 > below is the overnight state before these merges.
 
 Paul went to bed after "Continue" on the #421 proposal and asked for the work to carry on
