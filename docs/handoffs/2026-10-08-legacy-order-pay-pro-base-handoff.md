@@ -319,9 +319,18 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   error (never `failed`), a 200 without the refund unanswered, a refund whose `payment_intent`
   (or `charge`, for a historical row naming the charge) is not the row's payment refused
   (`refund_payment_mismatch`), an allocation with no reference `missing_refund_ref` (Stripe's
-  `refund()` never returns pending without an id). No adapter meta, so no lock. 14 unit tests,
-  five mutations caught; 572 unit tests green; conformance transcripts unchanged. Independent
-  review pass 1 in progress.
+  `refund()` never returns pending without an id). No adapter meta, so no lock. **Merged at
+  `c19f0f1`** (squash of `2cd442a`) after three passes and five bot threads. Pass 1 overturned
+  the premise: Stripe can answer a refund POST 200 without the refund, so `refund()` now says
+  `pending` with no reference on purpose and `fetch_refund()` finds it by the create's metadata
+  (row id AND refund id) among the payment's refunds, paging up to five pages and stopping at the
+  one that holds it. Codex found server rows record `stripe_mode`, so the read now travels under
+  the recorded mode's key as a per-request option (a second `StripeTerminalService` swaps the
+  SDK's global HTTP client and sent the unit test to api.stripe.com: memory lesson 28); the SDK
+  client is built key-less when the current mode has none. 586 unit tests green, 27 in the fetch
+  file; every pass 2 survivor now fails a test. Pre-existing, outside the PR (pass 3):
+  `tests/includes/StripeTerminalServiceTest.php` makes 39 real requests to api.stripe.com per
+  run; own PR next. SumUp, Square and PayArc still answer the sweep unsupported.
 
 ## Lessons recorded in memory
 
