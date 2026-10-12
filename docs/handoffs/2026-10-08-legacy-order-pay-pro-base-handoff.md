@@ -288,6 +288,15 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   both paths and a pending answer's reference is kept; the record remembers the method that
   refunded it; `adopt()` repairs a missing lookup on a retry. The new tests also caught the hook
   registered with the default accepted-args count, which would have thrown on every cron run.
+  **Merged at `bcdd278`** after passes 2–4 (fresh Opus each): the historical path's `mark()` had
+  judged a stale object outside the lock (now a fresh read under the lock), a pending answer must
+  only fill an empty reference, the give-up memory moved to a flag on the refund record (the row's
+  event log is capped) and notes the summed unconfirmed amount across rows, and a REFUSED lock on
+  `mark()` adds a new meta row (WooCommerce deletes meta by row id, so the sweep's delete of the
+  row it loaded cannot reach it; `order_ids()` de-duplicates). Approve at `cbddfcc`, delta at
+  `e099831`; six bot threads resolved. Next on the Pro base: each extension implements
+  `fetch_refund( $row, $allocation )` (Mollie first: queued refunds; find by metadata when the
+  allocation has no reference).
 
 ## Lessons recorded in memory
 
