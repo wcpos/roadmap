@@ -356,7 +356,17 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   creates are idempotent by key, with "lose the answer after taken / before arrival" switches and
   an over-refund refusal. Unit 602; e2e 9/155; conformance 37/478/7. Trap: Stripe sends an
   idempotency conflict as a 400 of type `idempotency_error` (the SDK makes it a 409); a fixture
-  that sends status 409 lands in the 5xx-unknown bucket and tests nothing.
+  that sends status 409 lands in the 5xx-unknown bucket and tests nothing. Pass 1 requested
+  changes (three Majors, all also raised by Codex/Greptile): a 401/403/429 on the replay was
+  recorded as "never made" (stripe-php's `RateLimitException` EXTENDS `InvalidRequestException`,
+  so the handler filed a 429 as 400; the handler now tells it apart first, and `is_refusal()`
+  whitelists 400/402/404 minus the `rate_limit`/`lock_timeout` codes); the re-ask recorded the
+  gateway's mode, not the row's (now `mode_of( $row )`, and `refund()` itself posts under the
+  row's key); Pro's sweep never reads device rows, so a pending there would stand for good (device
+  rows keep the error; the Pro change is Paul's call). Also: a 12 h `REPLAY_WINDOW` (Stripe prunes
+  keys after 24 h, cron can be late), a logged scheduling failure, `fetch_refund()` lists before
+  believing the refused mark, and the fake refuses a changed body under a known key. Head
+  `20a11c8`; pass 2 in progress.
 
 ## Lessons recorded in memory
 
