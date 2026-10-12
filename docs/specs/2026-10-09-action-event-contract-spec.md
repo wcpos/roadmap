@@ -94,8 +94,21 @@ rows. Built as three PRs on `next` under the 400-line ceiling: **A** `cart.line.
 shipping onto `cart.line.update`; **B** the two coupon events with the shared writer; **C** the
 customer unification and `cart.customer.set`. Each needs the `independent-review` status on its final
 head. Rounding (#66, #84: the tender amounts become rewritable), register session open/close and
-refund are not admitted by this amendment; they wait for their consumers to be scheduled. Void is
-being researched separately (its six writes sit in a component, failing (a)).
+refund are not admitted by this amendment; they wait for their consumers to be scheduled.
+
+**Void, ruled 2026-10-12 (Paul: "as you recommend"):** the Void button's writes are extracted first,
+behaviour-preserving, into `voidOrder` / `restoreVoidedOrder` (PR D, the twelve existing tests
+unchanged as the proof; the module is a fence `BOTTOM_HANDLERS` entry because the ratchet refuses a
+new allowlist key). Then `cart.order.void` is admitted (PR E): payload `{ orderId, orderNumber,
+status, registerId, sessionId, paymentLegs: { live, captured, deviceHeld } }`, nothing rewritable,
+result `removed | kept-pending`; dispatched inside `enqueueOrderMutation`, with the delete and its
+first bounded outcome watch as the bottom handler and the 120 s late watch outside the slot. First
+consumer: an extension-tier after-hook `audit.order-voided` writing a new `order.voided` row with the
+actor (`checkout.cancelled` promises reversed payments and does not fit). Second: a `payments.gate`
+guard that **refuses a void while the order has live or captured payment legs**, pointing the cashier
+to the tender pane's Cancel, which reverses the legs first. Today such a void silently deletes the
+order, money and all; that is the behaviour change the event buys. No session gate: a void moves no
+money and must work with no open session.
 
 ## 3. The hook (R2, R3, R4)
 
