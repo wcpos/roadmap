@@ -276,6 +276,18 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   the note says "not with a second refund". `Legacy_Adoption::adopt()` now saves the row before the
   lookup option. No adapter implements `fetch_refund()` yet: each extension repo adds it (Mollie
   first, its refunds are queued). Device rows are not swept.
+  **Review pass 1 (fresh Opus, request changes) and the two bots, answered at `00ee3b4`:** the
+  sweep saved a ledger it had read before N provider calls while Pro's two till refund paths
+  (`Refund_Processor`, `Order_Pay_Gateway::refund()`) never took Free's `Order_Lock`; a scratch
+  test erased a paid-out refund. Both till paths now lock with a fresh meta read (a held lock
+  refuses before money moves, record rolled back), and the sweep writes each answer against rows
+  re-read after the provider call. The mark's value is the time of the last look and the query
+  orders by it (fifty pending refunds cannot starve the rest); a missing adapter (extension
+  deactivated) holds the mark; a refund pending for 30 days is noted once and no longer asked
+  about while still reserving its amount; reference-less refunds are asked about by record on
+  both paths and a pending answer's reference is kept; the record remembers the method that
+  refunded it; `adopt()` repairs a missing lookup on a retry. The new tests also caught the hook
+  registered with the default accepted-args count, which would have thrown on every cron run.
 
 ## Lessons recorded in memory
 
