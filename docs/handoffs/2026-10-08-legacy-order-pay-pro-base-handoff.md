@@ -371,6 +371,24 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   allocation's amount. **Merged at `ff5bd55`** (squash of `a34c28a`). Open for Paul: Pro's
   `Refund_Sweep` reads server rows only; device rows (Bluetooth, Tap to Pay) are never read back,
   so their unanswered refund POST still errors and a pending one would stand for good.
+- **Device rows in the sweep (2026-10-12 evening; Paul: "keep going" after the #169 report,
+  taken as the go-ahead on the pick):** wcpos/woocommerce-pos-pro#633 open at `e47fd09` (base
+  `next`, approved by a fresh Opus pass + delta, `independent-review` status posted, CI matrix
+  running at the time of writing). `Refund_Sweep::sweep()` takes `server` AND `device` rows and
+  reads both through `Server_Providers::get( method_id )`; no server adapter + a device adapter
+  registered (`Device_Providers::has()`) releases the mark (nothing will ever read it, the status
+  quo for device rows); neither adapter holds it. 15 production lines (Codex from a spec in the
+  scratchpad); four new cases on `Test_Refund_Sweep` (26/283), three mutations caught. Review
+  found an OLDER Stripe gap: Free's `Settlement` patches an indexed row by payment id whatever
+  its mode and Stripe's `webhook_patch()` carries no refs, so a device payment captured by
+  webhook before the till's capture holds only Pro's `payment_intent` and Stripe's `refund()`
+  answered `missing_payment_ref`. **stripe-terminal#170 open at `0f704cc`** (base `next`; merge
+  AFTER Pro #633): `swept()` and the device carve-out gone (device rows take #169's
+  pending-and-re-ask path), and `payment_of()` reads `action` → `stripe_payment_intent` →
+  `transaction_id` → `payment_intent` for both `refund()` and `fetch_refund()`. Unit 620/1613;
+  three mutations caught; fresh Opus review in progress. Worktrees:
+  `~/Projects/woocommerce-pos-pro-worktrees/95-sweep-device-rows` (wp-env running, the only one)
+  and `~/Projects/stripe-terminal-for-woocommerce-worktrees/95-device-rows-swept`.
 
 ## Lessons recorded in memory
 
