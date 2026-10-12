@@ -402,8 +402,24 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   payment settled by its forwarded webhook before the till's capture has NO refs
   (`missing_payment_ref`, an error, never a stuck pending) — Free's `Ledger::apply_transition()`
   replaces `provider_refs` wholesale, so the fix is Free's (merge refs on settle) — **ticket roadmap#426**
-  (Paul: "as you recommend"), with the proposed merge rule and acceptance.
-  All worktrees removed; no wp-env running; Docker daemon untouched.
+  (Paul: "as you recommend"), with the proposed merge rule and acceptance — **then done overnight
+  2026-10-12/13 (Paul: "Let's continue on with roadmap 426", then "keep working through this
+  overnight")**: Free wcpos/woocommerce-pos#2181 merged at `5d24582` (`Ledger::apply_transition()`
+  merges `provider_refs`: patch key wins, absent key kept, null ignored, nothing removed; the parked
+  branch of `Settlement::settle()` merges the same way; Codex from a spec, one readiness failure —
+  the spec demanded all three tests fail first while the precedence pin passes either way; two
+  mutations caught; review: the `receipt` reason in the body was half true (a webhook still replaces
+  the receipt; Status_Map merges only on the poll path), CHANGELOG reworded); Stripe
+  wcpos/stripe-terminal-for-woocommerce#172 merged at `6cd87b0` (`webhook_patch()` carries
+  `normalize()`'s refs on success, nulls dropped, never Pro's keys; review's one minor accepted as
+  designed: a second succeeded intent on an already-captured device row, a double charge, moves the
+  refund target; a real event's string `latest_charge` pinned); Pro wcpos/woocommerce-pos-pro#638
+  (`test_webhook_keeps_every_reference_the_till_wrote` in the conformance case; the Simulated
+  provider's webhook already carried `action`, so the old rule dropped `reader` in Pro's own suite
+  unnoticed; no transcript so the extensions' CI needs no new golden). Design choice recorded on
+  #426: "patch wins" over a captured-rows-only-add special case, since refs land only when the
+  transition is accepted. Not evaluated anywhere: live Stripe; a real reader offline; SumUp still
+  carries no refs in its webhook (its device rows get the SDK's refs at capture).
 
 ## Lessons recorded in memory
 
