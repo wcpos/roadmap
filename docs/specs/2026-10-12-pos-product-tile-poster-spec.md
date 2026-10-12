@@ -80,8 +80,8 @@ type PosterTileProps = {
 
 - The tile is a square (`aspect-square`), `rounded-lg`, hairline `border-border`, `overflow-hidden`,
   `m-1` as today so column maths and the Deal's measurements are unchanged. A stacked tile keeps the
-  square and draws two offset layers behind it (4 px and 8 px down-right, card colour, hairline),
-  inside the same `m-1` margin.
+  square and draws two offset layers behind it (3 px and 6 px down-right, card colour, hairline),
+  inside the tile's own frame (see *The stack and the Deal*).
 - The picture fills the square (`cover`). Press feedback: the picture dims to 92 % within 100 ms
   (`active:` on the Pressable), never a background change (there is no caption background to change).
 - Marks: `top-2 left-2` and `top-2 right-2`, 22 pt pills (24 pt circle for the count), as today's
@@ -182,11 +182,45 @@ are unchanged. `gridColumns` 2–8 unchanged. `variationsStyle` unchanged: `dril
 `inline` keeps the legacy variable tile (its popover) — it is the retained old idiom per the
 2026-09-20 ruling and is not restyled here.
 
+## The stack and the Deal (owner, 2026-10-12: "the new poster stack is going to have to
+integrate with the deal animation")
+
+The stack is not decoration on a variable tile; it is the Deal's own metaphor drawn at rest: the
+variations are the cards under the parent, and tapping deals them out from under it. So the stack
+is part of the Deal, in four rules:
+
+1. **The layers live inside the tile's measured frame.** `DealStack` measures the tapped tile's
+   `Pressable` (`placeGrid` / `measureInWindow`) and rests the parent's copy exactly on it, so the
+   layers are drawn **inside** that `Pressable`, as absolutely positioned siblings of the square
+   (the `Pressable` is `overflow: visible`; only the square clips). They sit **3 px and 6 px**
+   down-right of the square, within the 8 px the two `m-1` margins leave between tiles, so they
+   never touch a neighbour and never change the frame the Deal measures or the column maths.
+2. **The copy draws the stack too.** The parent's copy on the stage is the same `PosterTile` with
+   `stacked`, so the first frame of the deal is pixel-identical to the tile it stands on (the
+   same rule as `TileImage still`: it moves, it does not arrive). The tapped tile is `lifted`
+   (opacity 0) including its layers.
+3. **The cards leave the stack as they are dealt.** On the `newTiles` beat the variations come out
+   from under the parent as today; over that same first beat the copy's two layers fade to 0
+   (opacity only, `BEATS.newTiles.duration`, the Deal's easing), so by the time the first
+   variation lands the parent in slot 0 is a single card with the back badge: its cards are on the
+   table. On the way back the layers fade in over the `oldTiles` gather, landing as the last
+   variation gathers under the parent, so the tile that comes home is the stacked tile that left.
+   Reduce-motion: the layers switch with the tiles, no fade.
+4. **Nothing else stacks.** Variation tiles, term tiles, the parent term, the placeholder and the
+   inline-style variable tile are never stacked; a stack means "tap to deal", nothing else.
+
+Only `transform` and `opacity` animate (the Deal's rule), the layers are two `View`s with a
+hairline and the card colour, and the fade is driven by the Deal's existing shared values so it
+cannot drift from the tiles' beats. This is judged in the real app on the branch (Metro, hot
+reload), filmed frame by frame on web and on the Pixel as the Deal was (ledger
+`pos/products/v2` decision on the Deal; captures under `v2/captures/`), never on a board.
+
 ## Behaviour that must not move
 
 - The Deal: `PosterTile` forwards its `ref` (a `Measurable`) and honours `lifted` and `grow`
   exactly as `ProductTile` does; `deal-stack.test.tsx` and `variations-grid.test.tsx` stay green
-  without edits beyond the testIDs below.
+  without edits beyond the testIDs below and the layer fade above (one new test: the layers'
+  opacity follows the `newTiles` / `oldTiles` beats).
 - testIDs: `product-tile`, `variable-product-tile`, `variation-tile`, `variations-parent-tile`,
   `variation-placeholder`, `browse-*` (`termTestId`), `browse-parent`, `browse-parent-badge`,
   `product-tile-stock-{id}`, `variation-tile-stock-{id}` and the `-{id}` image squares are kept with
