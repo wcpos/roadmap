@@ -116,13 +116,18 @@ type PosterTileProps = {
 ### No picture
 
 - A product or variation with no image: a **tint** square, the words in the same place, no scrim
-  (the tint is opaque and the words sit on it directly). The tint index is the first category's
-  id modulo 6 (a variation uses its parent's); a product with no category uses its name. Six tint
-  tokens are added to `apps/main/global.css` as light/dark pairs (`--tile-tint-1 … -6`, light ≈
+  (the tint is opaque and the words sit on it directly). Six tint tokens are added to
+  `apps/main/global.css` as light/dark pairs, `--tile-tint-0 … --tile-tint-5` (light ≈
   `oklch(0.93–0.95 0.035–0.045 h)`, dark ≈ `oklch(0.31–0.34 0.03–0.05 h)`, hues 250/160/40/300/
-  90/200) with Tailwind classes `bg-tile-tint-1 …`. They are named by index, never by category.
-- A category with no image: the folder glyph top-left, name and count at the foot, on its tint
-  (index = term id modulo 6). All products and a shortcut: the existing grid/sliders glyph, on tint 6.
+  90/200), with Tailwind classes `bg-tile-tint-0 …`; `picture.tint` is that index, so prop value
+  and token number are the same. They are named by index, never by category.
+- **Which tint**, one pure function `tintOf(key: number | string): 0–5` with unit tests: a number
+  is `id % 6`; a string is the sum of its UTF-16 code units `% 6` (the same product always gets the
+  same tint; the function is the one place the rule lives). The key is the product's first category
+  id; a variation's is its parent's first category id; a product with no category passes its
+  `name`.
+- A category with no image: the folder glyph top-left, name and count at the foot, on
+  `tintOf(term id)`. All products and a shortcut: the existing grid/sliders glyph, on tint 5.
 - The old `PRODUCT_IMAGE_PLACEHOLDER` (a grey picture) is no longer shown on a tile; `TileImage`'s
   error path hands the tile `kind: 'tint'` instead. (Table rows keep the placeholder; out of scope.)
 
