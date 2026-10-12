@@ -334,6 +334,16 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   client only while the SDK's client is still a curl client; the service test installs a refusing
   fake by default; 0 real requests at the head). SumUp, Square and PayArc still answer the sweep
   unsupported.
+- **Sweep end to end under wp-env (2026-10-12, Paul: "agree"):** stripe-terminal#168 open at
+  `dfd9a85`, test-only: `tests/conformance/Test_Stripe_Refund_Sweep.php` drives Pro's real
+  `Refund_Sweep` through `do_action( 'wcpos_payments_sweep' )` against the real adapter over the
+  scripted `Fake_Stripe_Transport` (now holding refunds, serving the single read and the listing,
+  able to lose a create's body, settle, and make a dashboard refund). Six cases; 34/417/7 for the
+  whole suite. Traps: a cached adapter instance in `Server_Providers` makes a mode-switch case
+  vacuous (reset the instances by reflection, as the sweep's own request builds afresh); the
+  fake lists newest first, so a "bind the first listed" mutation survives unless a NEWER foreign
+  refund exists. wp-env mounts the worktree as `plugins/<worktree dir name>`, so `--env-cwd`
+  must name the worktree directory, not the plugin slug.
 
 ## Lessons recorded in memory
 
