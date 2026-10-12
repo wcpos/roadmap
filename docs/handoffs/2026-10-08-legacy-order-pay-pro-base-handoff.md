@@ -401,7 +401,8 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   compatibility-sync may drop the stamp from the posts backup copy only); (2) an offline Bluetooth
   payment settled by its forwarded webhook before the till's capture has NO refs
   (`missing_payment_ref`, an error, never a stuck pending) — Free's `Ledger::apply_transition()`
-  replaces `provider_refs` wholesale, so the fix is Free's (merge refs on settle); needs a ticket.
+  replaces `provider_refs` wholesale, so the fix is Free's (merge refs on settle) — **ticket roadmap#426**
+  (Paul: "as you recommend"), with the proposed merge rule and acceptance.
   All worktrees removed; no wp-env running; Docker daemon untouched.
 
 ## Lessons recorded in memory
