@@ -99,16 +99,19 @@ refund are not admitted by this amendment; they wait for their consumers to be s
 **Void, ruled 2026-10-12 (Paul: "as you recommend"):** the Void button's writes are extracted first,
 behaviour-preserving, into `voidOrder` / `restoreVoidedOrder` (PR D, the twelve existing tests
 unchanged as the proof; the module is a fence `BOTTOM_HANDLERS` entry because the ratchet refuses a
-new allowlist key). Then `cart.order.void` is admitted (PR E): payload `{ orderId, orderNumber,
-status, registerId, sessionId, paymentLegs: { live, captured, deviceHeld } }`, nothing rewritable,
-result `removed | kept-pending`; dispatched inside `enqueueOrderMutation`, with the delete and its
-first bounded outcome watch as the bottom handler and the 120 s late watch outside the slot. First
+new allowlist key). Then `cart.order.void` is admitted (PR E, wcpos/monorepo#2476): payload
+`{ orderId, orderNumber, status, registerId, sessionId, actor, paymentLegs: { live, captured, device } }`
+(`actor` as `checkout.complete` carries it; the counts are taken inside the queue slot from the latest
+order, and a card leg the terminal service still holds counts as live), nothing rewritable, result
+`{ kind: removed | kept-pending }`; dispatched inside `enqueueOrderMutation` with `payments.gate`
+required, the delete and its first bounded outcome watch as the bottom handler and the 120 s late
+watch outside the slot (a late refusal that keeps the order writes a second, correcting row). First
 consumer: an extension-tier after-hook `audit.order-voided` writing a new `order.voided` row with the
-actor (`checkout.cancelled` promises reversed payments and does not fit). Second: a `payments.gate`
-guard that **refuses a void while the order has live or captured payment legs**, pointing the cashier
-to the tender pane's Cancel, which reverses the legs first. Today such a void silently deletes the
-order, money and all; that is the behaviour change the event buys. No session gate: a void moves no
-money and must work with no open session.
+actor; a refused void writes no row (`checkout.cancelled` promises reversed payments and does not
+fit). Second: a `payments.gate` guard that **refuses a void while the order has live or captured
+payment legs**, pointing the cashier to the tender pane's Cancel, which reverses the legs first.
+Before, such a void silently deleted the order, money and all; that is the behaviour change the event
+buys. No session gate: a void moves no money and must work with no open session.
 
 ## 3. The hook (R2, R3, R4)
 
