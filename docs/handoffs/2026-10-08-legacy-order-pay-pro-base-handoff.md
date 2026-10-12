@@ -263,6 +263,19 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   conformance fake sits on the SDK's HTTP client, PHP >= 8.1 only; Payarc: its terminal sale API),
   then the gate, the panel with adoption, and conformance. A day each, with the review cadence seen
   tonight.
+- **Pro-side PR open (2026-10-12, Paul: "continue with the Pro side"):** wcpos/woocommerce-pos-pro#628
+  on `next` at `6c31c3d`, answering morning-briefing items 2 and 3. `Refund_Sweep` rides Free's
+  ten-minute `wcpos_payments_sweep` (priority 20): an order is marked (`_wcpos_pro_refund_pending`)
+  when a pending allocation is saved (Free's `woocommerce_pos_refund_allocated` action) or the
+  historical order-pay refund path records a pending record; each pending refund is read back under
+  the order lock through a new optional adapter method `fetch_refund( $row, $allocation )` on
+  `Abstract_Provider_Adapter` (default unsupported; all five shipped adapters extend the abstract);
+  a final answer rewrites the allocation, `refunded_amount`, an event and a note through
+  `Ledger::save()`; pending/unanswered/malformed hold the mark; an order whose pending refunds all
+  belong to adapters that cannot read drops out unchanged; a rejected refund keeps its record and
+  the note says "not with a second refund". `Legacy_Adoption::adopt()` now saves the row before the
+  lookup option. No adapter implements `fetch_refund()` yet: each extension repo adds it (Mollie
+  first, its refunds are queued). Device rows are not swept.
 
 ## Lessons recorded in memory
 
