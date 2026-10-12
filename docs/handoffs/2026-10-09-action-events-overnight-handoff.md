@@ -38,8 +38,18 @@
 > the reviews found and the PRs fixed: a coupon race (validated against a cart that moved while
 > waiting in the queue), a form overwriting an existing shipping address with `{}`, a refused void
 > writing a "voided" row, a session resolver that throws when sessions are on and none is open, and
-> a remembered record outliving a closed database. Nothing else is open on #421; the no-session
-> refusal can be seen live on a local wp-env store if ever wanted. The table below is the overnight
+> a remembered record outliving a closed database. **Later still on 2026-10-12** (Paul: "start the
+> rounding work", "do as you recommend", "merge both when green"): cash rounding (#66, #84) landed as
+> the first REWRITING consumer, G1 wcpos/woocommerce-pos#2180 (merged `837e985f`: a Rounding select on
+> the cash gateway's POS-settings modal, served as `defaults.rounding`) and G2 wcpos/monorepo#2484
+> (merged `457268a4`: the `cash.rounding` hook rewrites the tender amounts, the handler derives every
+> fact from the payload, a non-taxable "Rounding" fee line moves the stored total by its own money,
+> the pane previews the rounded due through the same predicate, the void sweep drops the fee of a
+> voided, failed or never-recorded row). Four review rounds plus Greptile and CodeRabbit; the one
+> judged-not-changed edge is a stale local ledger after a failed mirror AND a failed refresh AND a
+> cancel on a completed sale (half an increment at most). #66 and #84 closed. Nothing else is open on
+> #421; the no-session refusal can be seen live on a local wp-env store if ever wanted. Rounding is
+> not verified live: it needs the next `next` bundle and plugin release on dev-next. The table below is the overnight
 > state before these merges.
 
 Paul went to bed after "Continue" on the #421 proposal and asked for the work to carry on
