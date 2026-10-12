@@ -49,7 +49,17 @@
 > judged-not-changed edge is a stale local ledger after a failed mirror AND a failed refresh AND a
 > cancel on a completed sale (half an increment at most). #66 and #84 closed. Nothing else is open on
 > #421; the no-session refusal can be seen live on a local wp-env store if ever wanted. Rounding is
-> not verified live: it needs the next `next` bundle and plugin release on dev-next. The table below is the overnight
+> not verified live: it needs the next `next` bundle and plugin release on dev-next. **Late on 2026-10-12** (Paul: "grill #62", "go"): checkout
+> conditions (#62), the spec's slice 4 and the first feature consumer, was grilled (train 2.0; no core
+> setting for a required note, "something extensions can tap into"; conditions are data, one evaluator,
+> one guard; cart state A from a four-variant board) and landed as wcpos/monorepo#2489 (merged `5158ed2c`):
+> the stock condition riding `prevent_overselling`, the amber notice in the banner's slot, the line mark,
+> Checkout dimmed and never silent, `conditions.gate` as the third tender guard. Three fresh-review rounds
+> (a reopened order's `_reduced_stock` double count and a 1.48:1 dark-mode mark were the blockers) and a
+> live capture from the PR preview against dev-next (which found the notice box growing to its cap, fixed
+> in round 3; captures in `docs/captures/2026-10-12-checkout-conditions`). Spec
+> `docs/specs/2026-10-12-checkout-conditions-spec.md`. #62 closed. Not evaluated on native. Pre-existing,
+> not filed: `splitLineItem` copies `_reduced_stock` onto both halves. The table below is the overnight
 > state before these merges.
 
 Paul went to bed after "Continue" on the #421 proposal and asked for the work to carry on
