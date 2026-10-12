@@ -162,7 +162,7 @@ own pay form does before `process_payment()`; then calls `process_payment( $orde
 the outcome (§3.1). Response:
 
 ```json
-{ "outcome": "sent" | "recorded", "payment": row | null, "order": summary }
+{ "outcome": "sent" | "recorded" | "settled", "payment": row | null, "order": summary }
 ```
 
 `order` is the server's derivation as on every other write. Errors:
@@ -213,9 +213,19 @@ and `woocommerce_order_status_changed` for this order only:
   answer is `recorded` (logged as a warning); a bad return value never discards money that moved.
   This is what the local custom-gateway template, Account Funds and any gateway that charges
   inside `process_payment()` produce.
+- **`settled`** — no money observed, but the gateway landed the order on the status the merchant
+  explicitly stored as this gateway's POS Order Status (`Gateway_Contract::get_settled_order_status()`,
+  the same reader the legacy pay window uses since 1.10.26 — raw option, never the settings view's
+  invented default; `failed`, `cancelled`, `refunded`, `checkout-draft`, `pos-open`, `pos-partial`
+  are never a settled outcome). The merchant's stored choice is intent: BACS stored as `pending` is a
+  "pay by invoice" sale that is finished at the till. No row, no stamp (a stale stamp from an earlier
+  send is cleared), the attempt is remembered as `settled`, an order note names the status, and Free
+  answers `payment: null`. A replay of a `settled` attempt answers `settled` again. Precedence:
+  `recorded` (money) over `settled` (stored status reached) over `sent`. (Paul, 2026-10-12: *"It
+  should go through to next"* — the ruling that the stored status applies to this path too.)
 - **`sent`** — anything else: `result: success` with the order left where the gateway put it
-  (`pending` for the email gateway, `on-hold` for a purchase-order gateway). No row. Free writes the
-  stamp (§3.2) and answers with `payment: null`.
+  (`pending` for the email gateway, `on-hold` for a purchase-order gateway) and not on a stored
+  settled status. No row. Free writes the stamp (§3.2) and answers with `payment: null`.
 - **A redirect elsewhere is refused.** A hosted checkout (PayPal Standard and every off-site
   gateway) answers `result: success` with a `redirect` to the provider's page: neither record-now
   nor send-and-leave, and only a browser can follow it. When no money was observed and the
@@ -280,8 +290,14 @@ it stands and the balance due, with the stamp's line beneath; the display receiv
 (`New sale` semantics as for `completed`), the pane shows the **sent moment** instead of the green
 Paid moment, no `checkout.completed` audit row is written (a `checkout.sent` row is), the receipt
 prints the balance due, the display drops to idle. A `recorded` outcome goes through the manual-leg
-predicate with the returned row and summary, exactly as a `manual` record does. The completion
-journal treats a `sent` attempt as decided on the response. **The response's `order` summary is the
+predicate with the returned row and summary, exactly as a `manual` record does. A **`settled`**
+outcome (§3.1) is a completed sale: the normal completion with the ledger as it is (the receipt
+prints the balance due, no row is minted), the `checkout.completed` audit row, the action-event
+outcome `completed`. The completion journal treats a `sent` attempt as decided on the response, and
+records the gateway's stored status on every gateway attempt so that **replay honours it**: a
+journaled sale found at the status the merchant stored for its gateway, with no awaiting-customer
+stamp, replays to completion instead of being dropped as unpaid (the same rule as the legacy pay
+window's `isSettledOrderStatus`). **The response's `order` summary is the
 truth for the moment shown:** a `sent` answer whose summary status is `pos-open` (a replay of an
 earlier send after a later one was cancelled at another till) shows no sent moment and writes no
 `checkout.sent` row; the pane stays on the order with its balance due (third review of
