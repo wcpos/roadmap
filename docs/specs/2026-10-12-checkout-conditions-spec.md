@@ -39,7 +39,9 @@ Market survey: `research.md` beside it. Rules: monorepo `.claude/rules/design.md
 in the plugin: the server's `Stock_Validator` already refuses an order leaving the open statuses
 with insufficient stock, and this is the app-side layer of that rule (the ticket's words). No new
 setting, no new event, no change to the add-time guard, the totals-changed banner, the legacy
-checkout path or the gateway/webview refusal parsing.
+pay page's own plumbing or the gateway/webview refusal parsing. Every dispatch of
+`checkout.tender.commit` meets the gate, the gateway-mode sale (`commitGatewaySale`) included: an
+over-stock order is refused before a gateway is reached (ruled while building, 2026-10-12).
 
 ## 1. The rule and the evaluator
 
