@@ -94,7 +94,8 @@ rows. Built as three PRs on `next` under the 400-line ceiling: **A** `cart.line.
 shipping onto `cart.line.update`; **B** the two coupon events with the shared writer; **C** the
 customer unification and `cart.customer.set`. Each needs the `independent-review` status on its final
 head. Rounding (#66, #84: the tender amounts become rewritable), register session open/close and
-refund are not admitted by this amendment; they wait for their consumers to be scheduled.
+refund are not admitted by this amendment; they wait for their consumers to be scheduled
+(rounding was admitted the same day, below).
 
 **Void, ruled 2026-10-12 (Paul: "as you recommend"):** the Void button's writes are extracted first,
 behaviour-preserving, into `voidOrder` / `restoreVoidedOrder` (PR D, the twelve existing tests
@@ -112,6 +113,71 @@ fit). Second: a `payments.gate` guard that **refuses a void while the order has 
 payment legs**, pointing the cashier to the tender pane's Cancel, which reverses the legs first.
 Before, such a void silently deleted the order, money and all; that is the behaviour change the event
 buys. No session gate: a void moves no money and must work with no open session.
+
+**Cash rounding, ruled 2026-10-12 (Paul: "start the rounding work"):** #66 and #84 are admitted as
+the **first rewriting consumer** of `checkout.tender.commit`; every hook landed so far observes or
+refuses, so this is the proof of the third move. The merchant ask (CZ, AU, SE, NZ, and every country
+that withdrew its small coins): a cash tender rounds the amount due to the nearest increment, card
+and online tenders keep full precision, and the difference is recorded so the books balance. The
+setting is per method, as #84 asks, which also answers #66.
+
+*Setting and descriptor.* The POS gateways are hidden from WooCommerce's settings screens by design
+(`Gateways::should_suppress_pos_gateways`), so `pos_cash` has no WooCommerce page; its page is the
+POS settings screen's gateway modal, and that is where the field goes: **Rounding**, a select
+(no rounding, 0.05, 0.10, 0.25, 0.50, 1, 5, 10), shown for cash-kind gateways only, stored as
+`rounding_increment` (a decimal string, `''` for none) in `woocommerce_pos_settings_payment_gateways`.
+`Descriptor_Builder::build()` fills the slot that already exists and is `null` today:
+`defaults.rounding = { increment, mode: 'nearest' }` for a cash-kind gateway with an increment, else
+`null`. The app's `PaymentMethodDescriptor` already declares that shape. The till reads it on start
+and on `config-changed`; a changed increment reaches a running till on its next start, as every
+gateway setting does today.
+
+*The hook.* `cash.rounding` (extension tier, order 0, `pos/checkout/cash-rounding-hook.ts`,
+side-effect imported where the tender guards are). On `checkout.tender.commit` it is a pass-through
+unless the method's `defaults.rounding` is set, `mode === 'manual'` and the tender completes the
+sale (`amountMinor >= balanceMinor`); then it rewrites
+`{ amountMinor: due, balanceMinor: due, roundingMinor: due - balanceMinor }` with
+`due = roundToIncrement(balanceMinor, incrementMinor, mode)` (a pure function in
+`order-math/payments/rounding.ts`, half-up for `nearest`, integer minor units). A partial cash tender
+is never rounded: the cashier hands what they hand. The hook reaches the descriptor through a new
+read on the context, `ctx.read.paymentMethod(id)`; a hook still writes nothing. The keys
+`amountMinor`, `balanceMinor` and the new `roundingMinor` (default `0`) become rewritable;
+`tenderedMinor` stays the cashier's entry.
+
+*The handler (the refactor the 2026-10-09 amendment asked for).* `commitTender` derives everything
+from `e.payload` after the chain: completing is `amountMinor === balanceMinor` on the rewritten
+payload, the split plan's last share, the provenance decision and the `completeOrderFlow` facts
+read the payload, never the render-time captures. When `roundingMinor !== 0` the handler, before
+the leg, patches a fee line named by `pos_checkout.rounding` ("Rounding") with
+`total = fromMinor(roundingMinor)`, `tax_status: 'none'`, the POS intent meta carrying
+`{ rounding: { increment, paymentId } }`, and the order's money fields recomputed in the same patch
+through `settleAggregate` (the settlement subscription is asynchronous; the leg must see the new
+total). The manual writer then records `amount = due`, `tendered` as entered, so `change = tendered
+- due`. Online, the provenance push already precedes a completing cash row and carries the fee line,
+so the server's ledger sees the rounded total before `POST orders/{id}/payments` (its `record()`
+refuses an amount above the balance and `derive()` leaves a short payment in `pos-partial`; both
+are why the total moves, not the payment). A rounded due of `0` writes the fee and completes as
+`zero-balance`. `useVoidPayments` drops the fee lines whose rounding meta names a row it voids, in
+the same patch, so reversing the cash leg reverses its rounding.
+
+*The pane.* Cash is the one method whose due the cashier must see before committing: with a cash
+tile selected and an increment set, the large figure, the "Exact amount" chip, the quick chips and
+the entry cap use the rounded due, with a one-line hint `pos_checkout.rounded_from`
+("Rounded from {amount}"). The preview calls the same pure function; the hook is the authority at
+commit. Card and other tiles are untouched.
+
+*Logs.* No new row: the cash row's `change` and the fee line are the record. Receipts show the fee
+line as any fee.
+
+*Not in this ruling.* A rounding mode other than nearest in the UI (the function and the descriptor
+carry `up` and `down`; the select offers nearest); rounding on the legacy order-pay page
+(`Cash::apply_tendered_payment`); rounding of non-cash tenders.
+
+Built as two PRs: **G1** on wcpos/woocommerce-pos `next` (the modal field, the option default and
+validation, the descriptor fill, PHPUnit); **G2** on wcpos/monorepo `next` (the pure function, the
+context read, the rewritable keys, the hook, the handler refactor and fee write, the void drop, the
+pane preview, LEDGER and README). G2 is unit-proven against a descriptor fixture and does not wait
+for G1; live proof on dev-next needs both plus a bundle dispatch.
 
 ## 3. The hook (R2, R3, R4)
 
