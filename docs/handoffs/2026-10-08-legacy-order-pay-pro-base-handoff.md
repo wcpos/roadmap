@@ -385,10 +385,18 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   answered `missing_payment_ref`. **stripe-terminal#170 open at `0f704cc`** (base `next`; merge
   AFTER Pro #633): `swept()` and the device carve-out gone (device rows take #169's
   pending-and-re-ask path), and `payment_of()` reads `action` → `stripe_payment_intent` →
-  `transaction_id` → `payment_intent` for both `refund()` and `fetch_refund()`. Unit 620/1613;
-  three mutations caught; fresh Opus review in progress. Worktrees:
-  `~/Projects/woocommerce-pos-pro-worktrees/95-sweep-device-rows` (wp-env running, the only one)
-  and `~/Projects/stripe-terminal-for-woocommerce-worktrees/95-device-rows-swept`.
+  `transaction_id` → `payment_intent` for both `refund()` and `fetch_refund()`. **Both merged:**
+  Pro #633 at `05f06c4` (squash of `e47fd09`), then stripe-terminal#170 at `49a9695` (squash of
+  `bb951f5`, after a delta pass added a case pinning `action` over `payment_intent`). Unit
+  621/1614; four mutations caught across the two. Worktrees and the Pro wp-env project removed;
+  Docker daemon untouched. Found by the #170 review, neither done, both older than these PRs:
+  (1) a webhook-captured row records no `stripe_mode`, so after a test/live switch its pending
+  refund is read under the new mode's key (404; Pro keeps asking to the 30-day note; the re-send
+  is unaffected) — fix would stamp the mode `refund()` used on the WooCommerce refund record and
+  prefer it on the read (a Stripe PR; question for Paul); (2) an offline Bluetooth payment settled
+  by its forwarded webhook before the till's capture has NO refs (`missing_payment_ref`, an error,
+  never a stuck pending) — Free's `Ledger::apply_transition()` replaces `provider_refs` wholesale,
+  so the fix is Free's (merge refs on settle); needs a ticket.
 
 ## Lessons recorded in memory
 
