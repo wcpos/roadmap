@@ -334,8 +334,8 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   client only while the SDK's client is still a curl client; the service test installs a refusing
   fake by default; 0 real requests at the head). SumUp, Square and PayArc still answer the sweep
   unsupported.
-- **Sweep end to end under wp-env (2026-10-12, Paul: "agree"):** stripe-terminal#168 open at
-  `dfd9a85`, test-only: `tests/conformance/Test_Stripe_Refund_Sweep.php` drives Pro's real
+- **Sweep end to end under wp-env (2026-10-12, Paul: "agree"):** stripe-terminal#168 **merged at
+  `4416275`** (one pass plus a delta), test-only: `tests/conformance/Test_Stripe_Refund_Sweep.php` drives Pro's real
   `Refund_Sweep` through `do_action( 'wcpos_payments_sweep' )` against the real adapter over the
   scripted `Fake_Stripe_Transport` (now holding refunds, serving the single read and the listing,
   able to lose a create's body, settle, and make a dashboard refund). Six cases; 34/417/7 for the
@@ -343,7 +343,11 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   vacuous (reset the instances by reflection, as the sweep's own request builds afresh); the
   fake lists newest first, so a "bind the first listed" mutation survives unless a NEWER foreign
   refund exists. wp-env mounts the worktree as `plugins/<worktree dir name>`, so `--env-cwd`
-  must name the worktree directory, not the plugin slug.
+  must name the worktree directory, not the plugin slug. Open question for Paul from the review:
+  Stripe's `refund()` still returns an error when the refund POST itself goes unanswered
+  (connection lost, unreadable 200), so WooCommerce deletes the record and a staff retry carries a
+  new refund id and key (a second Stripe refund if the first was taken); with the sweep's
+  metadata recovery in place, answering `pending` with no reference there (lesson 11) is small.
 
 ## Lessons recorded in memory
 
