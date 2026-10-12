@@ -297,6 +297,13 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   `e099831`; six bot threads resolved. Next on the Pro base: each extension implements
   `fetch_refund( $row, $allocation )` (Mollie first: queued refunds; find by metadata when the
   allocation has no reference).
+- **Mollie `fetch_refund()` open (2026-10-12, Paul: "as you recommend"):**
+  wcpos/mollie-terminal-for-woocommerce#39 on `next` at `c84b927`. `RefundReconciler::read()`
+  (by reference, else by the POST's metadata: order, record, attempt id; never creates),
+  `pro_status()` shared map, adapter answers indeterminate on silence or a held `refund` lock,
+  provider error on a refused read. Regression `server-refund.php` +15 cases; conformance
+  unchanged (28/332/6, Pro sibling `bcdd278`). Stripe, SumUp, Square and PayArc adapters still
+  answer unsupported (their refunds are synchronous or on-reader; Stripe's can be pending).
 
 ## Lessons recorded in memory
 
