@@ -311,6 +311,17 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   per-payment write; without that migration a replay posted twice). Stripe, SumUp, Square and
   PayArc adapters still answer unsupported (their refunds are synchronous or on-reader;
   Stripe's can be pending for some payment methods: the next candidate).
+- **Stripe `fetch_refund()` open (2026-10-12, Paul: "continue"):**
+  wcpos/stripe-terminal-for-woocommerce#166 on `next` at `8755de5`. Reads the refund `refund()`
+  made by the id it returned (`StripeTerminalService::retrieve_refund()`, `GET /v1/refunds/{id}`),
+  maps Stripe's five states through the map `refund()` already used (shared `refund_status()`);
+  5xx or dropped connection indeterminate (`stripe_refund_unanswered`), refused read a provider
+  error (never `failed`), a 200 without the refund unanswered, a refund whose `payment_intent`
+  (or `charge`, for a historical row naming the charge) is not the row's payment refused
+  (`refund_payment_mismatch`), an allocation with no reference `missing_refund_ref` (Stripe's
+  `refund()` never returns pending without an id). No adapter meta, so no lock. 14 unit tests,
+  five mutations caught; 572 unit tests green; conformance transcripts unchanged. Independent
+  review pass 1 in progress.
 
 ## Lessons recorded in memory
 
