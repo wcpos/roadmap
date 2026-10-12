@@ -365,8 +365,12 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   row's key); Pro's sweep never reads device rows, so a pending there would stand for good (device
   rows keep the error; the Pro change is Paul's call). Also: a 12 h `REPLAY_WINDOW` (Stripe prunes
   keys after 24 h, cron can be late), a logged scheduling failure, `fetch_refund()` lists before
-  believing the refused mark, and the fake refuses a changed body under a known key. Head
-  `20a11c8`; pass 2 in progress.
+  believing the refused mark, and the fake refuses a changed body under a known key. Pass 2
+  (approve) added: the re-ask's note must not say "not made" (only the sweep, after Stripe's
+  list, may); a deleted refund record stops the re-send; a metadata match must carry the
+  allocation's amount. **Merged at `ff5bd55`** (squash of `a34c28a`). Open for Paul: Pro's
+  `Refund_Sweep` reads server rows only; device rows (Bluetooth, Tap to Pay) are never read back,
+  so their unanswered refund POST still errors and a pending one would stand for good.
 
 ## Lessons recorded in memory
 
