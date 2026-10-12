@@ -343,11 +343,20 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   vacuous (reset the instances by reflection, as the sweep's own request builds afresh); the
   fake lists newest first, so a "bind the first listed" mutation survives unless a NEWER foreign
   refund exists. wp-env mounts the worktree as `plugins/<worktree dir name>`, so `--env-cwd`
-  must name the worktree directory, not the plugin slug. Open question for Paul from the review:
-  Stripe's `refund()` still returns an error when the refund POST itself goes unanswered
-  (connection lost, unreadable 200), so WooCommerce deletes the record and a staff retry carries a
-  new refund id and key (a second Stripe refund if the first was taken); with the sweep's
-  metadata recovery in place, answering `pending` with no reference there (lesson 11) is small.
+  must name the worktree directory, not the plugin slug.
+- **Unanswered refund create (lesson 11 for Stripe; 2026-10-12, Paul: "agree"):**
+  stripe-terminal#169 open at `74403a2`. `refund()` answers `pending` with no reference when the
+  POST itself goes unanswered (before: an error, WooCommerce deleted the record, a staff retry
+  under a new key could refund twice). New `Refund_Reask` (`includes/Server/Refund_Reask.php`)
+  re-sends the same body under the same idempotency key on WP cron (`stwc_refund_reask`; delays
+  60/300/1800 s; the event carries the MODE, never the key; a 409 or no answer re-queues; a
+  refusal writes `_stwc_refund_refused` on the refund record and notes the order), and
+  `fetch_refund()` answers `failed` for a reference-less allocation whose record carries that
+  mark. `Settings::get_api_key_for_mode()` shared with `key_for()`. The fake transport's refund
+  creates are idempotent by key, with "lose the answer after taken / before arrival" switches and
+  an over-refund refusal. Unit 602; e2e 9/155; conformance 37/478/7. Trap: Stripe sends an
+  idempotency conflict as a 400 of type `idempotency_error` (the SDK makes it a 409); a fixture
+  that sends status 409 lands in the 5xx-unknown bucket and tests nothing.
 
 ## Lessons recorded in memory
 
