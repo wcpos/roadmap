@@ -329,8 +329,11 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   SDK's global HTTP client and sent the unit test to api.stripe.com: memory lesson 28); the SDK
   client is built key-less when the current mode has none. 586 unit tests green, 27 in the fetch
   file; every pass 2 survivor now fails a test. Pre-existing, outside the PR (pass 3):
-  `tests/includes/StripeTerminalServiceTest.php` makes 39 real requests to api.stripe.com per
-  run; own PR next. SumUp, Square and PayArc still answer the sweep unsupported.
+  `tests/includes/StripeTerminalServiceTest.php` made 37 real requests to api.stripe.com per
+  run: **fixed in stripe-terminal#167, merged at `3b0c44d`** (the constructor installs its curl
+  client only while the SDK's client is still a curl client; the service test installs a refusing
+  fake by default; 0 real requests at the head). SumUp, Square and PayArc still answer the sweep
+  unsupported.
 
 ## Lessons recorded in memory
 
