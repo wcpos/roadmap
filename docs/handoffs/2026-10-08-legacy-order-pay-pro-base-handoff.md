@@ -302,8 +302,15 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   (by reference, else by the POST's metadata: order, record, attempt id; never creates),
   `pro_status()` shared map, adapter answers indeterminate on silence or a held `refund` lock,
   provider error on a refused read. Regression `server-refund.php` +15 cases; conformance
-  unchanged (28/332/6, Pro sibling `bcdd278`). Stripe, SumUp, Square and PayArc adapters still
-  answer unsupported (their refunds are synchronous or on-reader; Stripe's can be pending).
+  unchanged (28/332/6, Pro sibling `bcdd278`). **Merged at `419eb2a`** after three passes and
+  four bot threads. Review found a pre-existing Major (since Mollie #38): the record kept ONE
+  Mollie refund id per WooCommerce refund record, so a refund Pro splits across two Mollie
+  payments had its second leg read the first leg's refund back as already made and never
+  refunded, while Pro recorded it returned. Facts are now per payment (`<key>:<payment id>`,
+  `_mtfwc_refund_legs` marker, legacy plain keys migrated under the payment on the first
+  per-payment write; without that migration a replay posted twice). Stripe, SumUp, Square and
+  PayArc adapters still answer unsupported (their refunds are synchronous or on-reader;
+  Stripe's can be pending for some payment methods: the next candidate).
 
 ## Lessons recorded in memory
 
