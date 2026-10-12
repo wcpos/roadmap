@@ -32,7 +32,7 @@
 > (`cart.coupon.apply` / `cart.coupon.remove` through one writer), C #2473 (`cart.customer.set`
 > through one writer, the link bridge's stamp as a system action); the void was extracted (D #2472)
 > and admitted as `cart.order.void` with a `payments.gate` that refuses a void with live or captured
-> legs and an `order.voided` audit row (E #2476, CI on its final head at the time of writing); F
+> legs and an `order.voided` audit row (E #2476, merged at `75ddff0b`); F
 > #2477 made every queued cart writer land on the saved record a first add left on the slot. The
 > fence allowlist went from 16 files to 6. Every PR had a fresh Opus review with mutation checks;
 > the reviews found and the PRs fixed: a coupon race (validated against a cart that moved while
