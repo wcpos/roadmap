@@ -416,8 +416,11 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   refund target; a real event's string `latest_charge` pinned); Pro wcpos/woocommerce-pos-pro#638
   (`test_webhook_keeps_every_reference_the_till_wrote` in the conformance case; the Simulated
   provider's webhook already carried `action`, so the old rule dropped `reader` in Pro's own suite
-  unnoticed; no transcript so the extensions' CI needs no new golden). Design choice recorded on
-  #426: "patch wins" over a captured-rows-only-add special case, since refs land only when the
+  unnoticed; no transcript so the extensions' CI needs no new golden) **merged at `92440a3`**.
+  #426 closed with the landing table and the acceptance check; the Stripe end-to-end sweep case was
+  not added (the Stripe conformance fixture nulls the device registry; a device provider there would
+  construct a second Stripe service). All three worktrees removed, wp-env projects pruned, Docker
+  daemon untouched. Design choice recorded on #426: "patch wins" over a captured-rows-only-add special case, since refs land only when the
   transition is accepted. Not evaluated anywhere: live Stripe; a real reader offline; SumUp still
   carries no refs in its webhook (its device rows get the SDK's refs at capture).
 
