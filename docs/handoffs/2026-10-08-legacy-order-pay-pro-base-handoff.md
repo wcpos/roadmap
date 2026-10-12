@@ -393,10 +393,16 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   (1) a webhook-captured row records no `stripe_mode`, so after a test/live switch its pending
   refund is read under the new mode's key (404; Pro keeps asking to the 30-day note; the re-send
   is unaffected) — fix would stamp the mode `refund()` used on the WooCommerce refund record and
-  prefer it on the read (a Stripe PR; question for Paul); (2) an offline Bluetooth payment settled
-  by its forwarded webhook before the till's capture has NO refs (`missing_payment_ref`, an error,
-  never a stuck pending) — Free's `Ledger::apply_transition()` replaces `provider_refs` wholesale,
-  so the fix is Free's (merge refs on settle); needs a ticket.
+  prefer it on the read — **done as stripe-terminal#171, merged at `3471492`** (squash of
+  `26d6840`; Paul: "continue"; Codex from a spec, stopped once at a 40-line budget and landed at
+  52 of 70; `REFUND_MODE_META = '_stwc_refund_mode'`, `recorded_mode( $row, $refund_id )` feeds
+  `mode_of()` and `key_for()`, stamp written BEFORE the POST, row's mode wins; six mutations
+  caught; review confirmed WC's `save_meta_data()` leaves an untracked key alone, and noted HPOS
+  compatibility-sync may drop the stamp from the posts backup copy only); (2) an offline Bluetooth
+  payment settled by its forwarded webhook before the till's capture has NO refs
+  (`missing_payment_ref`, an error, never a stuck pending) — Free's `Ledger::apply_transition()`
+  replaces `provider_refs` wholesale, so the fix is Free's (merge refs on settle); needs a ticket.
+  All worktrees removed; no wp-env running; Docker daemon untouched.
 
 ## Lessons recorded in memory
 
