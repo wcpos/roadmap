@@ -444,6 +444,19 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   exist" (opt-in OR marker), not on the merchant's current wish; a native busy lock must be held across
   an async SDK callback, not only checked; the iOS session read cannot tell "no session" from
   "unreadable", hence the marker.
+- **2026-10-13, after the provider requests checklist** (`docs/releases/2026-10-13-wcpos-2.0-provider-requests-checklist.md`,
+  Paul: "open the tickets, then orchestrate the fixes"): two engineering finds filed and fixed the same
+  afternoon. **roadmap#429** — `apps/main/app.config.ts` passed neither `appDelegate` nor `tapToPayCheck`
+  to the Stripe Terminal Expo plugin, both of which Stripe lists as required for Tap to Pay on Android
+  (the subprocess booted the whole app and the SDK delegate was never registered); monorepo#2507
+  merged to `next` at `ef8eef1a` (two props + a node:test pin on both profiles; one Opus 5.5 agent,
+  fresh Opus review APPROVE, EAS Android build eff23d89 FINISHED). Generated order with both options is
+  delegate, then guard, then React Native start-up (Expo runs dangerous mods first), unlike Stripe's
+  committed native samples; accepted, recorded on the ticket. #429 stays OPEN (`needs-paul`) for the
+  Android tap on a `next` dev client that includes `ef8eef1a`. **roadmap#430** — the Stripe README on
+  `next` said Bluetooth and Tap to Pay were unsupported; stripe-terminal#173 merged at `110ac67`
+  (three review rounds: the store-wide **POS connection** setting and its **Default terminal** fallback
+  had to be named), #430 CLOSED.
 
 ## Lessons recorded in memory
 
