@@ -422,7 +422,13 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   construct a second Stripe service). All three worktrees removed, wp-env projects pruned, Docker
   daemon untouched. Design choice recorded on #426: "patch wins" over a captured-rows-only-add special case, since refs land only when the
   transition is accepted. Not evaluated anywhere: live Stripe; a real reader offline; SumUp still
-  carries no refs in its webhook (its device rows get the SDK's refs at capture).
+  carries no refs in its webhook. Paul (2026-10-13 morning) challenged "SumUp has no offline mode":
+  wrong, the Reader SDKs do offline (store-and-forward) on the Solo Lite, opt-in with SumUp; the gap
+  still does not reach SumUp because `create_intent()` hands back the ROW ID as the SDK's
+  `foreign_transaction_id`, so every SumUp device row holds a lookup key from creation and `fetch()`
+  finds the forwarded transaction by it, and SumUp's webhook is the Solo cloud API's per-checkout
+  callback, which SDK payments never send. Our SumUp extension declares `offline: none`, so 2.0 does
+  not offer SumUp offline payments at all; that is a product decision, not a bug.
 
 ## Lessons recorded in memory
 
