@@ -49,7 +49,7 @@
 > judged-not-changed edge is a stale local ledger after a failed mirror AND a failed refresh AND a
 > cancel on a completed sale (half an increment at most). #66 and #84 closed. Nothing else is open on
 > #421; the no-session refusal can be seen live on a local wp-env store if ever wanted. Rounding is
-> not verified live: it needs the next `next` bundle and plugin release on dev-next. **Late on 2026-10-12** (Paul: "grill #62", "go"): checkout
+> not verified live: it needs the next `next` bundle and plugin release on dev-next. **Late on 2026-10-12** (Paul: "grill #62", "go"): checkout **2026-10-13 (Paul: "I want you to fix the issues if they're real issues"):** the two reopened-order stock defects reported under Found after #62 were fixed in the same run, not parked: wcpos/monorepo#2492 merged on `next` at `9b81a8af9` (the add guard and the raise path net `_reduced_stock` through the gate's helper; a split shares the reduced units across its halves in whole units). Rule strengthened in `~/.claude/CLAUDE.md`: Found is not a parking lot.
 > conditions (#62), the spec's slice 4 and the first feature consumer, was grilled (train 2.0; no core
 > setting for a required note, "something extensions can tap into"; conditions are data, one evaluator,
 > one guard; cart state A from a four-variant board) and landed as wcpos/monorepo#2489 (merged `5158ed2c`):
