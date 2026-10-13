@@ -152,7 +152,7 @@ Default map (Alt on Windows and Linux, Option on a Mac; `react-hotkeys-hook` spe
 
 | Chord | Command | `when` |
 |---|---|---|
-| `Alt+F` | `pos.search.focus` | route is cart |
+| `Alt+F` | `pos.search.focus` | route is cart (the products panel shows beside the register picker too) |
 | `Alt+P` | `pos.checkout.open` | route is cart, lineCount > 0 |
 | `Alt+N` | `pos.cart.new` | route is cart, the blank cart is not already current |
 | `Alt+←` | `pos.cart.previous` | route is cart, openOrderCount > 1 |
@@ -160,6 +160,14 @@ Default map (Alt on Windows and Linux, Option on a Mac; `react-hotkeys-hook` spe
 | `Alt+D` | `pos.cart.discount` | route is cart, hasOpenOrder |
 | `Alt+V` | `pos.cart.void` | route is cart, hasOpenOrder, `hasSurface('void')` (see PR 1b) |
 | `Alt+/` | `pos.help.open` | always |
+
+- **The cart commands need the cart SHOWN** (amended on PR 1b's review and PR 2, 2026-10-13): the
+  cart column is mounted behind the register picker, the open-register card, the count and the
+  loading rows, and is `inert` while the open-orders list covers it. The column registers a `cart`
+  surface only while `cartShown && !cartCovered`, and every cart command's `when` reads
+  `hasSurface('cart')`; search needs only the route. A chord over the open help sheet closes it
+  first (`Alt+/` toggles it closed; any other chord runs after the close commits, the row-press
+  path).
 
 - `useHotkeys` from `@wcpos/hooks/use-hotkeys` with `enableOnFormTags: true` and
   `enableOnContentEditable: true`, `preventDefault: true`; one registration per binding; the handler
