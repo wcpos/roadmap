@@ -479,6 +479,15 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   pick C soft tint), Spanish strings for the new keys, Health pages' in-page headings. The dev client
   eff23d89 predates the SDK 58 preview line that landed on `next` on 10-13; the next device run needs a
   fresh EAS dev build.
+  **Landed:** monorepo#2529 squash-merged to `next` at `d21acf8ee` (2026-10-13 late) after three fresh-Opus
+  rounds (round 1 request-changes: the shared scrim change killed v2 dialog scrim dismissal → now an
+  alert-only `blocking` prop; round 2 request-changes: the bottom sheet's keyboard wrapper was off for
+  searchable pickers → on only while the keyboard is up; round 3 approve-with-nits). Also from the rounds:
+  one `useSheetInset` hook for every bottom panel, order currency before store currency, live decimals in
+  every checkout reader and the cart tab chips, the reader's transport read in `connected()`, Connect a
+  reader `default` only while no reader is held, void toast "marked cancelled" with both audit rows on
+  the pre-void status. Gallery baselines updated through the label cycle (two update runs, then the
+  read-only shoot on the final head).
 
 ## Lessons recorded in memory
 
