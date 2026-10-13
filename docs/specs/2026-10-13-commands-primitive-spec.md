@@ -97,8 +97,8 @@ export interface CommandContext extends ActionContext {
 		/** The Pay button's whole path: blocked-by-conditions scroll, degraded block, mark saving,
 		 *  enter checkout mode on a wide screen or push the checkout sheet on a phone. */
 		openCheckout(): Promise<void>;
-		/** Leave checkout for the cart (`leaveCheckout` + `returnToTill`). */
-		leaveCheckout(): Promise<void>;
+		// `leaveCheckout` is reserved with `pos.checkout.leave` (§7); no v1 command needs it
+		// (amended on PR 1, 2026-10-13: removed from the v1 context for the ceiling).
 	};
 	cart: {
 		/** Select the blank cart (`setCurrentOrderID('')`). */
