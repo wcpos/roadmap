@@ -19,7 +19,10 @@ monorepo `.claude/rules/design.mdc`, `CODING_STANDARDS.md` § Design.
    gradient perfect."*
 4. **The scrim is "card colour, eased, 85, 48".** From a board of four scrims (black, card colour,
    frosted, band) × two fades × three strengths × three reaches. Black, frosted and band were shown
-   and not chosen.
+   and not chosen. **Amended 2026-10-13 after seeing it on dev-next:** the plateau is **92 %**
+   (*"around 90 or 92"*) and a **6 px blur** sits under the words, masked by the same fade; the
+   blur is drawn on web now and on native as a blurred copy of the picture under a gradient mask
+   once judged on a device (`docs/research/2026-10-13-native-scrim-blur.md`). Monorepo #2512.
 5. **Stock on the tile is a number** when the product manages stock; the old "In Stock" badge goes.
 
 Open, not ruled: a category with no photo of its own — its name on a tint (what the prototype
@@ -89,7 +92,7 @@ type PosterTileProps = {
 
 ### The scrim (decided: card colour, eased, 85, 48)
 
-- Colour: `bg-card` at **85 %** opacity. White in light mode, near-black in dark. The words are
+- Colour: `bg-card` at **92 %** opacity (85 % as first decided; 92 % from 2026-10-13). White in light mode, near-black in dark. The words are
   `text-foreground`; secondary words (`sub`, tax, struck price, labels) are foreground at 72 %;
   option chips are foreground at 12 % under foreground text; the Sale pill is foreground on card.
   No new hex: two tokens, inverted.
@@ -101,7 +104,7 @@ type PosterTileProps = {
   |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
   | of 85 % | 0 | .002 | .008 | .021 | .042 | .075 | .126 | .194 | .278 | .382 | .541 | .738 | 1 |
 
-  Then 100 % of 85 % to the bottom. A two-line tile and a seven-line tile fade identically; only
+  Then 100 % of the strength to the bottom. A two-line tile and a seven-line tile fade identically; only
   the plateau grows. The reach and the strength are **constants in the component** (named, with
   this spec cited), not settings.
 - Web: one CSS `linear-gradient(to bottom, …)` over the scrim box, `color-mix(in srgb, var(--card)
