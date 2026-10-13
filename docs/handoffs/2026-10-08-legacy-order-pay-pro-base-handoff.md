@@ -428,7 +428,8 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   `foreign_transaction_id`, so every SumUp device row holds a lookup key from creation and `fetch()`
   finds the forwarded transaction by it, and SumUp's webhook is the Solo cloud API's per-checkout
   callback, which SDK payments never send. Our SumUp extension declares `offline: none`, so 2.0 does
-  not offer SumUp offline payments at all; that is a product decision, not a bug.
+  not offer SumUp offline payments at all; filed as **roadmap#427** (post-2.0 feature; Paul: "do as
+  you recommend"), linked from #236.
 
 ## Lessons recorded in memory
 
