@@ -457,6 +457,28 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   `next` said Bluetooth and Tap to Pay were unsupported; stripe-terminal#173 merged at `110ac67`
   (three review rounds: the store-wide **POS connection** setting and its **Default terminal** fallback
   had to be named), #430 CLOSED.
+- **2026-10-13 evening, WisePad 3 run on the Pixel 10** (Android 17 dev client eff23d89, Metro from a
+  `next` worktree, Stripe sandbox "WCPOS dev-next" acct `1UQ6raIO55QqjMxu`, AU/AUD, Terminal location
+  `tml_GssGywqD8O5585`; the AL Store on dev-next set to AUD). The US sandbox could pair the WisePad but
+  Stripe refused the confirm (GB location on a US account), so Codex computer use created the AU
+  sandbox and the API created the location. Paul walked readers, settings and the pay sheet screen by
+  screen; every defect fixed on the branch and re-walked on the device: **monorepo#2529** (`next`,
+  27 commits incl. the merged `feat/tender-phone-craft`). Money path: the device leg settles from the
+  status route when the store refuses a capture as a repeat (Stripe's webhook beat the till's capture on
+  #113046; the sheet stuck at Approved) and when a pending online row is resumed; payments mint in the
+  store's LATEST currency (the session's RxDB snapshot kept USD after Restore); the customer-display
+  controller now sits under `OnlineStatusProvider` (above it, every request failed "No internet");
+  a void the store refuses to delete cancels the order (pending is an open-cart status, the voided cart
+  took the next sale's lines); the pay sheet reuses the held reader (no disconnect-discover-reconnect
+  per tile tap). Components (app-wide, per the new CODING_STANDARDS § Design → Components): full-size
+  modal = the screen on a phone; bottom sheet paints its own inset; a non-dismissable scrim takes no
+  touches (Android: Restore confirm dead); one title per phone page; settings bottom inset. Card readers
+  page craft pass (R1 on Direction D #407) and pay sheet at phone width. The run ended with a live tap
+  captured and shown paid. Still open: Android Tap to Pay on the device (#429, needs an admin login and
+  developer options off), the button gallery and the release-class button treatment (board section C,
+  pick C soft tint), Spanish strings for the new keys, Health pages' in-page headings. The dev client
+  eff23d89 predates the SDK 58 preview line that landed on `next` on 10-13; the next device run needs a
+  fresh EAS dev build.
 
 ## Lessons recorded in memory
 
