@@ -31,9 +31,12 @@ registry (#62). Train: **2.0 on `next`**, two PRs.
   registry, README, LEDGER, tests. New module `packages/core/src/extensions/hotkeys/`: the first
   consumer, a side-effect import beside the guards.
 - A `CommandsProvider` at the POS root that builds the context and mounts the key bindings.
-- The Pay button's handler and the void button's handler move into hooks (`usePay`, `useVoidOrder`)
-  that the buttons and the commands share. The products search input and the discount dialog register
-  themselves as focus targets.
+- Mounted surfaces register their handlers with a surface registry while mounted: the Pay button its
+  pay path, the void button its void path, the products search input its focus, the discount dialog
+  its opener. A context verb invokes the registered handler and rejects when none is mounted.
+  (Amended 2026-10-13 before PR 1: the Pay handler reads the cart conditions context, which exists
+  only inside the cart column, so a hook extracted to the POS root could not see it. Registration
+  moves nothing and gives "the command does what the button does, while the button exists".)
 - A help sheet listing every command with its chord.
 - Logs vocabulary `command.refused` and `command.failed`; `pos_commands.*` strings; the write-fence
   scanner's roots gain `extensions/`.
@@ -109,27 +112,30 @@ export interface CommandContext extends ActionContext {
 	};
 	/** Bring a registered surface to the cashier: focus an input or open a dialog. Rejects when
 	 *  nothing is registered for the target (the surface is not mounted). */
-	focus(target: FocusTarget): Promise<void>;
+	focus(target: 'search' | 'discount'): Promise<void>;
 	/** What the context can say about the screen, for `when`. */
 	screen: { route: 'cart' | 'checkout' | 'other'; hasOpenOrder: boolean; openOrderCount: number; lineCount: number };
 }
-export type FocusTarget = 'search' | 'discount';
 ```
 
 - Built by `CommandsProvider` (`extensions/commands/provider.tsx`) mounted once at the POS root, inside
-  `CurrentOrderProvider` and the checkout-mode read, from: `useActionContext().ctx`, `usePay()`
-  (extracted from `cart/buttons/pay.tsx`; the button calls the same hook), `useVoidOrder()`
-  (extracted from `cart/buttons/void.tsx`, including its Undo snapshot and the refusal presentation),
-  `useCurrentOrderActions()` plus the open-orders list for `selectOrder`, the focus registry, and
-  `useCheckoutMode()` for `screen.route`. The provider exposes `useCommandContext()` and
-  `useRunCommand()` (a stable `(id, source, args) => runCommand(...)`).
-- The focus registry (`extensions/commands/focus.ts`) is the #62 line registry's shape:
-  `registerFocusTarget(target, fn): () => void`. The products search input registers
-  `() => inputRef.current?.focus()` (its `QuerySearchInput` already forwards a ref); the Add-discount
-  dialog registers an opener (`setOpen(true)`) while mounted. A null detach removes only its own entry.
+  `CurrentOrderProvider` (around `<POSStack />` in the POS layout), from: `useActionContext().ctx`,
+  `useCurrentOrderActions()` plus the open-orders list for `newOrder` and `selectOrder`, the surface
+  registry for `openCheckout`, `void` and `focus`, and `useCheckoutMode()` for `screen.route`. The
+  provider exposes `useCommandContext()` and `useRunCommand()` (a stable
+  `(id, source, args) => runCommand(...)`).
+- The surface registry (`extensions/commands/surfaces.ts`) is the #62 line registry's shape:
+  `registerSurface(target, handler): () => void` with `SurfaceTarget = 'pay' | 'void' | 'search' |
+  'discount'`, and `invokeSurface(target)` rejecting with `SurfaceNotMountedError` when nothing is
+  registered. The Pay button registers its `handlePay` (so `openCheckout` runs the whole path: the
+  conditions scroll, the degraded block, mark saving, checkout mode or the phone sheet); the void
+  button registers its `handleRemove` (Undo snapshot, refusal presentation included); the products
+  search input registers `() => inputRef.current?.focus()` (`QuerySearchInput` forwards a ref); the
+  Add-discount trigger registers an opener while mounted. A detach removes only its own entry; the
+  newest registration wins on a remount. `focus(target)` is `invokeSurface` over the two UI targets.
 - `when` reads `ctx.screen`, nothing else; it must not read React state or await.
 - Nothing in the context is a React object: no router, no order record, no component ref. A verb that
-  needs one closes over it inside the provider.
+  needs one closes over it inside the provider or inside the registering surface.
 
 ## 3. The hotkeys module (first consumer)
 
@@ -186,8 +192,8 @@ Alt+F and Alt+D may also open the Firefox menu." Logs vocabulary (`event-registr
 
 ## 6. Behaviour that must not move
 
-- The Pay button and the void button behave exactly as today; the hooks are extractions, pinned by
-  their existing tests.
+- The Pay button and the void button behave exactly as today; they gain one registration effect each
+  and nothing moves, pinned by their existing tests.
 - Escape in checkout (`use-checkout-back`), the orders row keys, the cart tab arrows and the browse
   level Escape are untouched; none is a command in v1.
 - The barcode wedge detector sees every keystroke it sees today: the module binds chords only, and a
@@ -206,10 +212,12 @@ descriptor is serialisable, `CommandSource` is a union, and `when` can be lifted
 - `registry.test.ts`: closed ids, duplicate replace outside production, `when` false → refused and the
   `info` row, `run` rejects → failed and the `warn` row, success → `ran` and the `debug` row, the
   `source` recorded, descriptors frozen.
-- `focus.test.ts`: register, detach removes its own entry only, `focus` rejects with nothing mounted.
-- `provider.test.tsx`: `navigate.openCheckout` runs the pay path (the button's tests moved onto
-  `usePay`), `cart.selectOrder('next')` wraps and skips receipts, `cart.newOrder` selects the blank
-  cart, `screen` reflects checkout mode.
+- `surfaces.test.ts`: register, detach removes its own entry only, newest wins on remount, invoke
+  rejects with `SurfaceNotMountedError` when nothing is mounted.
+- `provider.test.tsx`: `navigate.openCheckout` invokes the registered pay surface and rejects with
+  none mounted, `cart.selectOrder('next')` wraps and skips receipts, `cart.newOrder` selects the
+  blank cart, `screen` reflects checkout mode. `pay.test.tsx` and the void button's test each gain one
+  case: mounting registers the surface, unmounting removes it.
 - `hotkeys.test.tsx` (web): `Alt+N` keydown runs `pos.cart.new` with source `key`, also with an input
   focused; `preventDefault` called; a refused chord runs nothing; an in-flight chord is dropped; the
   native module renders nothing.
@@ -221,12 +229,10 @@ descriptor is serialisable, `CommandSource` is a union, and `when` can be lifted
 
 ## 9. Plan of record
 
-1. **PR 1, the primitive** (`wcpos/monorepo`, `next`): `extensions/commands/` (types, registry, focus,
-   provider, index, README, LEDGER), `usePay` and `useVoidOrder` extractions, the focus registrations
-   in the search input and the discount dialog, `CommandsProvider` at the POS root, the eight command
-   registrations (so PR 2 only binds), the scanner roots, the glossary line. No key is bound yet.
-   Under the 400-line ceiling; if the void extraction pushes it over, the void hook is its own PR
-   before PR 2.
+1. **PR 1, the primitive** (`wcpos/monorepo`, `next`): `extensions/commands/` (types, registry,
+   surfaces, provider, index, README, LEDGER), the four surface registrations (Pay, void, search,
+   discount), `CommandsProvider` at the POS root, the eight command registrations (so PR 2 only
+   binds), the scanner roots, the glossary line. No key is bound yet. Under the 400-line ceiling.
 2. **PR 2, hotkeys** (`wcpos/monorepo`, `next`): `extensions/hotkeys/`, the help sheet, the words, the
    logs vocabulary, the captures walk, the README's consumer section ("how to write a module like this
    one").
