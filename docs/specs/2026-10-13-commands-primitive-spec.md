@@ -106,13 +106,17 @@ export interface CommandContext extends ActionContext {
 		/** Select an open order by uuid, or step through the open carts (`'previous' | 'next'`,
 		 *  wrapping, receipts skipped). Rejects for an unknown uuid. */
 		selectOrder(target: string | 'previous' | 'next'): Promise<void>;
-		/** The void button's path through `cart.order.void`; rejects with the refusal when the
-		 *  payments gate refuses, resolves when the writer ran. */
+		/** The void button's path through `cart.order.void`. Resolves when the path ran, the gate's
+		 *  refusal included (the button presents it and the gate logs it); rejects only when no
+		 *  void surface is mounted. (Amended 2026-10-13 on PR 1: the button's handler returns
+		 *  normally after a refusal, and that is the right place to present it.) */
 		void(): Promise<void>;
 	};
 	/** Bring a registered surface to the cashier: focus an input or open a dialog. Rejects when
 	 *  nothing is registered for the target (the surface is not mounted). */
 	focus(target: 'search' | 'discount'): Promise<void>;
+	/** Whether a surface is mounted right now, for `when` (a verb over an unmounted one would fail). */
+	hasSurface(target: SurfaceTarget): boolean;
 	/** What the context can say about the screen, for `when`. */
 	screen: { route: 'cart' | 'checkout' | 'other'; hasOpenOrder: boolean; openOrderCount: number; lineCount: number };
 }
@@ -133,7 +137,7 @@ export interface CommandContext extends ActionContext {
   search input registers `() => inputRef.current?.focus()` (`QuerySearchInput` forwards a ref); the
   Add-discount trigger registers an opener while mounted. A detach removes only its own entry; the
   newest registration wins on a remount. `focus(target)` is `invokeSurface` over the two UI targets.
-- `when` reads `ctx.screen`, nothing else; it must not read React state or await.
+- `when` reads `ctx.screen` and `ctx.hasSurface`, nothing else; it must not read React state or await.
 - Nothing in the context is a React object: no router, no order record, no component ref. A verb that
   needs one closes over it inside the provider or inside the registering surface.
 
@@ -154,7 +158,7 @@ Default map (Alt on Windows and Linux, Option on a Mac; `react-hotkeys-hook` spe
 | `Alt+←` | `pos.cart.previous` | route is cart, openOrderCount > 1 |
 | `Alt+→` | `pos.cart.next` | route is cart, openOrderCount > 1 |
 | `Alt+D` | `pos.cart.discount` | route is cart, hasOpenOrder |
-| `Alt+V` | `pos.cart.void` | route is cart, hasOpenOrder |
+| `Alt+V` | `pos.cart.void` | route is cart, hasOpenOrder, `hasSurface('void')` (see PR 1b) |
 | `Alt+/` | `pos.help.open` | always |
 
 - `useHotkeys` from `@wcpos/hooks/use-hotkeys` with `enableOnFormTags: true` and
@@ -233,6 +237,12 @@ descriptor is serialisable, `CommandSource` is a union, and `when` can be lifted
    surfaces, provider, index, README, LEDGER), the four surface registrations (Pay, void, search,
    discount), `CommandsProvider` at the POS root, the eight command registrations (so PR 2 only
    binds), the scanner roots, the glossary line. No key is bound yet. Under the 400-line ceiling.
+   **PR 1b, the void path to the cart column** (found on PR 1: the void button lives inside the
+   order sheet, so its surface is mounted only while the sheet is open and `Alt+V` would be refused
+   on the cart). The button's handler becomes `useVoidOrder()` in `cart/hooks`, the cart column
+   registers the `void` surface while mounted, the button calls the hook; `pos.cart.void`'s `when`
+   keeps `hasSurface('void')`, now true whenever the cart column is. Behaviour of the button
+   unchanged, pinned by its tests. Lands before PR 2.
 2. **PR 2, hotkeys** (`wcpos/monorepo`, `next`): `extensions/hotkeys/`, the help sheet, the words, the
    logs vocabulary, the captures walk, the README's consumer section ("how to write a module like this
    one").
