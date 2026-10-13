@@ -488,6 +488,26 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   reader `default` only while no reader is held, void toast "marked cancelled" with both audit rows on
   the pre-void status. Gallery baselines updated through the label cycle (two update runs, then the
   read-only shoot on the final head).
+- **2026-10-13/14 night, Tap to Pay on Android device check (#429).** EAS `adhoc` Android build
+  `db06f450` from `next` d21acf8ee installed on the Pixel 10 as `com.wcpos.main.adhoc` (release, not
+  debuggable: Stripe refuses the production Tap to Pay reader in a debuggable app; Stripe also requires
+  developer options OFF, done over adb with `settings put global development_settings_enabled 0` so adb
+  survived). Driven entirely over adb (uiautomator dumps + taps). Found and fixed: the set-up gate was
+  unreachable for EVERY user because free's `effective_capabilities()` never reported `manage_woocommerce`
+  (the app's `canAcceptReaderTerms` fails closed) — hotpatched on dev-next, then wcpos/woocommerce-pos#2232
+  merged to `next` at `22b8cb5a` (REPORTED_ONLY_CAPABILITIES = manage_woocommerce + delete_users; the second
+  from the review: the delete-customer gate had the same hole). Shop-manager user `ttp-android` created on
+  dev-next for this. With it: Set up Tap to Pay → "Este dispositivo · Listo" (the `:stripetaptopay`
+  subprocess runs; #2507's plugin order works) → pay sheet → Stripe's "Tap behind device · A$45.00" screen.
+  The card tap itself is still owed (no test card to hand). The SDK's 60 s no-card time-out exposed three
+  app defects, fixed in wcpos/monorepo#2537 (merged at `c266d82c9`, four review rounds): CARD_READ_TIMED_OUT
+  is a timed-out sale (grey, terminal step, void reason `timed_out`), not a red reader failure on Approved; a
+  requested cancel or the deadline wins over a racing time-out; the Tap to Pay reader is "This device" on
+  the pay sheet. Also wcpos/woocommerce-pos#2233 merged (`41b65bb9`): the vendored sqlite worker re-synced to
+  web-bundle@next (the lane's drift check was red for every PR). Still owed on #429: the tap with the card,
+  then a deliberate no-tap time-out to see the new wording on the device (needs a fresh adhoc build from
+  `next` ≥ c266d82c9). Design note: Tap to Pay discovery shows "Found 1 reader. Is it yours? Connect" for the
+  phone itself; that confirm step is noise for a reader that is the phone.
 
 ## Lessons recorded in memory
 
