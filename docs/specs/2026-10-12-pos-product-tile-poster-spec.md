@@ -25,6 +25,19 @@ monorepo `.claude/rules/design.mdc`, `CODING_STANDARDS.md` § Design.
    once judged on a device (`docs/research/2026-10-13-native-scrim-blur.md`). Monorepo #2512.
 5. **Stock on the tile is a number** when the product manages stock; the old "In Stock" badge goes.
 
+6. **Amended 2026-10-13: the band.** *"I like the band."* / *"The cards must be the same height,
+   square or rectangle. That should be obvious."* Every tile is the square picture plus a fixed band
+   of card colour under it (`POSTER_BAND`: one title line, one money line, the 2 px gap and the 10 px
+   foot, in the type scale's variables), the words anchored to the card's bottom so the most common
+   words sit on the band and the fade begins at the picture's bottom edge; more lines climb into the
+   fade. Tint tiles carry the tint across both. Board
+   `pos-tile-square-or-band-2026-10-13.html`; monorepo #2520.
+7. **Amended 2026-10-13: every tile that deals is a stack.** *"Any card that drills down into a new
+   stack should have that consistent UI."* Term, All products and shortcut tiles stack as the drill
+   variable product does, and the parent term fades its cards with the Deal. The category keeps its
+   glyph and "N products"; the variable product its price, "from" and "N options" and no glyph.
+   Rule 4 of *The stack and the Deal* reads accordingly. Monorepo #2520.
+
 Open, not ruled: a category with no photo of its own — its name on a tint (what the prototype
 builds) or a 2×2 mosaic of its products' pictures. The tint needs nothing; the mosaic needs the
 category's first four product images, which the browse source does not fetch today. Build the
@@ -209,8 +222,10 @@ is part of the Deal, in four rules:
    table. On the way back the layers fade in over the `oldTiles` gather, landing as the last
    variation gathers under the parent, so the tile that comes home is the stacked tile that left.
    Reduce-motion: the layers switch with the tiles, no fade.
-4. **Nothing else stacks.** Variation tiles, term tiles, the parent term, the placeholder and the
-   inline-style variable tile are never stacked; a stack means "tap to deal", nothing else.
+4. **Only what deals stacks** (amended 2026-10-13; first written as "nothing else stacks"). The
+   drill variable product, every term tile, All products, a shortcut and the parent term are
+   stacked; variation tiles, the placeholder and the inline-style variable tile never are. A stack
+   means "tap to deal", nothing else.
 
 Only `transform` and `opacity` animate (the Deal's rule), the layers are two `View`s with a
 hairline and the card colour, and the fade is driven by the Deal's existing shared values so it
