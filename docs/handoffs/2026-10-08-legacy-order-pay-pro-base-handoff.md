@@ -429,7 +429,21 @@ Opus reviewer posting the `independent-review` status, bot threads dispositioned
   finds the forwarded transaction by it, and SumUp's webhook is the Solo cloud API's per-checkout
   callback, which SDK payments never send. Our SumUp extension declares `offline: none`, so 2.0 does
   not offer SumUp offline payments at all; filed as **roadmap#427** (post-2.0 feature; Paul: "do as
-  you recommend"), linked from #236.
+  you recommend"), linked from #236 — **then built the same morning** (Paul: "Set a sub-agent working on
+  that issue straight away"; one Opus 5.5 agent, three review rounds): sumup-terminal#55 merged at
+  `12e0bc9` (gateway setting **Offline card payments**, off by default; `describe()` declares
+  `offline: queue` only when on), monorepo#2495 merged at `7a4f57a` (native offline sessions on both
+  platforms with a persisted session marker and the busy lock held; the driver starts a session only
+  when actually offline, uploads before any online payment / on reconnect / before logout, records a
+  provisional approval as `authorized`; `queuesOffline` narrows to SOLO / SOLO_LITE; 432 non-test lines
+  with the companion, over the 400 ceiling, accepted on the Scope paragraph; EAS development builds
+  FINISHED on the final head for Android and iOS, Paul: "Yes, both platforms"), docs#488 DRAFT for the
+  release train. #427 stays OPEN for SumUp's opt-in (Paul) and the device checklist (real Solo Lite
+  offline run through refund; iOS upload with nothing stored / stale marker; stuck native call; Air and
+  Tap to Pay unavailable offline). Review lessons: every offline path must be gated on "may a session
+  exist" (opt-in OR marker), not on the merchant's current wish; a native busy lock must be held across
+  an async SDK callback, not only checked; the iOS session read cannot tell "no session" from
+  "unreadable", hence the marker.
 
 ## Lessons recorded in memory
 
