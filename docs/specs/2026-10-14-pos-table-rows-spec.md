@@ -19,7 +19,11 @@ Columns, Name shows and Price shows switches drive every frame). Parent design: 
    first board of the day did exactly that and was redrawn.
 2. **The tile's vocabulary rides on the grid.** From the redrawn board, with the recommended
    defaults accepted (*"go ahead with what you recommend"*): the opens-more cue is **stack and
-   glyph**; a variable product's price is **`from` + its minimum**, not the range.
+   glyph** (the stack says "rows behind this"; the glyph says what kind of container: folder,
+   grid, sliders; a variable product is a stack with **no glyph**, as on the tile, because what is
+   behind it is its own options, not other things); a variable product's price is **`from` + its
+   minimum when the range has a width, the one price when it does not** (the tile's rule), never
+   the range.
 3. **The problem being solved** (his screenshot, 2026-10-14): a category row was a different
    component with a 40 px thumb and a regular name; a product row had an 80 px picture, a bold
    name and blue category pills; row height changed four times down one screen and nothing said
@@ -69,7 +73,8 @@ actions cell. No kind label is printed unless the store turns the **Type** colum
   row: stock pill, SKU, barcode, categories, tags, brands, attributes, meta, each only when its
   display option is on and the value exists.
 - **Price cell**: one wrapping right-aligned row: price, Sale pill + struck regular (on sale
-  option), tax line (tax option). Variable: `from` + minimum when the range has a width.
+  option), tax line (tax option). Variable: `from` + minimum when the range has a width, the one
+  price when every option costs the same (no `from`).
 - **Type column** gets a cell (Simple / Variable / Variation / Grouped / External); it existed in
   the settings with no cell behind it.
 - **Touch** (no header today, unchanged): the on columns stack under the name in column order,
