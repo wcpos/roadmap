@@ -47,7 +47,7 @@ A second, unrelated crash was found in the same store's fatal-errors log during 
 
 **On a live store today (until the patch ships):** either a WPCode / Code Snippets PHP snippet, or, where only the plugin editor is available, the edit to Pro's `includes/Templates.php` that daylightdonutstricities.com now carries. Both dequeue `wc-stripe-upe-classic` at `wp_print_footer_scripts` priority 1 on POS checkout requests. The plugin-editor edit is lost at the next Pro update, which is fine because that update carries the real fix.
 
-**In the plugin (free `main`, wcpos/woocommerce-pos#2269, ships as 1.11.1 free and Pro):**
+**In the plugin (free `main`, wcpos/woocommerce-pos#2269, shipped as 1.11.1 free and Pro; the addendum explains the 1.11.2 that followed):**
 
 1. `Templates\Payment` runs `remove_scripts_and_styles()` again at `wp_print_footer_scripts` priority 1, so the merchant's dequeue list binds the whole page, head and footer. No new setting, no Stripe-specific code; the default list already names the handle. A PHPUnit test enqueues a listed handle from `wp_footer` and asserts it is not printed while a control handle is.
 2. `Template_Router::maybe_set_checkout_context()` (already at `wp` priority 1) answers 404 for a POS checkout URL whose order does not load, before any other plugin's `wp` hook can crash on it. Covered by a test on the router.
@@ -55,6 +55,28 @@ A second, unrelated crash was found in the same store's fatal-errors log during 
 **Upstream:** Stripe's handler should return early when the selected method is not one of its own, as 11.0.1 did. Issue text is drafted (`stripe-upstream-issue.md` in the 2026-10-15 session scratchpad) and not yet filed.
 
 **free PR #2268 must not merge.** It removes `wc-stripe-upe-classic` from the dequeue defaults to let Stripe work as a POS tender (free #1755). Under 11.1.0 that would put every store in this incident's state deliberately. Stripe as a POS tender cannot coexist with other tenders on one pay page until Stripe fixes the handler.
+
+## Addendum, 14:00–16:00 UTC: 1.11.1 was not enough, a third store, and 1.11.2
+
+**vinum.pro** reported the same failure at ~13:50 UTC while already on 1.11.1. Its pay page carried `upe-classic.js` and `wc_stripe_upe_params` with only Cash and Card on offer. Cause: the store has a **saved** checkout section (50 dequeued handles, including the retired `woocommerce_stripe`, saved from the "Checkout Settings" form before v1.4.0) and a saved list **replaced** the shipped defaults, so `wc-stripe-upe-classic` was never in its list. The form could not repair it: it renders in the body and lists only handles queued at that moment plus the saved list, and Stripe enqueues at `wp_footer`, so the handle can never appear on it. Re-saving the form (Paul did) re-persisted the old list. 1.11.1's footer pass ran and found nothing to remove.
+
+That case was named as a possibility during the morning's diagnosis and not covered by #2269. One release became two.
+
+**Hotfix for the merchant:** a copy of the published Pro 1.11.1 zip with the floor change applied inside the vendored free `Settings.php`, uploaded through Plugins → Upload → "Replace current with uploaded" (the merchant's host offered no snippet route). Re-fetch afterwards: no `upe-classic.js`, no `wc_stripe_upe_params`; only the form row (now visible) and Stripe's inert stylesheet remain. Paul confirmed a Cash sale.
+
+**PRs opened for 1.11.2 (free `main`):**
+
+- [woocommerce-pos#2277](https://github.com/wcpos/woocommerce-pos/pull/2277) — the shipped dequeue defaults are a floor the saved list adds to; the form shows them disabled as "always removed on the POS payment page". Test reproduces vinum.pro end to end. Merged 15:35 UTC.
+- [woocommerce-pos#2279](https://github.com/wcpos/woocommerce-pos/pull/2279) — a POS tender (any gateway extending `Abstract_POS_Gateway`) submits the pay form natively, which fires no `submit` event and cannot be vetoed by any script; a third-party tender still goes through the event, and a veto that leaves an error notice with no navigation is reported to the app as `wcpos-payment-blocked` with the notice and the page's script handles. This is safeguard 6, built.
+- [woocommerce-pos#2274](https://github.com/wcpos/woocommerce-pos/pull/2274) — a disabled or unknown default gateway no longer leaves the pay form without a selection (a Codex finding on the sync, pre-existing, every tier). Merged.
+- [monorepo#2570](https://github.com/wcpos/monorepo/pull/2570) — the app releases the Process Payment spinner when the frame reports a blocked submit (two lines; the app already logged the message, it never stopped spinning).
+
+**Decisions (Paul, 2026-10-15):** online Stripe is not a POS tender; the dequeue default stays; no issue filed with Stripe; free #1755 closed with the finding and #2268 closed (removing the default would put every Stripe-enabled store into this state).
+
+### Why 1.11.1 missed it
+
+- **The fix was validated against the shipped defaults, not against a merchant's data.** The test enqueued the handle from the footer with no saved section. A saved section that omits the handle was the common real-world shape (the form has been on every pay page since 1.3.0) and was not in the test matrix. Rule: a fix to a setting's effect is tested with the setting saved, not only defaulted.
+- **A replace-semantics setting with a form that cannot show every value** is a trap on its own: any value only ever reachable through code (a footer handle) silently leaves the merchant's list forever. #2277 changes the semantics to a floor; the form now says which entries are not theirs to remove.
 
 ## Safeguards
 
@@ -68,7 +90,7 @@ Proposed, for Paul's call:
 
 4. **Put the real gateways on the dev stores.** Install and enable WooCommerce Stripe, PayPal Payments and Square on `dev-pro` and `dev-next` in test mode, auto-update on. The pay page under test then carries the scripts merchants' pages carry. Cost: a test-mode account per gateway and a one-off seed.
 5. **A scheduled checkout canary.** Run the web E2E Cash-sale spec against `dev-pro` nightly, independent of our pushes, so a gateway update between our releases turns a run red before a merchant calls. The spec exists (`apps/main/e2e/pos-checkout.spec.ts`); the missing piece is a `schedule:` trigger and a notification.
-6. **The frame reports a blocked submit.** The pay template's message handler already clicks `#place_order`; it can also observe whether the submit was prevented (a submit event whose default is prevented, with no navigation inside a short window) and post `wcpos-payment-blocked` to the app with the notice text and the list of script handles on the page. The app turns that into a named error code (registry entry, toast naming the script, Sentry event). The merchant then reads "a checkout script (wc-stripe-upe-classic) stopped the payment" instead of "Payment failed", and support reads a count across installs instead of nothing.
+6. **The frame reports a blocked submit** *(built: woocommerce-pos#2279 + monorepo#2570, see addendum)*. The pay template's message handler already clicks `#place_order`; it can also observe whether the submit was prevented (a submit event whose default is prevented, with no navigation inside a short window) and post `wcpos-payment-blocked` to the app with the notice text and the list of script handles on the page. The app turns that into a named error code (registry entry, toast naming the script, Sentry event). The merchant then reads "a checkout script (wc-stripe-upe-classic) stopped the payment" instead of "Payment failed", and support reads a count across installs instead of nothing.
 7. **The troubleshooting form lists footer handles too.** Today it lists only handles queued when the body renders, so a merchant could not have unticked Stripe's script even if they had guessed. Rendering the list from the final queue, or adding footer-enqueued handles to it, makes the self-serve path real.
 8. **A triage tripwire for "started with your release".** Before bisecting our own diff, list third-party plugin releases dated within a few days of the report (Stripe's was the day before ours) and read the fatal log's full context. Both would have shortened this by hours. Goes in the diagnosing skill.
 9. **File the Stripe issue and answer #2268.** Outward-facing, so they wait for a go.
