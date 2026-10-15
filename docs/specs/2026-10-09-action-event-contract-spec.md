@@ -104,15 +104,17 @@ writer, `useSplitLineItem`, for the same plugin-integration consumers as the car
 
 | Event | Raised by | Payload | Rewrite allowed on | Refuse allowed | Bottom handler | Result |
 |---|---|---|---|---|---|---|
-| `cart.line.split` | `useSplitLineItem` (`line_items` only) | `{ lineUuid, line, lines, lineItems }`: `lines` are the replacements in order, the first keeping the original uuid and Woo id, the others carrying fresh uuids and no id, any fractional remainder last, `_reduced_stock` conserved | nothing | yes | one `localPatch` | the patched order or `false` |
+| `cart.line.split` | `useSplitLineItem` (`line_items` only) | `{ lineUuid, line, lines, lineItems }`: `lines` are the replacements in order, the first keeping the original uuid and Woo id, the others carrying fresh uuids and no id, any fractional remainder last; `_reduced_stock` is distributed per replacement in order, each taking at most its own quantity and the last taking what remains, with a zero share dropping the meta (the server reads an absent key as never reduced) | nothing | yes (budget 1,500 ms, the cart's) | one `localPatch` | the patched order or `false` |
 
 Rules: entered through `enqueueCartAction` (the order's queue entry, the live target); a refusal writes
 nothing and follows the cart's existing refusal presentation; a split on a line no longer in the cart
 is reported as a stale line, a quantity of 1 is a no-op. The stock guard does not register: a split
 changes neither total quantity nor net demand (`quantity - _reduced_stock`); a cart already over stock
-stays the checkout conditions gate's responsibility. No new log row. Landed as one PR on `next`
-(wcpos/monorepo, `refactor/cart-line-split-event`), with the `useUpdateLineItem` fence entry replaced
-by the new writer's.
+stays the checkout conditions gate's responsibility. No new log row. Implemented as wcpos/monorepo#2584
+on `next` (pending merge at the time of this amendment). Fence: the `useUpdateLineItem` exemption is
+replaced by the split writer's entry; that file no longer writes, because `cart.line.update`'s one
+writer moved to `useUpdateCartLine` on 2026-10-14 (wcpos/monorepo#2564) and `useUpdateLineItem` only
+delegates to it.
 
 **Void, ruled 2026-10-12 (Paul: "as you recommend"):** the Void button's writes are extracted first,
 behaviour-preserving, into `voidOrder` / `restoreVoidedOrder` (PR D, the twelve existing tests
