@@ -97,6 +97,23 @@ head. Rounding (#66, #84: the tender amounts become rewritable), register sessio
 refund are not admitted by this amendment; they wait for their consumers to be scheduled
 (rounding was admitted the same day, below).
 
+**Amended 2026-10-15, split (Paul: "do as you recommend"):** the cart's unit-line split was the one
+`line_items` write that still bypassed the chain. It hid behind the `useUpdateLineItem` fence exemption
+without being a Bottom handler, so no hook or guard saw a split. `cart.line.split` is admitted with one
+writer, `useSplitLineItem`, for the same plugin-integration consumers as the cart domain above.
+
+| Event | Raised by | Payload | Rewrite allowed on | Refuse allowed | Bottom handler | Result |
+|---|---|---|---|---|---|---|
+| `cart.line.split` | `useSplitLineItem` (`line_items` only) | `{ lineUuid, line, lines, lineItems }`: `lines` are the replacements in order, the first keeping the original uuid and Woo id, the others carrying fresh uuids and no id, any fractional remainder last, `_reduced_stock` conserved | nothing | yes | one `localPatch` | the patched order or `false` |
+
+Rules: entered through `enqueueCartAction` (the order's queue entry, the live target); a refusal writes
+nothing and follows the cart's existing refusal presentation; a split on a line no longer in the cart
+is reported as a stale line, a quantity of 1 is a no-op. The stock guard does not register: a split
+changes neither total quantity nor net demand (`quantity - _reduced_stock`); a cart already over stock
+stays the checkout conditions gate's responsibility. No new log row. Landed as one PR on `next`
+(wcpos/monorepo, `refactor/cart-line-split-event`), with the `useUpdateLineItem` fence entry replaced
+by the new writer's.
+
 **Void, ruled 2026-10-12 (Paul: "as you recommend"):** the Void button's writes are extracted first,
 behaviour-preserving, into `voidOrder` / `restoreVoidedOrder` (PR D, the twelve existing tests
 unchanged as the proof; the module is a fence `BOTTOM_HANDLERS` entry because the ratchet refuses a
