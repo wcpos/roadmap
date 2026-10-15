@@ -32,7 +32,7 @@ A second, unrelated crash was found in the same store's fatal-errors log during 
 | 2026-10-15 ~11:15 | The notice string is traced to Stripe's `client/classic/upe/payment-processing.js`; the 11.0.1 → 11.1.0 diff shows the blocking change; Stripe's `wp_footer` enqueue explains why our dequeue never applied. Both stores confirmed on 11.1.0 (their `changelog.txt`; Stripe's `readme.txt` "Stable tag" still says 11.0.1 in the 11.1.0 build, so it is not a version indicator). |
 | 2026-10-15 ~11:25 | daylightdonutstricities.com pay page fetched: `upe-classic.js` and `wc_stripe_upe_params` present with only Cash and Stripe Terminal on offer. |
 | 2026-10-15 ~11:35 | Hotfix applied on daylightdonutstricities.com by editing Pro's `includes/Templates.php` (`init_payment_template()` now dequeues the handle at `wp_print_footer_scripts` priority 1). Re-fetch shows the script gone; Paul confirms Cash payment works. **biltongusa.com still needs the same edit** at the time of writing. |
-| 2026-10-15 | Plugin fix implemented on `codex/pay-page-footer-dequeue` (free, `main` lane) for the 1.11.1 patch. |
+| 2026-10-15 ~11:50 | Plugin fix opened as wcpos/woocommerce-pos#2269 (free, `main` lane) for the 1.11.1 patch. Full PHPUnit suite green (5231 tests); mutation check shows both new tests fail without the fix. |
 
 ## Why the checks did not catch it
 
@@ -47,7 +47,7 @@ A second, unrelated crash was found in the same store's fatal-errors log during 
 
 **On a live store today (until the patch ships):** either a WPCode / Code Snippets PHP snippet, or, where only the plugin editor is available, the edit to Pro's `includes/Templates.php` that daylightdonutstricities.com now carries. Both dequeue `wc-stripe-upe-classic` at `wp_print_footer_scripts` priority 1 on POS checkout requests. The plugin-editor edit is lost at the next Pro update, which is fine because that update carries the real fix.
 
-**In the plugin (free `main`, PR from `codex/pay-page-footer-dequeue`, ships as 1.11.1 free and Pro):**
+**In the plugin (free `main`, wcpos/woocommerce-pos#2269, ships as 1.11.1 free and Pro):**
 
 1. `Templates\Payment` runs `remove_scripts_and_styles()` again at `wp_print_footer_scripts` priority 1, so the merchant's dequeue list binds the whole page, head and footer. No new setting, no Stripe-specific code; the default list already names the handle. A PHPUnit test enqueues a listed handle from `wp_footer` and asserts it is not printed while a control handle is.
 2. `Template_Router::maybe_set_checkout_context()` (already at `wp` priority 1) answers 404 for a POS checkout URL whose order does not load, before any other plugin's `wp` hook can crash on it. Covered by a test on the router.
