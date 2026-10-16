@@ -1,0 +1,105 @@
+# Negative amounts, receipt-less returns and the refund date: what other POS systems do, 2026-10-16
+
+Asked by Paul, 2026-10-16, after a customer (Tomapadel, a Spanish padel shop, Discord) asked for two things: a payment-method filter on Orders, and the return of the v0.4.x workaround of ringing a product with a **negative quantity** and checking out with a **negative amount** to process a return. His words: *"The negative amounts are something that need a tonne of research because they have implications for the WooCommerce REST API, the reports, and financial compliance. Do some research. Is there any other point-of-sale system that allows you to enter a negative amount?"*
+
+Desk research only: vendor help centres, the WooCommerce source on `trunk`, the AEAT Verifactu FAQ and Spanish VAT commentary, plus the rulings already on this tracker. Nothing was tried on a live store.
+
+Labels: **S** Sourced (primary page or code, linked in Sources). **S†** Sourced from a secondary page (community thread, integrator's help centre, legal blog), not the vendor or the statute itself. **I** Inferred. **U** Unverified.
+
+## The short answer
+
+1. **No mainstream POS lets you ring a *sale* with a negative total.** The systems that support a return without the original transaction model it as a **distinct refund/return document** (negative-quantity *return* lines, or a credit with no item), dated when it happens, usually gated behind a manager permission, a plan tier or a price cap, and warned against in favour of the linked return. Odoo and Lightspeed are the two that let a cashier type a negative quantity; both still create a return record, not a negative sale. **S**
+2. **The customer's real complaint is the refund date, not the sign.** Their worked example (€500 card sales, €200 refund today of a September sale; bank says net €300, POS daily summary says €500) is [#77](https://github.com/wcpos/roadmap/issues/77)'s defect: the 1.x range report sums the embedded `order.refunds[]` against the **order's** creation date. That was ruled on in [#302](https://github.com/wcpos/roadmap/issues/302) (Paul, 2026-09-16) and the refunds collection landed 2026-09-17 (monorepo#2111, plugin#2004): a refund binds to the session it is made in and range mode counts refunds by the refund's own `date_created_gmt`. The customer's ideal sentence, *"recorded on the date it is processed while still linked to the original sale"*, is exactly that model. WooCommerce Analytics in WP Admin already reports this way (one row on the order date, one on the refund date). **S**
+3. **Negative-quantity sales do not come back.** WooCommerce has no standalone refund object: `WC_Order_Refund` needs a parent order and `wc_create_refund` rejects an amount below zero or above the remaining refundable balance. A negative-total order can be *written* through the REST API (the controller does not validate the sign), but every downstream consumer assumes positive sales. [#76](https://github.com/wcpos/roadmap/issues/76) already rules the merged negative order out. Spanish compliance points the same way: a return is a *factura rectificativa* referencing the original invoice, and the VAT reduction falls in the period the rectificativa is issued, which is the refund-date model, not a free-floating negative sale. **S**
+4. **The gap that remains is cashier workflow**, not data: finding the September order fast, and returning plus selling in one interaction. That is the exchange flow in #76, unscheduled. A WooCommerce "unlinked refund" (no parent order) would be a plugin-owned record outside every WC report and every WC refund rule; the vendors that offer one gate it hard. Not recommended without a separate decision. **I**
+
+## What each POS does
+
+"Negative qty on a sale" = can the cashier set a negative quantity on an ordinary sell screen. "Unlinked" = a refund with no original transaction. "Dated" = which date the refund is reported under.
+
+| POS | Negative qty on a sale | Unlinked refund | Guard rails | Dated | Notes |
+|---|---|---|---|---|---|
+| **Odoo POS** (17–19) | **Yes**, as a *standalone refund*: add the product, Qty, then +/- to make it negative, then Payment; a "Return mode" preset makes every added line negative [1] | Yes (the standalone refund) | None documented beyond the preset | Refund order's own date (**I**, from the order list showing each order's date [1]) | Still generates a credit note referencing the original receipt or invoice [1]. Known reporting defect: refunded orders show negative quantity but a *positive* total in Sales reporting, raised against Odoo 19 and linked to an older "POS totals do not decrease after a return" thread [2] |
+| **Lightspeed Retail X-Series** (ex Vend) | **Yes**, as a "manual return": add the item, +/- to make quantity negative, park the sale, apply a negative payment from Sales History [3][4] | Yes (the manual return); through Lightspeed Payments an unreferenced refund is capped at **$1,000** [5] | Cashiers denied the *discount* permission cannot set a negative quantity [6]; refunds via Financial services "are not reflected on any reports outside of Financial services" and "should be used only when required" [5] | Return transaction's own date (**I**) | Lightspeed's own guidance: linked returns only on fully paid sales; exchanges = refund the original, then a separate new sale [4][5]. Marsello (loyalty integrator) documents the negative-quantity sale as a workaround with the original receipt number in a note [7] **S†** |
+| **Lightspeed Retail R-Series** | Not documented | **Yes**, "unreferenced refund", **off by default**: a manager disables *Without Receipt Refund Credit Only* in General Options first; then Sales > Refund, add items, enter refund amounts per tender [8] | Setting + manager role | Refund's own date (**I**) | "If it isn't possible to refund the original sale, you can convert a new sale to a refund when necessary" [8] |
+| **Square / Square for Retail** | **No** negative line items (community: "not a way to process a return without a corresponding transaction in the POS") [9] | **Yes**, "Unlinked refund", **Plus / Premium / Retail Plus / Premium only**: an inventory item (tax computed) or a custom amount, to cash, gift card or card, with a reason [10] | Plan tier; refund limits per Mode; explicit warning *"Processing a refund for a transaction for which you do not have a record presents risk of loss"* [10] | Refund's own date and time shown in Dashboard [10] | Exchanges: the cart total "will either be positive, negative, or even"; exchanges do not appear on the Transfer Summary or in QuickBooks [10]. Developer forum: returned items live on a separate return order, not as negative line items on the sale [11] |
+| **Shopify POS** | No | **No card refund without the order.** POS Pro "unverified returns" refund to **gift card / store credit only** [12] **S†** | Plan tier (POS Pro) | — | Workarounds in the community thread (a custom "Special Return Receipt" payment type, draft order marked paid) all need manual stock adjustment [12] |
+| **Clover** | No | **Yes**, "manual refund" = API `credit`, "unmatched refund", "naked refund": returns money with no link to a sale or order [13][14] | Card tenders only in the Refund app; the Manual Transactions app for cash is missing on Station 2018 [14] | Credit's own date (**I**) | Merchant report: a manual refund "doesn't tie to inventory, so inventory is out of whack and your reporting is off"; the suggested workaround is to build the order in Register to get the taxed total, then refund that number [14] **S†** |
+| **Loyverse** | No | **No**: refund starts from a receipt in the Receipts list; refunded items restock by the refunded quantity; refunds disabled offline [15] | — | Refund's own date (**I**) | — |
+| **WCPOS 1.x today** | **No**: the cart blocks negative quantities; `calculate-refund.ts` clamps refund quantities to `[0, remaining]` | No | — | **Order's** creation date in the range report (#77 defect); refund's session in the closure once #302 lands on `next` | v0.4.x allowed the negative-quantity order; the same memory appears in the customer report quoted on #76 ("works for inventory adjustments, but the audit trail is obviously missing") |
+
+**Pattern.** Where a receipt-less return exists it is (a) a refund-type record, never a sale with a negative total; (b) dated when it happens; (c) linked to the original where one exists; (d) behind a permission, a plan tier, or a cap when one does not; (e) accompanied by vendor copy steering the cashier to the linked return. Three of seven surveyed (Square, Clover, Odoo) have documented reporting or accounting side effects from the unlinked path.
+
+## WooCommerce facts that bound the design
+
+- **`wc_create_refund`** (`includes/wc-order-functions.php`, trunk): default args `amount, reason, order_id, refund_id, line_items, refund_payment, restock_items`. Validation: `if ( 0 > $args['amount'] || $args['amount'] > $remaining_refund_amount ) throw 'Invalid refund amount'`. A refund can never be negative or exceed the parent's remaining total. **A `date_created` arg IS honoured** when passed (`if ( isset( $args['date_created'] ) ) $refund->set_date_created(...)`, after `update_taxes()` because saving writes the current date), though the REST schema exposes the field read-only [16][17]. **S**
+- **`WC_Order_Refund`** extends `WC_Abstract_Order` and requires a parent; there is no parentless refund in core [18]. **S**
+- **Orders REST controller v3**: `prepare_object_for_database` drops a line whose quantity is exactly `0` and otherwise passes the item to `set_item`; there is **no sign check** on quantity or totals in the v3 controller (the v2 parent was not read, **U** whether it checks) [19]. So a negative-total order is *writable*; #76's "WC rejects negative-total orders" is better stated as "nothing downstream (gateways, stock, Analytics, refunds) is specified for one". **S/I**
+- **WooCommerce Analytics** dates refunds to the refund: "Refunded orders have two rows in the report: one for the date of the original order and one for the date of refund" [20]. The opposite behaviour was a 2019 bug, woocommerce-admin#2001, since fixed [21]. Jetpack's hosted-stats sync had drifted from core's refund block and was re-mirrored in 2025 [22]. **S**
+- **Store-wide refunds route** `GET /wc/v3/refunds` needs WooCommerce ≥ 9.0; the plugin floor rose to 9.0 for 2.0 by Paul's ruling on #302 [23]. **S**
+
+## Spanish compliance (the customer's quarter problem)
+
+The customer's concern: a September sale already declared in Q3; the return happens on 16 October; where does it belong?
+
+- **A return is documented by a *factura rectificativa* (type R5 for a simplified ticket), never by deleting or editing the original.** It carries negative amounts and must reference the original invoice's number and date [24][25][26]. Verifactu makes the reference mandatory and registers the rectificativa as its own record; obligation dates: 1 Jan 2027 for corporate taxpayers, 1 Jul 2027 for self-employed and small businesses [27] **S†** (dates not checked against the BOE). The AEAT FAQ confirms simplified invoices register under key F2 and rectificativas under the R keys [28]. **S**
+- **The VAT reduction falls in the period the rectificativa is issued.** Art. 89 LIVA: a rectification that reduces the quota may be regularised in the self-assessment of the period in which the rectificativa is issued or later ones within a year (89.Cinco.b), or by rectifying the original return (89.Cinco.a / art. 120.3 LGT). The Supreme Court (5 Feb 2018) and the TEAC's more recent criterion let the taxpayer choose either route [29][30][31]. **S†** (statute read through commentary; a Spanish adviser should confirm before this goes into customer copy.)
+- **Consequence for the POS**: a refund stamped with its processing date, linked to the parent order, is both the compliant document shape and the one the customer wants for the 303. A free-floating negative sale is neither: it has no reference to the original, and it is a second sale document for a transaction that was not a sale. This is an additional reason, beyond WooCommerce's object model, to keep negative amounts out.
+
+## What is already decided on this tracker
+
+- **Payment-method filter on Orders**: [#80](https://github.com/wcpos/roadmap/issues/80), Backlog, v2; field is half-plumbed (column + sort exist, filter dimension does not), server needs a `Collection_Rules` filter row under both HPOS and legacy storage.
+- **Refund dating**: [#302](https://github.com/wcpos/roadmap/issues/302), **resolved 2026-09-16**. A refund binds to the session open when it is made; range mode dates refunds from the dedicated `refunds` collection; a refund landing after its session's closure is a `late_refund`. Landed on `next` 2026-09-17 (monorepo#2111, plugin#2004). The plugin does not yet stamp `_wcpos_session` on refunds ([#329](https://github.com/wcpos/roadmap/issues/329)), so the drawer-side half waits on that.
+- **Exchange flow**: [#76](https://github.com/wcpos/roadmap/issues/76), open, "not yet committed to the roadmap". Two WC records (refund on the original + new order) linked by `_pos_exchange_id`; a merged negative order is a stated non-goal.
+- **Reports scope**: the POS does daily reconciliation only ([#300](https://github.com/wcpos/roadmap/issues/300) map); full analytics stay in WP Admin.
+
+## Recommendation (for Paul to confirm or overrule)
+
+1. **Answer the customer in three parts**: filter is #80 / v2; the daily-summary and quarter discrepancy is fixed in v2 by design (refund dated and attributed to the day and register it is processed on, still linked to the original); negative-quantity sales will not return, with the reasons above.
+2. **Do not open an "unlinked refund" ticket from this report.** WooCommerce has no object for it, and every vendor that offers one gates it and documents reporting fallout. If it ever comes back, it is its own decision ticket with a parentless plugin-owned record and the Verifactu reference problem on the table.
+3. **Ask the customer which pain is left** once the date fix is explained: "refund lands on the wrong day" (solved) or "finding the original sale is slow / return-and-sell in one go" (#76). Their answer is the signal for whether #76 moves off the backlog.
+4. **Leave refund `date_created` stamped at processing time.** The arg exists, but backdating a refund contradicts art. 89 LIVA's period rule and the #302 ruling.
+
+## Not evaluated
+
+- Toast, Revel, NCR, Erply, Hike, Epos Now, Zettle: not surveyed.
+- Whether Odoo's standalone refund links its credit note to an original receipt when none was selected (the docs say "referencing the original receipt or invoice" without saying how) [1].
+- The v2 controller's `set_item` for a sign check [19].
+- Live behaviour of a negative-total order in WooCommerce Analytics, stock reports and gateway `process_refund`. Not tried; the recommendation does not depend on it.
+
+## Sources
+
+1. Odoo 19 POS workflow, "Return and refund products", order-based and standalone refunds: https://www.odoo.com/documentation/19.0/applications/sales/point_of_sale/use.html
+2. Odoo forum, "Why the value of refunded orders is added to normal orders?" (Odoo 19): https://www.odoo.com/forum/help-1/odoo19-why-the-value-of-refunded-orders-is-added-to-normal-orders-294223
+3. Lightspeed X-Series, "How to do a manual return on Square" (negative quantity, parked sale, negative payment): https://x-series-support.lightspeedhq.com/hc/en-us/articles/25534276393243-How-to-do-a-manual-return-on-Square
+4. Lightspeed X-Series, "Returning or exchanging a sale in Retail POS": https://x-series-support.lightspeedhq.com/hc/en-us/articles/25534237536411-Returning-a-sale-in-Retail-POS-X-Series
+5. Lightspeed X-Series, "Processing a refund with Lightspeed Payments" (unreferenced cap $1,000; Financial services refunds off reports): https://x-series-support.lightspeedhq.com/hc/en-us/articles/25534108052251-Processing-a-refund-with-Lightspeed-Payments-for-Retail-POS-X-Series
+6. Lightspeed X-Series, "How to process returns on layaway sales" (discount permission gates negative quantity): https://x-series-support.lightspeedhq.com/hc/en-us/articles/25533813625499-How-to-process-returns-on-layaway-sales
+7. Marsello help centre, returns with a Marsello discount in Lightspeed X-Series (negative-quantity workaround): https://help.marsello.com/en/articles/8138850-processing-a-return-that-contains-a-marsello-discount-in-lightspeed-retail-x-series-pos
+8. Lightspeed Retail R-Series, "Refunding and exchanging" (unreferenced refunds, the General Options toggle): https://retail-support.lightspeedhq.com/hc/en-us/articles/229130768-Refunding-and-exchanging
+9. Square community, "How can I do a return without receipt": https://community.squareup.com/t5/Questions-How-To/How-can-I-do-a-return-without-receipt/m-p/355701
+10. Square, "Process a return, exchange, or unlinked refund" (Square for Retail): https://squareup.com/help/us/en/article/6350-process-a-return-or-exchange-with-square-for-retail
+11. Square developer forum, "Unable to get OrderLineItem that has negative quantity": https://developer.squareup.com/forums/t/unable-to-get-orderlineitem-that-has-negative-quantity/4916
+12. Shopify community, "POS Returns or Exchanges Without a Receipt": https://community.shopify.com/t/pos-returns-or-exchanges-without-a-receipt/281071
+13. Clover developer docs, "Issue a manual refund" (`/v1/credits`, unmatched / naked refund): https://docs.clover.com/dev/docs/android-payments-api-manual-refund
+14. Clover community, "What's a Transaction Credit? What's a manual refund?": https://community.clover.com/answers/3883/view.html
+15. Loyverse, "How to Issue a Refund on Loyverse POS": https://help.loyverse.com/help/how-issue-refund-loyverse-pos
+16. WooCommerce `wc_create_refund`, trunk: https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/includes/wc-order-functions.php
+17. WooCommerce REST API v3, Order refunds (`date_created` read-only): https://developer.woocommerce.com/docs/apis/rest-api/v3/order-refunds/
+18. WooCommerce code reference, `WC_Order_Refund`: https://woocommerce.github.io/code-reference/classes/WC-Order-Refund.html
+19. WooCommerce REST orders controller v3, trunk: https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/includes/rest-api/Controllers/Version3/class-wc-rest-orders-controller.php
+20. WooCommerce Analytics, Orders report (two rows per refunded order): https://woocommerce.com/document/woocommerce-analytics/orders-report/
+21. woocommerce-admin#2001, "Refunds should be recorded on the date refunded": https://github.com/woocommerce/woocommerce-admin/issues/2001
+22. Jetpack PR #53159, "Sync: Mirror core's refund block in the WooCommerce Analytics module": https://github.com/Automattic/jetpack/pull/53159
+23. roadmap#302, "Decide how refunds are dated in POS reconciliation reports" (resolution and the WC 9.0 floor): https://github.com/wcpos/roadmap/issues/302
+24. Fixner, "Cómo hacer una factura rectificativa (VeriFactu, TicketBAI, SII y FACe)": https://fixner.com/blog/guia-factura-rectificativa
+25. leyfacturaelectronica.com, "Cómo se emite una factura rectificativa o abono con un sistema VeriFactu": https://leyfacturaelectronica.com/como-se-emite-una-factura-rectificativa-o-abono-con-un-sistema-verifactu/
+26. Sage community, "Incidencia Verifactu: facturas rectificativas simplificadas" (R5 for simplified invoices): https://communityhub.sage.com/es/sage-200/f/discusion-general/259294/incidencia-verifactu-facturas-rectificativas-simplificadas
+27. Holded, "¿A qué tipos de facturas afecta Verifactu?" (obligation dates): https://www.holded.com/es/blog/tipos-facturas-verifactu
+28. AEAT, Verifactu FAQ, procedimientos de facturación (F2 / R keys): https://sede.agenciatributaria.gob.es/Sede/iva/sistemas-informaticos-facturacion-verifactu/preguntas-frecuentes/procedimientos-facturacion.html
+29. Legal Today, "El Tribunal Supremo aclara la confusión sobre los plazos para rectificar el IVA repercutido" (art. 89 LIVA, STS 5 Feb 2018): https://www.legaltoday.com/practica-juridica/derecho-publico/derecho-administrativo/el-tribunal-supremo-aclara-la-confusion-sobre-los-plazos-para-rectificar-el-iva-repercutido-2018-03-27/
+30. GA-P, "Cambio de criterio del TEAC: la rectificación de las cuotas de IVA repercutidas en exceso": https://ga-p.com/publicaciones/cambio-de-criterio-del-teac-la-rectificacion-de-las-cuotas-de-iva-repercutidas-en-exceso-puede-realizarse-via-declaracion-o-mediante-rectificacion-de-la-autoliquidacion/
+31. TEAC resolution RG 6764/2023 (art. 89.Cinco.b period rule): https://www.fiscal-impuestos.com/sites/fiscal-impuestos.com/files/RG-6764-2023.pdf
+32. roadmap#76, "Feature: cart-based Exchange flow": https://github.com/wcpos/roadmap/issues/76
+33. roadmap#80, "Orders: add a payment method filter pill": https://github.com/wcpos/roadmap/issues/80
+34. roadmap#77, "Reports overhaul … + dedicated refunds collection": https://github.com/wcpos/roadmap/issues/77
