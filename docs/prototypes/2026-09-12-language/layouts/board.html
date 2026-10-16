@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Signature layouts — five shapes for the register (board)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Fraunces:ital,opsz,wght@1,9..144,600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;padding:24px}
+h1{font-size:20px;margin:0 0 4px} .lead{color:#374151;margin:0 0 20px;max-width:110ch;font-size:13px;line-height:1.5}
+.board{display:grid;grid-template-columns:1fr;gap:32px;max-width:1000px}
+.panel .cap{margin:0 0 8px;font-size:13px;color:#374151;line-height:1.45;max-width:100ch} .panel .cap b{font-size:15px;color:#111;display:block} .panel .cap .n{font-weight:700;color:#6b7280;margin-right:6px} .panel .cap em{color:#111;font-style:normal}
+svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.frame{--r:8px;--bg:oklch(0.975 0.004 250);--fg:oklch(0.22 0.02 250);--card:#fff;--muted:oklch(0.955 0.006 250);--muted-fg:oklch(0.50 0.02 250);--border:oklch(0.90 0.008 250);--primary:oklch(0.50 0.18 240);--primary-fg:#fff;--destructive:oklch(0.55 0.22 25);
+  width:1000px;height:640px;background:var(--bg);color:var(--fg);font-size:14px;line-height:1.35;border:1px solid #c9ced6;border-radius:12px;overflow:hidden;display:flex;position:relative;font-variant-numeric:tabular-nums}
+.rail{width:56px;background:oklch(0.955 0.014 250);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:14px;color:var(--muted-fg);flex:none} .rail .logo{width:34px;height:34px;border-radius:8px;background:var(--primary);margin-bottom:6px}
+.mut{color:var(--muted-fg)} .b{font-weight:600} .xs{font-size:12px} .grow{flex:1;min-width:0}
+.bar{height:44px;display:flex;align-items:center;gap:8px;padding:0 12px 0 16px;border-bottom:1px solid var(--border);flex:none;background:var(--card)} .av{width:30px;height:30px;border-radius:50%;background:var(--muted);font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.search{height:44px;border:1px solid var(--border);border-radius:var(--r);background:var(--card);display:flex;align-items:center;gap:10px;padding:0 14px;color:var(--muted-fg)}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px} .tile{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px;display:flex;flex-direction:column;gap:6px} .tile .img{height:64px;border-radius:6px;background:var(--muted)} .tile .n{font-weight:500} .tile .p{color:var(--muted-fg)}
+.btn{height:52px;border:1px solid var(--border);border-radius:var(--r);padding:0 18px;display:inline-flex;align-items:center;justify-content:center;font-weight:600;gap:8px;background:var(--card);font-size:15px;flex:none} .btn.p{background:var(--primary);color:var(--primary-fg);border-color:transparent} .btn.vd{color:var(--destructive);border-color:color-mix(in oklch,var(--destructive) 55%,transparent)}
+.chip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 10px;border-radius:999px;border:1px solid var(--border);white-space:nowrap}
+.line{display:grid;grid-template-columns:28px 1fr auto;gap:10px;padding:8px 12px;align-items:center;border-bottom:1px solid var(--border)} .line .q{height:28px;border:1px solid var(--border);border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-weight:600} .line .t{font-weight:600} .line .sub{display:block;color:var(--muted-fg);font-size:12px}
+.totals div{display:flex;justify-content:space-between;padding:2px 0;color:var(--muted-fg)} .totals .big{color:var(--fg);font-size:22px;font-weight:700;padding-top:6px}
+.tabs{display:flex;gap:4px;padding:0 8px;border-top:1px solid var(--border);height:48px;align-items:center} .otab{height:48px;display:inline-flex;align-items:center;gap:8px;padding:0 12px;border-bottom:2px solid transparent;color:var(--muted-fg);font-weight:500} .otab.on{color:var(--fg);border-bottom-color:var(--primary);font-weight:600} .otab i{width:7px;height:7px;border-radius:50%;background:oklch(0.68 0.16 70)}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px} .keys span{height:56px;border:1px solid var(--border);border-radius:var(--r);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600}
+
+/* 01 the till roll */
+.l1 .col{flex:1;padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.l1 .roll{width:300px;flex:none;background:#faf7f0;border-left:1px solid #e6dfd0;border-right:1px solid #e6dfd0;font-family:'JetBrains Mono',monospace;font-size:13px;display:flex;flex-direction:column;position:relative}
+.l1 .roll::before{content:"";position:absolute;left:0;right:0;top:0;height:8px;background:radial-gradient(circle at 8px 0,transparent 6px,#faf7f0 6.5px) 0 0/16px 8px}
+.l1 .roll .hd{padding:26px 16px 10px;border-bottom:1px dashed #d8cfbd;text-align:center;letter-spacing:.08em;text-transform:uppercase;font-size:11px;color:#7a6e5c} .l1 .roll .hd b{display:block;font-size:14px;color:#211b14;letter-spacing:.02em}
+.l1 .roll .line{border-bottom:1px dashed #d8cfbd;grid-template-columns:24px 1fr auto;font-size:13px} .l1 .roll .line .q{border-color:#d8cfbd;background:transparent;border-radius:2px;height:24px}
+.l1 .roll .totals{padding:10px 16px;border-top:1px dashed #d8cfbd;margin-top:auto} .l1 .roll .totals .big{font-family:'Fraunces',serif;font-style:italic;font-weight:600;font-size:26px}
+.l1 .roll .tear{height:10px;background:radial-gradient(circle at 8px 10px,transparent 6px,#faf7f0 6.5px) 0 0/16px 10px;transform:scaleY(-1)}
+.l1 .money{width:250px;flex:none;background:var(--card);border-left:1px solid var(--border);padding:14px;display:flex;flex-direction:column;gap:10px}
+.l1 .money .amt{font-size:40px;font-weight:700;letter-spacing:-.02em;line-height:1;padding:8px 0 4px} .l1 .money .lbl{font-size:12px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.05em}
+.l1 .money .btn{width:100%} .l1 .money .row{display:flex;gap:8px} .l1 .money .row .btn{flex:1;height:44px;font-size:14px}
+/* 02 the menu board */
+.l2 .wall{flex:1;padding:14px 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:0 28px;align-content:start;overflow:hidden}
+.l2 .cat{padding:6px 0 10px} .l2 .cat h3{margin:8px 0 6px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-fg);border-bottom:1px solid var(--border);padding-bottom:6px}
+.l2 .it{display:flex;align-items:baseline;gap:6px;height:40px;border-radius:6px;padding:0 6px} .l2 .it:hover{background:var(--muted)} .l2 .it .dots{flex:1;border-bottom:1px dotted var(--border);transform:translateY(-4px)} .l2 .it .p{font-weight:600}
+.l2 .sale{position:absolute;left:56px;right:0;bottom:0;background:var(--card);border-top:1px solid var(--border);box-shadow:0 -12px 32px -16px rgba(0,0,0,.25);padding:10px 16px 14px;display:flex;align-items:center;gap:12px}
+.l2 .sale .items{display:flex;gap:6px;flex:1;min-width:0;overflow:hidden} .l2 .sale .items .chip{height:36px;background:var(--muted);border-color:transparent} .l2 .sale .items .chip b{font-weight:700}
+.l2 .sale .amt{font-size:28px;font-weight:700;letter-spacing:-.02em;white-space:nowrap} .l2 .sale .btn{padding:0 24px}
+.l2 .handle{position:absolute;left:50%;top:6px;width:36px;height:4px;border-radius:2px;background:var(--border);transform:translateX(-50%)}
+/* 03 keypad first */
+.l3 .main{flex:1;display:flex;flex-direction:column;padding:14px 18px;gap:12px;min-width:0}
+.l3 .disp{display:flex;align-items:baseline;justify-content:space-between;padding:14px 4px 6px} .l3 .disp .amt{font-size:56px;font-weight:700;letter-spacing:-.03em;line-height:1} .l3 .disp .amt small{font-size:22px;color:var(--muted-fg);font-weight:500;margin-left:8px}
+.l3 .split{display:grid;grid-template-columns:1fr 1.2fr;gap:14px;flex:1;min-height:0}
+.l3 .quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;align-content:start} .l3 .quick span{height:56px;border-radius:var(--r);background:var(--card);border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:500;font-size:13px} .l3 .quick span b{color:var(--muted-fg);font-weight:500;font-size:12px}
+.l3 .keys{grid-template-columns:repeat(4,1fr);align-content:start} .l3 .keys .p{background:var(--primary);color:var(--primary-fg);border-color:transparent;grid-column:4;grid-row:1/5;writing-mode:vertical-rl;transform:rotate(180deg);height:auto;font-size:16px} .l3 .quick span{font-size:12px;text-align:center;padding:0 4px}
+.l3 .side{width:300px;flex:none;border-left:1px solid var(--border);background:var(--card);display:flex;flex-direction:column}
+/* 04 two faces */
+.l4 .half{flex:1;display:flex;flex-direction:column;min-width:0}
+.l4 .cust{width:400px;flex:none;background:#111827;color:#f3f4f6;display:flex;flex-direction:column;padding:24px;gap:10px}
+.l4 .cust .hi{font-size:22px;font-weight:600} .l4 .cust .line{border-color:#273042;grid-template-columns:28px 1fr auto;color:#e5e7eb;font-size:16px;padding:12px 0} .l4 .cust .line .t{color:#fff} .l4 .cust .line .q{border-color:#3b4658;color:#e5e7eb} .l4 .cust .line .sub{color:#9ca3af}
+.l4 .cust .tot{margin-top:auto;border-top:1px solid #273042;padding-top:14px} .l4 .cust .tot .l{color:#9ca3af;font-size:12px;text-transform:uppercase;letter-spacing:.06em} .l4 .cust .tot .amt{font-size:48px;font-weight:700;letter-spacing:-.02em;line-height:1.05}
+.l4 .cust .tap{display:flex;align-items:center;gap:10px;color:#9ca3af;font-size:13px;margin-top:8px}
+.l4 .cash{flex:1;display:flex;min-width:0} .l4 .cash .col{flex:1;padding:12px;display:flex;flex-direction:column;gap:10px;min-width:0} .l4 .cash .cart{width:260px;flex:none;border-left:1px solid var(--border);background:var(--card);display:flex;flex-direction:column}
+.l4 .cash .tiles{grid-template-columns:repeat(3,1fr)}
+/* 05 the counter */
+.l5 .body{flex:1;display:flex;flex-direction:column;min-width:0}
+.l5 .strip{height:112px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:stretch;flex:none}
+.l5 .strip .cur{display:flex;align-items:center;gap:8px;padding:0 16px;flex:1;min-width:0;overflow:hidden} .l5 .strip .cur .item{height:76px;min-width:120px;border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;display:flex;flex-direction:column;justify-content:space-between;background:var(--bg)} .l5 .strip .cur .item .q{font-size:11px;color:var(--muted-fg)} .l5 .strip .cur .item .p{font-weight:600}
+.l5 .strip .board{width:280px;flex:none;border-left:1px solid var(--border);background:#0f172a;color:#fff;padding:12px 16px;display:flex;flex-direction:column;justify-content:space-between} .l5 .strip .board .l{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;display:flex;justify-content:space-between} .l5 .strip .board .amt{font-size:40px;font-weight:700;letter-spacing:-.02em;line-height:1;font-family:'JetBrains Mono',monospace}
+.l5 .strip .act{width:150px;flex:none;display:flex;flex-direction:column;gap:6px;padding:10px} .l5 .strip .act .btn{height:44px;font-size:14px;width:100%}
+.l5 .prod{flex:1;padding:14px 18px;display:flex;flex-direction:column;gap:12px;min-height:0} .l5 .tiles{grid-template-columns:repeat(6,1fr)} .l5 .tile .img{height:56px}
+.l5 .tabs{border-top:1px solid var(--border);background:var(--card)}
+</style>
+</head>
+<body>
+<h1>Signature layouts — five shapes for the same register</h1>
+<p class="lead">Paul picked the layout lever: the themes are a skin and the touches are small behaviours, but the bones are still the two panes every POS has. Five shapes below, same products, same sale, same components. Each is a different answer to "what is a register": a strip of paper, a menu on the wall, a calculator, a screen with two faces, a shop counter. Tablet landscape at 1000 wide; the phone version of each is a different question.</p>
+<div class="board" id="board"></div>
+<script>
+const I={search:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',chevd:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',drawer:'<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="9" rx="2"/><path d="M3 15h18M10 17.5h4"/></svg>',print:'<svg viewBox="0 0 24 24"><path d="M6 9V4h12v5M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7"/></svg>',wifi:'<svg viewBox="0 0 24 24"><path d="M2 8.5a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0"/><circle cx="12" cy="19" r="1"/></svg>',card:'<svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>'};
+const products=[['Flat white','3.20'],['Sourdough loaf','4.20'],['Tote bag','12.00'],['Oat latte','3.60'],['Croissant','2.40'],['Beans 250g','9.50'],['Cinnamon bun','3.00'],['Gift card','20.00'],['Cold brew','3.80'],['Granola jar','6.50'],['Espresso cup','8.00'],['Tea tin','7.50']];
+const lines=[['2','Flat white','Oat milk','6.40'],['1','Sourdough loaf','','4.20'],['1','Tote bag','Natural · L','12.00']];
+const rail=`<div class="rail"><span class="logo"></span>${'<span style="width:22px;height:22px;border-radius:5px;background:var(--border)"></span>'.repeat(5)}</div>`;
+const tiles=(n=12,cols)=>`<div class="tiles" ${cols?`style="grid-template-columns:repeat(${cols},1fr)"`:''}>${products.slice(0,n).map(([a,p])=>`<div class="tile"><div class="img"></div><div class="n">${a}</div><div class="p">£${p}</div></div>`).join('')}</div>`;
+const L=(cls='')=>lines.map(([q,n,s,t])=>`<div class="line ${cls}"><span class="q">${q}</span><span>${n}${s?`<span class="sub">${s}</span>`:''}</span><span class="t">£${t}</span></div>`).join('');
+const totals=`<div class="totals"><div><span>Subtotal</span><span>£18.83</span></div><div><span>VAT 20%</span><span>£3.77</span></div><div class="big"><span>Total</span><span>£22.60</span></div></div>`;
+const tabs=`<div class="tabs"><span class="otab on">£22.60</span><span class="otab">£8.40 <i></i></span></div>`;
+const bar=(t='UK Store')=>`<div class="bar"><b>${t}</b><span class="grow"></span>${I.drawer}<span class="av">DC</span></div>`;
+const D=[
+ ['roll','The till roll','a real till; Stripe receipts; the paper theme','Three columns with three jobs. The catalogue on the left. A strip of receipt paper down the middle that the sale prints onto, line by line, torn edges top and bottom, mono type, the total in the shop\'s own hand. The money on the right: the amount at display size, the two ways to take it, the drawer. Nothing on the right is a cart; nothing in the middle is a form. The receipt is the object; when the sale is paid it tears off and the next one rolls down.',
+  `<div class="frame l1">${rail}<div class="col"><div class="search">${I.search}Search products</div>${tiles(12,4)}</div>
+   <div class="roll"><div class="hd">UK Store · Till 1<b>#102476</b>Walk-in · 14:32</div>${L()}<div class="totals"><div><span>SUBTOTAL</span><span>£18.83</span></div><div><span>VAT 20%</span><span>£3.77</span></div><div class="big"><span>Total</span><span>£22.60</span></div></div><div class="tear"></div></div>
+   <div class="money"><div class="lbl">To pay</div><div class="amt">£22.60</div><span class="btn p">${I.card}Card</span><span class="btn">${I.drawer}Cash</span><div class="row"><span class="btn">Park</span><span class="btn vd">Void</span></div><div class="grow"></div><div class="xs mut">2 open sales · £8.40 waiting</div></div></div>`],
+ ['menu','The menu board','a café chalkboard; Toast quick-order; Square\'s item library list','No tiles. The products are a menu on the wall: three columns by category, name, dotted leader, price, in the reading order a barista already knows. Tap a line, it joins the sale. The sale is a drawer at the bottom, items as chips with their counts, the total at the right, Take beside it; pull it up for the full cart. For counter service where the cashier knows the menu and speed is the whole point.',
+  `<div class="frame l2">${rail}<div class="wall">${[['Coffee',[0,3,8,10]],['Bakery',[1,4,6]],['Retail',[2,5,7,9,11]]].map(([c,ix])=>`<div class="cat"><h3>${c}</h3>${ix.map(i=>`<div class="it"><span>${products[i][0]}</span><span class="dots"></span><span class="p">£${products[i][1]}</span></div>`).join('')}</div>`).join('')}</div>
+   <div class="sale"><span class="handle"></span><div class="items"><span class="chip"><b>2</b> Flat white</span><span class="chip"><b>1</b> Sourdough loaf</span><span class="chip"><b>1</b> Tote bag</span></div><span class="amt">£22.60</span><span class="btn vd">Void</span><span class="btn p">Take £22.60</span></div></div>`],
+ ['keypad','Keypad first','Zettle, SumUp, a calculator on the counter','The amount pad is the home screen, because at a market stall, a repair counter or a service desk the cashier types a price more often than they find a product. A huge display, a keypad with Take as its long key, and the products you sell most as quick keys beside it. The full catalogue and the cart live in a sheet on the right. It says: this is a till, and it does sums.',
+  `<div class="frame l3">${rail}<div class="main"><div class="disp"><span class="amt">£22.60<small>3 items</small></span><span class="chip">Walk-in ${I.chevd}</span></div>
+   <div class="split"><div class="quick">${products.slice(0,9).map(([a,p])=>`<span>${a}<b>£${p}</b></span>`).join('')}</div><div class="keys">${['7','8','9','4','5','6','1','2','3','0','.','⌫'].map((k,i)=>`<span>${k}</span>${i===2?'<span class="p">Take £22.60</span>':''}`).join('')}</div></div></div>
+   <div class="side">${bar('Sale #102476')}${L()}<div class="grow"></div><div style="padding:10px 12px">${totals}</div>${tabs}</div></div>`],
+ ['faces','Two faces','Square Register, Clover Duo, a hotel check-in desk','The register always has a customer side. On one screen the right 40 % is the customer\'s: their items in large type, the total, "Thanks, Sarah", tap to pay. Flip an iPad on a stand and that half faces out; on a second display it is the whole screen. The cashier\'s side is unchanged. The personality is in the fact that the app talks to the customer as well as the cashier, and does it in a different, warmer voice.',
+  `<div class="frame l4">${rail}<div class="cash"><div class="col"><div class="search">${I.search}Search products</div>${tiles(9,3)}</div><div class="cart">${bar()}${L()}<div class="grow"></div><div style="padding:8px 12px">${totals}</div><div style="display:flex;gap:8px;padding:0 12px 12px"><span class="btn vd">Void</span><span class="btn p" style="flex:1">Take £22.60</span></div></div></div>
+   <div class="cust"><div class="hi">Hi Sarah 👋</div><div class="xs" style="color:#9ca3af">UK Store · served by Dana</div><div style="margin-top:12px">${L()}</div><div class="tot"><div class="l">Total incl. VAT</div><div class="amt">£22.60</div><div class="tap">${I.wifi}Tap your card or phone when you're ready</div></div></div></div>`],
+ ['counter','The counter','a shop counter with a till display; an airport departures board','The sale runs across the top like the display on a real till: items as cards in a row as they are rung up, the running total on a dark board at the right end, Take and Park beside it. The products take the whole width below, six across, because the cart no longer needs a column. Reads at a glance from a metre away, which is what the person at the counter and the person behind it both do.',
+  `<div class="frame l5">${rail}<div class="body"><div class="strip"><div class="cur">${lines.map(([q,n,s,t])=>`<div class="item"><span class="q">${q} × ${s||'—'}</span><span>${n}</span><span class="p">£${t}</span></div>`).join('')}<span class="xs mut" style="margin-left:6px">+ tap a product</span></div><div class="board"><div class="l"><span>Sale #102476</span><span>3 items</span></div><div class="amt">£22.60</div><div class="l"><span>Walk-in</span><span>incl. VAT £3.77</span></div></div><div class="act"><span class="btn p">Take £22.60</span><span class="btn">Park</span></div></div>
+   <div class="prod"><div class="search">${I.search}Search products</div>${tiles(12,6)}</div>${tabs}</div></div>`],
+];
+document.getElementById('board').innerHTML=D.map(([k,t,a,w,h],i)=>`<section class="panel" data-n="${String(i+1).padStart(2,'0')}-${k}"><div class="cap"><b><span class="n">${String(i+1).padStart(2,'0')}</span>${t} <span style="font-weight:400;color:#6b7280">· after ${a}</span></b>${w}</div>${h}</section>`).join('');
+</script>
+</body>
+</html>

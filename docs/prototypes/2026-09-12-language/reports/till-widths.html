@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Till strip · V1 across widths</title>
+<!-- Paul 2026-09-17: "Give me five variations based on V1. Different screen sizes." Five ways the equation chips can meet a narrower
+     screen, each drawn at desktop (1090), tablet (960, the page inside the rail) and phone (342), in the ordinary till and the busy one.
+     Throwaway: the winner moves into ../pos-register/index.html (tillStrip). -->
+<style>
+:root{--font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif}
+body{margin:0;background:#141416;color:#ddd;font:14px/1.4 var(--font)}
+.strip{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;padding:10px 18px;background:#1c1c1f;border-bottom:1px solid #2a2a2e}
+.strip b{font-weight:600;margin-right:8px;color:#aaa}.seg{display:inline-flex;border:1px solid #3a3a40;border-radius:6px;overflow:hidden}
+.seg button{background:transparent;border:0;color:#bbb;padding:5px 10px;font:inherit;cursor:pointer}.seg button.on{background:#e8e8ea;color:#111}
+.stage{padding:24px 18px 60px;display:flex;flex-direction:column;gap:30px;align-items:flex-start}
+h1{font-size:16px;margin:8px 0 0;color:#eee}h1+p{margin:0 0 6px;color:#999;max-width:1100px}
+h2{font-size:13px;font-weight:600;margin:0 0 8px;color:#eee}
+.opt .why{color:#9a9aa0;margin:8px 0 0;font-size:12.5px;max-width:1100px}
+.sizes{display:flex;flex-direction:column;gap:10px;align-items:flex-start}.sizes .cap{color:#777;font-size:11px;margin-bottom:-6px}
+
+.frame{--u:4px;--fs:14px;--ctl:44px;--r:8px;--hair:1px;--floor:24px;
+  --bg:oklch(0.975 0.004 250);--fg:oklch(0.22 0.02 250);--card:oklch(1 0 0);--muted:oklch(0.955 0.006 250);--muted-fg:oklch(0.50 0.02 250);--border:oklch(0.90 0.008 250);
+  --primary:oklch(0.50 0.18 240);--primary-fg:oklch(0.99 0.01 240);--ok:oklch(0.55 0.16 155);--bad:oklch(0.58 0.2 25);--warn:oklch(0.68 0.16 70);
+  color-scheme:light;background:var(--bg);color:var(--fg);font:var(--fs)/1.4 var(--font);padding:12px;border-radius:10px;box-sizing:border-box}
+.frame[data-theme="dark"]{--bg:oklch(0.19 0.018 250);--fg:oklch(0.93 0.01 250);--card:oklch(0.23 0.018 250);--muted:oklch(0.28 0.018 250);--muted-fg:oklch(0.70 0.015 250);--border:oklch(0.33 0.02 250);
+  --primary:oklch(0.70 0.17 240);--primary-fg:oklch(0.16 0.02 250);--ok:oklch(0.72 0.15 155);--bad:oklch(0.68 0.18 25);--warn:oklch(0.78 0.15 75);color-scheme:dark}
+.frame[data-w="desktop"]{width:1114px}.frame[data-w="tablet"]{width:984px}.frame[data-w="phone"]{width:366px;--floor:44px}
+.frame button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+.mut{color:var(--muted-fg)}.sm{font-size:calc(var(--fs)*.9)}.xs{font-size:calc(var(--fs)*.86)}.b{font-weight:600}
+.st{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.st i{width:8px;height:8px;border-radius:50%;background:currentColor;flex:none}.st.ok{color:var(--ok)}
+.card{background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r)}
+.till{display:grid;grid-template-columns:1fr auto auto;grid-template-areas:"tl mid tr";align-items:center;column-gap:20px;row-gap:12px;padding:12px 16px}
+.till.rows{grid-template-columns:1fr auto;grid-template-areas:"tl tr" "mid mid"}
+.frame[data-w="phone"] .till{grid-template-columns:1fr;grid-template-areas:"tl" "mid" "tr";row-gap:10px}.frame[data-w="phone"] .till .tr{justify-self:stretch;justify-content:space-between}
+.till .tl{grid-area:tl;display:flex;flex-direction:column;gap:2px;min-width:0}.till .mid{grid-area:mid;min-width:0}.till .tr{grid-area:tr;display:flex;align-items:center;gap:8px;justify-self:end}
+.who{display:flex;align-items:center;gap:6px;white-space:nowrap;min-width:0}.who .mut{overflow:hidden;text-overflow:ellipsis}
+.btn{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 12px;border:var(--hair) solid var(--border);border-radius:var(--r);font-weight:500;background:var(--card);white-space:nowrap}.btn svg{width:16px;height:16px}
+.ibtn{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg)}.ibtn svg{width:16px;height:16px}
+/* chips */
+.eq{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.term{display:flex;flex-direction:column;gap:1px;padding:4px 10px;border-radius:var(--r);background:var(--muted);flex:none}.term .l{color:var(--muted-fg);font-size:calc(var(--fs)*.8);white-space:nowrap}.term .v{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}.term.res{background:var(--primary);color:var(--primary-fg)}.term.res .l{color:var(--primary-fg);opacity:.85}.op{color:var(--muted-fg);font-weight:600;font-size:calc(var(--fs)*1.1)}.note{color:var(--muted-fg);font-size:calc(var(--fs)*.86)}
+.eq.tight .term{padding:3px 8px}.eq.tight .term .l{font-size:calc(var(--fs)*.75)}.eq.tight .term .v{font-size:calc(var(--fs)*.93)}
+/* ledger */
+.ledger{display:flex;flex-direction:column;gap:2px;width:100%}.lr{display:grid;grid-template-columns:16px 1fr auto;align-items:center;gap:8px;min-height:26px;padding:0 4px;border-radius:6px}.lr .op{text-align:center}.lr .l{color:var(--muted-fg)}.lr .v{font-weight:600;font-variant-numeric:tabular-nums}.lr.res{background:var(--primary);color:var(--primary-fg);margin-top:4px;min-height:32px}.lr.res .l,.lr.res .op{color:var(--primary-fg);font-weight:600}
+/* grid of chips */
+.eqgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}.eqgrid .term{flex:auto}.eqgrid .term .l::before{content:attr(data-op) " ";color:var(--muted-fg);font-weight:600}
+/* sentence */
+.sent{font-size:calc(var(--fs)*.95);line-height:1.6}.sent b{font-weight:600;font-variant-numeric:tabular-nums}.sent .res{background:var(--primary);color:var(--primary-fg);padding:2px 8px;border-radius:6px;font-weight:600;white-space:nowrap}.sent .op{color:var(--muted-fg);font-weight:600;margin:0 4px}
+/* result first */
+.rf{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.rf .a{font-size:calc(var(--fs)*1.7);font-weight:700;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}.rf .bl{font-weight:600;color:var(--muted-fg)}.rf .sub{width:100%;color:var(--muted-fg);font-size:calc(var(--fs)*.86)}.rf .sub b{color:var(--fg);font-weight:500}
+/* disclosure */
+.disc{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.disc .sum{display:inline-flex;align-items:center;gap:6px;color:var(--muted-fg);font-size:calc(var(--fs)*.9);border:var(--hair) dashed var(--border);border-radius:var(--r);padding:0 10px;height:32px}.disc .sum svg{width:14px;height:14px}
+</style>
+<div class="strip">
+  <span><b>Theme</b><span class="seg"><button class="on" data-set="theme" data-v="light">Light</button><button data-set="theme" data-v="dark">Dark</button></span></span>
+  <span><b>Till</b><span class="seg"><button class="on" data-set="busy" data-v="0">Ordinary · float, sales, one paid-out</button><button data-set="busy" data-v="1">Busy · paid-in, two paid-outs, refunds, no-sale, void</button></span></span>
+</div>
+<div class="stage" id="stage"></div>
+<script>
+const fmt=n=>`£${Math.abs(n).toFixed(2)}`;
+const chev='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+const chevd='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+const print='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17h2a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2"/><path d="M17 9V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v4"/><rect x="7" y="13" width="10" height="8" rx="2"/></svg>';
+const S={theme:'light',busy:'0'};
+const TERMS=()=>S.busy==='1'
+  ?[['Opening float','Float',100,''],['Cash sales · 6','Sales',343.70,'+'],['Paid in · change from the safe','Paid in',20,'+'],['Paid out · 2','Paid out',180,'−'],['Cash refunds','Refunds',12.50,'−'],['Expected in drawer','Expected',271.20,'=']]
+  :[['Opening float','Float',100,''],['Cash sales · 6','Sales',343.70,'+'],['Paid out · to bank','Paid out',150,'−'],['Expected in drawer','Expected',293.70,'=']];
+const NOTE=()=>S.busy==='1'?'no sale, void':'';
+const shell=(mid,cls='')=>`<section class="card till ${cls}"><div class="tl"><div class="who"><b>Front till</b> <span class="st ok"><i></i>Open</span><span class="mut"> · since 13:00 · Dylan</span></div><div class="mut sm">Last closure #412 · Today 12:30 · £2.00 short</div></div><div class="mid">${mid}</div><div class="tr"><button class="btn">${print}X-report</button><button class="ibtn">${chev}</button></div></section>`;
+const chips=(short=false,tight=false)=>`<div class="eq ${tight?'tight':''}">${TERMS().map(([l,s,v,op],i,a)=>`${op?`<span class="op">${op}</span>`:''}<span class="term ${i===a.length-1?'res':''}"><span class="l">${short?s:l}</span><span class="v">${fmt(v)}</span></span>`).join('')}${NOTE()?`<span class="note">· ${NOTE()}</span>`:''}</div>`;
+const ledger=()=>`<div class="ledger">${TERMS().map(([l,s,v,op],i,a)=>`<div class="lr ${i===a.length-1?'res':''}"><span class="op">${op}</span><span class="l">${l}</span><span class="v">${fmt(v)}</span></div>`).join('')}${NOTE()?`<div class="lr"><span></span><span class="l">${NOTE()}</span></div>`:''}</div>`;
+
+const W={};
+W['W1']=['As landed: chips, then a ledger on the phone','Desktop and tablet keep the chips (a busy day drops them to their own row). The phone stacks the same terms as a ledger. Two shapes, one set of terms.',{
+  desktop:()=>shell(chips(),TERMS().length>4?'rows':''),tablet:()=>shell(chips(),'rows'),phone:()=>shell(ledger())}];
+W['W2']=['Chips that shrink','One shape everywhere. Tablet uses short labels (Float, Sales, Paid out, Expected) and tighter chips; the phone keeps the chips but lays them two abreast, the sign inside the label. Never a ledger.',{
+  desktop:()=>shell(chips(),TERMS().length>4?'rows':''),tablet:()=>shell(chips(true,true),'rows'),
+  phone:()=>shell(`<div class="eqgrid">${TERMS().map(([l,s,v,op],i,a)=>`<span class="term ${i===a.length-1?'res':''}"><span class="l" data-op="${op}">${s}</span><span class="v">${fmt(v)}</span></span>`).join('')}</div>${NOTE()?`<div class="note" style="margin-top:6px">· ${NOTE()}</div>`:''}`)}];
+W['W3']=['A sentence','No chips at all: the equation set as one line of text, the result as the only filled mark. It wraps like prose, so it is the same at every width and the phone simply reads it on two lines.',{
+  desktop:()=>shell(sentence(),'rows'),tablet:()=>shell(sentence(),'rows'),phone:()=>shell(sentence())}];
+function sentence(){return `<div class="sent">${TERMS().map(([l,s,v,op],i,a)=>i===a.length-1?`<span class="op">=</span><span class="res">${fmt(v)} expected in drawer</span>`:`${op?`<span class="op">${op}</span>`:''}<b>${fmt(v)}</b> <span class="mut">${l.toLowerCase()}</span>`).join(' ')}${NOTE()?` <span class="mut">· ${NOTE()}</span>`:''}</div>`;}
+W['W4']=['The result first','The expected figure is the thing, so it leads at every width, big; the terms sit under it as one muted line. Chips only where there is room for them (desktop, ordinary day).',{
+  desktop:()=>TERMS().length>4?shell(resultFirst(),'rows'):shell(chips()),tablet:()=>shell(resultFirst(),'rows'),phone:()=>shell(resultFirst())}];
+function resultFirst(){const t=TERMS(),r=t[t.length-1];return `<div class="rf"><span class="a">${fmt(r[2])}</span><span class="bl">expected in drawer</span><span class="sub">${t.slice(0,-1).map(([l,s,v,op])=>`${op?op+' ':''}<b>${fmt(v)}</b> ${s.toLowerCase()}`).join(' ')}${NOTE()?` · ${NOTE()}`:''}</span></div>`;}
+W['W5']=['Disclose as it narrows','Desktop shows everything. Tablet shows the result chip and folds the terms into a dashed summary that opens on tap. The phone shows only the result; the ledger is one tap away. Less on screen the smaller it gets.',{
+  desktop:()=>shell(chips(),TERMS().length>4?'rows':''),
+  tablet:()=>shell(`<div class="disc"><span class="sum">${TERMS().slice(0,-1).map(([l,s,v,op])=>`${op} ${fmt(v)} ${s.toLowerCase()}`).join(' ').replace(/^\s/,'')} ${chevd}</span><span class="op">=</span><span class="term res"><span class="l">Expected in drawer</span><span class="v">${fmt(TERMS().slice(-1)[0][2])}</span></span></div>`,TERMS().length>4?'rows':''),
+  phone:()=>shell(`<div class="disc"><span class="term res" style="flex:1"><span class="l">Expected in drawer</span><span class="v">${fmt(TERMS().slice(-1)[0][2])}</span></span><span class="sum">${TERMS().length-1} lines ${chevd}</span></div>`)}];
+
+function render(){
+  document.querySelectorAll('.strip [data-set]').forEach(b=>b.classList.toggle('on',S[b.dataset.set]===b.dataset.v));
+  document.getElementById('stage').innerHTML=`<h1>The equation chips across widths · five ways</h1><p>Each one at desktop, tablet and phone. Switch to the busy till above to see six terms instead of four.</p>`+Object.entries(W).map(([k,[t,why,f]])=>`<div class="opt"><h2>${k} · ${t}</h2><div class="sizes">${['desktop','tablet','phone'].map(w=>`<div class="cap">${w}</div><div class="frame" data-theme="${S.theme}" data-w="${w}">${f[w]()}</div>`).join('')}</div><p class="why">${why}</p></div>`).join('');
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-set]');if(!b)return;S[b.dataset.set]=b.dataset.v;render();});
+render();
+</script>
+</html>
