@@ -209,7 +209,7 @@ Sources: the five per-plugin audit reports in this folder; the drift and census 
 
 ## Addendum: how this lands in the 1.11.0 payments contract (#97)
 
-Written after reading roadmap #97, the Payments Contract v1 spec (wcpos/wiki#1090: hub, descriptor, ledger, routes, tender-flows, extensions) and what has landed on `next` in woocommerce-pos#1839. This supersedes the "host already started" section and option A above: the adapter contract that section describes is **deleted in the 1.11 batch** (#108, spec §10). The recommendation survives; its home is now the contract's `server` capture mode.
+Written after reading roadmap #97, the Payments Contract v1 spec (wcpos/wiki#1090: hub, descriptor, ledger, routes, tender-flows, extensions) and what had landed on `next` by woocommerce-pos#1904 (merged 2026-09-08 as `114de1d98`, the route-family integrity landing; #1839 at `b49138261` carried the registry, ledger, manual route and passthrough and left `intent`/`capture`/`refund`/`bootstrap` to #1904, per the wcpos/roadmap#152 record). The "Landed on `next`?" column below is the state at `114de1d98`, not the moving branch. This supersedes the "host already started" section and option A above: the adapter contract that section describes is **deleted in the 1.11 batch** (#108, spec §10). The recommendation survives; its home is now the contract's `server` capture mode.
 
 ### What #97 already settles for #95
 
@@ -217,13 +217,13 @@ Written after reading roadmap #97, the Payments Contract v1 spec (wcpos/wiki#109
 |---|---|---|
 | Kit lives in the host, one copy, no version collision | Free owns the capture-mode **registry** (`wcpos_register_capture_mode`) and the **route family** `intent / capture / status / void / refund` keyed by the row UUID; extensions register a handler per provider (§4.5, §10) | yes: `Capture_Mode_Registry`, `Capture_Mode_Handler_Interface`, `Abstract_Capture_Mode_Handler`, `manual` + `webview` handlers |
 | Delete the order-authorisation gate | Routes use the plugin's JWT + `X-WCPOS` gate and `publish_shop_orders`; the app is the cashier (§4.5) | yes |
-| Attempt store: current pointer, history, abandoned ids | The **ledger row** is the attempt: client-minted UUID, snapshots, one-way lifecycle, **retry = new row** (§3.4), `provider_refs` | yes: `Contract/Ledger.php` |
+| Attempt store: current pointer, history, abandoned ids | The **ledger row** is the attempt: client-minted UUID, snapshots, one-way lifecycle, `provider_refs`. **Only an explicit new checkout attempt creates a row** (§3.4); a provider retry after an indeterminate create reuses the existing row UUID and therefore the same idempotency key, which is what the next line relies on | yes: `Contract/Ledger.php` |
 | "Indeterminate create: keep the attempt, reuse the idempotency key" (Square) | Built in: handlers receive a row that already exists; provider calls carry the row id as idempotency header and `metadata.wcpos_payment_id` (§4.3) | yes for the route family |
 | Webhook frame: refetch then reconcile | `wcpos_settle_payment( $payment_id, $patch )` finds the row across orders by `metadata.wcpos_payment_id` and applies the patch under §3.4 (§4.5) | **no** (specified, not landed) |
 | Money: exact leg amount, currency exponent | Handlers receive the **leg amount, never `get_total()`** (#108); `Contract/Money.php` | yes |
 | Tips | `on_reader`: confirmed − leg written as a fee on `capture` (§9) | no |
 | Enable checkbox is web-only | Descriptor `pos_enabled` comes from POS settings (#104) | yes |
-| Provider adapter interface | `describe / bootstrap / intent / capture / status / void / refund` maps one-to-one onto the audit's `create / fetch / cancel / list_terminals / verify_webhook / refund` | yes |
+| Provider adapter interface | Two layers, not one: the **capture-mode handler** (`describe / bootstrap / intent / capture / status / void / refund`, Free's route family) and, inside it for `server`, the **provider adapter** Pro's `Server_Handler` drives (`docs/specs/2026-10-07-legacy-order-pay-on-pro-base.md`, wcpos/roadmap#155). The audit's operations map onto the adapter: `create` → `create_reader_action()` (called by `intent()`; `capture` is the separate later lifecycle step), `fetch` → the adapter's status read behind `status()`, `cancel` → the adapter's cancel behind `void()`, `refund` → `refund`, `list_terminals` → the adapter's reader listing behind `bootstrap()` and `Reader_Curation`, `verify_webhook` → the adapter's `verify_webhook()` behind Pro's `POST wcpos/v2/payments/webhook?provider=` into `wcpos_settle_payment()` | yes (route family); adapter per provider is extension work |
 
 So the "kit" is smaller than the audit estimated: ledger, idempotency, auth and the row model already exist in Free. What remains is exactly the **`server` capture mode**, which §14 lists as not yet done, plus the app's `server` flow screen.
 
@@ -249,7 +249,7 @@ Paul's framing was "part of the core Pro plugin". The spec's boundary table give
 - **In Free:** an `Abstract_Server_Handler` next to `Abstract_Capture_Mode_Handler`; every extension can offer a `server` tile without Pro.
 - **In Pro:** the same class ships in Pro; an extension's tile appears only with Pro active, and without Pro the extension has the Legacy tab only. This matches #102's original boundary ("Pro = terminals") and is a legitimate business choice.
 
-Same code either way; the difference is whether the new tiles are a Pro feature. Note Pro vendors Free via Composer and shadows it at runtime (the pipeline finding on #97), so "core Pro plugin" already contains both; the only question is what an extension can do standalone. This needs Paul's ruling before the `server`-mode landing ticket is written.
+Same code either way; the difference is whether the new tiles are a Pro feature. Note Pro vendors Free via Composer and shadows it at runtime (the pipeline finding on #97), so "core Pro plugin" already contains both. **Ruled (Paul, 2026-09-05, recorded in the spec's extensions page): the second option**, the handler on Pro's protected base, as spec hub §1 states; the Free alternative above is kept only as the record of what was weighed. **The "Legacy tab only without Pro" clause of that ruling was itself superseded on 2026-10-07** (`docs/specs/2026-10-07-legacy-order-pay-on-pro-base.md`, approved on wcpos/roadmap#95): on the base an extension requires **Pro ≥ 2.0.0 for both flows**; without Pro its bootstrap shows its own notice and registers no gateway at all, so nothing renders, and the last `0.x` release remains the option for a non-Pro merchant. The landing ticket and the version gate use that later rule.
 
 ### Migration order versus "Stripe Terminal first"
 
