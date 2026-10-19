@@ -1,0 +1,19 @@
+{
+  "releases": [
+    { "repo": "wcpos/roadmap", "number": 304, "title": "v2.5.0 — Loyalty at the till", "body": "### Due date\n\n### Why this release\n\nPoints at the counter.",
+      "state": "CLOSED", "stateReason": "NOT_PLANNED", "closedAt": "2026-10-01T10:00:00Z", "labels": ["release"], "milestone": null,
+      "subIssuesTotal": 1, "subIssuesCompleted": 0, "subIssues": [
+        { "repo": "wcpos/roadmap", "number": 430, "title": "Open epic, not yet labelled", "body": "### Summary\n\nEarn points at the till.",
+          "state": "OPEN", "stateReason": null, "closedAt": null, "labels": [], "milestone": "v2.5.0",
+          "subIssuesTotal": 1, "subIssuesCompleted": 0, "subIssues": [
+            { "repo": "wcpos/monorepo", "number": 630, "title": "Work under the leftover", "body": "",
+              "state": "OPEN", "stateReason": null, "closedAt": null, "labels": [], "milestone": "v2.5.0",
+              "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] }
+          ] }
+      ] }
+  ],
+  "milestones": [
+    { "repo": "woocommerce-pos", "number": 31, "title": "v2.5.0", "description": "Loyalty at the till\n\nManaged from wcpos/roadmap#304 — do not edit.", "dueOn": null, "state": "open" },
+    { "repo": "electron", "number": 32, "title": "v2.5.0", "description": "Loyalty work, made by hand", "dueOn": null, "state": "open" }
+  ]
+}

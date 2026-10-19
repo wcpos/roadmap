@@ -1,0 +1,60 @@
+{
+  "releases": [
+    { "repo": "wcpos/roadmap", "number": 300, "title": "v2.0.0 — A new register", "body": "### Due date\n\n2026-12-31\n\n### Why this release\n\nA checkout that belongs to the POS.",
+      "state": "OPEN", "stateReason": null, "closedAt": null, "labels": ["release"], "milestone": null,
+      "subIssuesTotal": 4, "subIssuesCompleted": 1, "subIssues": [
+        { "repo": "wcpos/roadmap", "number": 500, "title": "Withdrawn epic with work under it", "body": "### Summary\n\nDropped.",
+          "state": "CLOSED", "stateReason": "NOT_PLANNED", "closedAt": "2026-10-01T10:00:00Z", "labels": ["epic"], "milestone": "v2.0.0",
+          "subIssuesTotal": 1, "subIssuesCompleted": 0, "subIssues": [
+            { "repo": "wcpos/monorepo", "number": 600, "title": "Work under the withdrawn epic", "body": "",
+              "state": "OPEN", "stateReason": null, "closedAt": null, "labels": [], "milestone": null,
+              "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] }
+          ] },
+        { "repo": "wcpos/roadmap", "number": 501, "title": "Epic without a summary", "body": "### Problem\n\nInternal notes only.",
+          "state": "OPEN", "stateReason": null, "closedAt": null, "labels": ["epic"], "milestone": "v2.0.0",
+          "subIssuesTotal": 1, "subIssuesCompleted": 0, "subIssues": [
+            { "repo": "wcpos/monorepo", "number": 601, "title": "Work already on the release milestone", "body": "",
+              "state": "OPEN", "stateReason": null, "closedAt": null, "labels": [], "milestone": "v2.0.0",
+              "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] }
+          ] },
+        { "repo": "wcpos/monorepo", "number": 502, "title": "Epic missing its label", "body": "### Summary\n\nCash drawer sessions.",
+          "state": "OPEN", "stateReason": null, "closedAt": null, "labels": [], "milestone": "v2.0.0",
+          "subIssuesTotal": 4, "subIssuesCompleted": 2, "subIssues": [
+            { "repo": "wcpos/monorepo", "number": 602, "title": "Work with no milestone", "body": "",
+              "state": "OPEN", "stateReason": null, "closedAt": null, "labels": [], "milestone": null,
+              "subIssuesTotal": 1, "subIssuesCompleted": 0, "subIssues": [
+                { "repo": "wcpos/monorepo", "number": 603, "title": "Nested work on the wrong milestone", "body": "",
+                  "state": "OPEN", "stateReason": null, "closedAt": null, "labels": [], "milestone": "v1.11.0",
+                  "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] }
+              ] },
+            { "repo": "wcpos/wcpos-com", "number": 604, "title": "Website work, outside the five repos", "body": "",
+              "state": "OPEN", "stateReason": null, "closedAt": null, "labels": [], "milestone": null,
+              "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] },
+            { "repo": "wcpos/monorepo", "number": 605, "title": "Fix shipped on the patch line", "body": "",
+              "state": "CLOSED", "stateReason": "COMPLETED", "closedAt": "2026-10-10T10:00:00Z", "labels": [], "milestone": "v1.11.2",
+              "subIssuesTotal": 1, "subIssuesCompleted": 0, "subIssues": [
+                { "repo": "wcpos/monorepo", "number": 607, "title": "Open follow-up under the patch fix", "body": "",
+                  "state": "OPEN", "stateReason": null, "closedAt": null, "labels": [], "milestone": null,
+                  "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] }
+              ] },
+            { "repo": "wcpos/monorepo", "number": 606, "title": "Closed work with no milestone", "body": "",
+              "state": "CLOSED", "stateReason": "COMPLETED", "closedAt": "2026-10-11T10:00:00Z", "labels": [], "milestone": null,
+              "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] }
+          ] },
+        { "repo": "wcpos/roadmap", "number": 503, "title": "v9.9.0 — A release attached as an epic", "body": "### Due date\n\n### Why this release\n\nMisplaced.",
+          "state": "OPEN", "stateReason": null, "closedAt": null, "labels": ["release"], "milestone": null,
+          "subIssuesTotal": 1, "subIssuesCompleted": 0, "subIssues": [
+            { "repo": "wcpos/monorepo", "number": 608, "title": "Work under the misplaced release", "body": "",
+              "state": "OPEN", "stateReason": null, "closedAt": null, "labels": [], "milestone": "v1.11.0",
+              "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] }
+          ] }
+      ] }
+  ],
+  "milestones": [
+    { "repo": "woocommerce-pos", "number": 41, "title": "v2.0.0", "description": "A new register\n\nManaged from wcpos/roadmap#300 — do not edit.", "dueOn": "2026-12-31T12:00:00Z", "state": "open" },
+    { "repo": "woocommerce-pos-pro", "number": 42, "title": "v2.0.0", "description": "A new register\n\nManaged from wcpos/roadmap#300 — do not edit.", "dueOn": "2026-12-31T12:00:00Z", "state": "open" },
+    { "repo": "monorepo", "number": 43, "title": "v2.0.0", "description": "A new register\n\nManaged from wcpos/roadmap#300 — do not edit.", "dueOn": "2026-12-31T12:00:00Z", "state": "open" },
+    { "repo": "electron", "number": 44, "title": "v2.0.0", "description": "A new register\n\nManaged from wcpos/roadmap#300 — do not edit.", "dueOn": "2026-12-31T12:00:00Z", "state": "open" },
+    { "repo": "roadmap", "number": 45, "title": "v2.0.0", "description": "A new register\n\nManaged from wcpos/roadmap#300 — do not edit.", "dueOn": "2026-12-31T12:00:00Z", "state": "open" }
+  ]
+}

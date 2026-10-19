@@ -1,0 +1,23 @@
+{
+  "releases": [
+    { "repo": "wcpos/roadmap", "number": 303, "title": "v1.10.0 — Offline & stock-state correctness",
+      "body": "### Due date\n\n2026-08-25\n\n### Shipped on\n\n2026-08-25\n\n### Why this release\n\nA rebuilt sync engine.",
+      "state": "CLOSED", "stateReason": "COMPLETED", "closedAt": "2026-08-25T10:00:00Z", "labels": ["release"], "milestone": null,
+      "subIssuesTotal": 2, "subIssuesCompleted": 1, "subIssues": [
+        { "repo": "wcpos/roadmap", "number": 410, "title": "Open epic left behind", "body": "### Summary\n\nNot finished in time.",
+          "state": "OPEN", "stateReason": null, "closedAt": null, "labels": ["epic"], "milestone": "v1.10.0",
+          "subIssuesTotal": 1, "subIssuesCompleted": 0, "subIssues": [
+            { "repo": "wcpos/monorepo", "number": 610, "title": "Work under the leftover", "body": "",
+              "state": "OPEN", "stateReason": null, "closedAt": null, "labels": [], "milestone": null,
+              "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] }
+          ] },
+        { "repo": "wcpos/monorepo", "number": 411, "title": "Done epic", "body": "### Summary\n\nShipped.",
+          "state": "CLOSED", "stateReason": "COMPLETED", "closedAt": "2026-08-20T10:00:00Z", "labels": ["epic"], "milestone": "v1.10.0",
+          "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] }
+      ] }
+  ],
+  "milestones": [
+    { "repo": "monorepo", "number": 21, "title": "v1.10.0", "description": "Offline & stock-state correctness\n\nManaged from wcpos/roadmap#303 — do not edit.", "dueOn": "2026-08-25T12:00:00Z", "state": "open" },
+    { "repo": "roadmap", "number": 22, "title": "v1.10.0", "description": "Offline & stock-state correctness\n\nManaged from wcpos/roadmap#303 — do not edit.", "dueOn": "2026-08-25T12:00:00Z", "state": "closed" }
+  ]
+}

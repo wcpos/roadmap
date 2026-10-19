@@ -1,0 +1,8 @@
+{
+  "writes": [],
+  "items": [
+    { "id": "drift-milestone:monorepo:Backlog", "lane": "assistant", "kind": "drift-milestone", "subject": "monorepo milestone Backlog", "text": "open milestone that is not a release copy" },
+    { "id": "drift-milestone:woocommerce-pos:v1.11.0", "lane": "assistant", "kind": "drift-milestone", "subject": "woocommerce-pos milestone v1.11.0", "text": "open milestone that is not a release copy" }
+  ],
+  "refused": false
+}

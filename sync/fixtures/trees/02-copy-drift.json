@@ -1,0 +1,14 @@
+{
+  "releases": [
+    { "repo": "wcpos/roadmap", "number": 302, "title": "v2.1.0 — Fiscal compliance", "body": "### Due date\n\n2026-12-31\n\n### Why this release\n\nThe law asks for it.",
+      "state": "OPEN", "stateReason": null, "closedAt": null, "labels": ["release"], "milestone": null,
+      "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] }
+  ],
+  "milestones": [
+    { "repo": "woocommerce-pos", "number": 11, "title": "v2.1.0", "description": "Fiscal compliance (edited by hand)", "dueOn": "2026-12-31T12:00:00Z", "state": "open" },
+    { "repo": "woocommerce-pos-pro", "number": 12, "title": "v2.1.0", "description": "Fiscal compliance\n\nManaged from wcpos/roadmap#302 — do not edit.", "dueOn": "2026-12-31T08:00:00Z", "state": "open" },
+    { "repo": "monorepo", "number": 13, "title": "v2.1.0", "description": "Fiscal compliance\n\nManaged from wcpos/roadmap#302 — do not edit.", "dueOn": "2026-11-30T12:00:00Z", "state": "open" },
+    { "repo": "electron", "number": 14, "title": "v2.1.0", "description": "Fiscal compliance\n\nManaged from wcpos/roadmap#302 — do not edit.", "dueOn": "2026-12-31T12:00:00Z", "state": "closed" },
+    { "repo": "roadmap", "number": 15, "title": "v2.1.0", "description": "Fiscal compliance\n\nManaged from wcpos/roadmap#302 — do not edit.", "dueOn": "2026-12-31T12:00:00Z", "state": "open" }
+  ]
+}

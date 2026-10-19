@@ -1,0 +1,19 @@
+{
+  "releases": [
+    { "repo": "wcpos/roadmap", "number": 320, "title": "v2.0.0 — A new register", "body": "### Due date\n\n### Why this release\n\nA checkout that belongs to the POS.",
+      "state": "OPEN", "stateReason": null, "closedAt": null, "labels": ["release"], "milestone": null,
+      "subIssuesTotal": 1, "subIssuesCompleted": 0, "subIssues": [
+        { "repo": "wcpos/roadmap", "number": 520, "title": "Epic with no work yet", "body": "### Summary\n\nA customer display.",
+          "state": "OPEN", "stateReason": null, "closedAt": null, "labels": ["epic"], "milestone": "v2.0.0",
+          "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] }
+      ] },
+    { "repo": "wcpos/roadmap", "number": 321, "title": "v2.1.0 — Fiscal compliance", "body": "### Due date\n\n2026-12-31\n\n### Why this release\n\nThe law asks for it.",
+      "state": "OPEN", "stateReason": null, "closedAt": null, "labels": ["release"], "milestone": null,
+      "subIssuesTotal": 1, "subIssuesCompleted": 0, "subIssues": [
+        { "repo": "wcpos/roadmap", "number": 521, "title": "Planning epic with no work yet", "body": "### Summary\n\nSigned records.",
+          "state": "OPEN", "stateReason": null, "closedAt": null, "labels": ["epic"], "milestone": "v2.1.0",
+          "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] }
+      ] }
+  ],
+  "milestones": []
+}

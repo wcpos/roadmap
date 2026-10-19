@@ -1,0 +1,16 @@
+{
+  "writes": [
+    { "kind": "issue.label", "repo": "wcpos/monorepo", "issue": 502, "label": "epic" },
+    { "kind": "subissue.remove", "parent": 300, "repo": "wcpos/roadmap", "issue": 500 },
+    { "kind": "issue.milestone", "repo": "wcpos/monorepo", "issue": 602, "from": null, "to": "v2.0.0" },
+    { "kind": "issue.milestone", "repo": "wcpos/monorepo", "issue": 603, "from": "v1.11.0", "to": "v2.0.0" },
+    { "kind": "issue.milestone", "repo": "wcpos/monorepo", "issue": 606, "from": null, "to": "v2.0.0" },
+    { "kind": "issue.milestone", "repo": "wcpos/monorepo", "issue": 607, "from": null, "to": "v2.0.0" },
+    { "kind": "issue.milestone", "repo": "wcpos/roadmap", "issue": 500, "from": "v2.0.0", "to": null }
+  ],
+  "items": [
+    { "id": "no-summary:wcpos/roadmap#501", "lane": "assistant", "kind": "no-summary", "subject": "wcpos/roadmap#501", "text": "epic in v2.0.0 has no \"### Summary\"; hidden on the page" },
+    { "id": "release-under-release:wcpos/roadmap#503", "lane": "assistant", "kind": "release-under-release", "subject": "wcpos/roadmap#503", "text": "a release issue is a sub-issue of v2.0.0" }
+  ],
+  "refused": false
+}

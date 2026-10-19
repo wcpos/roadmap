@@ -1,0 +1,18 @@
+{
+  "writes": [
+    { "kind": "milestone.create", "repo": "electron", "title": "v2.0.0", "description": "A new register\n\nManaged from wcpos/roadmap#320 — do not edit.", "dueOn": null },
+    { "kind": "milestone.create", "repo": "electron", "title": "v2.1.0", "description": "Fiscal compliance\n\nManaged from wcpos/roadmap#321 — do not edit.", "dueOn": "2026-12-31T12:00:00Z" },
+    { "kind": "milestone.create", "repo": "monorepo", "title": "v2.0.0", "description": "A new register\n\nManaged from wcpos/roadmap#320 — do not edit.", "dueOn": null },
+    { "kind": "milestone.create", "repo": "monorepo", "title": "v2.1.0", "description": "Fiscal compliance\n\nManaged from wcpos/roadmap#321 — do not edit.", "dueOn": "2026-12-31T12:00:00Z" },
+    { "kind": "milestone.create", "repo": "roadmap", "title": "v2.0.0", "description": "A new register\n\nManaged from wcpos/roadmap#320 — do not edit.", "dueOn": null },
+    { "kind": "milestone.create", "repo": "roadmap", "title": "v2.1.0", "description": "Fiscal compliance\n\nManaged from wcpos/roadmap#321 — do not edit.", "dueOn": "2026-12-31T12:00:00Z" },
+    { "kind": "milestone.create", "repo": "woocommerce-pos", "title": "v2.0.0", "description": "A new register\n\nManaged from wcpos/roadmap#320 — do not edit.", "dueOn": null },
+    { "kind": "milestone.create", "repo": "woocommerce-pos", "title": "v2.1.0", "description": "Fiscal compliance\n\nManaged from wcpos/roadmap#321 — do not edit.", "dueOn": "2026-12-31T12:00:00Z" },
+    { "kind": "milestone.create", "repo": "woocommerce-pos-pro", "title": "v2.0.0", "description": "A new register\n\nManaged from wcpos/roadmap#320 — do not edit.", "dueOn": null },
+    { "kind": "milestone.create", "repo": "woocommerce-pos-pro", "title": "v2.1.0", "description": "Fiscal compliance\n\nManaged from wcpos/roadmap#321 — do not edit.", "dueOn": "2026-12-31T12:00:00Z" }
+  ],
+  "items": [
+    { "id": "no-work:wcpos/roadmap#520", "lane": "assistant", "kind": "no-work", "subject": "wcpos/roadmap#520", "text": "epic in the active release v2.0.0 has no sub-issues" }
+  ],
+  "refused": false
+}

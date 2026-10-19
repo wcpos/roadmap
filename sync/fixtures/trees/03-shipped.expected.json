@@ -1,0 +1,11 @@
+{
+  "writes": [
+    { "kind": "milestone.update", "repo": "monorepo", "number": 21, "title": "v1.10.0", "patch": { "state": "closed" } },
+    { "kind": "subissue.remove", "parent": 303, "repo": "wcpos/roadmap", "issue": 410 },
+    { "kind": "issue.milestone", "repo": "wcpos/roadmap", "issue": 410, "from": "v1.10.0", "to": null }
+  ],
+  "items": [
+    { "id": "leftover:wcpos/roadmap#410", "lane": "paul", "kind": "leftover", "subject": "wcpos/roadmap#410", "text": "open when v1.10.0 shipped; awaiting placement" }
+  ],
+  "refused": false
+}
