@@ -4,10 +4,29 @@
 
 Copy the boxes below into the run record's **Checklist** section and fill them in as you go. A box that cannot be ticked is a blocker for every step after it, not a note.
 
+## Patch compatibility rule (Paul, 2026-10-19)
+
+**Every patch on a lane is compatible with every other patch on that lane, in both directions.** A `2.0.N` web bundle works with any `2.0.M` plugin; a `2.0.N` plugin works with any `2.0.M` desktop or mobile app; and the reverse of each. A change that needs the other half to be at the same patch to work is not a patch. It bumps the minor across every line (app, bundle ref, free, Pro, desktop, mobile), the way 1.10.28 became 1.11.0.
+
+Why the design forces it, not just prefers it:
+
+- Every plugin on the released lane loads the newest bundle on `@<major.minor>` the moment the tag is purged, so bundle patch N+5 is paired with plugin patches N…N+5 in the field. That is how a bundle fix reaches merchants without a plugin update, and it is the pairing the 2026-10-14 RxDB incident broke.
+- Desktop and mobile merchants update when they choose. A plugin released today runs against apps a month old.
+- The app's plugin floor (`MINIMUM_WCPOS_PLUGIN_VERSION`) is a minor-level floor, and the app has no upper bound on the plugin version. Nothing in code stops an old app talking to a new plugin; the plugin staying backward compatible within the lane is the only thing that keeps that working.
+- Pro's update server treats the first two numbers as the compatible family.
+
+What it means in review, on `main`:
+
+- A PR that touches a REST route, a response shape, a header, an option, the sync protocol, a storage schema or a vendored worker answers one question: *would this fail against a plugin (or app) one patch older on this lane?* Yes means feature-detect it (the `bareAuthParamSupported` / echo-probe pattern) or bump the minor. Removing or renaming anything the other half reads is always a minor. Adding something with a fallback is a patch.
+- `MINIMUM_WCPOS_PLUGIN_VERSION` always ends in `.0` (tested in the monorepo). Raising it is a minor.
+
+What is mechanical and what is judgement: the RxDB worker version is guarded on the publish path (A2, D4) and the plugin's drift check; the floor's `.0` is a unit test; the lane-floor E2E legs (app tip against the `<major.minor>.0` plugin, plugin tip against the `<major.minor>.0` bundle) are monorepo#2763 and woocommerce-pos#2323. Everything else is the changelog read in A1 and the judgement recorded in A2b.
+
 ## A. Scope — before cutting anything
 
 - [ ] **A1. Every line scoped from its own tag diff, never from memory.** `gh api repos/wcpos/<repo>/compare/<last tag>...main` for monorepo, woocommerce-pos, woocommerce-pos-pro, electron. Record the merge list per line. *(1.10.17 was nearly run monorepo-only from session memory.)*
 - [ ] **A2. Worker blob compared.** `apps/main/public/opfs.worker.js` blob at the last app tag vs `main`. If it moved, the plugin legs are REQUIRED and the tag order inverts (bundle → vendor → bundle tag → free). Record both blob SHAs. **If the worker's `RXDB_VERSION` changed (`grep -o "RXDB_VERSION *= *'[0-9.]*'"` on both blobs), this is NOT a patch: every plugin already in the field keeps its old vendored worker but loads the newest `@<major.minor>` bundle, and RxDB's remote storage refuses any exact-version mismatch (`RM1`). The plugins and the bundle tag go to a NEW minor (`v1.11.0` → `@1.11`), and the old ref is never moved.** *(1.10.28 / bundle v1.10.41, 2026-10-14: RxDB 17.4.0 → 17.6.0 shipped on `@1.10` and broke every web POS on an older plugin, including the demo, until `v1.10.41` was deleted and the release re-cut as 1.11.0.)*
+- [ ] **A2b. Cross-component compatibility judged.** Read every merge from A1 on every line against the patch compatibility rule above and write one of: "patch-safe: every line works with every other patch on `<major.minor>`" or "NOT patch-safe because <merge> needs <other half> ≥ <ver> → minor bump, train re-scoped". A2 is the RxDB-specific case of this box; this box covers REST, headers, options, protocol, schema and anything else one half reads from the other. *(Rule from Paul, 2026-10-19, after the 1.10.28 → 1.11.0 re-cut.)*
 - [ ] **A3. Plugin legs decided.** Free/Pro ride if either has commits since its tag OR A2 moved. Write "plugins: required because …" or "plugins: unchanged because …" in the record.
 - [ ] **A4. Mobile decided by `eas fingerprint:compare --build-id <shipped build>` for BOTH platforms**, never a local `fingerprint:generate`. Same → OTA; different → store build (owner's call). Record the build ids and runtime versions.
 - [ ] **A5. Nobody else is on a train.** `ListAgents` / issue comment trail. Record it.
