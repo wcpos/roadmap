@@ -27,7 +27,8 @@ till), registers and cash-drawer sessions in Free, saved closures, the customer
 display, and the fiscal groundwork every European regime needs. Requires
 WooCommerce 9.0. Release issue: wcpos/roadmap#195.
 
-**v1.10.x** — rolling patches for the shipped 1.10 line on `main` (no fixed date).
+**v1.11.x** — rolling patches for the shipped 1.11 line on `main` (no fixed date). The 1.10
+line was re-cut as 1.11.0 on 2026-10-14, the last update before 2.0.
 
 ## Next
 
@@ -36,13 +37,19 @@ minor after WCPOS 2.0. Signed and hash-chained records, gap-free numbering, offi
 closure reports, audit-file export and tax-authority reporting, France and Spain first,
 built on the fiscal groundwork 2.0 ships. Renumbered from v1.12.0 on 2026-09-30.
 
-**v2.2.0 — Works with your other plugins** (wcpos/roadmap#226) · no date yet:
+**v2.2.0 — Control what each cashier can do** (wcpos/roadmap#452) · no date yet:
+POS permissions per role, enforced by the store and reflected at the till: refunds,
+discounts, line prices, voids, whole pages such as Reports, and only your own sales.
+Filed 2026-10-19 on Paul's ask; placed after 2.1.0, and the two swap if this is ready
+first. Design starts at wcpos/roadmap#453.
+
+**v2.3.0 — Works with your other plugins** (wcpos/roadmap#226) · no date yet:
 loyalty, gift cards, subscriptions, email lists and pricing rules at the till.
-Renumbered from v1.13.0 on 2026-09-30; it follows 2.1.0.
+Renumbered from v1.13.0 on 2026-09-30 and from v2.2.0 on 2026-10-19; it follows 2.2.0.
 
 ## Later
 
-_Nothing scheduled beyond the two releases above._
+_Nothing scheduled beyond the three releases above._
 
 ## Shipped
 
