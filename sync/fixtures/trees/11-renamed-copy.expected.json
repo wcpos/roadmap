@@ -1,0 +1,11 @@
+{
+  "writes": [
+    { "kind": "milestone.create", "repo": "electron", "title": "v2.2.0", "description": "Control what each cashier can do\n\nManaged from wcpos/roadmap#352 — do not edit.", "dueOn": "2027-03-31T12:00:00Z" },
+    { "kind": "milestone.create", "repo": "monorepo", "title": "v2.2.0", "description": "Control what each cashier can do\n\nManaged from wcpos/roadmap#352 — do not edit.", "dueOn": "2027-03-31T12:00:00Z" },
+    { "kind": "milestone.create", "repo": "roadmap", "title": "v2.2.0", "description": "Control what each cashier can do\n\nManaged from wcpos/roadmap#352 — do not edit.", "dueOn": "2027-03-31T12:00:00Z" },
+    { "kind": "milestone.create", "repo": "woocommerce-pos-pro", "title": "v2.2.0", "description": "Control what each cashier can do\n\nManaged from wcpos/roadmap#352 — do not edit.", "dueOn": "2027-03-31T12:00:00Z" },
+    { "kind": "milestone.update", "repo": "woocommerce-pos", "number": 76, "title": "v2.2.0", "patch": { "title": "v2.2.0" } }
+  ],
+  "items": [],
+  "refused": false
+}

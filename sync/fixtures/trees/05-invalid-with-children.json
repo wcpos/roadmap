@@ -1,0 +1,18 @@
+{
+  "releases": [
+    { "repo": "wcpos/roadmap", "number": 305, "title": "v2.1.0 — Fiscal compliance", "body": "### Due date\n\n2026-02-31\n\n### Why this release\n\nThe law asks for it.",
+      "state": "OPEN", "stateReason": null, "closedAt": null, "labels": ["release"], "milestone": null,
+      "subIssuesTotal": 1, "subIssuesCompleted": 0, "subIssues": [
+        { "repo": "wcpos/roadmap", "number": 420, "title": "Unlabelled epic without a summary", "body": "",
+          "state": "OPEN", "stateReason": null, "closedAt": null, "labels": [], "milestone": null,
+          "subIssuesTotal": 1, "subIssuesCompleted": 0, "subIssues": [
+            { "repo": "wcpos/monorepo", "number": 620, "title": "Work on the wrong milestone", "body": "",
+              "state": "OPEN", "stateReason": null, "closedAt": null, "labels": [], "milestone": "v1.11.0",
+              "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] }
+          ] }
+      ] }
+  ],
+  "milestones": [
+    { "repo": "monorepo", "number": 25, "title": "v2.1.0", "description": "Fiscal compliance (edited by hand)", "dueOn": "2026-11-30T12:00:00Z", "state": "open" }
+  ]
+}

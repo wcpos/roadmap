@@ -1,0 +1,14 @@
+{
+  "releases": [
+    { "repo": "wcpos/roadmap", "number": 306, "title": "v2.4.0 — Gift cards", "body": "### Due date\n\n### Why this release\n\nSell and redeem gift cards.",
+      "state": "OPEN", "stateReason": null, "closedAt": null, "labels": ["release"], "milestone": null,
+      "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] },
+    { "repo": "wcpos/roadmap", "number": 307, "title": "v2.4.0 — Gift cards at the counter", "body": "### Due date\n\n### Why this release\n\nSell and redeem gift cards.",
+      "state": "OPEN", "stateReason": null, "closedAt": null, "labels": ["release", "epic"], "milestone": null,
+      "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] },
+    { "repo": "wcpos/roadmap", "number": 308, "title": "v2.4.0 — Not a release, no release label", "body": "### Summary\n\nAn epic.",
+      "state": "OPEN", "stateReason": null, "closedAt": null, "labels": ["epic"], "milestone": null,
+      "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] }
+  ],
+  "milestones": []
+}

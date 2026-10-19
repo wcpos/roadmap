@@ -1,0 +1,9 @@
+{
+  "writes": [
+    { "kind": "milestone.update", "repo": "electron", "number": 14, "title": "v2.1.0", "patch": { "state": "open" } },
+    { "kind": "milestone.update", "repo": "monorepo", "number": 13, "title": "v2.1.0", "patch": { "dueOn": "2026-12-31T12:00:00Z" } },
+    { "kind": "milestone.update", "repo": "woocommerce-pos", "number": 11, "title": "v2.1.0", "patch": { "description": "Fiscal compliance\n\nManaged from wcpos/roadmap#302 — do not edit." } }
+  ],
+  "items": [],
+  "refused": false
+}

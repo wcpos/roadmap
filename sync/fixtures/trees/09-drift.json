@@ -1,0 +1,18 @@
+{
+  "releases": [
+    { "repo": "wcpos/roadmap", "number": 330, "title": "v2.0.0 — A new register", "body": "### Due date\n\n### Why this release\n\nA checkout that belongs to the POS.",
+      "state": "OPEN", "stateReason": null, "closedAt": null, "labels": ["release"], "milestone": null,
+      "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] }
+  ],
+  "milestones": [
+    { "repo": "woocommerce-pos", "number": 51, "title": "v2.0.0", "description": "A new register\n\nManaged from wcpos/roadmap#330 — do not edit.", "dueOn": null, "state": "open" },
+    { "repo": "woocommerce-pos-pro", "number": 52, "title": "v2.0.0", "description": "A new register\n\nManaged from wcpos/roadmap#330 — do not edit.", "dueOn": null, "state": "open" },
+    { "repo": "monorepo", "number": 53, "title": "v2.0.0", "description": "A new register\n\nManaged from wcpos/roadmap#330 — do not edit.", "dueOn": null, "state": "open" },
+    { "repo": "electron", "number": 54, "title": "v2.0.0", "description": "A new register\n\nManaged from wcpos/roadmap#330 — do not edit.", "dueOn": null, "state": "open" },
+    { "repo": "roadmap", "number": 55, "title": "v2.0.0", "description": "A new register\n\nManaged from wcpos/roadmap#330 — do not edit.", "dueOn": null, "state": "open" },
+    { "repo": "monorepo", "number": 56, "title": "Backlog", "description": null, "dueOn": null, "state": "open" },
+    { "repo": "monorepo", "number": 57, "title": "v1.11.4", "description": null, "dueOn": null, "state": "open" },
+    { "repo": "woocommerce-pos", "number": 58, "title": "v1.9.0", "description": null, "dueOn": null, "state": "closed" },
+    { "repo": "woocommerce-pos", "number": 59, "title": "v1.11.0", "description": null, "dueOn": "2026-10-14T07:00:00Z", "state": "open" }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "releases": [
+    { "repo": "wcpos/roadmap", "number": 340, "title": "v2.6.0 — Gift cards", "body": "### Due date\n\n### Why this release\n\nSell and redeem gift cards.",
+      "state": "CLOSED", "stateReason": "NOT_PLANNED", "closedAt": "2026-10-01T10:00:00Z", "labels": ["release"], "milestone": null,
+      "subIssuesTotal": 1, "subIssuesCompleted": 0, "subIssues": [
+        { "repo": "wcpos/roadmap", "number": 440, "title": "Open epic left on the withdrawn issue", "body": "### Summary\n\nGift cards at the counter.",
+          "state": "OPEN", "stateReason": null, "closedAt": null, "labels": ["epic"], "milestone": "v2.6.0",
+          "subIssuesTotal": 2, "subIssuesCompleted": 0, "subIssues": [] }
+      ] },
+    { "repo": "wcpos/roadmap", "number": 341, "title": "v2.6.0 — Gift cards at the till", "body": "### Due date\n\n### Why this release\n\nSell and redeem gift cards in person.",
+      "state": "OPEN", "stateReason": null, "closedAt": null, "labels": ["release"], "milestone": null,
+      "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] }
+  ],
+  "milestones": [
+    { "repo": "woocommerce-pos", "number": 61, "title": "v2.6.0", "description": "Gift cards at the till\n\nManaged from wcpos/roadmap#341 — do not edit.", "dueOn": null, "state": "open" },
+    { "repo": "monorepo", "number": 62, "title": "v2.6.0", "description": "Gift cards\n\nManaged from wcpos/roadmap#340 — do not edit.", "dueOn": null, "state": "open" }
+  ]
+}

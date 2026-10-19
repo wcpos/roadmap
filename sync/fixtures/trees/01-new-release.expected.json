@@ -1,0 +1,11 @@
+{
+  "writes": [
+    { "kind": "milestone.create", "repo": "electron", "title": "v2.1.0", "description": "Fiscal compliance\n\nManaged from wcpos/roadmap#301 — do not edit.", "dueOn": "2026-12-31T12:00:00Z" },
+    { "kind": "milestone.create", "repo": "monorepo", "title": "v2.1.0", "description": "Fiscal compliance\n\nManaged from wcpos/roadmap#301 — do not edit.", "dueOn": "2026-12-31T12:00:00Z" },
+    { "kind": "milestone.create", "repo": "roadmap", "title": "v2.1.0", "description": "Fiscal compliance\n\nManaged from wcpos/roadmap#301 — do not edit.", "dueOn": "2026-12-31T12:00:00Z" },
+    { "kind": "milestone.create", "repo": "woocommerce-pos", "title": "v2.1.0", "description": "Fiscal compliance\n\nManaged from wcpos/roadmap#301 — do not edit.", "dueOn": "2026-12-31T12:00:00Z" },
+    { "kind": "milestone.create", "repo": "woocommerce-pos-pro", "title": "v2.1.0", "description": "Fiscal compliance\n\nManaged from wcpos/roadmap#301 — do not edit.", "dueOn": "2026-12-31T12:00:00Z" }
+  ],
+  "items": [],
+  "refused": false
+}

@@ -1,0 +1,11 @@
+{
+  "writes": [
+    { "kind": "validation.comment", "issue": 306, "reasons": ["version v2.4.0 is also #307"] },
+    { "kind": "validation.comment", "issue": 307, "reasons": ["an issue cannot be both release and epic", "version v2.4.0 is also #306"] }
+  ],
+  "items": [
+    { "id": "invalid:306", "lane": "assistant", "kind": "release-invalid", "subject": "wcpos/roadmap#306", "text": "version v2.4.0 is also #307" },
+    { "id": "invalid:307", "lane": "assistant", "kind": "release-invalid", "subject": "wcpos/roadmap#307", "text": "an issue cannot be both release and epic; version v2.4.0 is also #306" }
+  ],
+  "refused": false
+}

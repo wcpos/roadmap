@@ -1,0 +1,14 @@
+{
+  "writes": [
+    { "kind": "milestone.create", "repo": "electron", "title": "v2.6.0", "description": "Gift cards at the till\n\nManaged from wcpos/roadmap#341 — do not edit.", "dueOn": null },
+    { "kind": "milestone.create", "repo": "roadmap", "title": "v2.6.0", "description": "Gift cards at the till\n\nManaged from wcpos/roadmap#341 — do not edit.", "dueOn": null },
+    { "kind": "milestone.create", "repo": "woocommerce-pos-pro", "title": "v2.6.0", "description": "Gift cards at the till\n\nManaged from wcpos/roadmap#341 — do not edit.", "dueOn": null },
+    { "kind": "milestone.update", "repo": "monorepo", "number": 62, "title": "v2.6.0", "patch": { "description": "Gift cards at the till\n\nManaged from wcpos/roadmap#341 — do not edit." } },
+    { "kind": "subissue.remove", "parent": 340, "repo": "wcpos/roadmap", "issue": 440 },
+    { "kind": "issue.milestone", "repo": "wcpos/roadmap", "issue": 440, "from": "v2.6.0", "to": null }
+  ],
+  "items": [
+    { "id": "leftover:wcpos/roadmap#440", "lane": "paul", "kind": "leftover", "subject": "wcpos/roadmap#440", "text": "open when v2.6.0 was withdrawn; awaiting placement" }
+  ],
+  "refused": false
+}
