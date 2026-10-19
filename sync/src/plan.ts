@@ -148,7 +148,8 @@ function planEpics(r: Release, writes: Write[], items: Item[]): void {
         text: `open when ${v} ${r.state === 'shipped' ? 'shipped' : 'was withdrawn'}; awaiting placement`,
       });
     }
-    if (isOpenState(r.state) && open && epicSummary(child.body) === null) {
+    // Open or done: both are shown on the page, so either is hidden without a Summary (Amendment 4).
+    if (isOpenState(r.state) && !withdrawn && epicSummary(child.body) === null) {
       items.push({
         id: `no-summary:${ref}`, lane: 'assistant', kind: 'no-summary',
         subject: ref, text: `epic in ${v} has no "### Summary"; hidden on the page`,

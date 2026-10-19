@@ -98,6 +98,21 @@ describe('plan edge cases', () => {
     expect(result.items).toEqual([]);
   });
 
+  it('reports a done epic without a Summary but not a withdrawn one', () => {
+    const closed = (number: number, stateReason: IssueNode['stateReason']) => node({
+      number, title: `Epic ${number}`, body: '### Problem\n\nNotes only.', labels: ['epic'], milestone: 'v3.3.0',
+      state: 'CLOSED', stateReason, closedAt: '2026-10-01T00:00:00Z',
+    });
+    const release = node({
+      number: 703, title: 'v3.3.0 — Theme', body: BODY, labels: ['release'],
+      subIssues: [closed(801, 'COMPLETED'), closed(802, 'NOT_PLANNED')], subIssuesTotal: 2, subIssuesCompleted: 1,
+    });
+    expect(plan({ releases: [release], milestones: [] }, { bulk: false }).items).toEqual([{
+      id: 'no-summary:wcpos/roadmap#801', lane: 'assistant', kind: 'no-summary',
+      subject: 'wcpos/roadmap#801', text: 'epic in v3.3.0 has no "### Summary"; hidden on the page',
+    }]);
+  });
+
   it('does not let withdrawn release #19 delete the copy managed from #195', () => {
     const copy = (repo: Milestone['repo'], number: number, issue: number): Milestone => ({
       repo, number, title: 'v2.6.0', description: milestoneDescription('Theme', issue), dueOn: null, state: 'open',
