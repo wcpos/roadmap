@@ -47,11 +47,11 @@ _Avoid_: v2 (bare), 1.11, the 1.11 release
 **2.x**:
 The docs version tree and its label in `wcpos/docs`, matching `1.x`.
 
-**1.11** / `1.11.0`:
-The pre-release lane name this release carried on `next` before the renumber on 2026-09-28. Allowed only in historical records: PRs, run records, research, ADRs. Never in new merchant-facing prose.
+**1.11** / `1.11.x`:
+The current shipped line on `main`: the 1.10 line was re-cut as `1.11.0` on 2026-10-14, the last update before 2.0, and its patches are `1.11.x`. Before the renumber on 2026-09-28, "1.11" was also the pre-release lane name WCPOS 2.0 carried on `next`. In that sense it is allowed only in historical records: PRs, run records, research, ADRs.
 
 **1.10** / **1.x**:
-The current shipped line and its docs tree.
+1.10 is the shipped line before 2026-10-14. 1.x is the docs tree for every 1.x release.
 
 **`wcpos/v2` REST API** / **REST v2**:
 The plugin's v2 REST surface. Always qualified, because inside `wcpos/wiki` a bare "v2" has meant this API for over a hundred pages.
