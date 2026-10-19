@@ -6,7 +6,7 @@ Copy the boxes below into the run record's **Checklist** section and fill them i
 
 ## Patch compatibility rule (Paul, 2026-10-19)
 
-**Every patch on a lane is compatible with every other patch on that lane, in both directions.** A `2.0.N` web bundle works with any `2.0.M` plugin; a `2.0.N` plugin works with any `2.0.M` desktop or mobile app; and the reverse of each. A change that needs the other half to be at the same patch to work is not a patch. It bumps the minor across every line (app, bundle ref, free, Pro, desktop, mobile), the way 1.10.28 became 1.11.0.
+**Every patch on a lane is compatible with every other patch on that lane, in both directions.** A `2.0.N` web bundle works with any `2.0.M` plugin; a `2.0.N` plugin works with any `2.0.M` desktop or mobile app; and the reverse of each. A change that needs the other half to be at the same patch to work is not a patch. It bumps the minor across every line (app, bundle ref, free, Pro, desktop, mobile), the way 1.10.28 became 1.11.0. Every line, not only the two that clashed: Paul ruled on 2026-10-14 that every product's visible version moves together when a lane moves minor, an empty release included (*"bump the desktop app to 1.11.0 just so it's in sync with everything else"*), because merchants and support compare the numbers they see. The partial-lane model (plugin-only or Electron-only trains) is for patches, where nothing moves minor.
 
 Why the design forces it, not just prefers it:
 
