@@ -63,7 +63,7 @@ Proposed, not built, for Paul's call:
 Generalised (Paul, 2026-10-19: *"patch releases are compatible with each other … if there is a change that might risk users running into errors if they have a mismatched patch version, then the minor version should be bumped"*):
 
 8. **The general rule is written where it is read.** RxDB was the specific case; the rule is that every patch on a lane works with every other patch on that lane, in both directions, and anything that breaks that pairing is a minor. Written in `RELEASE-CHECKLIST.md` ("Patch compatibility rule", new box A2b), in the monorepo `CLAUDE.md` web-lane section and the free plugin's `CLAUDE.md` branch-lanes section, so PR reviewers on `main` ask the question before the train does. *(done, this record's PR and the two companion docs PRs)*
-9. **The floor and the lane edges are guarded.** `MINIMUM_WCPOS_PLUGIN_VERSION` is asserted to end in `.0` by a unit test (monorepo, same PR as the `CLAUDE.md` change). The lane-floor E2E legs that would have caught a REST-shaped version of this incident, app tip against the `<major.minor>.0` plugin and plugin tip against the `<major.minor>.0` bundle, are monorepo#2763 and woocommerce-pos#2323.
+9. **The floor is guarded; the lane edges are filed.** `MINIMUM_WCPOS_PLUGIN_VERSION` is asserted to end in `.0` by a unit test (monorepo, same PR as the `CLAUDE.md` change). *(done)* The lane-floor E2E legs that would have caught a REST-shaped version of this incident, app tip against the `<major.minor>.0` plugin and plugin tip against the `<major.minor>.0` bundle, are **proposed, not built**: monorepo#2763 and woocommerce-pos#2323, filed with Paul's go. Until they merge, cross-patch REST compatibility is checklist judgement (A2b), not CI.
 
 ## Notes worth keeping
 
