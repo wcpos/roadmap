@@ -49,7 +49,7 @@ function validate(releases: IssueNode[], writes: Write[], items: Item[]): { issu
   }
   const valid: { issue: IssueNode; brief: ReleaseBrief }[] = [];
   for (const r of releases) {
-    const parsed = parseRelease(r.title, r.body);
+    const parsed = parseRelease(r.title, r.body, r.state === 'OPEN');
     const reasons = parsed.ok ? [] : [...parsed.reasons];
     if (has(r, 'epic')) reasons.push('an issue cannot be both release and epic');
     const version = titleVersion(r.title);
@@ -69,14 +69,17 @@ function validate(releases: IssueNode[], writes: Write[], items: Item[]): { issu
   return valid;
 }
 
-// §2: the five milestone copies of one release.
-function planCopies(r: Release, milestones: Milestone[], writes: Write[], items: Item[]): void {
+// §2: the five milestone copies of one release. Each copy found is added to `copies` as `repo#number`.
+function planCopies(r: Release, milestones: Milestone[], copies: Set<string>, writes: Write[], items: Item[]): void {
   const v = r.brief.version;
   const description = milestoneDescription(r.brief.theme, r.issue.number);
   // `(?!\d)` so release #19 does not claim the copy managed from #195.
   const managed = new RegExp(`Managed from ${ROADMAP_REPO}#${r.issue.number}(?!\\d)`);
   for (const repo of MILESTONE_REPOS) {
-    const copy = milestones.find((m) => m.repo === repo && m.title === v);
+    // The copy is titled V; failing that, it is a hand-renamed one still carrying our marker (Amendment 3).
+    const copy = milestones.find((m) => m.repo === repo && m.title === v)
+      ?? milestones.filter((m) => m.repo === repo && managed.test(m.description ?? '')).sort((a, b) => a.number - b.number)[0];
+    if (copy) copies.add(`${repo}#${copy.number}`);
     if (r.state === 'shipped') {
       if (copy?.state === 'open') {
         writes.push({ kind: 'milestone.update', repo, number: copy.number, title: v, patch: { state: 'closed' } });
@@ -94,7 +97,8 @@ function planCopies(r: Release, milestones: Milestone[], writes: Write[], items:
     } else if (!copy) {
       writes.push({ kind: 'milestone.create', repo, title: v, description, dueOn: dueOnFor(r.brief.dueDate) });
     } else {
-      const patch: { description?: string; dueOn?: string | null; state?: 'open' | 'closed' } = {};
+      const patch: { title?: string; description?: string; dueOn?: string | null; state?: 'open' | 'closed' } = {};
+      if (copy.title !== v) patch.title = v;
       if ((copy.description ?? '') !== description) patch.description = description;
       if ((copy.dueOn === null ? null : copy.dueOn.slice(0, 10)) !== r.brief.dueDate) patch.dueOn = dueOnFor(r.brief.dueDate);
       if (copy.state === 'closed') patch.state = 'open';
@@ -108,7 +112,8 @@ function planEpics(r: Release, writes: Write[], items: Item[]): void {
   const v = r.brief.version;
   const kids = children(r.issue);
   const subject = `${ROADMAP_REPO}#${r.issue.number}`;
-  if (kids.length > SUBISSUE_READ_CAP) {
+  // A real read stops at 100 children, so the total is what shows the overflow.
+  if (Math.max(kids.length, r.issue.subIssuesTotal) > SUBISSUE_READ_CAP) {
     items.push({
       id: `too-many-subissues:${r.issue.number}`, lane: 'assistant', kind: 'too-many-subissues',
       subject, text: 'more than 100 sub-issues; split this release',
@@ -127,7 +132,8 @@ function planEpics(r: Release, writes: Write[], items: Item[]): void {
     const open = child.state === 'OPEN';
     // Close-out: when a release closes (shipped or withdrawn), its open epics detach (spec §2, Amendment 2).
     const leftover = open && (r.state === 'shipped' || r.state === 'withdrawn');
-    if (!withdrawn && !leftover && !has(child, 'epic')) {
+    // Leftovers keep the label: the unattached open-epic pool is found by it (Amendment 3).
+    if (!withdrawn && !has(child, 'epic')) {
       writes.push({ kind: 'issue.label', repo: child.repo, issue: child.number, label: 'epic' });
     }
     if (withdrawn || leftover) {
@@ -209,18 +215,20 @@ export function plan(snapshot: Snapshot, opts: { bulk: boolean }): Plan {
 
   const valid = validate(releases, writes, items);
   const states = releaseStates(valid);
+  const copies = new Set<string>();
   for (const { issue, brief } of valid) {
     const r: Release = { issue, brief, state: states.get(issue.number) ?? 'later' };
     // A withdrawn release whose version was re-filed leaves the copies to the live release.
-    if (!(r.state === 'withdrawn' && liveVersions.has(brief.version))) planCopies(r, milestones, writes, items);
+    if (!(r.state === 'withdrawn' && liveVersions.has(brief.version))) planCopies(r, milestones, copies, writes, items);
     planEpics(r, writes, items);
     if (!isOpenState(r.state)) continue;
     walk(children(issue).filter((c) => epicState(c) !== 'withdrawn' && !has(c, 'release')), brief.version, writes);
   }
 
-  // §5: open milestones whose title no release issue names (valid or not, open or closed) and no patch line.
+  // §5: open milestones that are no copy found above, whose title no release issue names
+  // (valid or not, open or closed) and no patch line.
   for (const m of milestones) {
-    if (m.state !== 'open' || versions.has(m.title) || PATCH.test(m.title)) continue;
+    if (m.state !== 'open' || copies.has(`${m.repo}#${m.number}`) || versions.has(m.title) || PATCH.test(m.title)) continue;
     items.push({
       id: `drift-milestone:${m.repo}:${m.title}`, lane: 'assistant', kind: 'drift-milestone',
       subject: `${m.repo} milestone ${m.title}`, text: 'open milestone that is not a release copy',

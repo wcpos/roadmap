@@ -10,22 +10,22 @@ function load(name: string): { title: string; body: string } {
   return { title: head[1] ?? '', body: raw.slice(head[0].length) };
 }
 
-function parseFixture(name: string): ParseResult {
+function parseFixture(name: string, open = true): ParseResult {
   const { title, body } = load(name);
-  return parseRelease(title, body);
+  return parseRelease(title, body, open);
 }
 
 describe('parseRelease on the live release bodies', () => {
   const live = [
-    { n: 195, version: 'v2.0.0', theme: 'A new register, checkout and cash drawer', dueDate: null, shippedOn: null, notIn: 3 },
-    { n: 225, version: 'v2.1.0', theme: 'Fiscal compliance', dueDate: '2026-12-31', shippedOn: null, notIn: 2 },
-    { n: 452, version: 'v2.2.0', theme: 'Control what each cashier can do', dueDate: null, shippedOn: null, notIn: 3 },
-    { n: 226, version: 'v2.3.0', theme: 'Works with your other plugins', dueDate: null, shippedOn: null, notIn: 1 },
-    { n: 223, version: 'v1.10.0', theme: 'Offline & stock-state correctness', dueDate: '2026-08-25', shippedOn: '2026-08-25', notIn: 1 },
-    { n: 224, version: 'v1.9.0', theme: 'Receipts & printing', dueDate: '2026-05-15', shippedOn: '2026-05-15', notIn: 0 },
+    { n: 195, version: 'v2.0.0', theme: 'A new register, checkout and cash drawer', dueDate: null, shippedOn: null, notIn: 3, open: true },
+    { n: 225, version: 'v2.1.0', theme: 'Fiscal compliance', dueDate: '2026-12-31', shippedOn: null, notIn: 2, open: true },
+    { n: 452, version: 'v2.2.0', theme: 'Control what each cashier can do', dueDate: null, shippedOn: null, notIn: 3, open: true },
+    { n: 226, version: 'v2.3.0', theme: 'Works with your other plugins', dueDate: null, shippedOn: null, notIn: 1, open: true },
+    { n: 223, version: 'v1.10.0', theme: 'Offline & stock-state correctness', dueDate: '2026-08-25', shippedOn: '2026-08-25', notIn: 1, open: false },
+    { n: 224, version: 'v1.9.0', theme: 'Receipts & printing', dueDate: '2026-05-15', shippedOn: '2026-05-15', notIn: 0, open: false },
   ];
-  it.each(live)('live-$n.md parses as $version', ({ n, version, theme, dueDate, shippedOn, notIn }) => {
-    const result = parseFixture(`live-${n}.md`);
+  it.each(live)('live-$n.md parses as $version', ({ n, version, theme, dueDate, shippedOn, notIn, open }) => {
+    const result = parseFixture(`live-${n}.md`, open);
     if (!result.ok) throw new Error(result.reasons.join('; '));
     const { brief } = result;
     expect({ version: brief.version, theme: brief.theme, dueDate: brief.dueDate, shippedOn: brief.shippedOn })
@@ -36,7 +36,7 @@ describe('parseRelease on the live release bodies', () => {
   });
 
   it('reads major and minor as numbers', () => {
-    const result = parseFixture('live-223.md');
+    const result = parseFixture('live-223.md', false);
     expect(result.ok && [result.brief.major, result.brief.minor]).toEqual([1, 10]);
   });
 });
@@ -55,7 +55,7 @@ describe('parseRelease on synthetic bodies', () => {
   it('accepts a theme of exactly 60 characters', () => {
     const theme = 'Sixty characters is exactly as long as a theme may ever be!!';
     expect(theme).toHaveLength(60);
-    const result = parseRelease(`v2.4.0 — ${theme}`, '### Due date\n\n### Why this release\n\nBecause.');
+    const result = parseRelease(`v2.4.0 — ${theme}`, '### Due date\n\n### Why this release\n\nBecause.', true);
     expect(result.ok && result.brief.theme).toBe(theme);
   });
 
@@ -64,14 +64,14 @@ describe('parseRelease on synthetic bodies', () => {
   });
 
   it('rejects a due date that is not YYYY-MM-DD', () => {
-    const result = parseRelease('v2.4.0 — Theme', '### Due date\n30/11/2026\n### Why this release\nBecause.');
+    const result = parseRelease('v2.4.0 — Theme', '### Due date\n30/11/2026\n### Why this release\nBecause.', true);
     expect(result).toEqual({ ok: false, reasons: ['due date "30/11/2026" is not a calendar day'] });
   });
 
   it('accepts 29 February in a leap year only', () => {
     const body = (date: string) => `### Due date\n${date}\n### Why this release\nBecause.`;
-    expect(parseRelease('v2.4.0 — Theme', body('2028-02-29')).ok).toBe(true);
-    expect(parseRelease('v2.4.0 — Theme', body('2026-02-29')).ok).toBe(false);
+    expect(parseRelease('v2.4.0 — Theme', body('2028-02-29'), true).ok).toBe(true);
+    expect(parseRelease('v2.4.0 — Theme', body('2026-02-29'), true).ok).toBe(false);
   });
 
   it('requires the Due date section', () => {
@@ -83,7 +83,7 @@ describe('parseRelease on synthetic bodies', () => {
   });
 
   it('collects every reason', () => {
-    expect(parseRelease('2.4.0 — Theme', '### Shipped on\n2026-13-01')).toEqual({
+    expect(parseRelease('2.4.0 — Theme', '### Shipped on\n2026-13-01', false)).toEqual({
       ok: false,
       reasons: [
         'title must be "vX.Y.0 — Theme"',
@@ -92,6 +92,14 @@ describe('parseRelease on synthetic bodies', () => {
         'shipped on "2026-13-01" is not a calendar day',
       ],
     });
+  });
+
+  it('ignores Shipped on while the issue is open and checks it once closed', () => {
+    const body = '### Due date\n\n### Why this release\n\nBecause.\n\n### Shipped on\n\n2026-02-31';
+    const open = parseRelease('v2.4.0 — Theme', body, true);
+    expect(open.ok && open.brief.shippedOn).toBeNull();
+    expect(parseRelease('v2.4.0 — Theme', body, false))
+      .toEqual({ ok: false, reasons: ['shipped on "2026-02-31" is not a calendar day'] });
   });
 
   it('parses a dateless release', () => {
@@ -119,14 +127,14 @@ describe('parseRelease on synthetic bodies', () => {
   });
 
   it('ends a section at a --- line', () => {
-    const result = parseFixture('section-hr.md');
+    const result = parseFixture('section-hr.md', false);
     if (!result.ok) throw new Error(result.reasons.join('; '));
     expect(result.brief.notIn).toEqual(['First deferral.', 'Second deferral.']);
     expect(result.brief.shippedOn).toBeNull();
   });
 
   it('never throws on malformed input', () => {
-    const bad = parseRelease(undefined as unknown as string, null as unknown as string);
+    const bad = parseRelease(undefined as unknown as string, null as unknown as string, false);
     expect(bad.ok).toBe(false);
   });
 });

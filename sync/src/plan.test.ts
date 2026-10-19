@@ -32,8 +32,8 @@ const invalidRelease = node({ number: 701, title: 'v3.1.0 - Hyphenated', body: B
 describe('plan on the tree fixtures', () => {
   const names = readdirSync(TREES).filter((f) => f.endsWith('.json') && !f.endsWith('.expected.json')).sort();
 
-  it('has ten trees, each with an expected plan', () => {
-    expect(names).toHaveLength(10);
+  it('has eleven trees, each with an expected plan', () => {
+    expect(names).toHaveLength(11);
   });
 
   it.each(names)('%s', (name) => {
@@ -83,6 +83,19 @@ describe('plan edge cases', () => {
       subject: 'wcpos/roadmap#700', text: 'more than 100 sub-issues; split this release',
     }]);
     expect(result.writes.filter((w) => w.kind === 'issue.label')).toHaveLength(101);
+  });
+
+  it('reports a release whose total is over 100 when the read stopped at 100', () => {
+    const release = { ...releaseWithUnlabelledEpics(700, 'v3.0.0', 100), subIssuesTotal: 101 };
+    expect(plan({ releases: [release], milestones: [] }, { bulk: true }).items.map((i) => i.id))
+      .toEqual(['too-many-subissues:700']);
+  });
+
+  it('ignores a bad Shipped on while the release is open', () => {
+    const open = node({ number: 702, title: 'v3.2.0 — Theme', body: `${BODY}\n\n### Shipped on\n\n2026-02-31`, labels: ['release'] });
+    const result = plan({ releases: [open], milestones: [] }, { bulk: false });
+    expect(result.writes.map((w) => w.kind)).toEqual(Array(5).fill('milestone.create'));
+    expect(result.items).toEqual([]);
   });
 
   it('does not let withdrawn release #19 delete the copy managed from #195', () => {

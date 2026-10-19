@@ -54,7 +54,8 @@ function dateField(value: string, label: string, reasons: string[]): string | nu
   return null;
 }
 
-export function parseRelease(title: string, body: string): ParseResult {
+// `open`: while the issue is open, `Shipped on` is ignored, never a validation failure (source spec §1).
+export function parseRelease(title: string, body: string, open: boolean): ParseResult {
   const reasons: string[] = [];
   const m = TITLE.exec(text(title));
   if (!m) reasons.push('title must be "vX.Y.0 — Theme"');
@@ -67,7 +68,7 @@ export function parseRelease(title: string, body: string): ParseResult {
   const why = section(body, 'Why this release');
   if (!why) reasons.push('missing "### Why this release"');
 
-  const shipped = section(body, 'Shipped on');
+  const shipped = open ? null : section(body, 'Shipped on');
   const shippedOn = shipped === null ? null : dateField(shipped, 'shipped on', reasons);
 
   if (!m || reasons.length > 0) return { ok: false, reasons };

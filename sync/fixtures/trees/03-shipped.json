@@ -3,7 +3,7 @@
     { "repo": "wcpos/roadmap", "number": 303, "title": "v1.10.0 — Offline & stock-state correctness",
       "body": "### Due date\n\n2026-08-25\n\n### Shipped on\n\n2026-08-25\n\n### Why this release\n\nA rebuilt sync engine.",
       "state": "CLOSED", "stateReason": "COMPLETED", "closedAt": "2026-08-25T10:00:00Z", "labels": ["release"], "milestone": null,
-      "subIssuesTotal": 2, "subIssuesCompleted": 1, "subIssues": [
+      "subIssuesTotal": 3, "subIssuesCompleted": 1, "subIssues": [
         { "repo": "wcpos/roadmap", "number": 410, "title": "Open epic left behind", "body": "### Summary\n\nNot finished in time.",
           "state": "OPEN", "stateReason": null, "closedAt": null, "labels": ["epic"], "milestone": "v1.10.0",
           "subIssuesTotal": 1, "subIssuesCompleted": 0, "subIssues": [
@@ -13,6 +13,9 @@
           ] },
         { "repo": "wcpos/monorepo", "number": 411, "title": "Done epic", "body": "### Summary\n\nShipped.",
           "state": "CLOSED", "stateReason": "COMPLETED", "closedAt": "2026-08-20T10:00:00Z", "labels": ["epic"], "milestone": "v1.10.0",
+          "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] },
+        { "repo": "wcpos/monorepo", "number": 412, "title": "Open epic never labelled, on a repo-local milestone", "body": "### Summary\n\nMoved on by hand.",
+          "state": "OPEN", "stateReason": null, "closedAt": null, "labels": [], "milestone": "v1.11.0",
           "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] }
       ] }
   ],

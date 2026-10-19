@@ -1,6 +1,7 @@
 {
   "writes": [
     { "kind": "milestone.delete", "repo": "woocommerce-pos", "number": 31, "title": "v2.5.0" },
+    { "kind": "issue.label", "repo": "wcpos/roadmap", "issue": 430, "label": "epic" },
     { "kind": "subissue.remove", "parent": 304, "repo": "wcpos/roadmap", "issue": 430 },
     { "kind": "issue.milestone", "repo": "wcpos/roadmap", "issue": 430, "from": "v2.5.0", "to": null }
   ],

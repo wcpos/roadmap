@@ -80,7 +80,7 @@ describe('releaseStates', () => {
     const valid = live.map(([n, fields]) => {
       const raw = readFileSync(new URL(`../fixtures/releases/live-${n}.md`, import.meta.url), 'utf8');
       const [title = '', ...rest] = raw.split('\n');
-      const parsed = parseRelease(title, rest.slice(1).join('\n'));
+      const parsed = parseRelease(title, rest.slice(1).join('\n'), fields.state !== 'CLOSED');
       if (!parsed.ok) throw new Error(parsed.reasons.join('; '));
       return { issue: node({ number: n, title, ...fields }), brief: parsed.brief };
     });

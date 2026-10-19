@@ -36,7 +36,7 @@ export type Write =
   | { kind: 'validation.comment'; issue: number; reasons: string[] }                       // control plane
   | { kind: 'milestone.create'; repo: MilestoneRepo; title: string; description: string; dueOn: string | null }
   | { kind: 'milestone.update'; repo: MilestoneRepo; number: number; title: string;
-      patch: { description?: string; dueOn?: string | null; state?: 'open' | 'closed' } }
+      patch: { title?: string; description?: string; dueOn?: string | null; state?: 'open' | 'closed' } }
   | { kind: 'milestone.delete'; repo: MilestoneRepo; number: number; title: string }
   | { kind: 'issue.label'; repo: string; issue: number; label: 'epic' }
   | { kind: 'issue.milestone'; repo: string; issue: number; from: string | null; to: string | null }
