@@ -10,7 +10,7 @@ export const MAX_DEPTH = 10;           // GitHub nests sub-issues 8 deep; this i
 
 const FIELDS = `id number title body state stateReason closedAt
 repository { nameWithOwner }
-labels(first: ${LABEL_PAGE}) { nodes { name } }
+labels(first: ${LABEL_PAGE}) { totalCount nodes { name } }
 milestone { title }
 subIssuesSummary { total completed }`;
 
@@ -34,7 +34,7 @@ export const MORE_CHILDREN_QUERY = `query($id: ID!, $after: String!) {
 }`;
 
 export const UNATTACHED_QUERY = `query($q: String!) {
-  search(query: $q, type: ISSUE, first: 0) { issueCount }
+  search(query: $q, type: ISSUE, first: 1) { issueCount }
 }`;
 
 export interface ReadWarning { id: string; text: string }
@@ -49,7 +49,7 @@ interface GqlIssue {
   id: string; number: number; title: string; body: string;
   state: 'OPEN' | 'CLOSED'; stateReason: IssueNode['stateReason']; closedAt: string | null;
   repository: { nameWithOwner: string };
-  labels: { nodes: ({ name: string } | null)[] } | null;
+  labels: { totalCount: number; nodes: ({ name: string } | null)[] } | null;
   milestone: { title: string } | null;
   subIssuesSummary: { total: number; completed: number };
 }
@@ -63,7 +63,10 @@ interface RestMilestone {
 // One placement of an issue in a release tree, waiting for its children.
 interface Pending { id: string; node: IssueNode; depth: number; tree: Set<string> }
 
-function toNode(g: GqlIssue): IssueNode {
+function toNode(g: GqlIssue, warnings: ReadWarning[]): IssueNode {
+  if ((g.labels?.totalCount ?? 0) > LABEL_PAGE) {
+    warnings.push({ id: g.id, text: `${g.repository.nameWithOwner}#${g.number} has ${g.labels!.totalCount} labels; only the first ${LABEL_PAGE} were read` });
+  }
   return {
     repo: g.repository.nameWithOwner,
     number: g.number,
@@ -116,7 +119,7 @@ export async function readSnapshot(client: GitHubClient): Promise<ReadResult> {
     for (const kid of kids) {
       if (parent.tree.has(kid.id)) continue;
       parent.tree.add(kid.id);
-      const node = toNode(kid);
+      const node = toNode(kid, warnings);
       parent.node.subIssues.push(node);
       const depth = parent.depth + 1;
       if (node.subIssuesTotal > 0 && depth < MAX_DEPTH) next.push({ id: kid.id, node, depth, tree: parent.tree });
@@ -137,7 +140,7 @@ export async function readSnapshot(client: GitHubClient): Promise<ReadResult> {
     for (const r of nodes) {
       if (!r || seenReleases.has(r.id)) continue;
       seenReleases.add(r.id);
-      const root: Pending = { id: r.id, node: toNode(r), depth: 0, tree: new Set([r.id]) };
+      const root: Pending = { id: r.id, node: toNode(r, warnings), depth: 0, tree: new Set([r.id]) };
       releases.push(root.node);
       level.push(...place(root, await childrenOf(r.id, r.subIssues)));
     }

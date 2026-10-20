@@ -154,6 +154,14 @@ describe('readSnapshot', () => {
     }
   });
 
+  it('warns when a child issue has more than one page of labels', async () => {
+    const child = issue('E', 10, { repo: 'wcpos/monorepo' });
+    child.labels = { totalCount: 51, nodes: Array.from({ length: 50 }, (_, i) => ({ name: `label-${i}` })) };
+    const { client } = fakeClient({ releasePages: { '': conn([release('R', 1, conn([child]))]) } });
+    const { warnings } = await readSnapshot(client);
+    expect(warnings).toEqual([{ id: 'E', text: 'wcpos/monorepo#10 has 51 labels; only the first 50 were read' }]);
+  });
+
   it('pages a release past 100 children with MORE_CHILDREN_QUERY', async () => {
     const { client, gql } = fakeClient({
       releasePages: { '': conn([release('R', 1, conn([issue('A', 10)], 'c1'))]) },
@@ -234,6 +242,8 @@ describe('readSnapshot', () => {
   });
 
   it('counts the unattached open-epic pool and links to it', async () => {
+    expect(UNATTACHED_QUERY).toContain('first: 1');
+    expect(UNATTACHED_QUERY).not.toContain('first: 0');
     const { client, gql } = fakeClient({ issueCount: 4 });
     const { unattachedEpics } = await readSnapshot(client);
     expect(calls(gql, UNATTACHED_QUERY)).toEqual([{ q: UNATTACHED_QUERY_TEXT }]);

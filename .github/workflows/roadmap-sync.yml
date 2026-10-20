@@ -12,6 +12,9 @@ on:
         default: true
 permissions:
   contents: read
+concurrency:
+  group: roadmap-sync
+  cancel-in-progress: false
 jobs:
   sync:
     runs-on: ubuntu-latest

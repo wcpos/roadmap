@@ -63,6 +63,14 @@ describe('renderDigest', () => {
     expect(body.slice(0, body.indexOf('### log'))).toBe(full.slice(0, full.indexOf('### log')));
   });
 
+  it.each([false, true])('rejects a cap smaller than the no-log body (no writes: %s)', (noWrites) => {
+    const input = basicInput();
+    if (noWrites) input.plan.writes = [];
+    const full = renderDigest(input);
+    const withoutLog = full.length - logLines(full).reduce((n, line) => n + line.length + 1, 0);
+    expect(() => renderDigest(input, withoutLog - 1)).toThrow(/over the \d+ cap/);
+  });
+
   it('writes a json block that parses, with the top-level keys in order', () => {
     const json = jsonBlock(renderDigest(basicInput())) as Record<string, unknown>;
     expect(Object.keys(json)).toEqual(['generatedAt', 'runUrl', 'dryRun', 'bulk', 'refused', 'state', 'items', 'writes']);

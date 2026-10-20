@@ -184,7 +184,11 @@ export function renderDigest(input: DigestInput, maxLength: number = DIGEST_MAX)
   const tail = ['', '```json', JSON.stringify(json, null, 2), '```', '', `Last run: ${input.generatedAt} (${input.runUrl})`, ''];
 
   const render = (logLines: string[]) => [...head, ...logLines, ...tail].join('\n');
-  if (log.length === 0) return render(['- none']);
+  if (log.length === 0) {
+    const body = render(['- none']);
+    if (body.length > maxLength) throw new Error(`digest body is ${body.length} characters, over the ${maxLength} cap, even with the log lane cut`);
+    return body;
+  }
   const full = render(log);
   if (full.length <= maxLength) return full;
 
@@ -198,5 +202,7 @@ export function renderDigest(input: DigestInput, maxLength: number = DIGEST_MAX)
     kept -= 1;
     if (fixed + used + more(log.length - kept).length + 1 <= maxLength) break;
   }
-  return render([...log.slice(0, kept), more(log.length - kept)]);
+  const body = render([...log.slice(0, kept), more(log.length - kept)]);
+  if (body.length > maxLength) throw new Error(`digest body is ${body.length} characters, over the ${maxLength} cap, even with the log lane cut`);
+  return body;
 }
