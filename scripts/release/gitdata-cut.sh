@@ -7,11 +7,13 @@
 #   2. reads the original at <full-base-sha> through the contents API and its mode from the base tree,
 #   3. refuses an empty local file, a local file identical to the original, a local file under half
 #      the original's size (a bump edits a few bytes; a failed edit leaves a stub), a size drift over
-#      4 KiB (a changelog entry adds at most a couple of KiB), and a .json file that jq cannot parse,
+#      4 KiB (a changelog entry adds at most a couple of KiB), and a .json file that is not exactly
+#      one JSON document,
 #   4. uploads blobs with the request body on stdin (a changelog or POT file can exceed the
 #      per-argument limit), builds the tree on the base tree with each file's ORIGINAL mode,
-#      creates the commit and the ref,
-#   5. re-reads every file at the new commit and cmp's it against the local copy, and re-reads its mode.
+#      creates the commit,
+#   5. re-reads every file at the new commit and cmp's it against the local copy, re-reads its mode,
+#      and only then creates the ref, so a failed check leaves no branch behind.
 # Prints the new commit SHA on the last line. Exits non-zero on any check.
 # Why: the 1.10.30 cut admin-merged an EMPTY package.json because a local `git show` had failed
 # silently (roadmap memory git-data-cut-asserts-file-size); every read here goes through the API.
@@ -59,7 +61,7 @@ for p in "${PATHS[@]}"; do
   [ $(( nsz * 2 )) -ge "$osz" ] || { echo "REFUSE: $p shrank to under half its size ($osz -> $nsz B); looks like a failed edit" >&2; exit 3; }
   drift=$(( nsz - osz )); [ $drift -lt 0 ] && drift=$(( -drift ))
   [ $drift -le 4096 ] || { echo "REFUSE: $p size drift $drift B ($osz -> $nsz)" >&2; exit 3; }
-  case "$p" in *.json) jq -e . "$local_file" > /dev/null || { echo "REFUSE: $local_file is not valid JSON" >&2; exit 3; };; esac
+  case "$p" in *.json) jq -s -e 'length == 1' "$local_file" > /dev/null || { echo "REFUSE: $local_file is not one valid JSON document" >&2; exit 3; };; esac
   echo "  $p: $osz -> $nsz B, mode $mode"
   blob=$(base64 < "$local_file" | tr -d '\n' | jq -Rs '{encoding:"base64",content:.}' | gh api -X POST "repos/$REPO/git/blobs" --input - --jq .sha)
   [ $first -eq 1 ] || TREE_JSON+=','
@@ -70,8 +72,7 @@ TREE_JSON+=']'
 
 NEW_TREE=$(printf '{"base_tree":"%s","tree":%s}' "$BASE_TREE" "$TREE_JSON" | gh api -X POST "repos/$REPO/git/trees" --input - --jq .sha)
 NEW_COMMIT=$(printf '{"message":%s,"tree":"%s","parents":["%s"]}' "$(printf '%s' "$MSG" | jq -Rs .)" "$NEW_TREE" "$BASE" | gh api -X POST "repos/$REPO/git/commits" --input - --jq .sha)
-gh api -X POST "repos/$REPO/git/refs" -f ref="refs/heads/$BRANCH" -f sha="$NEW_COMMIT" --jq .ref
-
+# The commit exists but nothing points at it yet: verify first, so a failed check leaves no branch behind.
 i=0
 for p in "${PATHS[@]}"; do
   back="$DIR/.back-$(basename "$p")"
@@ -82,4 +83,5 @@ for p in "${PATHS[@]}"; do
   echo "  verified $p at $NEW_COMMIT ($(wc -c < "$back" | tr -d ' ') B, mode $back_mode)"
   i=$(( i + 1 ))
 done
+gh api -X POST "repos/$REPO/git/refs" -f ref="refs/heads/$BRANCH" -f sha="$NEW_COMMIT" --jq .ref
 echo "$NEW_COMMIT"
