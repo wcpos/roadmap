@@ -1,0 +1,57 @@
+{
+  "snapshot": {
+    "releases": [
+      { "repo": "wcpos/roadmap", "number": 200, "title": "v2.0.0 — A new register", "body": "### Due date\n\n### Why this release\n\nA checkout that belongs to the POS.",
+        "state": "OPEN", "stateReason": null, "closedAt": null, "labels": ["release"], "milestone": null,
+        "subIssuesTotal": 5, "subIssuesCompleted": 2, "subIssues": [
+          { "repo": "wcpos/roadmap", "number": 10, "title": "Ship the basics", "body": "### Summary\n\nThe basics.",
+            "state": "CLOSED", "stateReason": "COMPLETED", "closedAt": "2026-10-01T09:00:00Z", "labels": ["epic"], "milestone": "v2.0.0",
+            "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] },
+          { "repo": "wcpos/monorepo", "number": 11, "title": "Busy epic", "body": "### Summary\n\nWork under way.",
+            "state": "OPEN", "stateReason": null, "closedAt": null, "labels": ["epic"], "milestone": "v2.0.0",
+            "subIssuesTotal": 2, "subIssuesCompleted": 1, "subIssues": [
+              { "repo": "wcpos/monorepo", "number": 12, "title": "Finished work", "body": "",
+                "state": "CLOSED", "stateReason": "COMPLETED", "closedAt": "2026-10-02T09:00:00Z", "labels": [], "milestone": "v2.0.0",
+                "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] },
+              { "repo": "wcpos/monorepo", "number": 13, "title": "Open work", "body": "",
+                "state": "OPEN", "stateReason": null, "closedAt": null, "labels": [], "milestone": null,
+                "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] }
+            ] },
+          { "repo": "wcpos/roadmap", "number": 14, "title": "Hidden epic", "body": "",
+            "state": "OPEN", "stateReason": null, "closedAt": null, "labels": [], "milestone": "v2.0.0",
+            "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] },
+          { "repo": "wcpos/roadmap", "number": 15, "title": "Withdrawn epic", "body": "### Summary\n\nNot any more.",
+            "state": "CLOSED", "stateReason": "NOT_PLANNED", "closedAt": "2026-10-03T09:00:00Z", "labels": ["epic"], "milestone": "v2.0.0",
+            "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] },
+          { "repo": "wcpos/roadmap", "number": 201, "title": "v9.9.0 — Misfiled", "body": "### Due date\n\n### Why this release\n\nMisfiled.",
+            "state": "OPEN", "stateReason": null, "closedAt": null, "labels": ["release"], "milestone": null,
+            "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] }
+        ] },
+      { "repo": "wcpos/roadmap", "number": 210, "title": "v2.1.0 — Fiscal compliance", "body": "### Due date\n\n2026-12-31\n\n### Why this release\n\nThe law asks for it.",
+        "state": "OPEN", "stateReason": null, "closedAt": null, "labels": ["release"], "milestone": null,
+        "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] },
+      { "repo": "wcpos/roadmap", "number": 190, "title": "v1.10.0 — Old times", "body": "### Due date\n\n### Why this release\n\nIt was time.\n\n### Shipped on\n\n2026-09-01",
+        "state": "CLOSED", "stateReason": "COMPLETED", "closedAt": "2026-09-01T12:00:00Z", "labels": ["release"], "milestone": null,
+        "subIssuesTotal": 1, "subIssuesCompleted": 0, "subIssues": [
+          { "repo": "wcpos/monorepo", "number": 30, "title": "Late epic", "body": "### Summary\n\nStill open.",
+            "state": "OPEN", "stateReason": null, "closedAt": null, "labels": ["epic"], "milestone": "v1.10.0",
+            "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] }
+        ] },
+      { "repo": "wcpos/roadmap", "number": 220, "title": "v3.0.0 - Hyphenated", "body": "### Due date\n\n### Why this release\n\nBecause.",
+        "state": "OPEN", "stateReason": null, "closedAt": null, "labels": ["release"], "milestone": null,
+        "subIssuesTotal": 0, "subIssuesCompleted": 0, "subIssues": [] }
+    ],
+    "milestones": [
+      { "repo": "monorepo", "number": 7, "title": "Backlog", "description": null, "dueOn": null, "state": "open" }
+    ]
+  },
+  "unattachedEpics": { "count": 3, "url": "https://github.com/issues?q=org%3Awcpos%20is%3Aissue%20is%3Aopen%20label%3Aepic%20no%3Aparent-issue" },
+  "extraItems": [
+    { "id": "read-warning:nodes.3", "lane": "assistant", "kind": "read-warning", "subject": "wcpos/roadmap", "text": "FORBIDDEN: Resource not accessible by integration" }
+  ],
+  "previousBody": "<!-- roadmap-sync:digest -->\n## State\n\nNo open releases.\n\n```json\n{\n  \"items\": [\n    { \"id\": \"invalid:220\", \"since\": \"2026-10-01T00:00:00.000Z\" },\n    { \"id\": \"gone:1\", \"since\": \"2026-09-01T00:00:00.000Z\" }\n  ]\n}\n```\n\nLast run: 2026-10-19T06:00:00.000Z (local)\n",
+  "generatedAt": "2026-10-20T06:00:00.000Z",
+  "runUrl": "https://github.com/wcpos/roadmap/actions/runs/123",
+  "dryRun": true,
+  "bulk": false
+}

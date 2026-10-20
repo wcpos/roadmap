@@ -2,7 +2,7 @@
 
 Cross-repo planning and epics for the [WooCommerce POS](https://wcpos.com) project.
 
-This repo contains no code — only issues for tracking features and initiatives that span multiple repositories.
+The only code here is the sync that keeps the roadmap honest (`sync/`, run by `.github/workflows/roadmap-sync.yml`); everything else is issues for tracking features and initiatives that span multiple repositories.
 
 ## How It Works
 
