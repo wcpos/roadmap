@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>POS — seven ways to show the product table (board)</title>
+<style>
+:root{--u:4px;--fs:14px;--ctl:44px;--row:44px;--r:8px;--hair:1px;--tile:64px;
+  --bg:oklch(0.975 0.004 250);--fg:oklch(0.22 0.02 250);--card:oklch(1 0 0);--muted:oklch(0.955 0.006 250);--muted-fg:oklch(0.50 0.02 250);--border:oklch(0.90 0.008 250);
+  --primary:oklch(0.50 0.18 240);--primary-fg:oklch(0.99 0.01 240);--rail:oklch(0.955 0.014 250);--rail-fg:oklch(0.40 0.03 250);--rail-border:oklch(0.90 0.012 250);
+  --ok:oklch(0.55 0.16 155);--warn:oklch(0.68 0.16 70);--bad:oklch(0.58 0.2 25);--info:oklch(0.58 0.14 240);--neutral:oklch(0.62 0.01 250);--destructive:oklch(0.55 0.22 25)}
+*{box-sizing:border-box}
+body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;padding:24px}
+h1{font-size:20px;margin:0 0 4px} .lead{color:#374151;margin:0 0 20px;max-width:100ch;font-size:13px}
+.board{display:flex;flex-direction:column;gap:28px}
+.panel .cap{display:flex;align-items:baseline;gap:12px;margin:0 0 8px;font-size:13px;color:#374151} .panel .cap b{font-size:15px;color:#111} .panel .cap .n{font-weight:700;color:#6b7280}
+.frame{width:1024px;height:560px;background:var(--bg);color:var(--fg);font-size:var(--fs);line-height:1.35;font-variant-numeric:tabular-nums;border:1px solid #c9ced6;border-radius:12px;overflow:hidden;display:flex}
+.frame *{font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;font-family:inherit}
+svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.mut{color:var(--muted-fg)} .xs{font-size:12px} .b{font-weight:600} .money{white-space:nowrap} .grow{flex:1;min-width:0} .ell{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st{display:inline-flex;align-items:center;gap:6px;white-space:nowrap} .st i{width:8px;height:8px;border-radius:50%;background:var(--neutral);flex:none} .st.ok i{background:var(--ok)} .st.warn i{background:var(--warn)} .st.bad i{background:var(--bad)} .st.info i{background:var(--info)}
+.rail{width:56px;background:var(--rail);border-right:var(--hair) solid var(--rail-border);display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:4px;flex:none}
+.rail .logo{width:36px;height:36px;border-radius:6px;background:var(--primary);margin-bottom:8px} .rail .it{width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--rail-fg)} .rail .it.on{background:var(--card);color:var(--primary);border:var(--hair) solid var(--rail-border)}
+.prod{flex:1;min-width:0;display:flex;flex-direction:column}
+.toolbar{display:flex;align-items:center;gap:8px;padding:12px 0 12px 16px;flex:none}
+.in{height:44px;border:var(--hair) solid var(--border);border-radius:var(--r);background:var(--card);padding:0 12px 0 40px;flex:1;color:var(--muted-fg);display:flex;align-items:center;position:relative} .in svg{position:absolute;left:12px;top:13px}
+.ibtn{width:44px;height:44px;border-radius:var(--r);display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg)}
+.divider{width:8px;flex:none;position:relative} .divider::after{content:"";position:absolute;left:2px;top:50%;width:4px;height:48px;margin-top:-24px;border-radius:2px;background:var(--border)}
+.cart{width:400px;flex:none;background:var(--card);border-left:var(--hair) solid var(--border);display:flex;flex-direction:column}
+.bar{height:44px;display:flex;align-items:center;gap:8px;padding:0 8px 0 16px;border-bottom:var(--hair) solid var(--border)} .bar .av{width:30px;height:30px;border-radius:50%;background:var(--muted);font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-left:auto}
+.custrow{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 16px;border-bottom:var(--hair) solid var(--border)} .chip{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;border-radius:999px;border:var(--hair) solid var(--border)}
+.cth{display:grid;grid-template-columns:36px 1fr 70px 76px;gap:12px;padding:0 16px;height:28px;align-items:center;background:var(--muted);color:var(--muted-fg);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;border-bottom:var(--hair) solid var(--border)} .cth .r{text-align:right}
+.line{display:grid;grid-template-columns:36px 1fr 70px 76px;gap:12px;padding:6px 16px;min-height:44px;align-items:center;border-bottom:var(--hair) solid var(--border)} .line .q{height:36px;border:var(--hair) solid var(--border);border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-weight:600} .line .r{text-align:right} .line .sub{display:block;color:var(--muted-fg);font-size:12px}
+.totals{margin-top:auto;padding:12px 16px 8px;border-top:var(--hair) solid var(--border)} .totals div{display:flex;justify-content:space-between;padding:3px 0} .totals .big{font-size:18px;font-weight:700;padding-top:6px}
+.cf{display:flex;gap:8px;padding:0 16px 16px} .btn{height:44px;border:var(--hair) solid var(--border);border-radius:var(--r);padding:0 16px;display:inline-flex;align-items:center;justify-content:center;font-weight:500;flex:1} .btn.p{background:var(--primary);color:var(--primary-fg);border-color:transparent;font-weight:600;height:56px;font-size:16px;flex:3} .btn.d{color:var(--destructive);flex:1}
+/* tables */
+.list{flex:1;min-height:0;overflow:hidden;padding-left:16px;display:flex;flex-direction:column}
+.thead{display:grid;align-items:center;height:32px;border-bottom:var(--hair) solid var(--border);color:var(--muted-fg);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;flex:none} .th{padding:0 12px;white-space:nowrap} .th.r{text-align:right} .th.c{text-align:center}
+.tr{display:grid;align-items:center;min-height:44px;border-bottom:var(--hair) solid var(--border)} .td{padding:6px 12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .td.r{text-align:right} .td.c{display:flex;justify-content:center} .td .sub{display:block;color:var(--muted-fg);font-size:12px}
+.img{width:40px;height:40px;border-radius:6px;background:var(--muted);display:inline-block} .img.lg{width:56px;height:56px}
+.add{width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg)}
+.foot{display:flex;align-items:center;height:40px;padding:0 12px;border-top:var(--hair) solid var(--border);color:var(--muted-fg);flex:none;margin-top:auto}
+.framed{margin:0 0 16px;background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;flex:1;min-height:0} .framed .thead{background:var(--muted)} .framed .tr:nth-child(even){background:oklch(0.985 0.005 250)}
+.grid .th,.grid .td{border-right:var(--hair) solid var(--border)} .grid .tr{min-height:36px} .grid .td{padding:4px 10px} .grid .th{padding:0 10px}
+.grp{display:flex;align-items:center;gap:8px;height:32px;padding:0 12px;color:var(--muted-fg);font-size:12px;font-weight:600;background:var(--muted);border-bottom:var(--hair) solid var(--border)} .grp b{color:var(--fg)}
+.pricebtn{height:36px;padding:0 12px;border:var(--hair) solid var(--border);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-weight:600;background:var(--card);min-width:84px}
+.tr.vh .td:first-child{padding-left:56px} .tr.vh{background:oklch(0.985 0.005 250)}
+</style>
+</head>
+<body>
+<h1>POS — seven ways to show the product table</h1>
+<p class="lead">Same products, same cart, same tokens, tablet width (1024). The table language is decided here and flows to orders, customers, coupons. Each panel is one idiom; the caption says what it buys. Captures: <code>screens/board/NN-slug.jpg</code>.</p>
+<div class="board" id="board"></div>
+<script>
+const I={search:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',scan:'<svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 9v6M11 9v6M14 9v6M17 9v6"/></svg>',grid:'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>',sliders:'<svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg>',plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',chevd:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',chevu:'<svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>',pos:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>',products:'<svg viewBox="0 0 24 24"><path d="M20 7L12 3 4 7v10l8 4 8-4zM4 7l8 4 8-4M12 11v10"/></svg>',orders:'<svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM15 3v4h4M9 12h6M9 16h6"/></svg>',customers:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4.5-6.2"/></svg>',drawer:'<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="9" rx="2"/><path d="M3 15h18M10 17.5h4M6 11V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/></svg>'};
+const CUR='£'; const fmt=n=>`${CUR}${n.toFixed(2)}`;
+const P=[['Flat white',3.2,'FW-12','Coffee',12],['Oat latte',3.6,'OL-16','Coffee',30],['Cold brew',3.8,'CB-330','Coffee',20],['Espresso cup',8,'EC-01','Coffee',9],['Sourdough loaf',4.2,'SD-800','Bakery',4],['Croissant',2.4,'CR-01','Bakery',8],['Cinnamon bun',3,'CB-02','Bakery',6],['Tote bag',12,'TB-NAT','Merch',0,'3 variations'],['Beans 250g',9.5,'BN-250','Retail',15],['Granola jar',6.5,'GR-500','Retail',3],['Tea tin',7.5,'TT-01','Retail',11],['Gift card',20,'GC','Retail',null]];
+const stock=s=>s==null?'<span class="mut">—</span>':s===0?'<span class="st bad"><i></i>0</span>':s<5?`<span class="st warn"><i></i>${s}</span>`:String(s);
+const rail=`<div class="rail"><div class="logo"></div><div class="it on">${I.pos}</div><div class="it">${I.products}</div><div class="it">${I.orders}</div><div class="it">${I.customers}</div></div>`;
+const toolbar=`<div class="toolbar"><span class="in">${I.search}Search products</span><span class="ibtn">${I.scan}</span><span class="ibtn">${I.grid}</span><span class="ibtn">${I.sliders}</span></div>`;
+const cart=`<div class="cart"><div class="bar"><b>UK Store</b><span class="ibtn" style="margin-left:auto">${I.drawer}</span><span class="av">DC</span></div><div class="custrow"><span class="mut">Customer</span><span class="chip">Guest ${I.chevd}</span><span class="grow"></span><span class="ibtn">${I.plus}</span><span class="ibtn">${I.sliders}</span></div>
+<div class="cth"><span>Qty</span><span>Item</span><span class="r">Price</span><span class="r">Total</span></div>
+${[['2','Flat white','Oat milk',3.2],['1','Sourdough loaf','',4.2],['1','Tote bag','Natural · L',12]].map(([q,n,s,p])=>`<div class="line"><span class="q">${q}</span><span>${n}${s?`<span class="sub">${s}</span>`:''}</span><span class="r mut money">${fmt(p)}</span><span class="r b money">${fmt(q*p)}</span></div>`).join('')}
+<div class="totals"><div class="mut"><span>Subtotal</span><span>£18.83</span></div><div class="mut"><span>VAT 20%</span><span>£3.77</span></div><div class="big"><span>Total</span><span>£22.60</span></div></div><div class="cf"><span class="btn d">Void</span><span class="btn p">Checkout £22.60</span></div></div>`;
+const frame=(list)=>`${rail}<div class="prod">${toolbar}${list}</div><div class="divider"></div>${cart}`;
+const panel=(n,title,after,gives,html)=>`<section class="panel" data-n="${String(n).padStart(2,'0')}-${title.toLowerCase().replace(/[^a-z0-9]+/g,'-')}"><div class="cap"><span class="n">${String(n).padStart(2,'0')}</span><b>${title}</b><span>after ${after}</span><span class="mut">— ${gives}</span></div><div class="frame">${frame(html)}</div></section>`;
+const foot='<div class="foot">Showing 12 of 1,204</div>';
+const B=[];
+const G1='56px 1.5fr 100px 96px 80px 52px';
+const hd=(g=G1,cols=['','Name','SKU','Price','Stock',''])=>`<div class="thead" style="grid-template-columns:${g}">${cols.map((c,i)=>`<div class="th ${i>=3&&i<5?'r':''}">${c}</div>`).join('')}</div>`;
+/* 01 frameless hairline rows (cut 2) */
+B.push(panel(1,'Frameless rows','Linear, Stripe','one hairline per row, no frame, 44 pt; the same rows serve every list in the app',
+ `<div class="list">${hd()}${P.slice(0,8).map(([n,p,sku,cat,s,v])=>`<div class="tr" style="grid-template-columns:${G1}"><div class="td c"><span class="img"></span></div><div class="td">${n}<span class="sub">${sku}${v?' · '+v:''}</span></div><div class="td mut">${sku}</div><div class="td r money">${fmt(p)}</div><div class="td r">${stock(s)}</div><div class="td c"><span class="add">${v?I.chevd:I.plus}</span></div></div>`).join('')}${foot}</div>`));
+/* 02 two-line rows, no header */
+const G2='56px 1fr 100px 52px';
+B.push(panel(2,'Two-line rows, no header','Superhuman, Shopify POS','name over category and SKU, price and stock on the right; no header row, 56 pt; a list, not a table',
+ `<div class="list">${P.slice(0,7).map(([n,p,sku,cat,s,v])=>`<div class="tr" style="grid-template-columns:${G2};min-height:56px"><div class="td c"><span class="img"></span></div><div class="td"><span class="b">${n}</span><span class="sub">${cat} · ${sku}${v?' · '+v:''}${s!=null&&s<5?` · <span class="st ${s===0?'bad':'warn'}"><i></i>${s===0?'Out of stock':s+' left'}</span>`:''}</span></div><div class="td r b money">${fmt(p)}</div><div class="td c"><span class="add">${v?I.chevd:I.plus}</span></div></div>`).join('')}${foot}</div>`));
+/* 03 spreadsheet grid */
+const G3='1.3fr 90px 80px 96px 70px 44px';
+B.push(panel(3,'Spreadsheet grid','Airtable, Attio','vertical hairlines, 36 pt rows, no images; the most products per screen, made for a mouse or a barcode gun',
+ `<div class="list grid">${hd(G3,['Name','SKU','Category','Price','Stock',''])}${P.map(([n,p,sku,cat,s,v])=>`<div class="tr" style="grid-template-columns:${G3}"><div class="td">${n}${v?` <span class="mut xs">· ${v}</span>`:''}</div><div class="td mut">${sku}</div><div class="td mut">${cat}</div><div class="td r money">${fmt(p)}</div><div class="td r">${stock(s)}</div><div class="td c"><span class="add" style="width:28px;height:28px">${v?I.chevd:I.plus}</span></div></div>`).join('')}${foot}</div>`));
+/* 04 grouped by category */
+B.push(panel(4,'Grouped by category','Linear groups','a collapsible header per category with its count; the menu the shop already thinks in',
+ `<div class="list">${hd()}${['Coffee','Bakery','Merch'].map(cat=>{const g=P.filter(x=>x[3]===cat);return `<div class="grp">${I.chevd}<b>${cat}</b>${g.length}</div>`+g.slice(0,3).map(([n,p,sku,c,s,v])=>`<div class="tr" style="grid-template-columns:${G1}"><div class="td c"><span class="img"></span></div><div class="td">${n}<span class="sub">${sku}${v?' · '+v:''}</span></div><div class="td mut">${sku}</div><div class="td r money">${fmt(p)}</div><div class="td r">${stock(s)}</div><div class="td c"><span class="add">${v?I.chevd:I.plus}</span></div></div>`).join('');}).join('')}${foot}</div>`));
+/* 05 framed card table (today, cleaned) */
+B.push(panel(5,'Framed table, cleaned','today\'s WCPOS, Shopify admin','the card with a grey header and zebra rows, minus the shadow; the least relearning',
+ `<div class="list"><div class="framed">${hd()}${P.slice(0,7).map(([n,p,sku,cat,s,v])=>`<div class="tr" style="grid-template-columns:${G1}"><div class="td c"><span class="img"></span></div><div class="td">${n}<span class="sub">${sku}${v?' · '+v:''}</span></div><div class="td mut">${sku}</div><div class="td r money">${fmt(p)}</div><div class="td r">${stock(s)}</div><div class="td c"><span class="add">${v?I.chevd:I.plus}</span></div></div>`).join('')}${foot.replace('class="foot"','class="foot" style="background:var(--muted)"')}</div></div>`));
+/* 06 price is the button */
+const G6='56px 1fr 100px';
+B.push(panel(6,'The price is the button','Square item list, Fresha services','tap the price to add; no + column; the row is quiet, the price is the target (44 pt)',
+ `<div class="list">${P.slice(0,7).map(([n,p,sku,cat,s,v])=>`<div class="tr" style="grid-template-columns:${G6};min-height:56px"><div class="td c"><span class="img"></span></div><div class="td"><span class="b">${n}</span><span class="sub">${cat}${s!=null&&s<5?` · <span class="st ${s===0?'bad':'warn'}"><i></i>${s===0?'Out of stock':s+' left'}</span>`:''}</span></div><div class="td c"><span class="pricebtn money">${v?`from ${fmt(p)} ${I.chevd}`:fmt(p)}</span></div></div>`).join('')}${foot}</div>`));
+/* 07 photo-first rows with variations expanded */
+B.push(panel(7,'Photo rows, variations inline','Shopify POS, the app\'s expanded variable row','56 pt thumbnails, and a variable product opens its variations as indented rows with their own + and stock',
+ `<div class="list">${hd()}${P.slice(0,2).map(([n,p,sku,cat,s,v])=>`<div class="tr" style="grid-template-columns:${G1};min-height:64px"><div class="td c"><span class="img lg"></span></div><div class="td">${n}<span class="sub">${sku}</span></div><div class="td mut">${sku}</div><div class="td r money">${fmt(p)}</div><div class="td r">${stock(s)}</div><div class="td c"><span class="add">${I.plus}</span></div></div>`).join('')}
+ <div class="tr" style="grid-template-columns:${G1};min-height:64px"><div class="td c"><span class="img lg"></span></div><div class="td">Tote bag<span class="sub">TB-NAT · 3 variations</span></div><div class="td mut">TB-NAT</div><div class="td r money">from £12.00</div><div class="td r">${stock(0)}</div><div class="td c"><span class="add">${I.chevu}</span></div></div>
+ ${[['Natural · S','TB-NAT-S',12,6],['Natural · L','TB-NAT-L',12,0],['Black · L','TB-BLK-L',14,2]].map(([n,sku,p,s])=>`<div class="tr vh" style="grid-template-columns:${G1}"><div class="td"></div><div class="td">${n}</div><div class="td mut">${sku}</div><div class="td r money">${fmt(p)}</div><div class="td r">${stock(s)}</div><div class="td c"><span class="add">${I.plus}</span></div></div>`).join('')}
+ ${P.slice(4,6).map(([n,p,sku,cat,s,v])=>`<div class="tr" style="grid-template-columns:${G1};min-height:64px"><div class="td c"><span class="img lg"></span></div><div class="td">${n}<span class="sub">${sku}</span></div><div class="td mut">${sku}</div><div class="td r money">${fmt(p)}</div><div class="td r">${stock(s)}</div><div class="td c"><span class="add">${I.plus}</span></div></div>`).join('')}${foot}</div>`));
+document.getElementById('board').innerHTML=B.join('');
+</script>
+</body>
+</html>

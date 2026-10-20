@@ -134,3 +134,26 @@ Applied: *Print Z-report* is the sheet's primary button; the preview is a fold. 
 - Every tap target shows a pressed state within 100 ms: 1.5 % scale and a tint on buttons, tiles, list rows, the bar's icon buttons and chips.
 - Sheets fade and rise 150–200 ms ease-out; the panel slides 220 ms; the toast drops in 200 ms; the settle highlight fades over 800 ms. `prefers-reduced-motion` switches all of it off.
 - Nothing below 12 px; chips are 44 pt; tiles 56 pt; rows 44 pt.
+
+## Correction (2026-09-12) — Fresha's checkout is on Mobbin
+
+The opening section says Mobbin has no register screens. Round two then cites one Fresha POS
+screen for its layout. Both under-read what is there: **Fresha's business app**, indexed under
+the **web** platform, has three complete checkout flows. *Checking out a service*
+(https://mobbin.com/flows/e0f7c390-5f07-4ea8-9b82-7d311d71f81b), *Adding a sales*
+(https://mobbin.com/flows/baea22c6-be8a-4d03-8132-e60af499f538) and *Selling a membership*
+(https://mobbin.com/flows/d39476e2-ebe6-459b-9775-2189b91ca7df). Together they show the cart
+column with client, lines, subtotal, tax, tip and *To pay*; a *Select payment* grid of equal
+tiles (Cash, Gift card, Split payment, Other); a split-payment numpad with preset amount chips
+and *Left to pay*; a tip picker with percentage tiles and *Custom tip*; *Save unpaid* and
+*Save part-paid* as the secondary action; and a sale activity timeline once paid.
+
+Why the flows were missed: the searches asked iOS for POS screens, and Fresha's iOS entry is the
+consumer booking app. Business tools on Mobbin (Fresha, Square dashboard, Shopify admin, Xero)
+are web captures. The coverage rule that follows: check by bare app name on both platforms in
+deep mode before writing "not on Mobbin". The absent list (Square POS, Zettle, SumUp,
+Lightspeed, Toast, Loyverse, Clover, Vend) was re-checked that way on 2026-09-12 and stands.
+
+What Fresha adds: the equal-tile payment grid and the numpad-with-chips are the conventions the
+tender pane mockups (PR #259) landed on, now with a like-for-like business-app source rather
+than consumer fintech. Nothing in the register flow itself changes.
