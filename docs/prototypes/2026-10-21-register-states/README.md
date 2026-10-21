@@ -29,6 +29,6 @@ Self-contained board: open `index.html` (no build, no server). Paul walked it se
 
 ## Follow-ups
 
-Three work packages, filed as roadmap tickets (see the PR that landed this folder): the POS states and the `Notice` sweep; the admin rebuild and settings redraw; the design-rules addition. Amends #213's "threshold and close time per store" to "site default with explicit override per store".
+Three work packages, filed as roadmap tickets: [#465](https://github.com/wcpos/roadmap/issues/465) the POS states and the `Notice` sweep; [#466](https://github.com/wcpos/roadmap/issues/466) the admin rebuild and settings redraw; [#467](https://github.com/wcpos/roadmap/issues/467) the design-rules addition. Amends #213's "threshold and close time per store" to "site default with explicit override per store".
 
 Related: roadmap#214 (the register prototype and its rulings), #202 (the wayfinder map), #195 (the epic).
