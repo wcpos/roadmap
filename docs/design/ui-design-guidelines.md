@@ -171,7 +171,7 @@ or WooCommerce admin idioms.
 
 ### 11. Settings and admin forms
 
-Added 2026-10-21 from the register-settings board
+Added 2026-10-21 from the register-states board
 (`docs/prototypes/2026-10-21-register-states/`, section 7). The trigger was three fields lifted
 from database columns: "Variance threshold" with no unit, "Expected close time" typed as HH:MM,
 "Register sessions" as a noun, and two tips describing the format instead of the effect. Paul:
@@ -186,15 +186,15 @@ WordPress admin plugins alike; the enforceable summary is rule 11 of the monorep
 | 2 | **Every value carries its unit inside the control.** Currency symbol in a money field, a time picker for a time, a suffix for minutes or percent. Never a bare box. | £ prefix on float and limit; a time picker for closing | Oyster and Substack's unit-in-field; Polaris `prefix`/`suffix` on TextField |
 | 3 | **Optional behaviour is a switch, and its value appears when the switch is on.** "Leave blank for none" is a bug: blank is not a choice a person makes on purpose. | Approval and closing reminder are switches; the amount and time show only when on | Calendly: "Require payment" reveals "Amount to collect" |
 | 4 | **The help line says what happens at the till, in one sentence.** Never the format, never the label again. | "After this time the bar shows Overdue and Checkout becomes Close register when the cart is empty." | Substack: "The amount monthly paid subscribers pay per month" |
-| 5 | **Plain words.** Float, drawer, count, short or over, close. Never variance, threshold, session, expected. | Every label | Rule 9 above; Square "Starting cash", Shopify "Starting amount" |
+| 5 | **Plain words.** Float, drawer, count, short or over, close. Never variance, threshold, session, expected. | Every label | Section 9 above; Square "Starting cash", Shopify "Starting amount" |
 | 6 | **The common case is one switch.** Everything that only matters when it is on is hidden while it is off. | Off: one row. On: four. | Apple HIG, Settings: toggles for on/off, never ask for typing to turn something on |
-| 7 | **Inherited or customised is shown on the field, never implied by blank.** | Store page: "Site default" chip, "Customise" action; "Overridden", "Use site default" | Shopify Markets: Customized / Inherited groups |
+| 7 | **Inherited or customised is shown on the field, never implied by blank.** | Store page: "Site default" chip with "Customise"; once customised, "Overridden" with "Use site default" (board section 6, C) | Shopify Markets: Customized / Inherited groups |
 | 8 | **Defaults are prefilled and visible in the control**, not described in a tip. | Float shows £200.00; limit shows £5.00 | Square's default starting cash |
 
-Rule 7 is the admin-side twin of rule 6 above (state is visible, not explained): a store that
+Rule 7 is the admin-side twin of section 6 above (state is visible, not explained): a store that
 follows the site default says so on the field, and a store with its own value says that instead.
 Rule 3 is why a stored policy value is present or absent, never an empty string the UI has to
-interpret.
+interpret (roadmap#466, "blank is no longer a UI state").
 
 ## Definition of done for a UI change
 
