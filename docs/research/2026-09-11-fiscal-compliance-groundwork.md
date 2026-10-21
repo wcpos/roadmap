@@ -41,7 +41,8 @@ Four things changed the shape of this job, and three of them are good news:
 4. **The 1.11.0 payments contract makes offline sales a fiscal problem that must be solved at
    the till, not on the server.** Offline rows ride the order write and `payment_complete()`
    fires when the order lands, so today's receipt sequence is assigned in **server-arrival
-   order** with **server time**. Every regime numbers and chains in sale order, per register.
+   order** with **server time**. Every regime numbers and chains in sale order within the scope it
+   defines — a register, a series, a device or a SIF — never in arrival order.
    Nothing captured after the fact can repair a sale whose own time and till were never
    recorded. This is the single most time-sensitive item in this note.
 
@@ -109,7 +110,8 @@ Legend: **●** required · **◐** required in a weaker or conditional form · 
 | **Per-device registration with the authority** | ○ | ○ | ● ELSTER, within one month | ● portal pairing of each POS terminal to the RT | ● each document series registered with AT | ● Kassen-ID + signature unit in FinanzOnline |
 
 **What the table says.** Seven obligations recur in at least four regimes and are expressible
-without knowing which country you are in: per-register sequential numbering, chaining, a record
+without knowing which country you are in: sequential numbering within a regime-defined scope
+(register, series or device), chaining, a record
 for every correction, an event log, a slot on the receipt for a machine-readable code, a
 structured export, and closures. Everything else is either country-specific formatting or an
 external certified component. **That intersection is the groundwork.**
@@ -170,8 +172,9 @@ A merchant there put it plainly:
 >
 > — merchant feedback, 2026-10-21
 
-For the groundwork this changes nothing: per-register numbering, chaining, a QR slot and
-correction records are exactly what TicketBAI also wants (§5). It does change the country work.
+For the groundwork this changes little: chaining, a QR and identifier slot on the receipt and
+registered software are what TicketBAI also wants (§5); whether its numbering scope and its
+correction records map onto G1 and G4 is unconfirmed (§7). It does change the country work.
 "Spain" in §2 and in the epic is two receivers behind one chain, so TicketBAI belongs in the
 §6 "don't build the submission client yet" row next to AEAT; the *software garante* register
 is a second vendor-side obligation alongside the declaración responsable; and the "Spain,
