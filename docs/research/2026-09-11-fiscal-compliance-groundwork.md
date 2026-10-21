@@ -102,8 +102,8 @@ Legend: **●** required · **◐** required in a weaker or conditional form · 
 | **Secure retention** | ● 6 years (art. L. 102 B LPF) | ● tax prescription period (4 years by LGT art. 66) — **only in no-VERI\*FACTU mode** | ● GoBD retention | ● per RT/AdE rules | ● per AT rules | ● 7 years |
 | **Structured export format** | ◐ **"format ouvert"** — no schema mandated; a French-language notice must accompany the archive | ● AEAT XSD for records and events | ● **DSFinV-K** (v2.4) | ● AdE corrispettivi XML | ● **SAF-T (PT)** monthly | ● **DEP** export, Anlage Z 3 |
 | **Closure / Z reports as retained documents** | ● daily, monthly, annual — **unwaivable**; period grand total **and** perpetual grand total (never reset) | ○ not a closure regime | ● via TSE/DSFinV-K | ● daily corrispettivi transmission | ○ | ● Startbeleg, Monatsbeleg, Jahresbeleg, Schlussbeleg |
-| **Corrections: no deletion, corrective record only** | ● "opérations de « plus » et de « moins »" | ● registro de anulación — at least one *additional* record; the original stands | ● | ● | ● | ● |
-| **Training / demo mode segregated and marked** | ● training data is part of the protected dataset; documents watermarked "factice"/"simulation"; the supervising operator identified | ○ | ◐ (Trainingsbuchungen flagged in DSFinV-K) | ○ | ○ | ○ |
+| **Corrections: no deletion, corrective record only** | ● "opérations de « plus » et de « moins »" | ● an *additional* record, never a deletion — a *factura rectificativa* (itself an alta record) for amount/VAT errors and returns, a *subsanación* for wrong record data, a *registro de anulación* only for an invoice that should never have been issued; the original stands | ● | ● | ● | ● |
+| **Training / demo mode segregated and marked** | ◐ a training/test function is optional; **if** one exists, its data is part of the protected dataset, documents are watermarked "factice"/"simulation" and the supervising operator identified (BOFiP §150) | ○ | ◐ (Trainingsbuchungen flagged in DSFinV-K) | ○ | ○ | ○ |
 | **Transmission to the authority** | ○ on audit only | ◐ optional — that is what VERI\*FACTU *is* | ○ on audit; one-off ELSTER system notification | ● daily | ● monthly SAF-T | ○ except Startbeleg/Jahresbeleg checks |
 | **Vendor-side certification, attestation or declaration** | ◐ certificate **or** self-attestation (BOI-LETTRE-000242) since 21 Feb 2026 | ● **declaración responsable** by the producer, visible inside the product, per version | ○ for the POS; the **TSE** must be BSI-certified (TR-03153) | ● RT or software solution approved by AdE via an *ente certificatore* | ● **AT certification of the software product**, per product, Modelo 24, fiscal representative for third-country producers | ◐ signature unit licensed via an approved VDA |
 | **Per-device registration with the authority** | ○ | ○ | ● ELSTER, within one month | ● portal pairing of each POS terminal to the RT | ● each document series registered with AT | ● Kassen-ID + signature unit in FinanzOnline |
@@ -122,7 +122,7 @@ external certified component. **That intersection is the groundwork.**
 inaltérabilité, sécurisation, conservation, archivage — applied to a defined dataset: every
 transaction and payment line with its justificatif number, date to the minute, register number,
 totals, per-line detail, payment method, *and the traces of every modification and correction*,
-plus training-mode data. BOFiP is explicit that the legislator "n'a pas défini de cahier des
+plus, if the software offers a training/test function, that function's data. BOFiP is explicit that the legislator "n'a pas défini de cahier des
 charges, ni de solution technique" — it states outcomes, and names chaining or electronic
 signature as acceptable techniques rather than mandating either. Closings are the one
 prescriptive part: daily, monthly and annual, unwaivable, each storing a *cumul du grand total
@@ -135,8 +135,10 @@ attestation individuelle — the latter abolished 16 Feb 2025 and restored 21 Fe
 **Spain — RD 1007/2023 + Orden HAC/1177/2024 (VeriFactu).** Every invoice, including the
 *factura simplificada* that a till receipt is, must have a *registro de facturación de alta*
 generated at or immediately before issuance, carrying the series/number/date of the immediately
-preceding record and part of its SHA-256 huella; errors are undone by a *registro de anulación*,
-never a deletion. Every invoice carries a QR pointing at AEAT's cotejo service with the issuer
+preceding record and part of its SHA-256 huella; errors are never undone by deletion: an amount
+or VAT mistake, or a return, gets a *factura rectificativa* (itself an alta record), wrong record
+data a *subsanación*, and only an invoice that should never have been issued a *registro de
+anulación*. Every invoice carries a QR pointing at AEAT's cotejo service with the issuer
 NIF, series/number, date and amount. The producer must publish a *declaración responsable*
 inside the product, per version. Then the fork: **VERI\*FACTU** submits each record to AEAT
 continuously and prints "Factura verificable en la sede electrónica de la AEAT" — and in
@@ -227,7 +229,7 @@ Evidence is from `wcpos/woocommerce-pos` `includes/` at `7d20ff70`, and the paym
 | Corrections | A refund is a WooCommerce `shop_order_refund`; the ledger tracks `refunds[]` per payment row with `refunded_amount` rollups. | **No snapshot, no sequence, no record** is created for a refund or a void. `Receipt_Snapshot_Store` hooks `payment_complete` only. Roadmap [#77](https://github.com/wcpos/roadmap/issues/77) has already established that refunds must be dated by the refund, not the order. |
 | Closure / Z report | A **client-side screen**: `packages/core/src/screens/main/reports/` aggregates today's completed orders and renders a printable Z-report template. | Nothing is stored, numbered, or retained. No period grand total, no perpetual grand total. Nothing prevents transactions landing in an already-reported day — and with offline sync, they routinely will. |
 | Export | Receipt JSON via REST per order. | No day/period export of records or events in any format. |
-| Training mode | **None.** | France requires it, marked. |
+| Training mode | **None.** | Not a gap: France only requires that a training function, *if offered*, be segregated and marked. |
 | Offline behaviour | Offline payment rows ride the order write with `recorded_offline: true`; the receipt prints from the **local** ledger; `payment_complete()` fires server-side when the order lands. | An offline sale prints a receipt with **no fiscal number at all**, then acquires one later in arrival order. This is the deepest structural gap. |
 
 **Where the existing epic is over- or under-specified.** #720 mandates RSA-2048/ECDSA-256 for
@@ -235,8 +237,9 @@ France and #724/pro#148 build the 3/7/13/19 signature excerpt — both are NF525
 BOFiP requirements, and with self-attestation restored neither is legally forced. #722 specifies
 a France "JCD XML" archive; BOFiP asks only for an open format. #719 (country registry) sits in
 Phase 1 ahead of any country implementation, which is an abstraction built before the two cases
-that would shape it. And nothing in the milestone covers **training mode** (a French obligation)
-or the **grand total perpétuel**, which is the one genuinely prescriptive part of the French text.
+that would shape it. And nothing in the milestone covers the **grand total perpétuel**, which is
+the one genuinely prescriptive part of the French text. (Training mode, by contrast, is not a
+French obligation — only its marking is, if the software offers one.)
 
 ---
 
@@ -330,7 +333,7 @@ The original record is never touched.
 
 **Why it is groundwork for every regime.** Every one of the six forbids deletion and requires the
 correction to be an additional record — France's "opérations de « plus » et de « moins »",
-Spain's *registro de anulación*, and so on. WCPOS today creates a record only when money is
+Spain's *factura rectificativa* and *registro de anulación*, and so on. WCPOS today creates a record only when money is
 taken, which means the half of the ledger a tax inspector cares most about does not exist. It
 also lines up with #77's finding that a refund must be dated by the refund.
 
