@@ -146,6 +146,36 @@ exchange is released from local signing, the event log, export and integrity sel
 raise a visible alarm on every connected terminal if integrity is threatened. Dual-use software
 is separately illegal under LGT art. 201 bis, and has been since 2021.
 
+**Basque Country — TicketBAI (addendum 2026-10-21).** VeriFactu does not reach the three
+foral territories: RD 1007/2023 art. 1 applies "sin perjuicio de los regímenes tributarios
+forales", and AEAT's own criteria exclude taxpayers whose *domicilio fiscal* is in Álava,
+Bizkaia or Gipuzkoa (and in Navarre, which has its own regime). Those businesses are under
+**TicketBAI**, run jointly by the three Diputaciones Forales and the Basque Government but
+administered by each Hacienda Foral under its own rules (Bizkaia folds it into **Batuz**).
+The shape is VeriFactu-like but not VeriFactu-compatible: only software on a Hacienda Foral's
+*software garante* register may issue invoices; every invoice, till receipts included, gets a
+signed XML chained to the previous one, a **TBAI identifier** and a **QR** on the printed
+document, and is sent automatically to the relevant Hacienda Foral. So "Spain" is two
+regimes, and a VeriFactu build alone leaves Basque merchants exactly where they are today.
+A merchant there put it plainly:
+
+> One blocker for me: I saw VeriFactu on the v2.1 roadmap (#713), but the Basque Country,
+> true to form, has its own system. They've had their own tax rules for centuries and weren't
+> going to start copying Madrid now 😄. Businesses in Álava, Bizkaia and Gipuzkoa are under
+> TicketBAI: registered software, a TBAI ID and QR code on every receipt, reported to the
+> Hacienda Foral. Without it I can't use WCPOS for in-person sales here, so for now I'm on a
+> certified app.
+>
+> — merchant feedback, 2026-10-21
+
+For the groundwork this changes nothing: per-register numbering, chaining, a QR slot and
+correction records are exactly what TicketBAI also wants (§5). It does change the country work.
+"Spain" in §2 and in the epic is two receivers behind one chain, so TicketBAI belongs in the
+§6 "don't build the submission client yet" row next to AEAT; the *software garante* register
+is a second vendor-side obligation alongside the declaración responsable; and the "Spain,
+now" question for Paul in §6 has a Basque half, since the foral haciendas run their own
+register of permitted software.
+
 **Germany — §146a AO / KassenSichV.** A BSI-certified **TSE** (TR-03153) signs the start and
 end of every transaction and maintains a strictly sequential signature counter and transaction
 number. The POS software itself is not certified; the TSE is, and cloud TSEs from foreign
@@ -416,6 +446,10 @@ Carried forward from the research so they are not quietly promoted to fact:
   art. 66 prescription period; AEAT's own FAQ says "periodo de prescripción fiscal".
 - **Spain:** whether AEAT's **production** submission endpoint is fully live as of September 2026
   could not be confirmed from an explicit official statement.
+- **Basque Country:** the TicketBAI description is from the merchant's account, the
+  euskadi.eus programme page and vendor summaries (Quaderno, STEL Order). The technical
+  specification, the per-territory registration procedure, the Bizkaia Batuz timetable and
+  Navarre's equivalent were not read.
 - **Italy:** the operational status of the software-RT electronic-payment sub-module needs
   re-checking directly against the AdE "Soluzioni software" pages.
 - **Portugal:** the certification process and cost detail come from a mirrored legacy DGCI FAQ,
@@ -445,6 +479,9 @@ Carried forward from the research so they are not quietly promoted to fact:
 - AEAT FAQ — Sistemas VERI\*FACTU (modes, event log, QR, retention): https://sede.agenciatributaria.gob.es/Sede/iva/sistemas-informaticos-facturacion-verifactu/preguntas-frecuentes/sistemas-verifactu.html
 - AEAT — hash algorithm and encoding specification: https://sede.agenciatributaria.gob.es/Sede/iva/sistemas-informaticos-facturacion-verifactu/informacion-tecnica/algoritmo-calculo-codificacion-huella-hash.html
 - AEAT preproduction portal: https://preportal.aeat.es/
+- Euskadi.eus — programa TicketBAI (Diputaciones Forales + Gobierno Vasco): https://www.euskadi.eus/ticketbai
+- Consejo General de Gestores Administrativos — VERI*FACTU criterios oficiales (foral domicile exclusion): https://www.consejogestores.org/?p=13948
+- Quaderno — qué es TicketBAI (software garante, identificativo TBAI, QR): https://quaderno.io/es/articulos/que-es-ticketbai/
 
 **Germany**
 - BSI — fiscalisation certification (TR-03153) and certified TSE products: https://www.bsi.bund.de/EN/Themen/Unternehmen-und-Organisationen/Standards-und-Zertifizierung/Zertifizierung-und-Anerkennung/Zertifizierung-von-Produkten/Zertifizierung-nach-CC/Zertifizierte-Produkte-nach-CC/Fiskalisierung/Fiskalisierung_node.html
