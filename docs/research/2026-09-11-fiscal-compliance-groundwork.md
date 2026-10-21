@@ -1,6 +1,6 @@
 # Fiscal compliance groundwork for WCPOS
 
-**Research note — 2026-09-11.** What France (NF525), Spain (VeriFactu) and the comparable
+**Research note — 2026-09-11, addendum 2026-10-21 (Basque Country / TicketBAI, §3).** What France (NF525), Spain (VeriFactu) and the comparable
 regimes (Germany, Italy, Portugal, Austria) actually oblige of point-of-sale software; what
 WCPOS has against each obligation today; and which foundations can be laid **now**, inside the
 existing plugins, so that the country work later is assembly rather than excavation.
