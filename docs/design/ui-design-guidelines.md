@@ -169,6 +169,33 @@ Lightspeed, Toast, Zettle and SumUp do for the same task, because the cashier's 
 the tie-breaker and the app deviates only with a stated reason. Take zero leads from WordPress
 or WooCommerce admin idioms.
 
+### 11. Settings and admin forms
+
+Added 2026-10-21 from the register-states board
+(`docs/prototypes/2026-10-21-register-states/`, section 7). The trigger was three fields lifted
+from database columns: "Variance threshold" with no unit, "Expected close time" typed as HH:MM,
+"Register sessions" as a noun, and two tips describing the format instead of the effect. Paul:
+*"what is variance, is it a time? is it money? You need better guidelines on UI because this is
+not intuitive."* These rules apply to every form the owner edits, in the app's settings and in the
+WordPress admin plugins alike; the enforceable summary is rule 11 of the monorepo's
+`CODING_STANDARDS.md` § Design, which `.claude/rules/design.mdc` points to.
+
+| # | Rule | On the board | Drawn from |
+|---|---|---|---|
+| 1 | **A setting is a sentence the owner would say.** The label is the behaviour, in the words used at the counter; the control sits where the value goes in the sentence. | "Ask a manager when the count is out by more than [£ 5.00]" | Acctual's approval rule: "If Amount is more than or equal to [$ 0.00] require [1] approval" |
+| 2 | **Every value carries its unit inside the control.** Currency symbol in a money field, a time picker for a time, a suffix for minutes or percent. Never a bare box. | £ prefix on float and limit; a time picker for closing | Oyster and Substack's unit-in-field; Polaris `prefix`/`suffix` on TextField |
+| 3 | **Optional behaviour is a switch, and its value appears when the switch is on.** "Leave blank for none" is a bug: blank is not a choice a person makes on purpose. | Approval and closing reminder are switches; the amount and time show only when on | Calendly: "Require payment" reveals "Amount to collect" |
+| 4 | **The help line says what happens at the till, in one sentence.** Never the format, never the label again. | "After this time the bar shows Overdue and Checkout becomes Close register when the cart is empty." | Substack: "The amount monthly paid subscribers pay per month" |
+| 5 | **Plain words.** Float, drawer, count, short or over, close. Never variance, threshold, session, expected. | Every label | Section 9 above; Square "Starting cash", Shopify "Starting amount" |
+| 6 | **The common case is one switch.** Everything that only matters when it is on is hidden while it is off. | Off: one row. On: four. | Apple HIG, Settings: toggles for on/off, never ask for typing to turn something on |
+| 7 | **Inherited or customised is shown on the field, never implied by blank.** | Store page: "Site default" chip with "Customise"; once customised, "Overridden" with "Use site default" (board section 6, C) | Shopify Markets: Customized / Inherited groups |
+| 8 | **Defaults are prefilled and visible in the control**, not described in a tip. | Float shows £200.00; limit shows £5.00 | Square's default starting cash |
+
+Rule 7 is the admin-side twin of section 6 above (state is visible, not explained): a store that
+follows the site default says so on the field, and a store with its own value says that instead.
+Rule 3 is why a stored policy value is present or absent, never an empty string the UI has to
+interpret (roadmap#466, "blank is no longer a UI state").
+
 ## Definition of done for a UI change
 
 - Walked every state as a cashier: empty, loading, saving, error, offline, disabled, long text,
@@ -232,6 +259,16 @@ Dan Saffer, *Microinteractions* (O'Reilly, 2013).
 
 Visual craft: [Refactoring UI](https://www.refactoringui.com/) and its
 [colour palette chapter](https://www.refactoringui.com/previews/building-your-color-palette).
+
+Settings forms (rule 11): [Apple HIG, Settings](https://developer.apple.com/design/human-interface-guidelines/settings),
+[Polaris text field prefix and suffix](https://shopify.dev/docs/api/app-home/latest/web-components/forms/text-field.md),
+[Square, start and end a cash drawer session](https://squareup.com/help/us/en/article/8344-start-and-end-a-cash-drawer-session),
+[Shopify POS cash tracking](https://help.shopify.com/en/manual/sell-in-person/shopify-pos/cash-register-management/cash-tracking);
+on Mobbin: [Acctual's approval rule](https://mobbin.com/screens/3d89558b-d0fd-4d68-bcc9-fca9f1b91a84),
+[Oyster](https://mobbin.com/screens/626d11de-fe13-499e-ba62-d883becb22fb) and
+[Substack](https://mobbin.com/screens/1bcdb8b2-e179-470b-a0ef-ff8c1073c521) unit-in-field,
+[Calendly's switch that reveals an amount](https://mobbin.com/screens/6cb1b265-4254-411c-b5b6-daca317a657d),
+[Shopify Markets' Customized / Inherited groups](https://mobbin.com/screens/c8e66141-7936-4716-8f2e-75ca8656d05e).
 
 Touch ergonomics research: [W3C Mobile A11y TF summary of target-size research](https://www.w3.org/WAI/GL/mobile-a11y-tf/wiki/Summary_of_Research_on_Touch/Pointer_Target_Size)
 (Duff et al. 2010; Chen et al. 2013; Gao & Sun 2015; Jin et al. 2007).
