@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Register states board</title>
+<style>
+  :root{
+    --bg:oklch(0.975 0.004 250);--fg:oklch(0.22 0.02 250);--card:oklch(1 0 0);--muted:oklch(0.955 0.006 250);
+    --muted-fg:oklch(0.50 0.02 250);--border:oklch(0.90 0.008 250);--primary:oklch(0.50 0.18 240);--primary-fg:oklch(0.99 0.01 240);
+    --warn:oklch(0.80 0.14 85);--warn-bg:oklch(0.97 0.04 90);--warn-fg:oklch(0.25 0.03 90);
+    --bad:oklch(0.53 0.22 25);--bad-bg:oklch(0.97 0.03 25);--ok:oklch(0.60 0.15 160);--rail:oklch(0.955 0.006 250);
+    --tile-a:oklch(0.95 0.03 190);--tile-b:oklch(0.95 0.03 310);
+  }
+  :root[data-theme="dark"]{
+    --bg:oklch(0.20 0.01 250);--fg:oklch(0.95 0.01 250);--card:oklch(0.25 0.01 250);--muted:oklch(0.30 0.01 250);
+    --muted-fg:oklch(0.70 0.02 250);--border:oklch(0.34 0.01 250);--primary:oklch(0.70 0.15 240);--primary-fg:oklch(0.15 0.02 240);
+    --warn:oklch(0.75 0.14 85);--warn-bg:oklch(0.30 0.05 90);--warn-fg:oklch(0.92 0.05 90);
+    --bad:oklch(0.70 0.18 25);--bad-bg:oklch(0.30 0.05 25);--rail:oklch(0.17 0.01 250);
+    --tile-a:oklch(0.35 0.04 190);--tile-b:oklch(0.35 0.04 310);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1400px;margin:0 auto;padding:24px 16px 80px}
+  h1{font-size:24px;margin:0 0 4px}
+  h2{font-size:18px;margin:40px 0 6px;padding-top:16px;border-top:1px solid var(--border)}
+  h3{font-size:14px;margin:18px 0 6px}
+  p{margin:6px 0;max-width:900px}
+  .sub{color:var(--muted-fg)}
+  .pill{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:1px 8px;font-size:12px;color:var(--muted-fg);margin-left:6px;vertical-align:middle}
+  .rec{background:var(--primary);color:var(--primary-fg);border-color:transparent}
+  table{border-collapse:collapse;width:100%;max-width:1000px;margin:8px 0}
+  th,td{text-align:left;vertical-align:top;padding:6px 10px;border-bottom:1px solid var(--border);font-size:13px}
+  th{color:var(--muted-fg);font-weight:500}
+  code{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:var(--muted);padding:1px 4px;border-radius:4px}
+  a{color:var(--primary)}
+  .toolbar{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border);margin-bottom:12px}
+  .toolbar label{color:var(--muted-fg);font-size:12px}
+  .toolbar button,.seg button{font:inherit;font-size:13px;border:1px solid var(--border);background:var(--card);color:var(--fg);border-radius:8px;padding:5px 10px;cursor:pointer}
+  .seg{display:inline-flex;gap:4px;flex-wrap:wrap}
+  .seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+  .board{display:grid;grid-template-columns:repeat(auto-fit,minmax(660px,1fr));gap:20px;margin-top:12px}
+  .variant{border:1px solid var(--border);border-radius:12px;background:var(--card);overflow:hidden}
+  .variant header{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .variant header b{font-size:14px}
+  .variant header span{color:var(--muted-fg);font-size:12px}
+  .variant .note{padding:8px 14px 12px;color:var(--muted-fg);font-size:12.5px;border-top:1px solid var(--border)}
+  .variant .note b{color:var(--fg)}
+  /* ---------- the rehosted POS screen ---------- */
+  .pos{display:grid;grid-template-columns:48px 1fr 290px;height:560px;background:var(--bg);font-size:13px;position:relative;overflow:hidden}
+  .pos.phone{grid-template-columns:1fr;width:390px;height:600px;margin:0 auto;border-left:1px solid var(--border);border-right:1px solid var(--border)}
+  .rail{background:var(--rail);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:14px}
+  .rail .i{width:28px;height:28px;border-radius:7px;display:grid;place-items:center;color:var(--muted-fg)}
+  .rail .i.on{background:var(--card);color:var(--fg);box-shadow:0 0 0 1px var(--border)}
+  .rail .logo{width:26px;height:26px;border-radius:7px;background:var(--primary);color:var(--primary-fg);font-weight:700;font-size:10px;display:grid;place-items:center}
+  .products{padding:10px 10px 0;display:flex;flex-direction:column;gap:8px;min-width:0}
+  .search{display:flex;align-items:center;gap:8px}
+  .field{flex:1;height:40px;border:1px solid var(--border);border-radius:8px;background:var(--card);display:flex;align-items:center;gap:8px;padding:0 10px;color:var(--muted-fg)}
+  .ib{width:36px;height:36px;display:grid;place-items:center;color:var(--muted-fg);border-radius:8px}
+  .chips{display:flex;gap:6px;flex-wrap:nowrap;overflow:hidden}
+  .chip{height:34px;border:1px solid var(--border);border-radius:999px;background:var(--card);padding:0 12px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-weight:500}
+  .chip.on{border-color:var(--primary);color:var(--primary)}
+  .chip.dashed{border-style:dashed;color:var(--muted-fg);font-weight:400}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;flex:1;min-height:0;overflow:hidden;align-content:start;padding-bottom:10px}
+  .pos.phone .grid{grid-template-columns:repeat(2,1fr)}
+  .tile{aspect-ratio:1/1.05;border:1px solid var(--border);border-radius:8px;background:var(--card);padding:10px;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden}
+  .tile .ic{position:absolute;top:8px;left:8px;width:24px;height:24px;border:1px solid var(--border);border-radius:999px;background:var(--card);display:grid;place-items:center;color:var(--muted-fg)}
+  .tile b{font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tile small{color:var(--muted-fg);font-size:12px;white-space:nowrap}
+  .tile.a{background:var(--tile-a)}.tile.b{background:var(--tile-b)}
+  .tile img{position:absolute;inset:0;width:100%;height:65%;object-fit:cover;opacity:.85}
+  .dim{opacity:.4;pointer-events:none}
+  .foot{display:flex;justify-content:space-between;align-items:center;color:var(--muted-fg);padding:6px 2px 8px;border-top:1px solid var(--border);font-size:12.5px}
+  .cart{background:var(--card);border-left:1px solid var(--border);display:flex;flex-direction:column;min-width:0}
+  .pos.phone .cart{border-left:0}
+  .bar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:0 8px 0 10px}
+  .bar .place{font-weight:600;font-size:15px}
+  .sb{display:inline-flex;align-items:center;gap:6px;font-size:13px}
+  .sb i{width:8px;height:8px;border-radius:999px;background:var(--warn);display:inline-block}
+  .sb.muted i{background:var(--muted-fg)}.sb.bad i{background:var(--bad)}
+  .bar .sp{flex:1}
+  .cust{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--border)}
+  .cust .av{width:28px;height:28px;border-radius:999px;background:var(--primary);color:var(--primary-fg);font-size:10px;font-weight:700;display:grid;place-items:center}
+  .cust .gpill{border:1px solid var(--border);border-radius:999px;padding:3px 10px 3px 3px;display:inline-flex;align-items:center;gap:6px;font-weight:500}
+  .body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted-fg);text-align:center;padding:16px;min-height:0}
+  .body.top{justify-content:flex-start;align-items:stretch;text-align:left;color:var(--fg)}
+  .tabs{border-top:1px solid var(--border);display:flex;align-items:center;gap:14px;padding:8px 12px;font-size:12.5px}
+  .tabs .t{display:flex;flex-direction:column;line-height:1.2}
+  .tabs .t b{font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .tabs .t span{color:var(--muted-fg)}
+  .tabs .new{margin-left:auto;color:var(--primary);font-weight:600;font-size:14px;display:flex;align-items:center;gap:4px}
+  /* notice (the real component's classes, rendered) */
+  .notice{display:flex;align-items:center;gap:8px;border:1px solid var(--border);background:var(--card);border-radius:8px;padding:9px 12px;flex-wrap:wrap}
+  .notice.warn{border-color:color-mix(in oklch,var(--warn) 45%,transparent);background:var(--warn-bg)}
+  .notice.bad{border-color:color-mix(in oklch,var(--bad) 45%,transparent);background:var(--bad-bg)}
+  .notice .tx{flex:1 1 192px;min-width:0}
+  .notice .tx small{display:block;color:var(--muted-fg)}
+  .notice .act{display:flex;gap:4px;flex-wrap:wrap}
+  .ghost{font:inherit;font-weight:500;color:var(--primary);background:transparent;border:0;border-radius:8px;height:36px;padding:0 10px;cursor:pointer}
+  .ghost:hover{background:var(--muted)}
+  .btn{font:inherit;font-weight:600;border:0;border-radius:8px;height:56px;padding:0 16px;background:var(--primary);color:var(--primary-fg);width:100%;cursor:pointer}
+  .btn.sm{height:36px;width:auto;font-weight:500}
+  .btn.outline{background:transparent;color:var(--fg);border:1px solid var(--border)}
+  .row{display:flex;align-items:center;gap:10px;height:44px;padding:0 12px;border:1px solid var(--border);border-radius:8px;background:var(--card);cursor:pointer}
+  .row .sp{flex:1}
+  .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:24px;text-align:center;flex:1}
+  .empty .big{color:var(--muted-fg)}
+  .empty b{font-weight:500;color:var(--fg)}
+  .empty .d{color:var(--muted-fg)}
+  .toast{position:absolute;left:50%;transform:translateX(-50%);top:120px;background:var(--fg);color:var(--bg);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 6px 20px rgba(0,0,0,.18);font-size:13px}
+  .toast b{color:var(--primary-fg);font-weight:600;filter:brightness(1.6)}
+  .amount{font-size:32px;font-variant-numeric:tabular-nums;border:1px solid var(--border);border-radius:8px;padding:8px 12px;background:var(--card)}
+  .phonebar{display:flex;border-top:1px solid var(--border);height:48px}
+  .phonebar div{flex:1;display:grid;place-items:center;font-weight:500;color:var(--muted-fg);font-size:13px}
+  .phonebar div.on{color:var(--primary);box-shadow:inset 0 -2px 0 var(--primary)}
+  .flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;max-width:1100px}
+  .fs{border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:var(--card)}
+  .fs b{display:block;font-size:13px}.fs span{color:var(--muted-fg);font-size:12.5px;display:block}
+  .fs .who{margin-top:6px;font-size:12px;color:var(--fg)}
+  .src{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;max-width:1200px}
+  .src div{border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:var(--card);font-size:12.5px}
+  .src b{display:block;font-size:13px}
+  .waiting{border:1px solid color-mix(in oklch,var(--warn) 45%,transparent);background:var(--warn-bg);color:var(--warn-fg);border-radius:10px;padding:10px 14px;max-width:1000px}
+  .waiting b{display:block;margin-bottom:4px}
+  .waiting ol{margin:0;padding-left:18px}
+  svg{flex:none}
+  /* ---------- section 5: today's hand-rolled recipes ---------- */
+  .pair{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;border-top:1px solid var(--border);padding:14px 0}
+  .pair .meta{flex-basis:100%;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+  .pair .pane{flex:0 0 auto;width:100%}
+  .pair .meta b{font-size:13px}.pair .meta code{font-size:11.5px}.pair .meta span{color:var(--muted-fg);font-size:12.5px}
+  .pane{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px}
+  .pane .lbl{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted-fg)}
+  .hr{border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:6px;font-size:13px}
+  .hr.p2{padding:8px}
+  .hr.red{background:color-mix(in oklch,var(--bad) 10%,transparent);border:1px solid var(--bad)}
+  .hr.red40{background:color-mix(in oklch,var(--bad) 10%,transparent);border:1px solid color-mix(in oklch,var(--bad) 45%,transparent)}
+  .hr.amber{background:color-mix(in oklch,var(--warn) 10%,transparent);border:1px solid color-mix(in oklch,var(--warn) 50%,transparent)}
+  .hr.warn{background:color-mix(in oklch,var(--warn) 10%,transparent);border:1px solid var(--warn)}
+  .hr.info{background:color-mix(in oklch,var(--primary) 10%,transparent);border:1px solid color-mix(in oklch,var(--primary) 40%,transparent)}
+  .hr.ok{background:color-mix(in oklch,var(--ok) 10%,transparent);border:1px solid color-mix(in oklch,var(--ok) 40%,transparent)}
+  .hr.plain{background:var(--card);border:1px solid var(--border);border-radius:8px;flex-direction:row;align-items:center;gap:8px;padding:9px 12px}
+  .hr.pill{background:color-mix(in oklch,var(--warn) 10%,transparent);border:0;border-radius:8px;flex-direction:row;align-items:center;gap:8px;min-height:44px;padding:0 12px}
+  .t-red{color:var(--bad)}.t-warn{color:var(--warn-fg)}.t-muted{color:var(--muted-fg)}.u{text-decoration:underline}
+  .rowbtn{display:flex;align-items:center;gap:8px;min-height:44px;width:100%}
+  .rowbtn+.rowbtn{border-top:1px solid color-mix(in oklch,var(--warn) 30%,transparent)}
+  .callout{border-left:3px solid var(--bad);padding:4px 0 4px 16px}
+  .callout.w{border-left-color:var(--warn)}
+  .strip{background:var(--warn-bg);border-bottom:1px solid color-mix(in oklch,var(--warn) 45%,transparent);min-height:40px;display:flex;align-items:center;gap:10px;padding:0 8px 0 16px;font-size:13px}
+  .strip.neutral{background:var(--muted);border-bottom-color:var(--border)}
+  .fold{display:flex;align-items:center;gap:6px;color:var(--muted-fg);font-size:12.5px;min-height:36px}
+  .link{color:var(--primary);font-weight:500;display:inline-flex;align-items:center;gap:4px}
+  /* ---------- section 6: WP admin frames ---------- */
+  .wp{display:grid;grid-template-columns:120px 1fr;background:#f0f0f1;color:#1d2327;font-size:13px;min-height:360px;border-top:1px solid var(--border)}
+  :root[data-theme="dark"] .wp{filter:invert(.92) hue-rotate(180deg)}
+  .wp .nav{background:#fff;border-right:1px solid #dcdcde;padding:12px 0}
+  .wp .nav .g{font-size:10px;letter-spacing:.06em;color:#787c82;padding:6px 16px 4px;text-transform:uppercase}
+  .wp .nav .n{padding:7px 16px;color:#1d2327}
+  .wp .nav .n.on{background:#f0f0f1;font-weight:600}
+  .wp .nav .n.del{text-decoration:line-through;color:#a7aaad}
+  .wp .page{padding:16px 20px}
+  .wp h4{margin:0 0 10px;font-size:15px}
+  .wp .card{background:#fff;border:1px solid #dcdcde;border-radius:4px;padding:14px 16px;margin-bottom:12px}
+  .wp .card h5{margin:0 0 10px;font-size:13px;font-weight:600}
+  .wp .fr{display:grid;grid-template-columns:150px 1fr;gap:8px;align-items:center;padding:6px 0}
+  .wp .fr label{color:#1d2327}
+  .wp .in{height:30px;border:1px solid #8c8f94;border-radius:4px;background:#fff;padding:0 8px;display:flex;align-items:center;color:#1d2327;max-width:260px}
+  .wp .in.ph{color:#8c8f94}
+  .wp .tip{color:#646970;font-size:12px;grid-column:2}
+  .wp .tog{width:36px;height:20px;border-radius:999px;background:#2271b1;position:relative;display:inline-block;vertical-align:middle;margin-right:8px}
+  .wp .tog::after{content:"";position:absolute;right:2px;top:2px;width:16px;height:16px;border-radius:999px;background:#fff}
+  .wp .tog.off{background:#8c8f94}.wp .tog.off::after{right:auto;left:2px}
+  .wp .wpbtn{display:inline-block;background:#2271b1;color:#fff;border-radius:3px;padding:6px 12px;font-weight:500}
+  .wp .wpbtn.sec{background:#f6f7f7;color:#2271b1;border:1px solid #2271b1}
+  .wp .chipd{display:inline-flex;align-items:center;gap:6px;border:1px solid #dcdcde;background:#f6f7f7;border-radius:999px;padding:2px 10px;font-size:12px;color:#50575e}
+  .wp .chipd b{color:#1d2327}
+  .wp .chipd a{color:#2271b1;text-decoration:underline;cursor:pointer}
+  .wp table.l{width:100%;border-collapse:collapse;margin:0}
+  .wp table.l th{font-size:12px;color:#646970;font-weight:500;padding:6px 8px;border-bottom:1px solid #dcdcde;text-align:left}
+  .wp table.l td{padding:9px 8px;border-bottom:1px solid #f0f0f1;color:#1d2327;font-size:13px;vertical-align:middle}
+  .wp .dot{display:inline-block;width:8px;height:8px;border-radius:999px;background:#00a32a;margin-right:6px}
+  .wp .dot.m{background:#8c8f94}
+  .wp .addrow{padding:10px 8px;color:#2271b1;font-weight:500}
+  .wp .grp{background:#f6f7f7;font-weight:600}
+  .wp .ann{color:#b32d2e;font-size:12px}
+  .wp .mut{color:#646970;font-size:12px}
+  /* the real WP admin shell for POS › Stores (not the Settings app) */
+  .wp.admin{grid-template-columns:118px 1fr}
+  .wp .menu{background:#1d2327;color:#f0f0f1;padding:8px 0;font-size:12px}
+  .wp .menu div{padding:5px 12px;white-space:nowrap}
+  .wp .menu .on{background:#2271b1;color:#fff}
+  .wp .menu .sub{background:#2c3338;padding-left:22px;color:#c3c4c7}
+  .wp .menu .sub.on2{color:#fff;font-weight:600}
+  .wp .sp-head{background:#fff;padding:12px 20px;border-bottom:1px solid #dcdcde}
+  .wp .sp-cols{display:grid;grid-template-columns:1.15fr 1fr;gap:28px;padding:12px 20px 20px;background:#fff}
+  .wp .sec{padding:10px 0 14px;border-bottom:1px solid #dcdcde}
+  .wp .sec h5{margin:0 0 8px;font-size:13px;font-weight:600}
+  .wp .sec .fr{grid-template-columns:110px 1fr}
+  .wp .lt{background:#fff;border:1px solid #dcdcde}
+  .wp .lt th{background:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="toolbar">
+    <label>Theme</label><button id="themeBtn" onclick="toggleTheme()">Dark</button>
+    <label style="margin-left:12px">Width</label>
+    <span class="seg" id="widthSeg"><button aria-pressed="true" onclick="setWidth('tablet',this)">Tablet</button><button aria-pressed="false" onclick="setWidth('phone',this)">Phone</button></span>
+    <span class="sub" style="margin-left:auto">Register states board · 2026-10-21 · one page, rewritten in place</span>
+  </div>
+
+  <h1>Register states on the POS screen</h1>
+  <p class="sub">Two surfaces: the products column while the register is closed, and the cart column when the store has no register. Each answers one question for the cashier. The frames below rehost the real screen (ui-polish-3 at <code>f361914abb</code>, the tree Metro serves at :8081).</p>
+
+  <div class="waiting">
+    <b>Waiting on Paul</b>
+    <ol>
+      <li><b>Decided:</b> products while closed = <b>1A</b>, the Notice band, status only, no action. 1B, 1C and 1D are out.</li>
+      <li><b>Decided:</b> no register = <b>2A</b>, the cart column becomes the gate card (Paul, 2026-10-21). The multi-register picker is <b>2P·A</b> (rows with live status and who opened it), decided (Paul, 2026-10-21).</li>
+      <li><b>Decided: section 6 = A with C</b> (Paul, 2026-10-21): registers on the store edit screen, Free and Pro-without-a-store = General › Register, the Settings › Registers page deleted, store policy inherits from General with an explicit override. No migration: this is the first release with registers.</li>
+      <li><b>Nothing is waiting.</b> Every section is decided; the specs follow.</li>
+      <li>The parked ruling behind all of this: idea 2 (the first cash sale opens the register, Shopify's shape). If taken, surface 1 disappears entirely.</li>
+    </ol>
+  </div>
+
+  <h2>0 · The flow: what the cashier is meant to do</h2>
+  <p><b>The question the screen answers:</b> <i>can I sell right now, and if not, what is the one thing I do?</i></p>
+  <p>Ruled 2026-09-11 (roadmap#214): registers are server records. <b>Every store gets one by default; the device binds to it silently; a cashier never creates one.</b> So after an upgrade from 1.11.x the cashier is meant to do nothing about registers at all. They see the Open register card (if register sessions are on) or the plain cart (if off).</p>
+  <table>
+    <tr><th>Edition</th><th>What the plugin does (on <code>next</code>, verified in code)</th></tr>
+    <tr><td>Free</td><td>Holds exactly one register in the <code>wcpos_register</code> option. <code>Register_Store::ensure_free_default()</code> mints it named "Register" the first time anything asks. Free can never reach "no register".</td></tr>
+    <tr><td>Pro</td><td>One register per store: <code>Registers::publish_store()</code> seeds it when a store is published; <code>backfill_store_registers()</code> runs on activation and in <code>updates/update-2.0.0.php</code> for every published store. A store with no register after that is an anomaly, not a first-run state.</td></tr>
+  </table>
+  <p><b>Why "AL Store" shows it anyway.</b> The app reads <code>GET /registers?store_id=N</code>; an empty list is <code>none</code>, a failed request stays <code>unknown</code>. The main-lane plugins on the Local sites have no <code>/registers</code> route, so this screenshot is against a <code>next</code> server where that store genuinely has zero active registers: a store that is not <code>publish</code> (draft/private), a backfill that threw and was logged, or a register moved to another store in Pro's admin. One check settles it: <code>GET /wp-json/wcpos/v1/registers?store_id=N</code>.</p>
+
+  <h3>Every state the cart column can be in</h3>
+  <div class="flow">
+    <div class="fs"><b>Sessions off</b><span>Store setting <code>register_sessions</code> false (the default).</span><span class="who">Cashier sees: the cart, nothing else. Sells.</span></div>
+    <div class="fs"><b>Choose register</b><span>Store has &gt;1 active register and the device is unbound.</span><span class="who">Cashier sees: the picker. Taps their register once.</span></div>
+    <div class="fs"><b>Closed</b><span>Bound, sessions on, no open session.</span><span class="who">Cashier sees: Open register card. Products are price-check only.</span></div>
+    <div class="fs"><b>Open</b><span>Session open, on time.</span><span class="who">Cashier sees: the cart. Sells. No notice anywhere.</span></div>
+    <div class="fs"><b>Counting / Overdue</b><span>Session counting, or open past close time.</span><span class="who">Count screen; grid dimmed. Overdue: amber pill, Checkout becomes Close register.</span></div>
+    <div class="fs"><b>No register</b><span>Server answered with zero registers for this store.</span><span class="who">Today: a bare line and a cart that cannot sell. Should be: a gate card. Manager fixes it, cashier retries.</span></div>
+    <div class="fs"><b>Can't reach registers</b><span>Unbound and the list request failed (offline, 5xx).</span><span class="who">Today: status stays <code>unknown</code>, no message. Should be: the same gate card with "Try again".</span></div>
+  </div>
+
+  <h3>What the category leaders do</h3>
+  <table>
+    <tr><th>App</th><th>Is selling blocked before the drawer is opened?</th><th>Where the open action lives</th></tr>
+    <tr><td>Square POS</td><td>No. Cash Management is an add-on; a drawer session is optional.</td><td>More › Reports › Current Drawer › Start Drawer (<a href="https://squareup.com/help/us/en/article/8344-start-and-end-a-cash-drawer-session">help</a>)</td></tr>
+    <tr><td>Shopify POS</td><td>No. If no session is open, the next order auto-starts one with the previous balance.</td><td>Register › Start tracking session (<a href="https://help.shopify.com/en/manual/sell-in-person/shopify-pos/cash-register-management/cash-tracking">help</a>)</td></tr>
+    <tr><td>Lightspeed Retail</td><td>Yes. "To begin processing sales you need to open your register"; Register Manager permission.</td><td>Main menu › Open Register Shift (<a href="https://shopkeep-support.lightspeedhq.com/hc/en-us/articles/47479978110491-Opening-and-closing-register-shifts">help</a>)</td></tr>
+    <tr><td>WCPOS 2.0 (ruled)</td><td>Yes while sessions are on (Lightspeed's shape), browsable for price checks. Idea 2 (auto-open on first cash sale) is parked.</td><td>The cart column is the Open register card.</td></tr>
+  </table>
+
+  <h2>1 · Products column while the register is closed</h2>
+  <p><b>Question it answers:</b> <i>why did my tap not add the item, and how do I start selling?</i> Today: a hand-rolled box with a bespoke filled lock (<code>icon/components/lock.tsx</code>, neither Tabler nor FontAwesome) and no action. The <code>Notice</code> component already exists (tones warn/info/bad, icon, title, two actions, docs link) and is used for the storage outage band two lines above this one.</p>
+  <div class="seg" id="s1seg">State: <button aria-pressed="true" onclick="setS1('closed',this)">Closed</button><button aria-pressed="false" onclick="setS1('counting',this)">Counting</button><button aria-pressed="false" onclick="setS1('open',this)">Open (control)</button></div>
+  <div class="board" id="board1"></div>
+
+  <h2>2 · Cart column when the store has no register</h2>
+  <p><b>Question it answers:</b> <i>can this till sell, and who fixes it?</i> Today: <code>&lt;Text&gt;No register for this store&lt;/Text&gt;</code> above a cart that will refuse checkout, and the bar's pill reads "Closed" (the pill logic has no <code>none</code> branch). The cashier has no action. The fix is a manager's (publish the store, or add a register in Pro's Registers screen), so the card gives the cashier Try again and the manager a link.</p>
+  <div class="seg" id="s2seg">State: <button aria-pressed="true" onclick="setS2('none',this)">No register</button><button aria-pressed="false" onclick="setS2('failed',this)">Can't reach registers</button><button aria-pressed="false" onclick="setS2('manager',this)">No register, signed in as a manager</button></div>
+  <div class="board" id="board2"></div>
+
+  <h2>3 · What this draws on</h2>
+  <div class="src">
+    <div><b>Rule 5, state is visible not explained</b> One badge in one place at the top of the pane; a disabled control says why in a few words beside it; error/empty/trouble = one line + actions + docs link. That is the <code>Notice</code> and <code>EmptyState</code> contract, so 1A and 2A are those components used as designed.</div>
+    <div><b>Blue Bottle, "Cafe Closed"</b> <a href="https://mobbin.com/screens/54a6e204-0547-44e5-a4f6-45518dd8c8df">Mobbin</a>. The closed state is a small red label above the place name, the bag stays visible and empty, the primary button is disabled and names the state. Borrowed by 1C (status beside the place) and by the bar pill in every frame.</div>
+    <div><b>Grill'd, closed restaurant</b> <a href="https://mobbin.com/screens/bbafd6f8-8dfd-4e43-a5e1-3402d39f5f5c">Mobbin</a>. Status pill under the name, then one tinted band saying ordering is unavailable and why. Menu stays browsable. The exact shape of 1A: browse, do not order.</div>
+    <div><b>StubHub, action required</b> <a href="https://mobbin.com/screens/a609ef2a-a127-4e80-b03f-1f4e002810b1">Mobbin</a>. An amber band at the top of the list with the button inside it. The band carries the next action, not just the state. 1A's action and 1D.</div>
+    <div><b>Square web, inline banner + bottom action</b> <a href="https://mobbin.com/screens/0c18f6a3-c97a-484f-b403-99fdfaf41676">Mobbin</a>. "You need to verify your identity before you can create bills" as a peach band; the one primary action pinned at the bottom. Same split as our band + the Open register card.</div>
+    <div><b>Revolut Business, connection issue</b> <a href="https://mobbin.com/screens/b719158e-0a19-4b2e-8cc0-5217648ea20a">Mobbin</a>. Icon, three words, Try again, centred in the pane that failed. 2A and the "can't reach" variant.</div>
+    <div><b>Adobe Express / Base44, locked</b> <a href="https://mobbin.com/screens/afe97676-f21f-4b7b-bd69-f64d7b4eae13">Mobbin</a> · <a href="https://mobbin.com/screens/02a4260f-4938-43e6-af42-86dd4c318353">Mobbin</a>. An outline lock, one line, one unlock action. The lock reads as "locked, not broken", which is why it stays in 1A, but from the Tabler outline family the rest of the screen uses.</div>
+    <div><b>Theory</b> Progressive disclosure (the common case shows nothing: an open register has no band); proximity (the action sits in the band that explains it); one badge one place (the bar pill names the state once; the band only appears where a tap is refused); data-ink (no second explanatory line).</div>
+  </div>
+
+  <h2>4 · Every inline alert on <code>next</code>, and whether it uses <code>Notice</code></h2>
+  <p>Survey of <code>packages/core</code> and <code>apps/main</code> at <code>f361914abb</code>. <b>Notice</b> is the one band for status and outage (ledger line 2: <i>bad is the only red surface in the app</i>). It is used in <b>3</b> places; <b>22</b> hand-rolled bands in <b>13</b> files draw their own box. Field-level red text under an input (28 lines) is a different job and is not listed.</p>
+  <table>
+    <tr><th>Where</th><th>What it is today</th><th>Should be</th></tr>
+    <tr><td colspan="3" style="color:var(--muted-fg)">Already <code>Notice</code></td></tr>
+    <tr><td>auth/components/sites.tsx:249 · site.tsx:121</td><td>Notice (sign-in states)</td><td>—</td></tr>
+    <tr><td>pos/products/storage-outage-banner.tsx:49</td><td>Notice bad + Reload + View status</td><td>—</td></tr>
+    <tr><td colspan="3" style="color:var(--muted-fg)">Hand-rolled, same job as Notice</td></tr>
+    <tr><td>pos/products/index.tsx:556</td><td>border-border bg-card box, bespoke filled lock, no action ("Price check only…", "Counting the drawer…")</td><td>Notice info, Tabler lock, Open register action (board 1A)</td></tr>
+    <tr><td>pos/cart/index.tsx:178</td><td>bare <code>&lt;Text&gt;</code> "No register for this store"</td><td>EmptyState gate card in the column (board 2A)</td></tr>
+    <tr><td>components/session-hold-banner/index.tsx:115</td><td>destructive/10 box, red text, underlined "Log in" Pressable</td><td>Notice bad + action Log in</td></tr>
+    <tr><td>pos/checkout/checkout.tsx:212, 224, 246, 278</td><td>four destructive/10 boxes: storage unavailable; payment form missing/stalled/failed; gateway catalogue unavailable + Retry</td><td>Notice bad (+ Retry action)</td></tr>
+    <tr><td>pos/checkout/tender/tender-checkout.tsx:221 · column/checkout-column.tsx:109</td><td>the storage-unavailable box again, copied twice more (same string in 4 files while products already has StorageOutageBanner)</td><td>one <code>StorageOutageBanner</code> in all four</td></tr>
+    <tr><td>pos/checkout/tender/legacy-tab.tsx:54, 93, 103, 114</td><td>warning/10 box (legacy not with split) + three destructive/10 boxes</td><td>Notice warn / bad</td></tr>
+    <tr><td>pos/checkout/tender/captured-unfinished-notice.tsx</td><td>red text, Collapsible details, DocsLink, no band</td><td>Notice bad + docs; details fold stays below</td></tr>
+    <tr><td>pos/cart/totals-changed-banner.tsx:152</td><td>attention/10 box, own typography for divergence + engine warnings</td><td>Notice warn with description; keep its body text</td></tr>
+    <tr><td>pos/cart/register-count.tsx:181</td><td>warning/10 pill, lock, warn text (manager needed)</td><td>Notice warn, icon lock</td></tr>
+    <tr><td>settings/printer/dialog/test-print-error.tsx:77</td><td>destructive/10 box + Collapsible + Copy</td><td>Notice bad; details fold below</td></tr>
+    <tr><td>settings/barcode-scanning/test-panel.tsx:207, 213, 243, 252 · input-sources.tsx:468, 490 · scanner-device-chooser.electron.tsx:124</td><td>info/10, success/10, warning/10 and destructive/10 boxes, some with an Apply button</td><td>Notice info / warn / bad (+ action). Success has no tone: a result is a line, not a band</td></tr>
+    <tr><td colspan="3" style="color:var(--muted-fg)">Different job, keep, but align the surface</td></tr>
+    <tr><td>pos/cart/conditions-notice.tsx:21</td><td>attention/10 box holding a list of per-line fixes (Reduce / Remove)</td><td>A list of fixes, not a band. Keep the rows; take Notice's warn surface and radius so the two match</td></tr>
+    <tr><td>components/upgrade-notice/index.tsx:23 · (pos)/_layout.tsx:205</td><td>full-width warn-bg strip, star, Upgrade to Pro button</td><td>A promo strip wearing the warning colour (rule 7: semantic colour only carries meaning). Its own component; decide its colour separately</td></tr>
+    <tr><td>health/components/callout.tsx</td><td>left-edge callout (3 px red or amber rule, no box)</td><td>A second alert idiom, Health only. Either Notice or ruled as Health's own</td></tr>
+    <tr><td>settings/card-readers/reader-row.tsx:206 · health/components/code-chip.tsx:21</td><td>row tint / chip</td><td>Not alerts</td></tr>
+  </table>
+  <p><b>Token drift the survey found:</b> five tint recipes for one job (<code>bg-destructive/10 border-destructive</code>, <code>bg-attention/10 border-attention/50</code>, <code>bg-warning/10 border-warning</code>, <code>bg-info/10 border-info/40</code>, and Notice's own <code>bg-bad-bg border-bad/45</code> / <code>bg-warn-bg border-warn/45</code>); two radii (<code>rounded-md</code> vs Notice's <code>rounded-lg</code>); three paddings; red text inside red boxes where Notice keeps the foreground and puts the tone on the surface (ledger line 6); underlined Pressables and Text links where Notice has ghost actions and DocsLink.</p>
+
+  <h2>5 · Every band, today and as <code>Notice</code></h2>
+  <p>Left is what the app draws now (its own classes, its own text colour, its own radius). Right is the same message on the one component: tone on the surface, text in the foreground, one icon, ghost actions, a docs link. Each pair sits at the width of the pane it lives in (cart and checkout 320, settings 520).</p>
+  <div id="pairs"></div>
+
+  <h2>6 · WP Admin: how a store owner sets registers up</h2>
+  <p><b>Question this surface answers:</b> <i>where do I set up my register(s), and what applies to which store?</i> Most sites are one owner, one store, one register. The design has to be right for them first and still hold for a site with four stores and nine registers.</p>
+
+  <h3>Today: three places, two copies of the same policy</h3>
+  <table>
+    <tr><th>Where</th><th>Free</th><th>Pro</th></tr>
+    <tr><td>Settings › General › Register</td><td>Register sessions · Variance threshold · Expected close time</td><td>Same fields, site-wide</td></tr>
+    <tr><td>Settings › Registers (its own page)</td><td>Name · Default float of the one register, a stale "No registers have connected yet" notice, an Upgrade nudge</td><td>A flat list of every register: Name · Default float · Store select · Add register. No rename-in-place, no retire, no "open since"</td></tr>
+    <tr><td>Stores › <i>store</i> › Register</td><td>—</td><td>Register sessions · Variance threshold · Expected close time again, and a store value <b>replaces General verbatim, blank included</b> (no inheritance)</td></tr>
+  </table>
+  <p>So the Free owner edits one register across two pages, and the Pro owner edits the same policy in two places with no rule about which wins beyond "the store's copy". The Registers page assigns registers to stores with a dropdown, which is the inverse of how anyone thinks about a shop.</p>
+
+  <h3>What the category leaders do</h3>
+  <table>
+    <tr><th>App</th><th>Shape</th></tr>
+    <tr><td>Lightspeed X-Series (Vend)</td><td><b>Setup › Outlets and registers.</b> Registers are created inside the outlet; adding an outlet ends with "what registers does this outlet need?" (<a href="https://x-series-support.lightspeedhq.com/hc/articles/25534178722459">help</a>). The closest match to WooCommerce stores.</td></tr>
+    <tr><td>Shopify</td><td><b>Settings › Locations</b> lists locations with a POS column; POS is a property of the location. Cash tracking is toggled in the POS app; sessions are reviewed in admin per location (<a href="https://help.shopify.com/en/manual/sell-in-person/shopify-pos/cash-register-management/cash-tracking">help</a>). <a href="https://mobbin.com/screens/0840b7b3-453d-40af-bd6c-40d64db49952">Mobbin</a></td></tr>
+    <tr><td>Square</td><td><b>Settings › Device management › Points of sale</b> (a flat list, each with a location) plus <b>Modes</b> that carry cash settings such as default starting cash and apply to every device on the mode (<a href="https://square.com/help/ca/en/article/5586-manage-devices-by-location">help</a>). Policy lives on a reusable profile, not on the location.</td></tr>
+    <tr><td>Stripe Terminal</td><td>Readers are created <i>into</i> a location; the drawer says "Adding location to: All locations · 0 readers". <a href="https://mobbin.com/screens/7676a87e-268f-48a6-8089-ec50fd27c3d9">Mobbin</a></td></tr>
+    <tr><td>Homerun</td><td>Departments and Locations as cards <i>inside</i> the company page, each with an inline "Add" row, no separate page. <a href="https://mobbin.com/screens/4aec7db0-fdda-4afa-8001-41358a0df113">Mobbin</a></td></tr>
+  </table>
+  <p><b>Theory:</b> settings live on the thing they describe (a register is a property of a store; policy is a property of a store; in Free the store is the site). Progressive disclosure: one register has no name to manage, so Free never sees a name field. Defaults flow down and overrides are explicit (a "site default" chip beats a silent copy).</p>
+
+  <div class="seg" id="s6seg">Tier: <button aria-pressed="true" onclick="setS6('free',this)">Free</button><button aria-pressed="false" onclick="setS6('pro0',this)">Pro, no store</button><button aria-pressed="false" onclick="setS6('pro1',this)">Pro, one store</button><button aria-pressed="false" onclick="setS6('pro',this)">Pro, several stores</button></div>
+  <div class="board" id="board6" style="grid-template-columns:repeat(auto-fit,minmax(620px,1fr))"></div>
+
+  <h3>Where each setting lives, under A + C</h3>
+  <table>
+    <tr><th>Setting</th><th>Free</th><th>Pro</th></tr>
+    <tr><td>Register sessions on/off, variance threshold, expected close time</td><td>General › Register</td><td>General › Register = site defaults. Each Store page shows them with a <i>Site default</i> chip and an explicit override</td></tr>
+    <tr><td>Default float</td><td>General › Register (the one register)</td><td>Per register, in the store's register list</td></tr>
+    <tr><td>Register name</td><td>Never shown: one register is unnamed in the POS (the bar names the store)</td><td>Per register, in the store's list; the POS shows names only when a store has two or more</td></tr>
+    <tr><td>Which store a register belongs to</td><td>—</td><td>Where it was created. Move is a row action, not a dropdown on every row</td></tr>
+    <tr><td>Add / rename / retire a register</td><td>Upgrade link</td><td>The store page's register list</td></tr>
+    <tr><td>Settings › Registers page</td><td>Deleted</td><td>Deleted (B keeps it, grouped by store)</td></tr>
+  </table>
+
+  <h2>7 · The register settings themselves, redrawn</h2>
+  <p><b>Question the section answers:</b> <i>what happens at my till when I switch this on?</i> Today's three fields are the database columns with their underscores removed: "Variance threshold" (a money amount, unlabelled), "Expected close time" (HH:MM typed by hand), "Register sessions" (a noun, not a behaviour), and two tips that describe the format instead of the effect.</p>
+  <div class="board" id="board7" style="grid-template-columns:repeat(auto-fit,minmax(620px,1fr))"></div>
+
+  <h3>Settings guidelines these frames follow (proposed for <code>design.mdc</code>, a new section 11)</h3>
+  <table>
+    <tr><th>#</th><th>Rule</th><th>Where it shows above</th><th>Drawn from</th></tr>
+    <tr><td>1</td><td><b>A setting is a sentence the owner would say.</b> The label is the behaviour, in the words used at the counter; the control sits where the value goes in the sentence.</td><td>"Ask a manager when the count is out by more than [£ 5.00]"</td><td><a href="https://mobbin.com/screens/3d89558b-d0fd-4d68-bcc9-fca9f1b91a84">Acctual</a>: "If Amount is more than or equal to [$ 0.00] require [1] approval"</td></tr>
+    <tr><td>2</td><td><b>Every value carries its unit inside the control.</b> Currency symbol in a money field, a time picker for a time, a suffix for minutes or percent. Never a bare box.</td><td>£ prefix on float and limit; a time picker for closing</td><td><a href="https://mobbin.com/screens/626d11de-fe13-499e-ba62-d883becb22fb">Oyster</a>, <a href="https://mobbin.com/screens/1bcdb8b2-e179-470b-a0ef-ff8c1073c521">Substack</a>; <a href="https://shopify.dev/docs/api/app-home/latest/web-components/forms/text-field.md">Polaris prefix/suffix</a></td></tr>
+    <tr><td>3</td><td><b>Optional behaviour is a switch, and its value appears when the switch is on.</b> "Leave blank for none" is a bug: blank is not a choice a person makes on purpose.</td><td>Approval and closing reminder are switches; the amount and time show only when on</td><td><a href="https://mobbin.com/screens/6cb1b265-4254-411c-b5b6-daca317a657d">Calendly</a>: "Require payment" reveals "Amount to collect"</td></tr>
+    <tr><td>4</td><td><b>The help line says what happens at the till, in one sentence.</b> Never the format, never the label again.</td><td>"After this time the bar shows Overdue and Checkout becomes Close register when the cart is empty."</td><td>Substack: "The amount monthly paid subscribers pay per month"</td></tr>
+    <tr><td>5</td><td><b>Plain words.</b> Float, drawer, count, short or over, close. Never variance, threshold, session, expected.</td><td>Every label</td><td><code>design.mdc</code> rule 8; Square "Starting cash", Shopify "Starting amount"</td></tr>
+    <tr><td>6</td><td><b>The common case is one switch.</b> Everything that only matters when it is on is hidden while it is off.</td><td>Off: one row. On: four.</td><td>Apple HIG, Settings: toggles for on/off, never ask for typing to turn something on</td></tr>
+    <tr><td>7</td><td><b>Inherited or customised is shown on the field, never implied by blank.</b></td><td>Store page: "Site default" chip, "Customise" action</td><td><a href="https://mobbin.com/screens/c8e66141-7936-4716-8f2e-75ca8656d05e">Shopify Markets</a>: Customized / Inherited groups</td></tr>
+    <tr><td>8</td><td><b>Defaults are prefilled and visible in the control</b>, not described in a tip.</td><td>Float shows £200.00; limit shows £5.00</td><td>Square's default starting cash</td></tr>
+  </table>
+
+  <h2>8 · The three sites, mapped end to end</h2>
+  <p>Where the register rows live, what the owner sees in admin under A + C, what the till does at first sign-in, and what the bar reads. Storage facts are from the plugin code on <code>next</code>; the admin column is the proposal.</p>
+  <table>
+    <tr><th style="width:150px"></th><th>1 · Free, the default register</th><th>2 · Pro, no stores</th><th>3 · Pro, several stores, several registers each</th></tr>
+    <tr><td>Who</td><td>The owner-operator. Most sites.</td><td>A Pro site that bought Pro for something else (receipts, reports) and never made a Store post.</td><td>Chains and multi-counter shops.</td></tr>
+    <tr><td>Where the rows live</td><td>Exactly one register in the <code>wcpos_register</code> option, minted as "Register" the first time anything asks. A second is refused: "Free holds one register".</td><td><b>Same as Free.</b> Pro routes a register with no store to the same option, and the option refuses a second. So yes: without a Store post there is nothing to hang register meta on, and the site has exactly one register.</td><td>One meta row per register on its Store post. The option register is adopted into the first published store by the backfill; every later store is seeded with one "Register" when published.</td></tr>
+    <tr><td>Admin, today</td><td>General › Register (policy) and a separate Registers page (name, float) with a stale "No registers have connected yet" notice.</td><td>Same two pages, plus the Pro Registers list showing one row with an "Unassigned" store select.</td><td>The Registers list with a Store dropdown per row, and the policy repeated on every Store page.</td></tr>
+    <tr><td>Admin, A + C</td><td>General › Register: the switch, float, approval, closing reminder (section 7). No Registers page, no name. One line: "More registers and stores with Pro".</td><td>Identical to Free. The Stores page is empty with "Add store"; the one register is the site's. The register list first appears on the first Store page.</td><td>General › Register holds the site defaults. Each Store page: policy with Site default chips, then its register list (name, float, status, Add). Stores list shows a Registers count.</td></tr>
+    <tr><td>Till, first sign-in</td><td>Silent bind to the one register. Nothing to choose, nothing to see.</td><td>Silent bind, as Free.</td><td>Store with one register: silent bind. Store with two or more: the one-time picker (register, status, who opened it); later from the user sheet.</td></tr>
+    <tr><td>The bar reads</td><td>"UK Store" and nothing else while open and on time.</td><td>Same.</td><td>"Front counter · UK Store" when the store has more than one register; "UK Store" when it has one.</td></tr>
+    <tr><td>Can "No register" happen?</td><td>No. The option mints on first read.</td><td>No, for the same reason.</td><td>Only as an anomaly: an unpublished store, a backfill that threw, or every register moved off the store. Section 2 covers it.</td></tr>
+    <tr><td>Moving up</td><td>Install Pro: nothing changes until a Store is published, then the register is adopted into that store with its numbering intact.</td><td>Publish the first Store: the site's register becomes that store's register (the adoption rule). Add a second register on that store's page.</td><td>Add a store: it is published with one register. Add registers on the store page. Retire a register: it is tombstoned so history still names it.</td></tr>
+  </table>
+  <div class="flow" style="margin-top:12px;grid-template-columns:repeat(4,1fr)">
+    <div class="fs"><b>Free</b><span>option: 1 register</span><span class="who">General › Register</span></div>
+    <div class="fs"><b>Pro, no store</b><span>option: 1 register (same)</span><span class="who">General › Register · Stores: empty</span></div>
+    <div class="fs"><b>Pro, first store published</b><span>the option register is adopted onto the store as meta</span><span class="who">Store page: policy (Site default) + 1 register</span></div>
+    <div class="fs"><b>Pro, N stores</b><span>meta rows per store; each new store seeded with one</span><span class="who">Store pages own their lists; General = defaults</span></div>
+  </div>
+  <p class="sub" style="margin-top:8px">The point of the map: tiers 1 and 2 are the same shape and get the same page. The register list and the Site default chips only exist on a Store page, so an owner meets them the moment they have a store and not before.</p>
+
+  <h2>Change log</h2>
+  <p class="sub">2026-10-21 · first cut: flow, two surfaces, four + three variants, research strip.<br>2026-10-21 · section 4: inventory of every inline alert on next and whether it uses Notice.<br>2026-10-21 · section 5: every band today and on Notice. Paul: consistent on Notice is better.<br>2026-10-21 · 1A loses its "Open register" action and 1D is withdrawn: the Open register card already occupies the cart column whenever the products band shows, so the action went nowhere (Paul's question).<br>2026-10-21 · 1B out: a snackbar is not the UI for a standing state (Paul).<br>2026-10-21 · 1C out (Paul). Section 1 decided: 1A.<br>2026-10-21 · section 6: WP Admin setup of stores and registers, today vs A / B / C per tier, with the Lightspeed, Shopify, Square and Stripe precedents.<br>2026-10-21 · C needs no migration rule: 2.0 is the first release with registers, so no 1.11.x store carries these values (Paul).<br>2026-10-21 · section 7: the register settings redrawn as sentences with units, plus eight settings guidelines proposed for design.mdc (Paul: "what is variance, is it a time? is it money?").<br>2026-10-21 · section 8: the three sites mapped end to end (Free; Pro with no stores; Pro with several stores and registers).<br>2026-10-21 · sections 6 and 7 redrawn: the Store edit screen is POS › Stores, its own WP screen with two columns, not a page of the Settings app; the Settings sidebar never lists Stores (Paul's screenshot).<br>2026-10-21 · Pro with no store = the Free page, stated on the tier switch, in A and in the General rule (Paul).<br>2026-10-21 · Pro with no store: one line under the fields, "To run more than one register, create a store and add registers on its page · Add store" (Paul).<br>2026-10-21 · 2A decided (Paul). Section 2 gains the multi-register picker: today's, 2P·A rows with live status and who opened it (recommended), 2P·B tiles.<br>2026-10-21 · 2P·A decided (Paul). POS side is now fully decided: 1A, 2A, 2P·A.<br>2026-10-21 · Section 6 decided: A with C (Paul). Board complete; specs next.<br>2026-10-21 · phone width: section 2 frames open on the Cart tab (Codex review on #464).</p>
+</div>
+
+<script>
+// ---------- icons (Tabler outline, stroke 1.5) ----------
+const P = (d)=>`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const I = {
+  search:P('<path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/><path d="M21 21l-6 -6"/>'),
+  scan:P('<path d="M4 7v-1a2 2 0 0 1 2 -2h2"/><path d="M4 17v1a2 2 0 0 0 2 2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v1"/><path d="M16 20h2a2 2 0 0 0 2 -2v-1"/><path d="M5 12h14"/>'),
+  list:P('<path d="M9 6l11 0"/><path d="M9 12l11 0"/><path d="M9 18l11 0"/><path d="M5 6l0 .01"/><path d="M5 12l0 .01"/><path d="M5 18l0 .01"/>'),
+  sliders:P('<path d="M4 6h8"/><path d="M16 6h4"/><path d="M4 12h2"/><path d="M10 12h10"/><path d="M4 18h12"/><path d="M20 18h0"/><circle cx="14" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>'),
+  box:P('<path d="M12 3l8 4.5v9l-8 4.5l-8 -4.5v-9z"/><path d="M12 12l8 -4.5"/><path d="M12 12v9"/><path d="M12 12l-8 -4.5"/>'),
+  star:P('<path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z"/>'),
+  dollar:P('<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M14.8 9a2 2 0 0 0 -1.8 -1h-2a2 2 0 1 0 0 4h2a2 2 0 1 1 0 4h-2a2 2 0 0 1 -1.8 -1"/><path d="M12 7v10"/>'),
+  folder:P('<path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2"/>'),
+  tag:P('<path d="M7.5 7.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M3 6v5.172a2 2 0 0 0 .586 1.414l7.71 7.71a2.41 2.41 0 0 0 3.408 0l5.592 -5.592a2.41 2.41 0 0 0 0 -3.408l-7.71 -7.71a2 2 0 0 0 -1.414 -.586h-5.172a3 3 0 0 0 -3 3z"/>'),
+  bell:P('<path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/>'),
+  lock:P('<path d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z"/><path d="M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"/><path d="M8 11v-4a4 4 0 1 1 8 0v4"/>'),
+  lockFilled:`<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M7 10V7a5 5 0 0 1 10 0v3h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h1Zm2 0h6V7a3 3 0 0 0-6 0v3Z"/></svg>`,
+  info:P('<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M12 9h.01"/><path d="M11 12h1v4h1"/>'),
+  tri:P('<path d="M12 9v4"/><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z"/><path d="M12 16h.01"/>'),
+  register:P('<path d="M21 15h-2.5a1.5 1.5 0 0 0 0 3h1a1.5 1.5 0 0 1 0 3h-2.5"/><path d="M19 21v1m0 -8v1"/><path d="M13 21h-7a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h2m12 3.12v-1.12a2 2 0 0 0 -2 -2h-2"/><path d="M16 10v-6a2 2 0 0 0 -2 -2h-4a2 2 0 0 0 -2 2v6m8 0h-8m8 0h1m-9 0h-1"/><path d="M8 14v.01"/><path d="M8 17v.01"/><path d="M12 13.99v.01"/><path d="M12 17v.01"/>'),
+  cart:P('<path d="M6 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M17 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M17 17h-11v-14h-2"/><path d="M6 5l14 1l-1 7h-13"/>'),
+  chev:P('<path d="M9 6l6 6l-6 6"/>'),
+  retry:P('<path d="M19.95 11a8 8 0 1 0 -.5 4m.5 5v-5h-5"/>'),
+  plus:P('<path d="M12 5l0 14"/><path d="M5 12l14 0"/>'),
+  ext:P('<path d="M17 7l-10 10"/><path d="M8 7l9 0l0 9"/>'),
+  hash:P('<path d="M5 9l14 0"/><path d="M5 15l14 0"/><path d="M11 4l-4 16"/><path d="M17 4l-4 16"/>'),
+  bars:P('<path d="M4 6l16 0"/><path d="M4 12l16 0"/><path d="M4 18l16 0"/>'),
+};
+const big = (name)=>I[name].replace('width="18" height="18"','width="32" height="32"');
+
+// ---------- building blocks of the rehosted screen ----------
+let width='tablet';
+const tiles = [
+  ['a','All products','', 'hash'],['','Clothing','161 products','folder',1],['','Collections','13 products','folder',1],['','Decor','1 product','folder',1],
+  ['','Gear','44 products','folder',1],['','Music','2 products','folder',1],['b','Uncategorized','9 products','folder']
+];
+const gridHtml = (dim)=>`<div class="grid ${dim?'dim':''}">${tiles.slice(0,width==='phone'?4:6).map(([c,n,s,ic,img])=>`<div class="tile ${c}">${img?`<div style="position:absolute;inset:0;height:62%;background:linear-gradient(180deg,var(--muted),transparent)"></div>`:''}<span class="ic">${I[ic]}</span><b>${n}</b>${s?`<small>${s}</small>`:''}</div>`).join('')}</div>`;
+const searchRow = (right='')=>`<div class="search"><div class="field">${I.search}<span>Search products</span></div>${right}<span class="ib">${I.scan}</span><span class="ib">${I.list}</span><span class="ib">${I.sliders}</span></div>`;
+const chipsRow = ()=>`<div class="chips"><span class="chip on">${I.box} In Stock ×</span><span class="chip">${I.star} Featured</span><span class="chip">${I.dollar} On Sale</span><span class="chip">${I.folder} Category</span><span class="chip">${I.tag} Tag</span><span class="chip dashed">Customise</span></div>`;
+const railHtml = ()=>`<div class="rail"><div class="logo">DC</div><div class="i on">${I.register}</div><div class="i">${I.tag}</div><div class="i">${I.list}</div><div class="i">${I.dollar}</div><div class="i">${I.folder}</div><div class="i" style="margin-top:auto">${I.sliders}</div></div>`;
+const barHtml = ({pill, pillTone='', bars=false})=>`<div class="bar">${bars?`<span class="ib" style="margin-left:-6px">${I.bars}</span>`:''}<span class="place">AL Store</span>${pill?`<span class="sb ${pillTone}"><i></i>${pill}</span>`:''}<span class="sp"></span><span class="ib">${I.bell}</span></div>`;
+const custRow = ()=>`<div class="cust"><span style="color:var(--muted-fg)">Customer</span><span class="gpill"><span class="av">GU</span>Guest</span><span class="sp" style="flex:1"></span><span class="ib">${I.plus}</span><span class="ib">${I.sliders}</span></div>`;
+const tabsHtml = ()=>`<div class="tabs"><div class="t"><b>54,00 £</b><span>Cart</span></div><div class="t"><b>18,00 $</b><span>Cart</span></div><div class="t"><b>130,00 $</b><span>Cart</span></div><span class="new">${I.plus} New</span></div>`;
+const emptyCart = ()=>`<div class="body">${big('cart')}<div>Tap a product to start a sale</div></div>`;
+const openCard = ()=>`<div class="body top" style="gap:12px;padding:20px 16px"><div style="color:var(--muted-fg)">Cash in the drawer</div><div class="amount">£200.00</div><div style="display:flex;gap:6px"><span class="chip on" style="height:40px">£200.00 default float</span></div><button class="btn">Open register</button></div>`;
+const phoneTabs = (on='products')=>`<div class="phonebar"><div class="${on==='products'?'on':''}">Products</div><div class="${on==='cart'?'on':''}">Cart</div></div>`;
+
+// `focus` picks the phone tab: a variant about the cart column opens on Cart, one about the
+// products column opens on Products (Codex review on roadmap#464: every section 2 preview had
+// collapsed to the products tab on phone).
+function frame({products, cart, toast='', focus='products'}){
+  if(width==='phone'){
+    const showCart = focus==='cart' || products===null;
+    return `<div class="pos phone">${showCart?`<div class="cart" style="border-left:0">${cart}</div>${phoneTabs('cart')}`:`<div class="products">${products}</div>${phoneTabs('products')}`}${toast}</div>`;
+  }
+  return `<div class="pos">${railHtml()}<div class="products">${products}</div><div class="cart">${cart}</div>${toast}</div>`;
+}
+const variant = (id,title,sub,body,note,rec)=>`<div class="variant"><header><b>${id} · ${title}${rec?'<span class="pill rec">Recommended</span>':''}</b><span>${sub}</span></header>${body}<div class="note">${note}</div></div>`;
+
+// ---------- section 1 ----------
+let s1='closed';
+function noticeBand({tone='',icon,title,sub='',actions=[],docs=''}){
+  return `<div class="notice ${tone}">${icon}<div class="tx">${title}${sub?`<small>${sub}</small>`:''}</div>${(actions.length||docs)?`<div class="act">${actions.map(a=>`<button class="ghost">${a}</button>`).join('')}${docs?`<button class="ghost">${docs} ${I.ext}</button>`:''}</div>`:''}</div>`;
+}
+function render1(){
+  const closed = s1==='closed', counting = s1==='counting', open = s1==='open';
+  const bar = barHtml({pill: closed?'Closed':counting?'Counting':''});
+  const cartClosed = `${bar}${closed?openCard():counting?`<div class="body top" style="gap:12px;padding:20px 16px"><div style="color:var(--muted-fg)">Cash counted, float included</div><div class="amount">£0.00</div><div style="color:var(--muted-fg)">Expected £480.80 · −£480.80 short</div><button class="btn">Close &amp; print</button></div>`:`${custRow()}${emptyCart()}`}${tabsHtml()}`;
+  const bandText = closed?'Price check only until the register is open.':'Counting the drawer. Items can be added after the count.';
+  const today = `<div class="notice" style="border-radius:8px">${I.lockFilled.replace('currentColor','var(--muted-fg)')}<div class="tx">${bandText}</div></div>`;
+  const b = document.getElementById('board1'); b.innerHTML='';
+  // Today
+  b.insertAdjacentHTML('beforeend', variant('1·0','Today','the hand-rolled box',
+    frame({products:`${searchRow()}${chipsRow()}${open?'':today}${gridHtml(counting)}`, cart:cartClosed}),
+    `A bespoke filled lock in a <code>border-border bg-card</code> box with no action. It is almost the info Notice already, drawn by hand. The lock is the only filled glyph on the screen; every other icon is a Tabler outline.`));
+  // A
+  b.insertAdjacentHTML('beforeend', variant('1A','Notice band, status only','<code>&lt;Notice tone="info" icon="lock"&gt;</code>',
+    frame({products:`${searchRow()}${chipsRow()}${open?'':noticeBand({icon:closed?I.lock:I.info,title:bandText})}${gridHtml(counting)}`, cart:cartClosed}),
+    `The existing component, the Tabler outline <b>lock</b> added to the icon set (the bespoke <code>lock.tsx</code> deleted), <b>no action</b>. The band exists for one reason: a tile tap that did nothing. The way out is already on screen, because the cart column renders the Open register card on exactly the condition this band renders (sessions on, bound, no session). An "Open register" action here would do nothing a cashier can see (corrected 2026-10-21 after Paul's question). Counting is the same band with the info icon. Zero new primitives; unmounted the moment a session opens.`, true));
+  // B
+  b.insertAdjacentHTML('beforeend', variant('1B','Out: the tile answers on tap','toast + the bar pill',
+    frame({products:`${searchRow()}${chipsRow()}${gridHtml(counting)}`, cart:cartClosed, toast: open?'':`<div class="toast" style="opacity:.45">${I.lock}<span>${closed?'Register closed · price check only':'Counting the drawer'}</span></div>`}),
+    `<b>Out (Paul, 2026-10-21): a snackbar is not the UI for this.</b> A state that lasts all morning does not belong in a transient message. Kept greyed for the record.`));
+  // C
+  b.insertAdjacentHTML('beforeend', variant('1C','Out: status beside the search','StatusBadge in the search row',
+    frame({products:`${searchRow(open?'':`<span class="sb" style="padding:0 6px;white-space:nowrap;opacity:.45"><i></i>${closed?'Price check only':'Counting'}</span>`)}${chipsRow()}${gridHtml(counting)}`, cart:cartClosed}),
+    `<b>Out (Paul, 2026-10-21).</b> Kept greyed for the record.`));
+  // D
+  b.insertAdjacentHTML('beforeend', variant('1D','Withdrawn: the band is the action','a 44 pt ListRow',
+    frame({products:`${searchRow()}${chipsRow()}${open?'':`<div class="row" style="opacity:.45">${closed?I.lock:I.info}<span>${closed?'Register closed · price check only':'Counting the drawer'}</span><span class="sp"></span>${closed?`<span style="color:var(--primary);font-weight:500">Open register</span>${I.chev}`:''}</div>`}${gridHtml(counting)}`, cart:cartClosed}),
+    `<b>Withdrawn 2026-10-21.</b> Its premise was that the band had to carry the way out. It does not: the Open register card is already the cart column whenever this band is on screen, so a tap here would go nowhere. Kept greyed for the record.`));
+}
+
+// ---------- section 2 ----------
+let s2='none';
+function render2(){
+  const none = s2==='none'||s2==='manager', manager = s2==='manager', failed = s2==='failed';
+  const products = `${searchRow()}${chipsRow()}${noticeBand({icon:I.lock,title:'Price check only until the register is open.'})}${gridHtml(false)}`;
+  const title = failed?"Can't reach this store's registers":'No register for this store';
+  const desc = failed?'Check the connection, then try again.':'A manager adds one in WooCommerce › POS › Registers.';
+  const b = document.getElementById('board2'); b.innerHTML='';
+  // Today
+  b.insertAdjacentHTML('beforeend', variant('2·0','Today','a bare &lt;Text&gt; and a cart that cannot sell',
+    frame({focus:'cart', products, cart:`${barHtml({pill:failed?'':'Closed'})}${failed?'':'<div style="padding:4px 10px">No register for this store</div>'}${custRow()}${emptyCart()}${tabsHtml()}`}),
+    `The pill says <b>Closed</b> because <code>describeRegisterBar</code> has no <code>none</code> branch; the cart tabs and Guest row invite a sale that checkout will refuse. In the failed case there is no message at all (status stays <code>unknown</code>).`));
+  // A
+  b.insertAdjacentHTML('beforeend', variant('2A','Decided: the cart column is the gate card','<code>&lt;EmptyState kind="failed" icon="cashRegister"&gt;</code>',
+    frame({focus:'cart', products, cart:`${barHtml({pill:failed?'Offline':'No register'})}<div class="empty">${big('register').replace('width="32" height="32"','width="34" height="34"')}<b>${title}</b><div class="d">${desc}</div><div style="display:flex;gap:10px;align-items:center;margin-top:4px"><button class="ghost">${I.retry} Try again</button>${manager?`<button class="ghost">Open Registers ${I.ext}</button>`:`<button class="ghost">Register guide ${I.ext}</button>`}</div></div>${tabsHtml()}`}),
+    `Same shape as the Open register card and the picker: the column <i>is</i> the state. Bar pill gains a <b>No register</b> word (and reuses <b>Offline</b> for the failed case). One line, <b>Try again</b> re-reads <code>/registers</code>, the docs link for a cashier, <b>Open Registers</b> (Pro's WP admin screen) for a user who can manage the store. Cart tabs stay: open carts are allowed (ruling 5). Revolut Business's pane.`, true));
+  // The picker (store with more than one register, device unbound)
+  const pickRows = [['Front counter','Open since 09:02 · Amy Okafor','ok'],['Back office','Closed · last closure #41, yesterday 17:40','m'],['Market stall','Counting · Demo Cashier','w']];
+  const todayPicker = `<div style="padding:8px;flex:1;display:flex;flex-direction:column"><div style="border:1px solid var(--border);border-radius:8px;flex:1;display:flex;flex-direction:column"><div style="padding:10px 12px;border-bottom:1px solid var(--border);background:var(--muted);border-radius:8px 8px 0 0">Choose register</div>${pickRows.map(([n])=>`<div style="padding:10px 12px;border-bottom:1px solid var(--border)"><div style="font-weight:500">${n}</div><div class="sb muted" style="margin-top:2px"><i></i>Not opened</div></div>`).join('')}</div></div>`;
+  b.insertAdjacentHTML('beforeend', variant('2P·0','Today\'s picker','<code>RegisterPicker</code>: Card + MenuRow',
+    frame({focus:'cart', products, cart:`${barHtml({pill:'Choose register'})}${todayPicker}${tabsHtml()}`}),
+    `A Card with a header and one MenuRow per register. Every row says <b>Not opened</b> whatever the register is doing, because the status is a fixed string, so the cashier cannot tell which drawer Amy is already on. No "who opened it", no last closure.`));
+  const rowPick = (n,s,t)=>`<div class="row" style="height:56px;border:0;border-bottom:1px solid var(--border);border-radius:0;padding:0 12px"><div style="flex:1;min-width:0"><div style="font-weight:500">${n}</div><div class="sb ${t==='m'?'muted':''}" style="font-size:12.5px;color:var(--muted-fg)"><i style="${t==='ok'?'background:var(--ok)':''}"></i>${s}</div></div>${I.chev.replace('currentColor','var(--muted-fg)')}</div>`;
+  b.insertAdjacentHTML('beforeend', variant('2P·A','Decided: the picker as ruled, register, status, who opened it','ListRow 56 pt, status dot and word',
+    frame({focus:'cart', products, cart:`${barHtml({pill:'Choose register'})}<div style="flex:1;display:flex;flex-direction:column"><div style="padding:14px 12px 6px;color:var(--muted-fg)">Which register is this device at?</div>${pickRows.map(([n,s,t])=>rowPick(n,s,t)).join('')}<div style="padding:10px 12px;color:var(--muted-fg);font-size:12.5px">Change it later from your avatar · Switch register.</div></div>${tabsHtml()}`}),
+    `No Card inside the column: the column <i>is</i> the picker, as the Open register card and the count are. One question as the title. Each row is 56 pt (a tile the cashier hits once a day), the name, and the live state in a dot and a word: <b>Open since 09:02 · Amy Okafor</b> (green), <b>Closed</b> with its last closure (muted), <b>Counting</b> (amber). Tapping a row binds and the column becomes the Open register card or the cart. A footer line says where to change it. Precedent: Shopify's shared-drawer picker and Lightspeed's register select, which both show who is on the drawer. Bar pill stays <b>Choose register</b> until bound.`, true));
+  b.insertAdjacentHTML('beforeend', variant('2P·B','Tiles','two-up 96 pt tiles',
+    frame({focus:'cart', products, cart:`${barHtml({pill:'Choose register'})}<div style="flex:1;padding:12px;display:flex;flex-direction:column;gap:10px"><div style="color:var(--muted-fg)">Which register is this device at?</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${pickRows.map(([n,s,t])=>`<div class="tile" style="aspect-ratio:auto;height:96px;justify-content:space-between;padding:12px"><b>${n}</b><div class="sb ${t==='m'?'muted':''}" style="font-size:12px;color:var(--muted-fg)"><i style="${t==='ok'?'background:var(--ok)':''}"></i>${s.split(' · ')[0]}</div></div>`).join('')}</div></div>${tabsHtml()}`}),
+    `Registers as tiles, the way the payment grid treats gateways. Bigger targets, but the status has to be cut to one word to fit, and "who opened it" is the one thing a second cashier needs. Not recommended; here so the comparison is honest.`));
+  // B
+  b.insertAdjacentHTML('beforeend', variant('2B','Notice band over a stilled cart','<code>&lt;Notice tone="warn"&gt;</code>, cart dimmed',
+    frame({focus:'cart', products, cart:`${barHtml({pill:failed?'Offline':'No register'})}<div style="padding:8px 8px 0">${noticeBand({tone:'warn',icon:I.tri,title,actions:['Try again'],docs:manager?'Open Registers':'Register guide'})}</div><div class="dim" style="flex:1;display:flex;flex-direction:column">${custRow()}${emptyCart()}</div>${tabsHtml()}`}),
+    `The storage-outage pattern transplanted into the cart. Honest about what is blocked, but it shows a dead cart under a band, which is the "full-size dead tiles" anti-pattern in another coat. Only worth it if the cashier must still see the open carts' contents while blocked.`));
+  // C
+  b.insertAdjacentHTML('beforeend', variant('2C','The picker with no rows','Choose register → inline EmptyState',
+    frame({focus:'cart', products, cart:`${barHtml({pill:'Choose register'})}<div style="padding:8px;flex:1;display:flex;flex-direction:column"><div style="border:1px solid var(--border);border-radius:8px;flex:1;display:flex;flex-direction:column"><div style="padding:10px 12px;border-bottom:1px solid var(--border);background:var(--muted);border-radius:8px 8px 0 0;font-weight:500">Choose register</div><div class="empty" style="padding:16px"><b style="color:var(--muted-fg);font-weight:400">${failed?"Can't reach this store's registers":'No registers in this store yet'}</b><div style="display:flex;gap:10px"><button class="ghost">${I.retry} Try again</button>${manager?`<button class="ghost">Open Registers ${I.ext}</button>`:''}</div></div></div></div>${tabsHtml()}`}),
+    `Reuses the surface the cashier already meets on a multi-register store, so <code>none</code> becomes "the picker, empty". Cheapest to build; but it names a choice that does not exist, and the <b>Choose register</b> pill is a lie when there is nothing to choose.`));
+}
+
+function setS1(v,btn){s1=v;[...document.querySelectorAll('#s1seg button')].forEach(b=>b.setAttribute('aria-pressed',b===btn));render1();}
+function setS2(v,btn){s2=v;[...document.querySelectorAll('#s2seg button')].forEach(b=>b.setAttribute('aria-pressed',b===btn));render2();}
+function setWidth(v,btn){width=v;[...document.querySelectorAll('#widthSeg button')].forEach(b=>b.setAttribute('aria-pressed',b===btn));render1();render2();}
+function toggleTheme(){const r=document.documentElement;const d=r.getAttribute('data-theme')==='dark';r.setAttribute('data-theme',d?'light':'dark');document.getElementById('themeBtn').textContent=d?'Dark':'Light';}
+render1();render2();
+
+// ---------- section 6: WP admin ----------
+let s6='free';
+// The Settings app's own sidebar (POS › Settings). It never lists Stores: that is a separate WP screen.
+const wpNav = (on, {registers='show'}={})=>`<div class="nav"><div class="g">Settings</div><div class="n ${on==='general'?'on':''}">General</div><div class="n">Checkout</div><div class="n">Cloud Print</div><div class="n">Access</div><div class="n">Sessions</div>${registers==='hide'?'':`<div class="n ${on==='registers'?'on':''} ${registers==='del'?'del':''}">Registers</div>`}<div class="n">Extensions</div><div class="g" style="margin-top:8px">Tools</div><div class="n">Export closures</div><div class="n">Logs</div></div>`;
+const wp = (nav, page)=>`<div class="wp">${nav}<div class="page">${page}</div></div>`;
+// POS › Stores: WP's own menu, the store edit screen in two columns (as on dev-next, 2026-10-21).
+const wpMenu = (sub='Stores')=>`<div class="menu"><div>Dashboard</div><div>Posts</div><div>Media</div><div>WooCommerce</div><div>Products</div><div class="on">POS</div>${['Stores','Settings','Templates','View POS'].map(s=>`<div class="sub ${s===sub?'on2':''}">${s}</div>`).join('')}<div>Payments</div><div>Analytics</div><div>Users</div><div>Settings</div></div>`;
+const sec = (title, body, desc='')=>`<div class="sec"><h5>${title}</h5>${desc?`<div class="mut" style="margin:-4px 0 8px">${desc}</div>`:''}${body}</div>`;
+const storeLeft = ()=>`${sec('Store Logo', `<div style="display:flex;gap:10px;align-items:center"><div style="width:44px;height:44px;border:1px solid #dcdcde;border-radius:4px;background:#f6f7f7"></div><span class="wpbtn sec">Upload</span></div>`)}${sec('Address', fr('Address 1', inp('',true,'max-width:none'))+fr('Country', inp('United States (US) ▾',false,'max-width:none'))+fr('Town / City', inp('',true,'max-width:none')))}${sec('Contact', fr('Web Address', inp('https://',true,'max-width:none'))+fr('Phone', inp('',true,'max-width:none'))+fr('Email', inp('',true,'max-width:none')))}${sec('Receipt Messages', fr('Complimentary Close', inp('',true,'max-width:none;height:44px'))+fr('Footer', inp('',true,'max-width:none;height:44px')))}${sec('Receipt Templates', `<div class="mut">☐ Store specific receipt templates</div>`)}`;
+const storeRightTop = ()=>`${sec('Authorized Users', `<div class="in" style="max-width:none;height:auto;padding:6px 8px;flex-direction:column;align-items:flex-start;gap:4px;color:#50575e"><span>☐ admin</span><span>☐ Demo Cashier</span><span>☐ e2e-cashier-1</span></div>`, 'Select which users can access this store in the POS.')}${sec('Tax Rate', fr('Calculate Tax Based On', inp('This store address ▾',false,'max-width:none')))}${sec('Store Settings', fr('Currency', inp('Australian dollar ($) ▾',false,'max-width:none'))+fr('Locale', inp('Español — Spanish (Spain) ▾',false,'max-width:none'))+fr('Timezone', inp('Inherit site timezone ▾',false,'max-width:none')))}`;
+const storeRightBottom = ()=>`${sec('Opening Hours', ['Monday','Tuesday','Wednesday'].map(d=>`<div style="display:flex;justify-content:space-between;padding:3px 0"><span>${d}</span><span style="color:#2271b1">+ Add</span></div>`).join('')+'<div class="mut">…</div>')}`;
+const storePage = (title, registerSections, sub='Stores')=>`<div class="wp admin">${wpMenu(sub)}<div class="page" style="padding:0"><div class="sp-head"><div class="mut">← Back to stores</div><div style="display:flex;justify-content:space-between;align-items:center"><h4 style="margin:2px 0 0;font-size:18px">${title}</h4><span style="color:#b32d2e">Trash</span></div></div><div class="sp-cols"><div>${storeLeft()}</div><div>${storeRightTop()}${registerSections}${storeRightBottom()}</div></div></div></div>`;
+const storesList = (rows, extra=true)=>`<div class="wp admin">${wpMenu()}<div class="page"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><h4 style="margin:0;font-size:18px">Stores</h4><span class="wpbtn sec" style="padding:3px 8px">Add New</span></div><table class="l lt"><tr><th>Title</th>${extra?'<th>Registers</th>':''}<th>Users</th><th>Date</th></tr>${rows.map(([n,r,u])=>`<tr><td><b style="color:#2271b1">${n}</b></td>${extra?`<td>${r}</td>`:''}<td>${u}</td><td class="mut">Published<br>2026/09/12</td></tr>`).join('')}</table></div></div>`;
+const full = (html)=>html.replace('<div class="variant">','<div class="variant" style="grid-column:1/-1">');
+const fr = (l, c, tip='')=>`<div class="fr"><label>${l}</label><div>${c}</div>${tip?`<div class="tip">${tip}</div>`:''}</div>`;
+const inp = (v, ph=false, w='')=>`<div class="in ${ph?'ph':''}" style="${w}">${v}</div>`;
+const tog = (on=true)=>`<span class="tog ${on?'':'off'}"></span>`;
+const policy = (inherit)=>`${fr('Register sessions', `${tog()}${inherit?'<span class="chipd">Site default</span>':''}`)}${fr('Variance threshold', inherit?`<span class="chipd"><b>£5.00</b> · Site default · <a>Override</a></span>`:inp('5.00'), inherit?'':'Leave blank for no threshold.')}${fr('Expected close time', inherit?`<span class="chipd"><b>17:30</b> · Site default · <a>Override</a></span>`:inp('17:30'), inherit?'':'HH:MM. Leave blank for none.')}`;
+const regList = (rows, store)=>`<table class="l"><tr><th>Register</th><th>Default float</th><th>Status</th><th></th></tr>${rows.map(([n,f,s,open])=>`<tr><td><b>${n}</b></td><td>${f}</td><td><span class="dot ${open?'':'m'}"></span>${s}</td><td style="text-align:right;color:#646970">⋯</td></tr>`).join('')}<tr><td colspan="4" class="addrow">+ Add register to ${store}</td></tr></table>`;
+function render6(){
+  const b = document.getElementById('board6'); b.innerHTML='';
+  const pro0 = s6==='pro0', free = s6==='free' || pro0, pro1 = s6==='pro1', multi = s6==='pro';
+  // Today
+  const todayGeneral = wp(wpNav('general'), `<h4>General</h4><div class="card"><h5>Register</h5>${policy(false)}</div><div class="ann">Policy here…</div>`);
+  const todayRegisters = free
+    ? wp(wpNav('registers'), `<h4>Registers</h4><div class="card">${fr('Name', inp('Register'))}${fr('Default float', inp('', true))}</div><div class="hr info p2" style="font-size:12px">No registers have connected yet.</div><div class="ann">…the register on a second page. A name nobody will see, and a notice from the retired self-registration flow.</div>`)
+    : wp(wpNav('registers'), `<h4>Registers</h4><table class="l"><tr><th>Name</th><th>Default float</th><th>Store</th></tr>${(multi?[['Register','','AL Store'],['Register','','AL 12345 Store'],['Register','','UK Store']]:[['Register','','AL Store']]).map(([n,f,s])=>`<tr><td>${inp(n,false,'max-width:160px')}</td><td>${inp('',true,'max-width:90px')}</td><td>${inp(s+' ▾',false,'max-width:150px')}</td></tr>`).join('')}</table><div style="margin-top:10px"><span class="wpbtn sec">Add register</span></div><div class="ann" style="margin-top:8px">A flat list that assigns registers to stores with a dropdown. Three rows all called "Register".</div>`);
+  b.insertAdjacentHTML('beforeend', variant('6·0','Today, in POS › Settings','General and Registers', `<div style="display:grid;grid-template-columns:1fr;gap:0">${todayGeneral}${todayRegisters}</div>`, `${pro0?'A Pro site with no Store post has exactly one register, held in the same option as Free, so it meets the same two pages.':free?'A Free owner with one register edits it across two pages.':'The Pro owner assigns registers to stores from a dropdown on a page that belongs to no store…'}`));
+  if (!free) b.insertAdjacentHTML('beforeend', full(variant('6·0, continued','Today, in POS › Stores › AL Store','the store edit screen, right column',
+    storePage('AL Store', sec('Register', policy(false))),
+    `…and edits the same three policy fields again here, in the right column between Store Settings and Opening Hours. A store value replaces General verbatim, blank included.`)));
+  // A
+  if (free) {
+    b.insertAdjacentHTML('beforeend', variant('A','The register lives on the store; in Free the store is the site','POS › Settings › General, no Registers page',
+      wp(wpNav('general',{registers:'del'}), `<h4>General</h4><div class="card"><h5>Register</h5>${fr('Register sessions', tog())}${fr('Default float', inp('200.00'), 'Cash in the drawer at opening. The cashier can type a different amount.')}${fr('Variance threshold', inp('5.00'), 'Leave blank for no threshold.')}${fr('Expected close time', inp('17:30'), 'HH:MM. Leave blank for none.')}<div class="mut" style="margin-top:8px">${pro0?'To run more than one register, create a store and add registers on its page. <span style="color:#2271b1">Add store ↗</span>':'More registers and stores with Pro ↗'}</div></div>`),
+      `One section, four fields, one page. No name field: a lone register is unnamed in the POS (the bar names the store), so Free never manages a name. The Registers page and its stale "connected" notice go. Section 7 redraws the fields themselves. Lightspeed's outlet page, collapsed to one outlet.${pro0?' <b>A Pro site with no store gets exactly this page</b>: nothing about registers asks it to create a store. One muted line under the fields says how to get a second register: create a store, then add registers on its page (Paul, 2026-10-21). The register list and the Site default chips only appear once a store exists, on that store\'s screen.':''}`, true));
+  } else {
+    b.insertAdjacentHTML('beforeend', full(variant('A','Registers live on the store edit screen','POS › Stores › AL Store, right column',
+      storePage('AL Store', sec('Register', policy(true)) + sec('Registers', regList(multi?[['Front counter','£200.00','Open since 09:02 · Amy Okafor',true],['Back office','£50.00','Closed',false]]:[['Register','£200.00','Closed',false]],'AL Store'))),
+      `The Register section stays where it is on the store screen, between Store Settings and Opening Hours, and gains the store's register list right under it: name, default float, live status, a row menu (Rename, Move to…, Retire), one "Add register" row. ${pro1?'With one store this is the whole Pro setup, and it reads exactly like the Free General section plus a list.':'With several stores the owner never sees another store\'s registers while editing this one.'} Lightspeed's outlet page; Homerun's inline list; Stripe's "adding to this location".`, true)));
+    b.insertAdjacentHTML('beforeend', variant('A, continued','The Stores list carries the count','POS › Stores',
+      storesList(multi?[['AL Store','2','3'],['AL 12345 Store','1','1'],['UK Store','1','2']]:[['AL Store','1','3']]),
+      `The WP list table under POS › Stores gains a Registers column (Shopify's POS column on Locations). Nothing else changes here.`));
+    b.insertAdjacentHTML('beforeend', variant('A, continued','General carries the site defaults','POS › Settings › General',
+      wp(wpNav('general',{registers:'del'}), `<h4>General</h4><div class="card"><h5>Register defaults</h5>${policy(false)}<div class="mut" style="margin-top:6px">Each store starts from these and can override them on its own page.</div></div>`),
+      `The Settings app keeps the three policy fields as the defaults every store starts from, and loses the Registers page. The rule for this section: <b>with no store it is the site's one register (float included, as in Free); once a store exists it is the defaults, and the float moves with the register onto the store screen.</b> Adding a store ends with its first register, as Lightspeed does, which is what the plugin already seeds on publish.`));
+  }
+  // B
+  b.insertAdjacentHTML('beforeend', variant('B','Keep one Registers page, grouped by store','POS › Settings › Registers, cheaper',
+    free ? wp(wpNav('registers'), `<h4>Registers</h4><div class="card">${fr('Default float', inp('200.00'))}</div><div class="mut">Policy stays on General.</div>`)
+         : wp(wpNav('registers'), `<h4>Registers</h4><table class="l">${(multi?[['AL Store',[['Front counter','£200.00','Open since 09:02',true],['Back office','£50.00','Closed',false]]],['AL 12345 Store',[['Register','','Closed',false]]],['UK Store',[['Register','','Closed',false]]]]:[['AL Store',[['Register','£200.00','Closed',false]]]]).map(([s,rows])=>`<tr class="grp"><td colspan="4">${s}</td></tr>${rows.map(([n,f,st,o])=>`<tr><td style="padding-left:20px">${n}</td><td>${f}</td><td><span class="dot ${o?'':'m'}"></span>${st}</td><td style="text-align:right;color:#646970">⋯</td></tr>`).join('')}<tr><td colspan="4" class="addrow" style="padding-left:20px">+ Add register to ${s}</td></tr>`).join('')}</table>`),
+    `Square's Points of sale list with location headers. Fixes the dropdown and the identical names, and is the smallest change. But the owner-operator still has two pages for one register, and the store screen still carries a copy of the policy. Rejected for that reason; shown so the comparison is honest.`));
+  // C
+  if (!free) b.insertAdjacentHTML('beforeend', full(variant('C','Policy flows down: site default, explicit override','POS › Stores › AL Store, the Register section only',
+    storePage('AL Store', sec('Register', `${fr('Register sessions', `${tog()}<span class="chipd">Site default</span>`)}${fr('Variance threshold', `<span class="chipd"><b>£10.00</b> · Overridden · <a>Use site default (£5.00)</a></span>`)}${fr('Expected close time', `<span class="chipd"><b>17:30</b> · Site default · <a>Override</a></span>`)}`)),
+    `Today a store value replaces General verbatim, blank included, so "no threshold" and "not set" are the same blank. Under C a field is either <i>Site default</i> (follows General) or <i>Overridden</i> (its own value, blank allowed). No migration: registers, sessions, the threshold and the close time all ship with 2.0, so no 1.11.x store holds any of these values. Every store starts on Site default; Override is the only way it gets its own value. The verbatim-replace behaviour on <code>next</code> is code to change, not data to carry (Paul, 2026-10-21).`)));
+}
+function setS6(v,btn){s6=v;[...document.querySelectorAll('#s6seg button')].forEach(b=>b.setAttribute('aria-pressed',b===btn));render6();}
+render6();
+
+// ---------- section 7: the settings redrawn ----------
+let s7on = true, s7tier='free';
+const money = (v)=>`<div class="in" style="max-width:140px;padding:0"><span style="padding:0 8px;color:#646970;border-right:1px solid #dcdcde;height:100%;display:flex;align-items:center;background:#f6f7f7">£</span><span style="padding:0 8px">${v}</span></div>`;
+const timeIn = (v)=>`<div class="in" style="max-width:120px;justify-content:space-between"><span>${v}</span><span style="color:#646970">▾</span></div>`;
+const srow = (ctrl, label, help='')=>`<div style="display:grid;grid-template-columns:44px 1fr;gap:10px;padding:8px 0;align-items:start"><div>${ctrl}</div><div><div style="font-weight:500">${label}</div>${help?`<div class="mut" style="margin-top:2px">${help}</div>`:''}</div></div>`;
+const srowIn = (label, ctrl, help, chip='')=>`<div style="display:grid;grid-template-columns:44px 1fr;gap:10px;padding:8px 0 8px"><div></div><div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span>${label}</span>${ctrl}${chip}</div>${help?`<div class="mut" style="margin-top:4px">${help}</div>`:''}</div></div>`;
+function render7(){
+  const b = document.getElementById('board7'); b.innerHTML='';
+  const ctl = `<div class="seg" style="padding:8px 14px;border-bottom:1px solid var(--border)">Switch: <button aria-pressed="${s7on}" onclick="s7on=true;render7()">On</button><button aria-pressed="${!s7on}" onclick="s7on=false;render7()">Off</button> &nbsp; Tier: <button aria-pressed="${s7tier==='free'}" onclick="s7tier='free';render7()">Free, or Pro with no store · General</button><button aria-pressed="${s7tier==='store'}" onclick="s7tier='store';render7()">Pro · Store page</button></div>`;
+  const inherit = s7tier==='store';
+  const chip = (v)=>inherit?`<span class="chipd">Site default · <a>Customise</a></span>`:'';
+  const today = wp(wpNav('general'), `<h4>General</h4><div class="card"><h5>Register</h5>${fr('Register sessions', tog(s7on))}${fr('Variance threshold', inp('',true), 'Leave blank for no threshold.')}${fr('Expected close time', inp('HH:MM',true), 'HH:MM. Leave blank for none.')}</div><div class="ann">Is the threshold money or time? What is a session? Both tips describe the format, not what happens.</div>`);
+  const registerBody = `
+    ${srow(tog(s7on), 'Open and close the register', 'Cashiers open with a float, record cash in and out, and count the drawer at close.' + (inherit?' <span class="chipd">Site default</span>':''))}
+    ${s7on?`
+    ${srowIn('Opening float', money('200.00'), 'Pre-filled when the register is opened. The cashier can type what is actually in the drawer.', inherit?'':'')}
+    ${srow(tog(true), 'Ask a manager when the count is out', '')}
+    ${srowIn('by more than', money('5.00'), 'Short or over by more than this at close needs a manager\'s code before the register closes.', chip())}
+    ${srow(tog(true), 'Remind the cashier to close', '')}
+    ${srowIn('at', timeIn('17:30'), 'After this time the bar shows Overdue, and Checkout becomes Close register when the cart is empty.', chip())}
+    `:''}`;
+  const improved = inherit
+    ? storePage('AL Store', sec('Register', registerBody) + (s7on?sec('Registers', regList([['Register','£200.00','Closed',false]],'AL Store')):''))
+    : wp(wpNav('general',{registers:'del'}), `<h4>General</h4><div class="card"><h5>Register</h5>${registerBody}</div>`);
+  b.insertAdjacentHTML('beforeend', variant('7·0','Today','POS › Settings › General › Register', today, `Three labels lifted from the column names. "Variance threshold" is a money amount with no currency; "Expected close time" is typed as HH:MM; "Register sessions" names a concept, not a behaviour.`));
+  b.insertAdjacentHTML('beforeend', (inherit?full:(x=>x))(variant('7A','Redrawn','one switch, then sentences with the value inside them', `${ctl}${improved}`, `Off is one row. On reveals the float and two optional behaviours, each a switch with its value in the sentence: money fields carry £, the closing time is a picker. Every help line says what happens at the till. ${inherit?'On the store edit screen the section sits where it does today, right column, between Store Settings and Opening Hours; the policy values show <b>Site default</b> with Customise, the float is the register\'s own, and the store\'s register list sits under it (section 6, A).':'This is the whole Free setup.'}`, true)));
+}
+render7();
+
+// ---------- section 5: every band, today vs Notice ----------
+const chevD = P('<path d="M6 9l6 6l6 -6"/>');
+const star = P('<path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z"/>');
+const smBtn = (l)=>`<button class="btn sm" style="align-self:flex-start">${l}</button>`;
+const lgBtn = (l)=>`<button class="btn">${l}</button>`;
+const docs = (l)=>`<span class="link">${l} ${I.ext}</span>`;
+const N = (o)=>noticeBand(o);
+const pairs = [
+ {w:320, where:'pos/products/index.tsx:556', what:'closed register, products column',
+  today:`<div class="hr plain">${I.lockFilled.replace('currentColor','var(--muted-fg)')}<span>Price check only until the register is open.</span></div>`,
+  after:`${N({icon:I.lock,title:'Price check only until the register is open.'})}<div class="t-muted" style="font-size:12px">No action: the Open register card is already the cart column whenever this band shows.</div>`},
+ {w:320, where:'pos/products/index.tsx:556', what:'counting, products column',
+  today:`<div class="hr plain">${I.lockFilled.replace('currentColor','var(--muted-fg)')}<span>Counting the drawer. Items can be added after the count.</span></div>`,
+  after:N({icon:I.info,title:'Counting the drawer. Items can be added after the count.'})},
+ {w:320, where:'components/session-hold-banner/index.tsx:115', what:'under the register bar',
+  today:`<div class="hr red40 p2" style="flex-direction:row;align-items:center"><span class="t-red" style="flex:1">Session expired — sign in to reconnect to the store.</span><span class="t-red u" style="font-weight:500">Log in</span></div>`,
+  after:N({tone:'bad',icon:I.tri,title:'Session expired',sub:'Sign in to reconnect to the store.',actions:['Log in']})},
+ {w:320, where:'pos/checkout/checkout.tsx:212 · tender-checkout.tsx:221 · checkout-column.tsx:109', what:'storage unavailable, copied into three checkout files',
+  today:`<div class="hr red"><span class="t-red">Payment is blocked — the local database is unavailable, so this order can't be recorded on this device. Reload the app before taking payment.</span></div>`,
+  after:N({tone:'bad',icon:I.tri,title:'Payment is blocked: the local database is unavailable',sub:'Reload the app before taking payment.',actions:['Reload the app','View status']})},
+ {w:320, where:'pos/products/storage-outage-banner.tsx:49', what:'the same outage in the products column, already on Notice (reference)',
+  today:N({tone:'bad',icon:I.tri,title:'Local database unavailable — scanning, checkout, saving and voiding are blocked until the app is reloaded.',actions:['Reload the app','View status']}),
+  after:`<div class="t-muted" style="font-size:12.5px;padding:8px 2px">One <code>StorageOutageBanner</code> in all four places. The products one is the model; the three checkout copies above become it.</div>`},
+ {w:320, where:'pos/checkout/checkout.tsx:224 · legacy-tab.tsx:103, 114', what:'payment form missing / stalled / failed',
+  today:`<div class="hr red"><span class="t-red">The payment form didn't load — check the connection to your store, then retry.</span></div>`,
+  after:N({tone:'bad',icon:I.tri,title:"The payment form didn't load",sub:'Check the connection to your store.',actions:['Retry']})},
+ {w:320, where:'pos/checkout/checkout.tsx:246 · legacy-tab.tsx:93', what:'gateway catalogue unavailable, with a 56 pt Retry inside the box',
+  today:`<div class="hr red"><span class="t-red">Payment methods could not load. Try again.</span>${lgBtn('Try again')}</div>`,
+  after:N({tone:'bad',icon:I.tri,title:'Payment methods could not load.',actions:['Try again']})},
+ {w:320, where:'pos/checkout/checkout.tsx:278', what:'stock changed during checkout',
+  today:`<div class="hr red"><span class="t-red" style="font-weight:600">Stock changed while checking out — these items exceed what's available:</span><span class="t-red">Only 2 available for Tote bag</span><span class="t-red">Beanie out of stock</span></div>`,
+  after:N({tone:'bad',icon:I.tri,title:'Stock changed while checking out',sub:'Only 2 available for Tote bag · Beanie out of stock',actions:['Back to cart']})},
+ {w:320, where:'pos/checkout/tender/legacy-tab.tsx:54', what:'legacy gateway after a split payment',
+  today:`<div class="hr warn"><span class="t-warn">A legacy gateway charges the whole order, so it can't be used once a payment has been taken. Cancel the payments taken so far to use one.</span></div>`,
+  after:N({tone:'warn',icon:I.tri,title:"A legacy gateway can't be used once a payment has been taken",sub:'It charges the whole order.',actions:['Cancel payments taken']})},
+ {w:320, where:'pos/checkout/tender/captured-unfinished-notice.tsx', what:'card charged, order not finished (no band at all today)',
+  today:`<div style="display:flex;flex-direction:column;gap:12px;padding:4px"><span class="t-red">The card was charged, but the order didn't finish. Don't charge again — open the order to finish it.</span><div class="fold" style="color:var(--fg)">Support details ${chevD}</div><span class="link">Having trouble? ${I.ext}</span></div>`,
+  after:`${N({tone:'bad',icon:I.tri,title:"The card was charged, but the order didn't finish",sub:"Don't charge again. Open the order to finish it.",actions:['Open order'],docs:'Having trouble?'})}<div class="fold">Support details ${chevD}</div>`},
+ {w:320, where:'pos/cart/totals-changed-banner.tsx:152', what:'server recalculated the sale',
+  today:`<div class="hr amber p2"><span style="font-weight:500">Your store changed this order's totals</span><span class="t-muted">Your store recalculated this sale. The store's amounts are the ones that count — check the total before handing over goods.</span><span class="link u" style="font-weight:400">Why totals disagree</span></div>`,
+  after:N({tone:'warn',icon:I.tri,title:"Your store changed this order's totals",sub:"The store's amounts are the ones that count. Check the total before handing over goods.",docs:'Why totals disagree'})},
+ {w:320, where:'pos/cart/register-count.tsx:181', what:'count over the variance limit',
+  today:`<div class="hr pill">${I.lock.replace('currentColor','var(--warn-fg)')}<span class="t-warn">Over the £5.00 limit · a manager must approve</span></div>`,
+  after:N({tone:'warn',icon:I.lock,title:'Over the £5.00 limit · a manager must approve'})},
+ {w:320, where:'pos/cart/conditions-notice.tsx:21', what:'a LIST of per-line fixes, not a band: keep the rows, take the warn surface and radius',
+  today:`<div class="hr amber" style="padding:0 8px;gap:0"><div class="rowbtn">${I.box.replace('currentColor','var(--warn-fg)')}<span style="flex:1;font-weight:500">Only 2 available for Tote bag</span><b>Reduce</b></div><div class="rowbtn">${I.box.replace('currentColor','var(--warn-fg)')}<span style="flex:1;font-weight:500">Beanie out of stock</span><b>Remove</b></div></div>`,
+  after:`<div class="notice warn" style="padding:0 12px;flex-direction:column;align-items:stretch;gap:0"><div class="rowbtn">${I.box}<span style="flex:1;font-weight:500">Only 2 available for Tote bag</span><span class="link">Reduce</span></div><div class="rowbtn">${I.box}<span style="flex:1;font-weight:500">Beanie out of stock</span><span class="link">Remove</span></div></div>`},
+ {w:520, where:'settings/printer/dialog/test-print-error.tsx:77', what:'test print failed',
+  today:`<div class="hr red40"><span class="t-red">The printer did not answer at 192.168.1.40:9100.</span><div class="fold" style="min-height:24px;font-size:12px;font-weight:500">Support details ${chevD}</div></div>`,
+  after:`${N({tone:'bad',icon:I.tri,title:'The printer did not answer at 192.168.1.40:9100',actions:['Try again'],docs:'Printer guide'})}<div class="fold">Support details ${chevD}</div>`},
+ {w:520, where:'settings/barcode-scanning/test-panel.tsx:243, 252', what:'scan test: a suggestion with Apply, and a shift-mangled warning',
+  today:`<div class="hr info p2" style="flex-direction:row;align-items:center"><span style="flex:1">Lower the threshold to 40 ms so this scanner is detected</span>${smBtn('Apply')}</div><div class="hr red40 p2"><span class="t-red">Scanner is sending Shift as separate keys — reconfigure it to a US-keyboard / no-modifier mode</span></div>`,
+  after:`${N({icon:I.info,title:'Lower the threshold to 40 ms so this scanner is detected',actions:['Apply']})}${N({tone:'warn',icon:I.tri,title:'Scanner is sending Shift as separate keys',sub:'Reconfigure it to a US-keyboard / no-modifier mode.',docs:'Scanner guide'})}`},
+ {w:520, where:'settings/barcode-scanning/test-panel.tsx:207, 213', what:'scan test result: success and near-miss boxes',
+  today:`<div class="hr ok p2"><span>Detected as a scan → 5012345678900</span></div><div class="hr warn p2"><span>Treated as typing — average gap 61ms is above your 50ms threshold</span></div>`,
+  after:`<div style="display:flex;align-items:center;gap:8px;min-height:36px">${I.check ?? P('<path d="M5 12l5 5l10 -10"/>')}<span>Detected as a scan → <b>5012345678900</b></span></div>${N({tone:'warn',icon:I.tri,title:'Treated as typing',sub:'Average gap 61 ms is above your 50 ms threshold.',actions:['Use 70 ms']})}<div class="t-muted" style="font-size:12px">A good result is a line with a check, not a green band: Notice has no success tone on purpose (ledger: success is a beat, not a state).</div>`},
+ {w:520, where:'settings/barcode-scanning/input-sources.tsx:468 · scanner-device-chooser.electron.tsx:124', what:'detected scanner / choose a scanner: info boxes that hold a form',
+  today:`<div class="hr info p2"><span>Detected "Zebra DS2208" — name it and save</span><div class="field" style="height:36px">Front counter scanner</div>${smBtn('Save')}</div>`,
+  after:`${N({icon:I.info,title:'Detected "Zebra DS2208"',sub:'Name it and save.'})}<div class="field" style="height:40px">Front counter scanner</div>${smBtn('Save')}<div class="t-muted" style="font-size:12px">The band announces; the form sits under it on the card, not inside the tint.</div>`},
+ {w:520, where:'health/components/callout.tsx (5 uses)', what:'Health\'s own idiom: a 3 px left edge, no box',
+  today:`<div class="callout w"><span class="t-warn">This device\'s clock is 4 min ahead of the store.</span></div><div class="callout" style="margin-top:10px"><span style="font-weight:500">3 changes were rejected by the store</span><div class="t-muted" style="font-size:12.5px">Open each one to see why.</div></div>`,
+  after:`${N({tone:'warn',icon:I.tri,title:"This device's clock is 4 min ahead of the store"})}<div style="height:2px"></div>${N({tone:'bad',icon:I.tri,title:'3 changes were rejected by the store',sub:'Open each one to see why.',actions:['Show rejected']})}`},
+ {w:520, where:'components/upgrade-notice/index.tsx:23', what:'promo strip in the warning colour (rule 7: semantic colour only carries meaning)',
+  today:`<div class="strip">${star.replace('currentColor','var(--warn-fg)')}<span style="flex:1"><b>You're on the free version of WCPOS.</b> Pro adds receipt templates, held orders, reports and priority support.</span><span class="t-muted u">See what Pro adds</span>${smBtn('Upgrade to Pro')}</div>`,
+  after:`<div class="strip neutral">${star}<span style="flex:1"><b>You're on the free version of WCPOS.</b> Pro adds receipt templates, held orders, reports and priority support.</span><span class="link">See what Pro adds</span>${smBtn('Upgrade to Pro')}</div><div class="t-muted" style="font-size:12px">Not a Notice: nothing is wrong. Same strip on the muted surface, so amber stays free to mean warning.</div>`},
+];
+document.getElementById('pairs').innerHTML = pairs.map(p=>`<div class="pair"><div class="meta"><b>${p.what}</b><code>${p.where}</code></div><div class="pane" style="max-width:${p.w+22}px"><span class="lbl">Today</span>${p.today}</div><div class="pane" style="max-width:${p.w+22}px"><span class="lbl">On Notice</span>${p.after}</div></div>`).join('');
+</script>
+</body>
+</html>
