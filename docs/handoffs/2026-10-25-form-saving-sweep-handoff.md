@@ -159,7 +159,8 @@ checkout tenders. Inline cells (`components/editable-field.tsx`, `number-input.w
 
 ## 5. Done means
 
-- No button in `packages/core` carries `common.save`; `grep -rn "common.save'" packages/core/src` is empty.
+- No button in `packages/core` carries `common.save`: `grep -rnF "common.save" packages/core/src` shows no
+  button caller (read each match; the search also returns longer keys such as `common.saved`).
 - Each converted form: field edit → `saved-<name>` appears; closing and reopening shows the edit; the
   outbox row for the record exists (Logs screen) and lands on dev-next after publish.
 - Unit tests for every converted form, `tsc`, lint, `node scripts/extract-js-strings.js --check` green per PR.
