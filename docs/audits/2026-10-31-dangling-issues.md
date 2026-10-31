@@ -32,6 +32,8 @@ Counted from the itemised sections of this file (one line per finding; sub-findi
 
 ## Still dangling (the backlog)
 
+Paul's disposition (2026-10-31, option A): fix PRs for the "own PR" lines in order over the sessions that come next; the rulings go to him one at a time, C15 first. Lines fixed since the audit are marked in place.
+
 Each line: what, where it was parked, lane, the pick recorded in the audit session's closing message.
 
 ### App (monorepo)
@@ -45,7 +47,7 @@ Each line: what, where it was parked, lane, the pick recorded in the audit sessi
 | A9 | `packages/query` tests are never typechecked (92 errors); #2905 put "a PR of its own" to Paul as its pick | #2905 body "Question for Paul" | next | Observed: tsconfig still `src/**/*` only |
 | C4 | Reports hero shows 0 orders today under Everyone / Completed & processing while the session holds a cash sale | three 10-18 closing notes, "not evaluated further" | next | Inferred: nothing since 10-18 touches that filter |
 | C7 | `pos-loader.js` has no retry; a cold-edge 404 on the entry script blanks a first visitor once per publish | 10-21 closing note | next | Observed: unchanged since 10-17; one jsDelivr fallback, no retry |
-| C8 | Orders refund modal titles itself with the order's id, not its number | 10-23 closing note | both | Observed: `orders/refund/modal.tsx` passes `payload.id` |
+| C8 | Orders refund modal titles itself with the order's id, not its number | 10-23 closing note | both | **Fixed 2026-10-31:** monorepo#3159 (`main`, also the edit modal there) and #3160 (`next`) |
 | C9 | Wedge detector swallows a second keystroke within 24 ms on a focused non-input element | 10-24 closing note "left to the detector" | next | Observed unchanged; design judgement whether it is a defect |
 | C10a | Customer `password` field autosaves through the 300 ms debounce; a pause mid-typing pushes a partial password | 10-25 closing note; #2949 body "for the owner" | next | Observed: no special case |
 | C13 | `pnpm typecheck --force` in `apps/main` rejected by tsc; `@wcpos/core` eslint dies at the 2 GB heap from the root `pnpm run lint` | 10-29 closing note "I'll open a small fix PR after" | next | Observed: lint script still `eslint src`, no heap PR |
@@ -69,12 +71,12 @@ Each line: what, where it was parked, lane, the pick recorded in the audit sessi
 | B14a' | wiki `permission-gate.md` still says `next` compares `post_author`; #2159 synced the `_pos_user` fix | wiki#1190 | wiki | Observed |
 | D3 | Three PHP 8.5 deprecations in PayArc, noted "for their own PRs" during the 10-15 pay-POST incident | 10-15 closing note | payarc-terminal | Inferred: no deprecation PR since; the incident doc naming them was not found |
 | D5 | The sync digest holds a row per customer and per live order, against ADR 0036's window scoping; multisite has zero test coverage for the eight till tables | 10-19 closing note "a follow-up, Paul's call" | woocommerce-pos | Observed: woocommerce-pos#2321 (closed) kept it "unbounded"; product call |
-| D6 | `scripts/probe-store-health.mjs` treats a 404 as healthy (how two days of a hijacked port went unnoticed) | two 10-19 closing notes "not changed" | monorepo | Observed: unchanged since 08-23 |
+| D6 | `scripts/probe-store-health.mjs` treats a 404 as healthy (how two days of a hijacked port went unnoticed) | two 10-19 closing notes "not changed" | monorepo | **Fixed 2026-10-31:** monorepo#3157 (`main`) and #3158 (`next`) |
 | D7 | Pro `Refund_Processor` reads an authorization-only order as pre-ledger (filters on captured statuses only) | 10-20 closing note; woocommerce-pos#2352 body "Pro tidy-up" | woocommerce-pos-pro | Observed: last touched 10-14 |
 | D8 | Bundle publish workflow and `tag-web-bundle.sh` print FAIL on transient jsDelivr 503s that clear within a minute; no retry before the verdict | four 10-21 closing notes "noted in the record" | web-bundle / claude-config | Observed: no retry added since 10-19 |
 | D12 | Pro's integration parity harness imports two monorepo files that no longer exist on either lane, so it produces no evidence for any `next` tax change | 10-30 closing note "needs its own PR" | woocommerce-pos-pro | Observed: `client-calculator.ts` last changed 03-25 |
 | D13 | Printed receipt, report and closure templates in the free plugin not audited for the ruled Store · Register order | four 10-30 closing notes "separate repo, separate PR, not started" | woocommerce-pos | Inferred: no audit PR; closure templates already print store before register |
-| D14 | Pro header says `Requires at least: 5.6`; the updater's `update_plugins_` hook exists only from WP 5.8 | 10-15 closing note | woocommerce-pos-pro | Observed on both lanes |
+| D14 | Pro header says `Requires at least: 5.6`; the updater's `update_plugins_` hook exists only from WP 5.8 | 10-15 closing note | woocommerce-pos-pro | **Fixed 2026-10-31:** woocommerce-pos-pro#727 (`main`) and #728 (`next`) |
 | D17d | Offline sales slice D (the SumUp queue) is the one remaining slice ADR 0040 lists as missing | 10-23 closing note "slices C and D remain" | monorepo | Observed: slice C landed as #2894; no SumUp PR since |
 
 ## Picked up (no action)
