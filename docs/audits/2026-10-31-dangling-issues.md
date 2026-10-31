@@ -32,7 +32,7 @@ Counted from the itemised sections of this file (one line per finding; sub-findi
 
 ## Still dangling (the backlog)
 
-Paul's disposition (2026-10-31, option A): fix PRs for the "own PR" lines in order over the sessions that come next; the rulings go to him one at a time, C15 first. Lines fixed since the audit are marked in place.
+Paul's disposition (2026-10-31, option A): fix PRs for the "own PR" lines in order over the sessions that come next; the rulings went to him as six questions with a pick each and he answered *"do as you recommend for all"* (recorded in roadmap memory `rulings-dangling-audit-2026-10-31`). Lines fixed, closed or scheduled since the audit are marked in place.
 
 Each line: what, where it was parked, lane, the pick recorded in the audit session's closing message.
 
@@ -40,7 +40,7 @@ Each line: what, where it was parked, lane, the pick recorded in the audit sessi
 
 | # | Defect | Parked in | Lane | Verdict |
 |---|---|---|---|---|
-| A2 | Quantity field accepts a decimal on a store whose REST API refuses one; no client `decimal_qty` gate | #2939 body "Found, not changed"; 10-25 note "say the word" | next | Observed: `QUANTITY_PLACES` is a fixed constant; no store setting turns the key off. #2939 says the decimal key was a decision, so this is a ruling, not a fix |
+| A2 | Quantity field accepts a decimal on a store whose REST API refuses one; no client `decimal_qty` gate | #2939 body "Found, not changed"; 10-25 note "say the word" | next | **Fixed 2026-10-31 (ruling 2):** woocommerce-pos#2498 (store payload carries `decimal_qty`), woocommerce-pos-pro#731 (lists), monorepo#3164 (keypad hides the decimal key when off; display keeps full places) |
 | A3 | `FormSelect`, `FormCombobox`, `FormRadioGroup`, `FormSegmentedControl`, `FormTreeCombobox` have no label-press handler; a row label names them, a click does nothing | #2852 body "Known gap"; 10-22 note "small follow-up if you want it" | next | Observed: no `onLabelPress` wiring in `packages/components/src/form/` |
 | A4b | Whether the plugin's tax-location filter substitutes a fuller store address (rows 2 and 8 of #1875, the 8.35% rate) | #2793 body "Not verified against the plugin" | main | Inferred: no tracker. #1875 itself is OPEN and tracks the line re-tax half |
 | A5b | On web the generation-6 probe leaves an empty `pos_v5` file and WAL in the SQLite pool per scope; nothing deletes them | #2404 body "Known edges" | next | Observed: `legacy-scope-drain.ts` documents it as expected; no issue |
@@ -48,11 +48,11 @@ Each line: what, where it was parked, lane, the pick recorded in the audit sessi
 | C4 | Reports hero shows 0 orders today under Everyone / Completed & processing while the session holds a cash sale | three 10-18 closing notes, "not evaluated further" | next | Inferred: nothing since 10-18 touches that filter |
 | C7 | `pos-loader.js` has no retry; a cold-edge 404 on the entry script blanks a first visitor once per publish | 10-21 closing note | next | Observed: unchanged since 10-17; one jsDelivr fallback, no retry |
 | C8 | Orders refund modal titles itself with the order's id, not its number | 10-23 closing note | both | **Fixed 2026-10-31:** monorepo#3159 (`main`, also the edit modal there) and #3160 (`next`) |
-| C9 | Wedge detector swallows a second keystroke within 24 ms on a focused non-input element | 10-24 closing note "left to the detector" | next | Observed unchanged; design judgement whether it is a defect |
+| C9 | Wedge detector swallows a second keystroke within 24 ms on a focused non-input element | 10-24 closing note "left to the detector" | next | **Closed 2026-10-31 (ruling 3):** the 24 ms window stays; a second key inside it off-input is a scanner burst by design. Not a defect |
 | C10a | Customer `password` field autosaves through the 300 ms debounce; a pause mid-typing pushes a partial password | 10-25 closing note; #2949 body "for the owner" | next | Observed: no special case |
 | C13 | `pnpm typecheck --force` in `apps/main` rejected by tsc; `@wcpos/core` eslint dies at the 2 GB heap from the root `pnpm run lint` | 10-29 closing note "I'll open a small fix PR after" | next | Observed: lint script still `eslint src`, no heap PR |
 | C14 | Tooltips have no strip collision boundary; two Offline labels show on the POS when offline; no form-label fence; `next` CLAUDE.md heading still says jsDelivr | 10-30 closing note "small follow-ups still open" | next | Observed (CLAUDE.md); Inferred (rest) |
-| C15 | Clear all on the Orders filter bar is a ghost Button, not the 10-30 word-plus-glyph shape | four closing notes on 10-30/31 (the screenshot) | next | Observed: #3126 changed the products bar only. Scope-of-ruling: Paul's question |
+| C15 | Clear all on the Orders filter bar is a ghost Button, not the 10-30 word-plus-glyph shape | four closing notes on 10-30/31 (the screenshot) | next | **Fixed 2026-10-31 (ruling 1):** monorepo#3163, the Orders bar's Clear all is a link like the POS bar's |
 | C17 | Reanimated "reading from value during render" warning on Electron | 10-22 closing note | next | Inferred: nothing mentions it since |
 | C3b | woocommerce-pos#1754 (Stripe Terminal orders paid but left `pos-open`) open since the 1.10 line with zero comments; 10-15 note said it "needs its own check against demo" | 10-15 closing note | main | Observed: still open, uncommented |
 | C6b | `pos-cart` add latency 446–617 ms idle against 229 ms on Oct 7 (budget 300 ms); #2863 fixed the search-heap jank but its live checkbox is unticked | 10-20 closing note "perf work, not changed" | next | Inferred |
@@ -70,15 +70,14 @@ Each line: what, where it was parked, lane, the pick recorded in the audit sessi
 | B14e | wiki `receipt-email-queue.md` still says "latest release v1.9.7"; edited 10-31 without fixing it | wiki#1197 | wiki | Observed |
 | B14a' | wiki `permission-gate.md` still says `next` compares `post_author`; #2159 synced the `_pos_user` fix | wiki#1190 | wiki | Observed |
 | D3 | Three PHP 8.5 deprecations in PayArc, noted "for their own PRs" during the 10-15 pay-POST incident | 10-15 closing note | payarc-terminal | Inferred: no deprecation PR since; the incident doc naming them was not found |
-| D5 | The sync digest holds a row per customer and per live order, against ADR 0036's window scoping; multisite has zero test coverage for the eight till tables | 10-19 closing note "a follow-up, Paul's call" | woocommerce-pos | Observed: woocommerce-pos#2321 (closed) kept it "unbounded"; product call |
+| D5 | The sync digest holds a row per customer and per live order, against ADR 0036's window scoping; multisite has zero test coverage for the eight till tables | 10-19 closing note "a follow-up, Paul's call" | woocommerce-pos | **Fixed 2026-10-31 (ruling 4):** woocommerce-pos#2499, order digests windowed to 90 days, multisite smoke test for the five till tables |
 | D6 | `scripts/probe-store-health.mjs` treats a 404 as healthy (how two days of a hijacked port went unnoticed) | two 10-19 closing notes "not changed" | monorepo | **Fixed 2026-10-31:** monorepo#3157 (`main`) and #3158 (`next`) |
 | D7 | Pro `Refund_Processor` reads an authorization-only order as pre-ledger (filters on captured statuses only) | 10-20 closing note; woocommerce-pos#2352 body "Pro tidy-up" | woocommerce-pos-pro | Observed: last touched 10-14 |
 | D8 | Bundle publish workflow and `tag-web-bundle.sh` print FAIL on transient jsDelivr 503s that clear within a minute; no retry before the verdict | four 10-21 closing notes "noted in the record" | web-bundle / claude-config | Observed: no retry added since 10-19 |
 | D12 | Pro's integration parity harness imports two monorepo files that no longer exist on either lane, so it produces no evidence for any `next` tax change | 10-30 closing note "needs its own PR" | woocommerce-pos-pro | Observed: `client-calculator.ts` last changed 03-25 |
-| D13 | Printed receipt, report and closure templates in the free plugin not audited for the ruled Store · Register order | four 10-30 closing notes "separate repo, separate PR, not started" | woocommerce-pos | Inferred: no audit PR; closure templates already print store before register |
+| D13 | Printed receipt, report and closure templates in the free plugin not audited for the ruled Store · Register order | four 10-30 closing notes "separate repo, separate PR, not started" | woocommerce-pos | **Audited and fixed 2026-10-31 (ruling 5):** every gallery, thermal and report template already printed store before register; the PHP fallback closure did not and now does, woocommerce-pos#2497 |
 | D14 | Pro header says `Requires at least: 5.6`; the updater's `update_plugins_` hook exists only from WP 5.8 | 10-15 closing note | woocommerce-pos-pro | **Fixed 2026-10-31:** woocommerce-pos-pro#727 (`main`) and #728 (`next`) |
-| D17d | Offline sales slice D (the SumUp queue) is the one remaining slice ADR 0040 lists as missing | 10-23 closing note "slices C and D remain" | monorepo | Observed: slice C landed as #2894; no SumUp PR since |
-
+| D17d | Offline sales slice D (the SumUp queue) is the one remaining slice ADR 0040 lists as missing | 10-23 closing note "slices C and D remain" | monorepo | **Scheduled 2026-10-31 (ruling 6):** waits for the next SumUp hardware session; no code before it |
 ## Picked up (no action)
 
 D1 (mercadopago#16), D2 (woocommerce-pos#2280 cut the zips), D9 (windcave#22, v0.1.1), D10 (woocommerce-pos#2437), D17c (#2894), A1 (#3154 open), A4a (#1875 open, tracked), A5a (#2825/#2923 superseded the drain), A6 (electron#500), A7 (#2400), B1 (woocommerce-pos#2471), B2 (#2439/#2440), B3 (woocommerce-pos#2134), B5 (pos-soak#7), B8 (docs#536), B11 (woocommerce-pos#2366; wiki#1247), B13 (stripe-terminal#134), B14a/b/d (synced), C1 (#2535), C2 (woocommerce-pos#2229/#2242), C3a (woocommerce-pos#2467 open issue), C5 (#2729), C6a (#2863), C10b (#2950/#2953), C11 (#2974), C12 (#3080).
