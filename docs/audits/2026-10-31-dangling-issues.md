@@ -12,20 +12,23 @@ Two questions: how often did it happen, and how is it stopped.
 
 - **PR side:** every PR created since 2026-10-01 in the 38 wcpos repos pushed in October (2,614 PRs; bodies plus top-level comments by `kilbot` / `wcpos-bot`), scanned for deferral headings and vocabulary. 87 sections matched; after removing scope statements for sliced specs, bot boilerplate and plain claims tables, 26 PR bodies carried a real defect or an unanswered question for Paul.
 - **Chat side:** every Claude Code transcript on this machine since the 2026-10-13 "Found is not a parking lot" ruling (705 transcripts). 752 closing-note **Found** sections, 126 with deferral vocabulary, 44 of which parked a real defect or work item.
-- **Follow-through:** each of the 68 items was checked by a read-only agent for a later PR, issue or code change that picked it up. Labels below are the agents' (Observed / Inferred). GitHub search rate limits meant batch A searched saved PR lists rather than the live index; that batch's "still dangling" verdicts are Inferred where noted.
+- **Follow-through:** each of the 62 items was checked by a read-only agent; where one note carried two separable findings (A4, A5, C3, C6, C10, D17, and B14's five) each half has its own line below, which makes 73 lines for a later PR, issue or code change that picked it up. Labels below are the agents' (Observed / Inferred). GitHub search rate limits meant batch A searched saved PR lists rather than the live index; that batch's "still dangling" verdicts are Inferred where noted.
 
 The sweep scripts and raw hit lists are not committed; this file is the record.
 
 ## Counts
 
-| | Items | Picked up later | Still dangling | Not a defect / accepted |
-|---|---|---|---|---|
-| PR bodies (batches A, B) | 31 | 15 | 10 | 6 |
-| Closing notes, app (batch C) | 19 | 9 (two without the live check they named) | 10 | 0 |
-| Closing notes, plugins/docs/ops (batch D) | 18 | 5 | 9 | 4 |
-| **Total** | **68** | **29** | **29** | **10** |
+Counted from the itemised sections of this file (one line per finding; sub-findings a/b are separate lines).
 
-"Picked up" includes items picked up only because a *different* session found the same thing independently (the ghost Button was noted by four sessions; A1 was opened as #3154 by the session that wrote #3149 after Paul's message). Nothing in the pick-ups came from anyone reading the parked note.
+| Batch | Lines | Picked up later | Still dangling | Not a defect / accepted |
+|---|---|---|---|---|
+| A: PR bodies, app | 14 | 5 | 5 | 4 |
+| B: PR bodies, plugins/docs/wiki | 21 | 10 | 7 | 4 |
+| C: closing notes, app | 20 | 8 | 12 | 0 |
+| D: closing notes, plugins/docs/ops | 18 | 5 | 9 | 4 |
+| **Total** | **73** | **28** | **33** | **12** |
+
+"Picked up" includes items picked up only because a *different* session found the same thing independently (the ghost Button was noted by four sessions; A1 was opened as #3154 by the session that wrote #3149 after Paul's message). Nothing in the pick-ups came from anyone reading the parked note. Two C pick-ups (C6a, C16) left the live check they named undone; those halves sit in the backlog as C6b and C16.
 
 ## Still dangling (the backlog)
 
