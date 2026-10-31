@@ -18,7 +18,7 @@ The sweep scripts and raw hit lists are not committed; this file is the record.
 
 ## Counts
 
-Counted from the itemised sections of this file (one line per finding; sub-findings a/b are separate lines).
+Counted from the itemised sections of this file (one line per finding; sub-findings a/b are separate lines). The table is the snapshot at audit time, the morning of 2026-10-31. Since then nine of the 33 dangling lines have been fixed, closed or scheduled and are marked in place below (C8, D6, D14, then rulings A2, C9, C15, D5, D13, D17d); 24 remain dangling.
 
 | Batch | Lines | Picked up later | Still dangling | Not a defect / accepted |
 |---|---|---|---|---|
