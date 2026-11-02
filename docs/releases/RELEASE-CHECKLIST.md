@@ -1,4 +1,4 @@
-# WCPOS 1.10.x patch train — checklist
+# WCPOS patch train — checklist
 
 **This checklist is mandatory. Every box is ticked in the run record, in order, with the evidence named.** It exists because the 1.10.20 train (2026-09-16) shipped four "by memory" errors that mechanics would have caught, and Paul ruled: *"Do what you have to do to remove these errors from chance. Formalise these into a checklist that must be followed."* Each box names the failure it prevents. The narrative recipe stays in the newest `<date>-wcpos-<ver>-patch-run.md`; this file is the gate.
 
