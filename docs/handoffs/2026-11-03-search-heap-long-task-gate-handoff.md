@@ -38,8 +38,9 @@ Every reading since the 2.0 promotion (2026-11-02), lone jobs unless stated, dev
 | 11-03 09:20 | lone rerun of 41580428195, shard 6 only, nothing else on the repo | 5,132 / 7,947 / 8,022 | 2,748 then pass | fail |
 | 11-03 ~12:00 | 41629521100 (96e7ee267, gate quarantined) | n/a | n/a | main fully green |
 
-Seven lone jobs on 11-02/03 read 0.6–1.9 s and two read 4.5–8.9 s on every attempt within the job; nothing sits
-between 2 and 4.5 s. Within one red job all three attempts are high; within a green job all are low. The head
+Seven lone jobs on 11-02/03 read 0.6–1.9 s on both projects and passed first time; on the red jobs the free leg
+read 4.5–13 s on every one of its three attempts. One reading sits in between: the 09:20 job's pro leg read 2,748 ms
+and then passed on its retry (the first pro attempt of that job is the only intermediate value in the table). The head
 made no difference (e29a022a1 green, e702975bf red twice, and the only commit between them is a test-only
 sweep). Under overlapping full runs it fails almost always. The heap gates (ceiling, retained-after-GC ≤ 1.25,
 DOM nodes ≤ 1.5) passed on every one of those runs: **this is main-thread time, not retention.**
@@ -82,8 +83,9 @@ Open issue for that commit: wcpos/monorepo#2085.
 
 1. **Capture a CPU profile from a red job.** Rebase the probe branch's `apps/main/e2e/cpu-profile.ts` (+140)
    and the spec's `attachProfile` hook (+62) from ea27d90a0 onto `main` in a worktree; open a DRAFT-then-ready
-   PR touching only the spec and `quarantine.json`, so CI's path filter runs the one spec on both projects
-   (~15 min a round). On the branch, delete the two search-heap G7 entries: a quarantined test is `fixme` and
+   probe PR that carries exactly three files, the helper, the spec and `quarantine.json`, so CI's path filter
+   runs the one spec on both projects (~15 min a round). The probe PR is an instrument, not a merge: it closes
+   once the profile is in hand, unless the profile attachment earns its place in the spec for good. On the branch, delete the two search-heap G7 entries: a quarantined test is `fixme` and
    never runs on a PR, so the probe needs the gate live. That branch is never merged with the entries gone;
    the attachment (`search-heap-cycles.cpuprofile` or whatever the probe names it) lands in the blob-report
    artifact whether the gate passes or fails. Rerun the shard with `gh run rerun <run> --failed` until one job
