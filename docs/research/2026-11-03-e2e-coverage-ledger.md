@@ -753,3 +753,275 @@ Columns: **Protects** is the screen or feature (from the title, the body and the
 - **O** A third of the "E2E" blocks are not browser tests. 86 pure-logic blocks (30 in `.unit.spec.ts`, 56 inside ordinary spec files, 31 of them in `search-probe.spec.ts`); 83 of them collect in both authenticated projects. Any count of "journeys vs blocks" has to separate them first: of the 239 blocks that run in `pro-authenticated`, 83 never request a page, leaving 156.
 - **I** The cashier journeys are spread thin across screen-named files. J2 "sell to a guest" draws on 5 spec files, J6 variations on 6, J11 terminal on 4, and the Free gate checks (J19) sit in 7 files, four of them the same two-assertion "View Demo" test copied per page. The longest live journeys already exist (`checkout-tender`, `pos-checkout:315`, `pos-coupon-checkout`, `checkout-terminal`), and 13 shorter blocks are prefix-duplicates of them or of their neighbours.
 - **O** The data a reorganisation would weigh by is thin: `spec-timings.json` is per file, two months old, and missing 42 of 78 files including every heavy live checkout spec; 3 of the 5 in-CI perf gates are quarantined (G7), so they currently do not gate; the 2026-11-03 handoff records that quarantined timing cases still cost retry time on shards 3 and 5 (O in the handoff, NE here).
+
+## 7. Re-keyed against the twelve journeys (2026-11-03)
+
+Ticket: [roadmap#524](https://github.com/wcpos/roadmap/issues/524). The twelve are Paul's list on [roadmap#513](https://github.com/wcpos/roadmap/issues/513) (2026-11-03), as quoted in #524: **J0** Set up a device · **J1** Open the register and run the session · **J12** Find a product · **J2** Sell to a guest · **J3** Sell to a customer · **J4** Park and resume · **J5** Coupon and quick discount · **J6** Variations · **J7** Refund (Pro) · **J8** Offline sale and offline new customer · **J9** Receipt and the Paid moment (with the Pro tender variants) · **J10** Close the register. The manager tier keeps its eight keys (`M-…`). Section 4's J-numbers are **not** these: §4's J11 (terminal), J13 (fees) and J14 to J20 (manager) have no key of that number below.
+
+Method:
+
+- **O** Every one of the 293 CSV rows now carries `journey_v2` and `edge_case_of_step`. The spec bodies were read at monorepo `fe9c264fe` (`main`, 2026-11-03). `git diff 1a9220960 fe9c264fe -- apps/main/e2e` touches only `quarantine.json`, so every `spec:line` in this ledger still points at the same block.
+- **O** The `quarantine` column still describes `1a9220960`. Since then, #3222 (`fe9c264fe`) took both `search-terms.spec.ts` blocks (G4) and `pos-filter-bar.spec.ts:34` (G6) out of quarantine. G2 (`pos-variations.spec.ts:316`) and G7 (`pos-cart.spec.ts:58`, `:69`, `search-heap.spec.ts:93`) are still quarantined.
+- **I** The edge-case rule. A row is an edge case when it drives a branch the step's ordinary walk does not take: a failure, cancel, race, limit, second entry point, non-default setting or unusual data. A row is also an edge case when it holds an invariant the walk would not check unless told to, such as a time budget or money parity on a line type the walk never rings up. A row that proves the step the way a cashier normally does it is happy-path, even when it asserts money parity (`pos-checkout.spec.ts:315` is the guest sale's happy path). A happy-path row's `edge_case_of_step` is empty.
+- **O / I** on each edge-case line is about the step and the breakage named on that line. **O** means it was read in the block's body (assertions and comments). **I** means it comes from the title, the testIDs or the file header only.
+- **O** `H-harness` holds 88 rows, not 86: the 86 §4 N1 pure-logic blocks plus the 2 N2 fixture guards (`search-probe.spec.ts:222` and `:238`). Those two assert only that a worker fixture started, so they protect no cashier step. Three of the 88 sit in `politeness-1129.live.spec.ts`, hence the 3 opt-in.
+- **O** `X-optin` holds 22 rows: N7 (6 `.perf`), N8 (6 `.live`), N9 (2 soaks) and N10 (8 captures), all on their own configs or `CAPTURES=1`. **I** The nearest journeys, for #516: `server-down-1135` → J8, `session-recovery` → J0, `pro425-store-pricing` → J12/J2, `politeness-1129:241` → J0. `ghost-prune` and `idle-backfill` are sync behaviour and belong to no journey. The captures shoot screens of J0, J1, J2, J3, J6, J9 and the back office (section 5).
+
+### 7.1 Block counts per `journey_v2` key
+
+**O** for every count (from the CSV; "quarantined" at `1a9220960`).
+
+| journey_v2 | Journey | Blocks | Edge-case rows | Happy-path rows | Spec files | Quarantined at `1a9220960` | Opt-in |
+|---|---|---:|---:|---:|---:|---:|---:|
+| J0 | Set up a device | 16 | 13 | 3 | 6 | 0 | 0 |
+| J1 | Open the register and run the session | 6 | 3 | 3 | 4 | 0 | 0 |
+| J12 | Find a product | 15 | 11 | 4 | 9 | 4 | 2 |
+| J2 | Sell to a guest | 19 | 11 | 8 | 6 | 2 | 0 |
+| J3 | Sell to a customer | 18 | 10 | 8 | 5 | 0 | 0 |
+| J4 | Park and resume | 7 | 2 | 5 | 4 | 0 | 0 |
+| J5 | Coupon and quick discount | 5 | 2 | 3 | 3 | 0 | 0 |
+| J6 | Variations | 15 | 12 | 3 | 5 | 1 | 0 |
+| J7 | Refund (Pro) | 3 | 2 | 1 | 1 | 0 | 0 |
+| J8 | Offline sale and offline new customer | 5 | 2 | 3 | 3 | 0 | 0 |
+| J9 | Receipt and the Paid moment (+ Pro tender variants) | 13 | 12 | 1 | 4 | 0 | 0 |
+| J10 | Close the register | 2 | 0 | 2 | 2 | 0 | 0 |
+| M-backoffice | Back office pages | 18 | 2 | 16 | 4 | 0 | 0 |
+| M-reports | Reports | 5 | 0 | 5 | 2 | 0 | 0 |
+| M-settings | Settings | 9 | 0 | 9 | 1 | 0 | 0 |
+| M-health | Store health and logs | 5 | 0 | 5 | 1 | 0 | 0 |
+| M-shell | App shell | 10 | 2 | 8 | 4 | 0 | 0 |
+| M-freegates | Free meets the Pro gates | 8 | 0 | 8 | 7 | 0 | 0 |
+| M-arrival | Store-side changes reach the till | 4 | 0 | 4 | 2 | 0 | 0 |
+| M-storeswitch | Store switch | 0 | 0 | 0 | 0 | 0 | 0 |
+| H-harness | Harness pure logic and fixture guards (no journey) | 88 | — | — | 11 | 0 | 3 |
+| X-optin | Opt-in perf / live / soak / captures on their own configs | 22 | — | — | 17 | 0 | 22 |
+| **Total** | | **293** | **84** | **99** | | | |
+
+
+- **O** 293 rows = 99 happy-path + 84 edge-case + 88 harness + 22 opt-in. Of the 183 rows that sit on a journey step, 84 (46%) are edge cases.
+- **O** J9 has one happy-path row out of 13, `checkout-terminal.spec.ts:101` (the terminal approves). The ordinary Paid moment and New sale are asserted inside J2's cash block `checkout-tender.spec.ts:162` (`receipt-paid-banner`, `receipt-new-sale`), so J9's own rows are all variants: auto-print, change due, receipt off, terminal states, reader scenarios and the send-away gateway.
+- **O** `checkout-terminal.spec.ts:370` is `liveTest.fixme(true, …)`. It is counted here but never runs.
+- **O** No row is keyed `M-storeswitch`: a search of the spec files for store-switch testIDs and wording finds no block that switches store. **O** (search) / **I** (that this means no coverage): no block covers these named steps either:
+  - J0: licence entry, choosing a register, pairing a printer.
+  - J1: switch cashier, switch register, paid **in** (`register-session.spec.ts:77` records a paid out only).
+  - J12: a barcode scanned into the cart. The only scanner rows are `pos-cart.spec.ts:113`, which asserts that a wedge's Enter does *not* act, and `settings.spec.ts:42`, which shows the settings page.
+  - J2 and J9: the customer display (only `settings-captures` shoots its settings page).
+  - J4: setting an order status from the cart.
+- **O** J10 has 2 rows, both happy-path, and both specs answer the store's `cashier/`, `registers`, `sessions` and `movements` routes from a `page.route('**/*')` fixture (`register-count.spec.ts:16`, `register-closure.spec.ts:17`). Neither closes a register against the live store, and no J10 row has a failure path (a short count, an offline close, a variance). **I** `reports-closures.spec.ts` (now `M-reports`) also serves its closures from a probe fixture.
+
+### 7.2 Edge cases each journey's step list must carry
+
+One line per block: label, `spec:line`, *the step it hangs on*, what breaks if that step is walked only happily. 84 rows: 80 on the twelve, 4 on the manager tier, 0 on harness and opt-in.
+
+**J0 Set up a device** (13 of 16)
+
+- **O** `auth.spec.ts:24` — *connect* — a URL that is not a WCPOS store must stop before the user list; a walk with the real store never types a wrong URL
+- **O** `auth.spec.ts:33` — *connect* — a store at an internationalised (IDN) host must be discovered (runs only when E2E_IDN_STORE_URL is set)
+- **O** `auth.spec.ts:83` — *first launch* — an unknown deep link while signed out must land on Connect or Not found, not a blank screen
+- **I** `host-blocked-errors.spec.ts:125` — *connect on a hostile host* — with both auth routes absent the error must name REST transport blocked (AUTH431)
+- **I** `host-blocked-errors.spec.ts:140` — *connect on a hostile host* — a host that strips every credential channel must be named (AUTH421)
+- **I** `host-blocked-errors.spec.ts:157` — *connect on a hostile host* — a bot challenge blocking the API must be named (HOST121)
+- **I** `host-blocked-errors.spec.ts:170` — *connect on a hostile host* — an authenticated echo replayed from a shared cache must block (HOST151)
+- **I** `host-blocked-errors.spec.ts:197` — *connect on a hostile host* — blocked search-like pings must warn without blocking connect (HOST141)
+- **I** `hostile-headers.ts:55` — *connect on a host that strips Tier 2 headers* — census and order browse must still work
+- **O** `protocol-signal.spec.ts:65` — *connect* — every wcpos/v2 sync request must use the transport the store echo proved (headers or query twins)
+- **I** `rest-route-transport.spec.ts:13` — *connect when path routes are blocked* — query-form REST must connect and find an owned product
+- **O** `update-required.spec.ts:85` — *connect (plugin too old or too new)* — the gate refusal must swap to the blocking update screen and silence sync, with no error toasts
+- **O** `update-required.spec.ts:115` — *connect (plugin too old or too new)* — after logout the login card must show the update notice, not Re-authenticate or Open POS
+
+**J1 Open the register and run the session** (3 of 6)
+
+- **O** `live-tab.spec.ts:7` — *multi-tab ownership* — a takeover asked for during a write must defer, then proceed at the ceiling
+- **O** `live-tab.spec.ts:43` — *multi-tab ownership* — a holder that never answers must explain how to continue, and closing it must still grant ownership
+- **O** `register-session.spec.ts:77` — *paid in/out* — Undo on the toast must void the movement and keep the register panel open (#2284)
+
+**J12 Find a product** (11 of 15)
+
+- **O** `pos-filter-bar.spec.ts:34` — *filter bar* — a quick filter authored in the editor must apply its conditions and clear them on a second press
+- **O** `pos-filter-bar.spec.ts:98` — *filter bar* — a built-in pill hidden from the bar must come back when shown again
+- **O** `products.spec.ts:76` — *search* — clearing a search must restore the local rows, not only the footer total (#1336, #1345)
+- **O** `products.spec.ts:90` — *search* — a query with no match must show No products found
+- **O** `search-heap.spec.ts:93` — *search* — 30 committed searches must not retain heap per keystroke or block the main thread (768 MB ceiling, 2 s long-task budget); quarantined G7
+- **I** `search-latency.spec.ts:44` — *search* — a single-word search must meet its latency budgets on a slow host
+- **O** `search-terms.spec.ts:8` — *search* — a Georgian all-term search must keep 'MY' in both the cold and the warm search
+- **O** `search-terms.spec.ts:73` — *search* — reordered or separated typed words must still find the product
+- **I** `search-walk.spec.ts:71` — *search* — more server hits than the window must never repeat a request (request-shape gate)
+- **O** `variation-sku-search.cold.spec.ts:45` — *search a variation SKU (profile guard for :56)* — the local catalogue must start and stay empty or :56 passes for the wrong reason; opt-in E2E_COLD_START=1
+- **O** `variation-sku-search.cold.spec.ts:56` — *search a variation SKU* — on a thin local catalogue the non-resident variation must be pulled from the server (#991); opt-in E2E_COLD_START=1
+
+**J2 Sell to a guest** (11 of 19)
+
+- **O** `checkout-tender.spec.ts:703` — *New sale on a phone* — must land on the Products tab and keep it across a drawer round trip (#2363)
+- **O** `pos-cart-toast-burst.spec.ts:37` — *add* — a five-add burst must show one updating toast and every tap must reach the product (#2370: an iPad cart got 7 of 20)
+- **O** `pos-cart.spec.ts:58` — *add* — the add must paint quantity 1 within 300 ms; quarantined G7
+- **O** `pos-cart.spec.ts:69` — *add* — twenty rapid taps on one tile must paint exactly 20 within 8 s; quarantined G7
+- **O** `pos-cart.spec.ts:113` — *cart edit* — after Done on the quantity keypad, a keyboard-wedge scanner's Enter must not reopen the numpad on the focused row
+- **O** `pos-cart.spec.ts:135` — *cart edit* — the first keypad digit replaces the quantity and later digits append (123, not 3)
+- **O** `pos-checkout.spec.ts:272` — *checkout* — closing checkout must return to the cart with the order still on it
+- **O** `pos-checkout.spec.ts:284` — *checkout* — a save ack with no payment link must block payment
+- **O** `pos-checkout.spec.ts:538` — *pay* — a built-in POS gateway that declares supports_checkout=true must still use the legacy webview, never the contract checkout
+- **O** `pos-money-oracle.spec.ts:514` — *checkout money* — a standard + reduced + non-taxable cart must save with per-line tax parity; every other money assertion runs on the standard class only
+- **O** `products.spec.ts:119` — *add* — adding from the table view's add button rather than the tile
+
+**J3 Sell to a customer** (10 of 18)
+
+- **O** `checkout-tender.spec.ts:347` — *tender entry* — over-tendering a method that cannot give change must disable Pay until the balance is used
+- **O** `checkout-tender.spec.ts:372` — *split tender (even)* — the plan's legs must sum to the balance and the second leg must prefill the remainder
+- **O** `checkout-tender.spec.ts:440` — *split tender (by item)* — sharing a ticked line between two payments must leave a third leg when the share is under the balance; every leg captured, summing to the total
+- **O** `checkout-tender.spec.ts:631` — *split tender* — cancelling mid-split must list the exact cash to return, void the leg on the server (kept as a record) and return the order to pos-open
+- **O** `customer-picker-paging.spec.ts:94` — *pick a customer* — the picker must page past the first page as the list scrolls
+- **O** `pos-cart.spec.ts:358` — *fee/shipping/misc* — Escape must close the add dialog (the block does not assert that no line was added)
+- **O** `pos-money-oracle.spec.ts:452` — *fee line* — a fee at an adversarial amount must save with identical per-rate taxes and no divergence banner
+- **O** `pos-money-oracle.spec.ts:467` — *shipping line* — a shipping line at an adversarial amount must save with identical per-rate taxes and no divergence banner
+- **O** `pos-money-oracle.spec.ts:482` — *misc line* — a misc product priced to a beyond-precision tax must save with identical per-rate taxes
+- **O** `pos-money-oracle.spec.ts:638` — *fee + shipping + misc together* — cross-line rounding that cancels on a one-line cart must still agree (order 111919 shape)
+
+**J4 Park and resume** (2 of 7)
+
+- **O** `checkout-tender.spec.ts:556` — *paid-tender guard* — a part-paid order must keep its leg, server id and remaining balance while a second cart is rung and paid in a new tab, then finish from that balance
+- **O** `pos-cart.spec.ts:221` — *park (save to server)* — the saved order's total and tax-rate set must equal the till's and the totals-changed banner must stay down (woocommerce-pos#1545)
+
+**J5 Coupon and quick discount** (2 of 5)
+
+- **O** `pos-coupon-checkout.spec.ts:293` — *remove a coupon* — a coupon removed from a SAVED cart must still check out and pay (the removal marker was refused with 400 until woocommerce-pos#2153)
+- **O** `pos-money-oracle.spec.ts:603` — *fixed quick discount* — must be a fixed_cart coupon line allocated equally per unit, the untaxed line included; the percent walk never runs that allocation
+
+**J6 Variations** (12 of 15)
+
+- **O** `pos-variation-popover-states.spec.ts:94` — *variation popover* — selecting an option must grey a partner that has no variation
+- **O** `pos-variation-popover-states.spec.ts:113` — *variation popover* — under Stock Status = In stock, an option whose every variation is outside the filter must grey (#1574)
+- **O** `pos-variation-popover-states.spec.ts:136` — *variation popover* — a greyed option must not be selectable
+- **O** `pos-variation-popover-states.spec.ts:158` — *variation popover* — an out-of-stock combination's Add to Cart must follow the store's Avoid overselling setting
+- **O** `pos-variation-stock-pill.spec.ts:58` — *expanded variations* — the rows must follow the Stock Status pill, every row when cleared (#1572)
+- **O** `pos-variations-drill-in.spec.ts:7` — *variations style = drill (table)* — drilling in must add a line and the crumb must go back
+- **O** `pos-variations-drill-in.spec.ts:34` — *variations style = drill (grid)* — the variations deal as tiles and the parent tile goes back
+- **O** `pos-variations.spec.ts:220` — *add a variation from the expanded table row's + (a second entry point beside the popover)* — 
+- **O** `pos-variations.spec.ts:245` — *expanded row* — collapsing must hide the variation rows
+- **O** `pos-variations.spec.ts:269` — *two different variations must both add (the block asserts only the checkout button)* — 
+- **O** `pos-variations.spec.ts:316` — *variation thumbnail* — must render the image the server sent (images[] vs image; #1577 blanked every thumbnail); quarantined G2
+- **O** `pos-variations.spec.ts:382` — *the same variation added twice must raise one line to quantity 2* — 
+
+**J7 Refund (Pro)** (2 of 3)
+
+- **O** `pos-refunds.spec.ts:211` — *refund destination* — choosing Cash on a non-cash order must send refund_destination=cash, api_refund=false (stubbed gateway list)
+- **O** `pos-refunds.spec.ts:254` — *refund destination* — with provider refunds supported, original method must send api_refund=true (stubbed; one live store shows one capability set)
+
+**J8 Offline sale and offline new customer** (2 of 5)
+
+- **O** `checkout-offline-tender.spec.ts:270` — *offline sale* — a cashier who presses New sale before the link returns must still have the sale adopted, with no phantom receipt tab or open-order chip
+- **O** `pos-offline-new-customer.spec.ts:221` — *offline new customer on the gateway pay page* — a customer acknowledged after the pre-payment push must still be stamped on the paid order
+
+**J9 Receipt and the Paid moment (+ Pro tender variants)** (12 of 13)
+
+- **O** `checkout-device.spec.ts:113` — *reader device (4 scenarios, approve is the happy one)* — decline must leave a failed row and the retry capture a second row; cancel must void with no date_paid; a tip must capture amount + 10%
+- **O** `checkout-tender.spec.ts:212` — *receipt with auto-print on* — the receipt stage must print before New sale
+- **O** `checkout-tender.spec.ts:513` — *Paid moment with change* — over-tendering a change-giving cash method must show the change due; an exact-balance walk never renders it
+- **O** `checkout-tender.spec.ts:810` — *send-away gateway* — Send again from Orders must mint a new attempt, and Cancel from Orders must return the order to pos-open with no leg
+- **O** `checkout-terminal.spec.ts:163` — *card terminal* — a decline must stay a failed row and the retry must be a new captured row
+- **O** `checkout-terminal.spec.ts:225` — *card terminal* — cancel is only a request; a capture that lands after it must win (leg captured, order paid)
+- **O** `checkout-terminal.spec.ts:264` — *card terminal* — the deadline must void the leg and leave the order unpaid
+- **O** `checkout-terminal.spec.ts:313` — *card terminal* — leaving the tab mid-leg and coming back must resume the same leg with no second intent
+- **O** `checkout-terminal.spec.ts:370` — *card terminal* — a reload mid-capture must complete once without taking over the receipt stage; liveTest.fixme(true), so it does not run
+- **O** `checkout-terminal.spec.ts:464` — *card terminal* — a reader held by another order must be disabled with its reason
+- **O** `pos-checkout.spec.ts:497` — *receipt off* — with auto-show receipt off a sale must leave exactly one POS screen (a stacked screen made one scan add N units)
+- **O** `pos-checkout.spec.ts:573` — *gateway pay page* — gateways that declare supports_checkout=false must fall back to the legacy webview
+
+**M-backoffice Back office pages** (2 of 18)
+
+- **I** `products-page.spec.ts:475` — *edit a product* — the modal must push a sparse payload even when the store serves poisoned fields
+- **I** `products-page.spec.ts:593` — *edit stock* — a stock edit the server rejects must auto-revert with a snackbar
+
+**M-shell App shell** (2 of 10)
+
+- **I** `navigation.spec.ts:41` — *drawer* — items below the fold must stay reachable on very short viewports
+- **O** `pos-scroll-settings.spec.ts:15` — *POS to Settings and back* — the products scroll position must not move
+
+### 7.3 Blocks whose home changed from the section-4 grouping
+
+**Renames with no change in substance (O):** §4 J1 to J10 and J12 keep their numbers. J14 → `M-backoffice`, J15 → `M-reports`, J16 → `M-settings`, J17 → `M-health`, J18 → `M-shell`, J19 → `M-freegates`, J20 → `M-arrival`. N1 + N2 → `H-harness`; N7, N8, N9, N10 → `X-optin`. Every row in those groups that is not listed below kept the home it had.
+
+**Rows that moved (48):** 11 from §4 J11, 11 from J13, 16 from N3/N4/N5, 3 from N6, 3 from N11, and 4 single moves out of J2, J10 and J6. The label is on the placement.
+
+| Block | Title (short) | §4 | journey_v2 | Why | Label |
+|---|---|---|---|---|---|
+| `auth.spec.ts:13` | connect form controls and URL enablement | N5 | J0 | connect is J0's step; these were "no journey" in §4 | **O** |
+| `auth.spec.ts:24` | should not connect to invalid store URL | N5 | J0 | connect is J0's step; these were "no journey" in §4 | **O** |
+| `auth.spec.ts:33` | discovers a store at an internationalised (IDN) address | N5 | J0 | connect is J0's step; these were "no journey" in §4 | **O** |
+| `auth.spec.ts:55` | discover store and show add-user action | N5 | J0 | connect is J0's step; these were "no journey" in §4 | **O** |
+| `auth.spec.ts:75` | should show connect screen when not logged in | N5 | J0 | connect is J0's step; these were "no journey" in §4 | **O** |
+| `auth.spec.ts:83` | should handle unknown routes gracefully | N5 | J0 | connect is J0's step; these were "no journey" in §4 | **O** |
+| `checkout-device.spec.ts:113` | «scenario» | J11 | J9 | the twelve fold card terminal, reader device and send-away gateways into J9 as its Pro tender variants | **O** |
+| `checkout-tender.spec.ts:810` | sends an invoice, sends it again from Orders, then cancels it from … | J11 | J9 | the twelve fold card terminal, reader device and send-away gateways into J9 as its Pro tender variants | **O** |
+| `checkout-terminal.spec.ts:101` | approves and closes the leg | J11 | J9 | the twelve fold card terminal, reader device and send-away gateways into J9 as its Pro tender variants | **O** |
+| `checkout-terminal.spec.ts:163` | declines, then retries as a NEW row | J11 | J9 | the twelve fold card terminal, reader device and send-away gateways into J9 as its Pro tender variants | **O** |
+| `checkout-terminal.spec.ts:225` | cancel is a request; a late capture wins | J11 | J9 | the twelve fold card terminal, reader device and send-away gateways into J9 as its Pro tender variants | **O** |
+| `checkout-terminal.spec.ts:264` | deadline voids the leg | J11 | J9 | the twelve fold card terminal, reader device and send-away gateways into J9 as its Pro tender variants | **O** |
+| `checkout-terminal.spec.ts:313` | leaving and reopening resumes the same leg — no second intent | J11 | J9 | the twelve fold card terminal, reader device and send-away gateways into J9 as its Pro tender variants | **O** |
+| `checkout-terminal.spec.ts:370` | reloading mid-capture completes once without taking over the receip… | J11 | J9 | the twelve fold card terminal, reader device and send-away gateways into J9 as its Pro tender variants | **O** |
+| `checkout-terminal.spec.ts:464` | a reader held by another order is disabled with the reason | J11 | J9 | the twelve fold card terminal, reader device and send-away gateways into J9 as its Pro tender variants | **O** |
+| `host-blocked-errors.spec.ts:125` | AUTH431 names REST transport blocked when both auth routes are absent | N4 | J0 | connect-time failures on a hostile host: the failure paths of J0's connect step | **I** |
+| `host-blocked-errors.spec.ts:140` | AUTH421 names hosts that strip every credential channel | N4 | J0 | connect-time failures on a hostile host: the failure paths of J0's connect step | **I** |
+| `host-blocked-errors.spec.ts:157` | HOST121 names bot challenges blocking the API | N4 | J0 | connect-time failures on a hostile host: the failure paths of J0's connect step | **I** |
+| `host-blocked-errors.spec.ts:170` | HOST151 blocks an authenticated echo replayed from shared cache | N4 | J0 | connect-time failures on a hostile host: the failure paths of J0's connect step | **I** |
+| `host-blocked-errors.spec.ts:197` | HOST141 warns when search-like ping requests are blocked without bl… | N4 | J0 | connect-time failures on a hostile host: the failure paths of J0's connect step | **I** |
+| `hostile-headers.ts:55` | census and order browse survive stripped Tier 2 headers | N4 | J0 | connect-time failures on a hostile host: the failure paths of J0's connect step | **I** |
+| `live-tab.spec.ts:7` | a write defers takeover, then the ceiling allows it to proceed | N11 | J1 | multi-tab ownership is a J1 step in the twelve | **O** |
+| `live-tab.spec.ts:43` | an unanswered request explains how to continue, but closing the hol… | N11 | J1 | multi-tab ownership is a J1 step in the twelve | **O** |
+| `live-tab.spec.ts:80` | second tab parks, takes over, and the former holder can take it back | N11 | J1 | multi-tab ownership is a J1 step in the twelve | **O** |
+| `pos-cart.spec.ts:185` | should void an order to clear cart | J2 | J4 | void is a J4 step in the twelve (park and resume: void) | **O** |
+| `pos-cart.spec.ts:221` | a plain one-product cart saves with identical totals and no diverge… | J13 | J4 | save-to-server parity of a plain cart: the save is the park step; no fee/shipping/misc line in it | **O** |
+| `pos-cart.spec.ts:310` | should show the add-cart-item dropdown menu | J13 | J3 | fees, shipping and misc lines are a J3 step in the twelve | **O** |
+| `pos-cart.spec.ts:321` | should add a fee via the dropdown menu | J13 | J3 | fees, shipping and misc lines are a J3 step in the twelve | **O** |
+| `pos-cart.spec.ts:334` | should add shipping via the dropdown menu | J13 | J3 | fees, shipping and misc lines are a J3 step in the twelve | **O** |
+| `pos-cart.spec.ts:347` | should add a miscellaneous product via the dropdown menu | J13 | J3 | fees, shipping and misc lines are a J3 step in the twelve | **O** |
+| `pos-cart.spec.ts:358` | should close the dialog without adding an item | J13 | J3 | fees, shipping and misc lines are a J3 step in the twelve | **O** |
+| `pos-checkout.spec.ts:538` | uses the legacy webview for built-in POS gateways even when support… | J11 | J2 | the gateway it stubs is the built-in pos_cash method: the guest sale's pay-cash step, not a Pro tender variant | **I** |
+| `pos-checkout.spec.ts:573` | falls back to the legacy webview when supports_checkout=false | J11 | J9 | the twelve fold card terminal, reader device and send-away gateways into J9 as its Pro tender variants | **O** |
+| `pos-money-oracle.spec.ts:452` | a cart with a fee saves with identical per-rate taxes | J13 | J3 | fees, shipping and misc lines are a J3 step in the twelve | **O** |
+| `pos-money-oracle.spec.ts:467` | a cart with a shipping line saves with identical per-rate taxes | J13 | J3 | fees, shipping and misc lines are a J3 step in the twelve | **O** |
+| `pos-money-oracle.spec.ts:482` | a misc product priced to a beyond-precision tax saves with identica… | J13 | J3 | fees, shipping and misc lines are a J3 step in the twelve | **O** |
+| `pos-money-oracle.spec.ts:514` | a mixed-tax-class cart saves with identical per-rate taxes on every… | J13 | J2 | mixed-tax-class cart of products only: no fee, shipping or misc line, so it is the guest sale's money, not J3 | **O** |
+| `pos-money-oracle.spec.ts:638` | a product + fee + shipping cart saves with identical money throughout | J13 | J3 | fees, shipping and misc lines are a J3 step in the twelve | **O** |
+| `protocol-signal.spec.ts:65` | every sync request uses the protocol transport proven by the store … | N3 | J0 | connect transport and the connect-time update gate: J0's connect step | **O** |
+| `reports-closures.spec.ts:575` | walks grouped closures, settled recount, reprint and CSV | J10 | M-reports | walks closures inside the Reports room (period, drill-in, recount, reprint, CSV); the twelve keep J10 to closing the register | **O** |
+| `rest-route-transport.spec.ts:13` | connects and finds an owned product through query-form REST when pa… | N3 | J0 | connect transport and the connect-time update gate: J0's connect step | **I** |
+| `search-heap.spec.ts:93` | committed searches neither retain per keystroke nor block the main … | N6 | J12 | in-CI search gates: budgets on J12's search step | **O** |
+| `search-latency.spec.ts:44` | a single-word search meets the latency budgets on a slow host | N6 | J12 | in-CI search gates: budgets on J12's search step | **I** |
+| `search-walk.spec.ts:71` | a search with more server hits than the window never repeats a requ… | N6 | J12 | in-CI search gates: budgets on J12's search step | **I** |
+| `update-required.spec.ts:85` | the gate refusal renders the blocking update screen and sync goes q… | N3 | J0 | connect transport and the connect-time update gate: J0's connect step | **I** |
+| `update-required.spec.ts:115` | after logout the login card shows the update notice, not Re-authent… | N3 | J0 | connect transport and the connect-time update gate: J0's connect step | **I** |
+| `variation-sku-search.cold.spec.ts:45` | the local catalogue starts (and stays) empty | J6 | J12 | variation SKU search is a find-a-product step; .cold opt-in kept as a journey row, not X-optin (see unplaced) | **I** |
+| `variation-sku-search.cold.spec.ts:56` | searching a variation SKU pulls the non-resident variation from the… | J6 | J12 | variation SKU search is a find-a-product step; .cold opt-in kept as a journey row, not X-optin (see unplaced) | **I** |
+
+
+### 7.4 Placed without confidence
+
+Each of these has a key in the CSV, but the key is a judgement (**I**) with a named runner-up.
+
+- **I** `variation-sku-search.cold.spec.ts:45`, `:56` → J12, runner-up `X-optin`. They are behaviour proofs of the search step, but they run only under `E2E_COLD_START=1` on `pro-cold-start`, so today they protect nothing in CI. #524's `X-optin` list names perf, live, soak and capture, not cold.
+- **I** `update-required.spec.ts:85`, `:115` → J0, runner-up `M-shell`. The protocol gate fires on a change-signal tick in a running session, not only at connect.
+- **I** `protocol-signal.spec.ts:65` and `hostile-headers.ts:55` → J0, runner-up `M-health`. Both are transport behaviour after connect, on a normal host and on a hostile host.
+- **I** `pos-checkout.spec.ts:538` → J2, runner-up J9. It stubs the built-in `pos_cash` gateway, which is why it sits on the pay-cash step. Its sibling `:573` stubs card and terminal gateways and stays in J9.
+- **I** `pos-cart.spec.ts:221` → J4, runner-up J2. The save is the park step, but the block's invariant is the same tax parity a J2 sale asserts.
+- **I** `products.spec.ts:55` (view-mode round trip) → `M-shell`, as in §4. Runner-up J12: grid and table are how a cashier browses.
+- **I** `customers.spec.ts:121` (Free: Add customer disabled) → `M-freegates`. Runner-up J3: it sits on J3's create-customer step when J3 is walked on Free.
+- **I** `search-latency.spec.ts:44`, `search-walk.spec.ts:71` → J12 edge cases, from title and header only.
+
+### 7.5 Would a happy-path-only journey spec lose protection?
+
+**I**, from the edge lists above. Yes, and heavily: 84 of the 183 rows that sit on a journey step are edge cases. In four journeys the edge cases are most of what is there:
+
+- J9: 12 of 13 rows. Terminal decline, retry, late capture, deadline, resume, held reader, the fixme'd reload, the four reader scenarios, change due, auto-print, receipt off.
+- J6: 12 of 15. Popover greying by availability and by stock, greyed clicks, Avoid overselling, the stock pill on expanded rows, the drill style, the server image.
+- J0: 13 of 16. Wrong URL, IDN, unknown route, the five host-blocked codes, the transport rows, the update gate.
+- J12: 11 of 15. Clear, no-match, Georgian all-term, reordered words, the filter editor, a hidden pill, three search gates, cold SKU.
+
+J2 and J3 lose fewer blocks by share, but the ones they lose are the money and input rows: J2's keypad and scanner-Enter rules, the 300 ms and twenty-tap add gates, and the mixed-tax-class parity; J3's even and item splits, cancel-mid-split, over-tender, and the fee, shipping, misc and combined-cart parity. J4 would lose the paid-tender guard, the one J4 row that protects money already taken. J10 and the manager tier lose almost nothing (0 and 4 rows), because their rows are nearly all happy paths, and that is itself a coverage gap (7.1).
+
+The five most consequential, by what a cashier or the store loses if they regress:
+
+1. **O** `checkout-tender.spec.ts:556` (J4, paid-tender guard). A part-paid order must keep its captured leg and its remaining balance while another sale is rung. Without it, money already taken can be lost or charged again.
+2. **O** `checkout-terminal.spec.ts:225` (J9). A card capture that lands after Cancel must win. Without it, the customer is charged while the till shows the payment as cancelled. Its neighbour `:313` (no second intent on resume) guards against a double charge, and `:370` (reload mid-capture) is `fixme` and does not run at all.
+3. **O** `pos-money-oracle.spec.ts:514` (J2). This is the only row that sells reduced-rate and non-taxable lines. Every other money assertion runs on the standard tax class.
+4. **O** `pos-coupon-checkout.spec.ts:293` (J5). Removing a coupon from a saved cart must still let the sale be paid. Until woocommerce-pos#2153 that checkout was refused with a 400.
+5. **O** `checkout-offline-tender.spec.ts:270` (J8). An offline sale must be adopted, with no phantom receipt, when the cashier has already pressed New sale. That is the normal behaviour of a busy till, and the happy offline walk waits for the link instead.
