@@ -63,14 +63,20 @@ once sent, the status said once with a tone dot, the horizontal Sent · On termi
 ids in mono and Copy. The demo carries #760's three files hotpatched; walked live there at tablet and phone width
 through idle, waiting, cancel and paid.
 
-## 3. Open for Paul
+## 3. Ruled (Paul, 2026-11-04: *"as you recommend"*)
 
-1. **SumUp for testers.** Options: (a) a demo-only "pair your Virtual Solo" REST route on the sandbox merchant
-   so each tester pairs their own tab (readers accumulate; unpair on expiry); (b) a persistent paired Virtual Solo
-   kept open on the server and auto-approving (a headless browser service to run and watch); (c) hide the SumUp
-   tile on the demo until hardware demos exist. Recommendation: (a).
-2. **Mollie.** Sign in at my.mollie.com → test mode → Point of Sale; if it can be enabled, a test terminal appears
-   and the demo needs the key plus a small auto-complete helper like the Stripe one (drive `changePaymentState`).
-   If Mollie refuses POS on the unverified profile, hide the tile on the demo.
+1. **SumUp: each tester pairs their own Virtual Solo.** `/data/wordpress/mu-plugins/wcpos-demo-sumup-pair.php`
+   (host-scoped to the demo) serves `https://demo.wcpos.com/sumup-pair/`: open virtual-solo.sumup.com → Get
+   started → Cloud API → Generate pairing code, paste it, and the page creates the reader on the sandbox merchant,
+   names it "Demo <name>", allows it in the POS reader list (Paul's physical Solo is never allowed) and sweeps demo
+   readers older than three hours on the next pairing; thirty pairings an hour. Proven headlessly: pair → EU Store
+   → €40.00 to "Demo Probe2" → the virtual device shows the checkout, Pay approves → captured, receipt (order
+   #33888). The US Store answers "this merchant can only accept 'EUR'", so the gateway description on the demo
+   points testers at the page and the EU Store. For the beta post: *SumUp: pair a Virtual Solo at
+   demo.wcpos.com/sumup-pair/ and use the EU Store.*
+2. **Mollie: tile hidden on the demo** until the Mollie side and the demo are ready: Paul signs in at
+   my.mollie.com, Point of Sale is enabled on the test profile (which creates the test terminal), the test key is
+   installed on the demo, and an auto-complete helper like the Stripe one drives the payment's
+   `changePaymentState` link. As of 2026-11-04 the API does not offer point of sale on the unverified profile.
 
 Memory: `demo-site-terminal-test-setup` in the roadmap memory index.
