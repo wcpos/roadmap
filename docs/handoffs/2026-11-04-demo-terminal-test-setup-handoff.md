@@ -1,7 +1,9 @@
 # Handoff: card terminals on the public demo (demo.wcpos.com, 2.0 beta), 2026-11-04
 
-**Site:** `https://demo.wcpos.com/pos`, demo/demo, Pro 2.0.0-beta.2 with Stripe, Mollie and SumUp Terminal
-2.0.0-beta1. Server shell: `ssh wcpos-prod`, `wcpos demo wp …`. The container's `wp-content/mu-plugins` is a
+**Site:** `https://demo.wcpos.com/pos`, demo/demo. Plugins as `wp plugin list` reports them: `woocommerce-pos-pro`
+2.0.0-beta.2, and the three terminal extensions `stripe-terminal-for-woocommerce`, `mollie-terminal-for-woocommerce`
+and `sumup-terminal-for-woocommerce` each at their own 2.0.0-beta1 (the extensions' first 2.0 beta; their version
+string has no dot before the number). Server shell: `ssh wcpos-prod`, `wcpos demo wp …`. The container's `wp-content/mu-plugins` is a
 read-only mount of the host directory `/data/wordpress/mu-plugins`, which every WordPress site on the box shares:
 a file there must host-scope itself on `get_option('home')`, as the dev-next simulated gateways do.
 
