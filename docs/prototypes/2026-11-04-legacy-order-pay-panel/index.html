@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Legacy order-pay panel: the terminal moment on the classic pay page</title>
+<style>
+  :root{
+    --background:#f4f6fa; --foreground:#1b2230; --card:#fff; --muted:#f1f3f7; --muted-fg:#5c6677;
+    --border:#dbe0e8; --primary:#0a62b4; --primary-fg:#fff; --success:#0f8a56; --success-soft:#e3f5ec;
+    --destructive:#cf3a2f; --destructive-soft:#fbe9e7; --warning:#b7791f; --warning-soft:#fdf3df;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--background);color:var(--foreground);font:14px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .page{max-width:1560px;margin:0 auto;padding:28px 24px 80px}
+  h1{font-size:26px;letter-spacing:-.02em;margin:0 0 6px}
+  h2{font-size:18px;margin:40px 0 6px;letter-spacing:-.01em}
+  p{margin:0 0 10px;max-width:900px}
+  .lede{color:var(--muted-fg)}
+  .note{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin:14px 0 0;max-width:900px}
+  .note b{font-weight:600}
+  .note ul{margin:6px 0 0;padding-left:18px}
+  .note li{margin:3px 0}
+  .waiting{border-color:var(--primary)}
+  /* control strip */
+  .strip{position:sticky;top:0;z-index:5;background:#1b2230;color:#fff;border-radius:12px;padding:10px 14px;display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin:18px 0 10px;font-size:13px}
+  .strip label{display:flex;gap:6px;align-items:center}
+  .strip select,.strip button{font:inherit;background:#2b3444;color:#fff;border:1px solid #3c4658;border-radius:8px;padding:5px 8px}
+  .strip button.on{background:var(--primary);border-color:var(--primary)}
+  .board{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;margin-top:14px}
+  .opt{flex:none;width:720px}
+  body.phone .opt{width:390px}
+  .opt .cap{margin-top:10px;font-size:13px;color:var(--muted-fg);padding:0 4px;max-width:720px}
+  .opt .cap b{color:var(--foreground);font-weight:600}
+  .opt .cap .rec{display:inline-block;background:var(--primary);color:#fff;border-radius:999px;padding:1px 9px;font-size:11px;font-weight:600;margin-left:6px;vertical-align:1px}
+  /* the classic pay page, Storefront theme, as the app's Legacy tab shows it */
+  .frame{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden}
+  .wc{padding:18px 20px 22px;font-family:"Source Sans Pro",-apple-system,system-ui,sans-serif;font-size:15px;color:#333}
+  .wc .totals{border-top:1px solid #eee;padding:10px 0 12px;display:flex;justify-content:flex-end;gap:14px;font-size:14px;color:#333}
+  .wc .totals b{font-weight:700}
+  .wc .method{display:flex;align-items:center;gap:12px;padding:16px 0;border-top:1px solid #eee;font-weight:700;color:#222}
+  .wc .method .radio{width:16px;height:16px;border-radius:50%;border:2px solid #222;display:inline-block;flex:none}
+  .wc .method.on .radio{border-color:#7f54b3;background:radial-gradient(circle,#7f54b3 0 4px,#fff 5px 6px,#7f54b3 7px)}
+  .wc .method.dim{opacity:.35}
+  .wc .box{background:#fafafa;border-radius:4px;padding:16px 18px;margin:0 0 4px}
+  .wc .box.today{font-size:15px;line-height:1.5}
+  .wc .today .btns{display:flex;gap:6px;margin:4px 0 8px}
+  .wc .today .btns button{font:700 16px "Source Sans Pro",system-ui;border:0;background:#eee;color:#333;padding:10px 20px;border-radius:2px}
+  .wc .today .btns button:disabled{color:#999;background:#f3f3f3}
+  .wc .today details{font-size:16px}
+  .wc .today li{list-style:none;padding:8px 0;border-bottom:1px solid #eee;font-size:15px}
+  .wc .today ul{margin:0;padding:0}
+  /* shared panel grammar (the app's tokens, reproduced in plugin CSS) */
+  .panel{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif;font-size:14px;color:var(--foreground);display:flex;flex-direction:column;gap:14px}
+  .panel .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  .help{font-size:13px;color:var(--muted-fg)}
+  .badge{display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:500;min-height:20px}
+  .badge i{width:9px;height:9px;border-radius:50%;background:var(--muted-fg);display:inline-block;flex:none}
+  .badge.bad{color:var(--destructive)} .badge.bad i{background:var(--destructive)}
+  .badge.ok{color:var(--success)} .badge.ok i{background:var(--success)}
+  .badge.warn{color:var(--warning)} .badge.warn i{background:var(--warning)}
+  .badge.live i{background:var(--primary);animation:pulse 1.2s ease-in-out infinite}
+  @keyframes pulse{50%{opacity:.35}}
+  .conn{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--success);background:var(--success-soft);border-radius:999px;padding:2px 9px}
+  .conn i{width:7px;height:7px;border-radius:50%;background:var(--success)}
+  .eyebrow{font-size:11px;font-weight:600;letter-spacing:.12em;color:var(--muted-fg)}
+  .amt{font-size:34px;font-weight:700;letter-spacing:-.02em;line-height:1.1;font-variant-numeric:tabular-nums}
+  .btn{font:600 15px/1 inherit;font-family:inherit;border-radius:10px;padding:0 18px;height:44px;border:1px solid transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.outline{background:#fff;border-color:var(--border);color:var(--foreground)}
+  .btn.danger{background:#fff;border-color:var(--destructive);color:var(--destructive)}
+  .btn.ghost{background:transparent;color:var(--muted-fg);padding:0 8px}
+  .btn[disabled]{opacity:.45;cursor:default}
+  .btn.wide{width:100%}
+  .actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .actions .spacer{flex:1}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .chip{border:1px solid var(--border);border-radius:999px;padding:0 14px;height:36px;display:inline-flex;align-items:center;font-size:14px;background:#fff}
+  .chip.on{border-color:var(--primary);color:var(--primary);background:#eaf2fb;font-weight:600}
+  /* horizontal stepper, as chosen 2026-09-11 / 2026-10-05 */
+  .steps{display:flex;align-items:flex-start;width:100%}
+  .step{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;font-size:12px;color:var(--muted-fg)}
+  .step .dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;z-index:1}
+  .step .dot svg{width:12px;height:12px}
+  .step:not(:last-child)::after{content:"";position:absolute;top:10px;left:50%;width:100%;height:2px;background:var(--border)}
+  .step.done{color:var(--foreground)} .step.done .dot{background:var(--success);border-color:var(--success);color:#fff}
+  .step.done:not(:last-child)::after{background:var(--success)}
+  .step.live{color:var(--foreground);font-weight:600} .step.live .dot{border-color:var(--primary);box-shadow:0 0 0 3px #d7e6f5}
+  .step.fail .dot{background:var(--destructive);border-color:var(--destructive);color:#fff}
+  .step.stop .dot{background:var(--muted-fg);border-color:var(--muted-fg);color:#fff}
+  .hr{height:1px;background:var(--border);width:100%}
+  /* details / log rows */
+  .log{display:flex;flex-direction:column;gap:0;margin:0;padding:0;list-style:none}
+  .log li{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;align-items:flex-start}
+  .log li:last-child{border-bottom:0}
+  .log .m{width:9px;height:9px;border-radius:50%;background:var(--success);margin-top:5px;flex:none}
+  .log .m.err{background:var(--destructive)} .log .m.void{background:var(--muted-fg)} .log .m.warn{background:var(--warning)}
+  .log .w{flex:1} .log .t{color:var(--muted-fg);font-variant-numeric:tabular-nums;flex:none}
+  .log .id{font-family:var(--mono);font-size:12px;color:var(--muted-fg);display:block;margin-top:2px}
+  .ids{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12px;color:var(--muted-fg);margin-top:8px}
+  .ids code{font-family:var(--mono);color:var(--foreground)}
+  .toggle{display:flex;justify-content:space-between;align-items:center;min-height:36px}
+  .toggle .lk{font-size:14px;font-weight:600;color:var(--foreground);background:none;border:0;padding:0;cursor:pointer;display:inline-flex;gap:6px;align-items:center;font-family:inherit}
+  .toggle .lk::before{content:"▸";color:var(--muted-fg)} .open .toggle .lk::before{content:"▾"}
+  .dtl{display:none} .open .dtl{display:block}
+  /* B: one-line strip */
+  .bar{display:flex;gap:4px;height:5px;width:100%}
+  .bar i{flex:1;border-radius:3px;background:var(--border)}
+  .bar i.done{background:var(--success)} .bar i.live{background:var(--primary);animation:pulse 1.2s ease-in-out infinite}
+  .bar i.fail{background:var(--destructive)} .bar i.stop{background:var(--muted-fg)}
+  .strip-row{display:flex;align-items:center;gap:12px;min-height:44px}
+  .spin{width:18px;height:18px;border-radius:50%;border:2.5px solid var(--border);border-top-color:var(--primary);animation:spin 1s linear infinite;flex:none}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .mark-s{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex:none;color:#fff}
+  .mark-s svg{width:10px;height:10px}
+  .mark-s.ok{background:var(--success)} .mark-s.fail{background:var(--destructive)} .mark-s.void{background:var(--muted-fg)}
+  /* C: takeover */
+  .take{display:flex;flex-direction:column;align-items:center;gap:14px;padding:6px 0 10px;text-align:center}
+  .ring{width:88px;height:88px;border-radius:50%;border:4px solid var(--border);border-top-color:var(--primary);animation:spin 1s linear infinite}
+  .mark{width:88px;height:88px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+  .mark svg{width:44px;height:44px}
+  .mark.ok{background:var(--success-soft);color:var(--success)}
+  .mark.fail{background:var(--destructive-soft);color:var(--destructive)}
+  .mark.void{background:var(--muted);color:var(--muted-fg)}
+  .mark svg path{stroke-dasharray:40;stroke-dashoffset:40;animation:draw .35s .1s ease-out forwards}
+  .mark svg path+path{animation-delay:.3s}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  .take .amt{font-size:44px}
+  .take .w{width:100%;max-width:520px;text-align:left}
+  .stamp{display:inline-block;border:3px solid var(--success);color:var(--success);border-radius:8px;padding:2px 12px;font-weight:800;letter-spacing:.14em;font-size:14px;transform:rotate(-6deg)}
+  .prefers{display:none}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Legacy order-pay panel: the terminal moment on the classic pay page</h1>
+  <p class="lede">The "Legacy" tab in the 2.0 checkout is the classic WooCommerce pay page in an iframe, with Pro's shared order-pay panel inside the gateway's accordion row. Today it is three lines of text and a WordPress button row. The app's own terminal moment was decided on 2026-10-05 (horizontal stepper, one line in cashier words, Details unfolds the rows and ids). This board is the chosen way of bringing that decision onto the classic page, next to today's panel as the reference column.</p>
+
+  <div class="note waiting"><b>Chosen (Paul, 2026-11-04): A, the terminal moment rehosted.</b> <i>"recommended looks good"</i>
+    <ul>
+      <li>B (one line and a bar) and C (the reader takes the page) are deleted from this board; the README records them.</li>
+      <li>Being built into Pro's panel: markup in `Order_Pay_Panel.php`, behaviour in `order-pay-panel.js`, a new `assets/css/order-pay-panel.css`.</li>
+    </ul>
+  </div>
+  <div class="note"><b>Change log</b>
+    <ul>
+      <li><b>2026-11-04 17:30</b> A: a request refused before any row shows no figure and no stepper (nothing reached the terminal).</li>
+      <li><b>2026-11-04 16:55</b> A chosen; B and C removed. Today stays as the reference column.</li>
+      <li><b>2026-11-04 16:40</b> First board: Today · A · B · C, nine states, one or three readers, tablet and phone widths.</li>
+    </ul>
+  </div>
+
+  <div class="strip">
+    <label>State
+      <select id="state">
+        <option value="idle">Ready (idle)</option>
+        <option value="sending">Sending</option>
+        <option value="waiting" selected>On terminal, waiting</option>
+        <option value="approved">Approved, capturing</option>
+        <option value="paid">Paid</option>
+        <option value="declined">Card declined</option>
+        <option value="cancelled">Cancelled from the till</option>
+        <option value="timeout">Timed out</option>
+        <option value="refused">Refused before a row (400)</option>
+      </select>
+    </label>
+    <label>Readers
+      <select id="readers"><option value="1">one (Front Desk)</option><option value="3">three</option></select>
+    </label>
+    <label><button id="details" type="button">Details open</button></label>
+    <label><button id="width" type="button">Phone width</button></label>
+    <span style="opacity:.7">Every column follows the strip. Amounts and words are the app's strings.</span>
+  </div>
+
+  <div class="board" id="board"></div>
+
+  <h2>What each column keeps from the 2026-10-05 decision</h2>
+  <div class="note">
+    <ul>
+      <li><b>Words, not wire.</b> Every row in Details uses the app's catalogue (`tender/labels.ts`): "Sent to Front Desk", "On the terminal, waiting for the customer", "Approved $153.71". Ids sit in mono under the row, never in the sentence. Today's panel prints the server event verbatim ("Reader action pi_… created on tmr_…").</li>
+      <li><b>The status is said once.</b> One line, with a dot in the state's colour; the steps say where, the log says why.</li>
+      <li><b>Buttons are verbs with the object on them.</b> "Send $153.71 to Front Desk" is the one primary; "Cancel on terminal" is outline-red and sits apart; "Try again" only after an end. Today shows all three at once, two of them greyed.</li>
+      <li><b>The reader is chosen with chips</b> when there is more than one (as in the tender pane), not a select; with one reader there is nothing to choose.</li>
+      <li><b>Details hides until there is something to list</b>, unfolds inside the row, and carries Copy. A refused request (today's 400) is a red line there, so it is never empty.</li>
+      <li><b>Precedents:</b> Cash App, Brex and Too Good To Go status timelines (a tick per step, the time under); Square and Zettle's "Waiting for card" moment (one line, one cancel); Stripe's own Terminal reader card for the connected badge.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+(() => {
+  const amount = '$153.71', amountWire = '153.71 USD';
+  const readersOf = n => n === 1 ? ['Front Desk'] : ['Front Desk', 'Bar', 'Back office'];
+  const S = {
+    idle:      { step: 0, status: 'Ready', tone: 'muted', live: false, ended: false, events: [] },
+    sending:   { step: 0, status: 'Starting the terminal…', tone: 'muted', live: true, events: [] },
+    waiting:   { step: 1, status: 'Waiting for the customer on the terminal', tone: 'muted', live: true,
+                 events: [['ok','Sent to Front Desk','16:23:07','pi_3UY61mIItXSfSXNx1ft3Mk7E'],['ok','On the terminal, waiting for the customer','16:23:10']] },
+    approved:  { step: 2, status: 'Capturing…', tone: 'muted', live: true,
+                 events: [['ok','Sent to Front Desk','16:23:07','pi_3UY61mIItXSfSXNx1ft3Mk7E'],['ok','On the terminal, waiting for the customer','16:23:10'],['ok','Approved $153.71','16:23:31']] },
+    paid:      { step: 3, status: 'Paid. Finishing the order…', tone: 'ok', live: false, ended: 'ok',
+                 events: [['ok','Sent to Front Desk','16:23:07','pi_3UY61mIItXSfSXNx1ft3Mk7E'],['ok','On the terminal, waiting for the customer','16:23:10'],['ok','Approved $153.71','16:23:31'],['ok','Captured','16:23:33']] },
+    declined:  { step: 1, status: 'Payment failed: card declined', tone: 'bad', live: false, ended: 'fail',
+                 events: [['ok','Sent to Front Desk','16:23:07','pi_3UY61mIItXSfSXNx1ft3Mk7E'],['ok','On the terminal, waiting for the customer','16:23:10'],['err','Card declined','16:23:29']] },
+    cancelled: { step: 1, status: 'Payment cancelled', tone: 'muted', live: false, ended: 'void',
+                 events: [['ok','Sent to Front Desk','16:23:07','pi_3UY61mIItXSfSXNx1ft3Mk7E'],['ok','On the terminal, waiting for the customer','16:23:10'],['void','Cancelled from the till','16:23:40'],['void','Terminal confirmed the cancel','16:23:42']] },
+    timeout:   { step: 1, status: 'Timed out — payment cancelled', tone: 'muted', live: false, ended: 'void',
+                 events: [['ok','Sent to Front Desk','16:23:07','pi_3UY61mIItXSfSXNx1ft3Mk7E'],['ok','On the terminal, waiting for the customer','16:23:10'],['void','Timed out after 5 minutes','16:28:07'],['void','Terminal confirmed the cancel','16:28:09']] },
+    refused:   { step: 0, status: 'The store refused the payment: Command ID must be a UUID.', tone: 'bad', live: false, ended: 'fail',
+                 events: [['err','intent 400 rest_invalid_param: Command ID must be a UUID.','16:23:07']] },
+  };
+  const tick = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 8"/></svg>';
+  const cross = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M7 7l10 10"/><path d="M17 7L7 17"/></svg>';
+  const minus = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 12h12"/></svg>';
+  const steps = ['Sent', 'On terminal', 'Approved', 'Captured'];
+  const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+
+  function stepper(st) {
+    return '<div class="steps">' + steps.map((label, i) => {
+      let cls = 'step', glyph = '';
+      if (i < st.step || (st.ended === 'ok' && i <= st.step)) { cls += ' done'; glyph = tick; }
+      else if (i === st.step && st.ended === 'fail') { cls += ' fail'; glyph = cross; }
+      else if (i === st.step && st.ended === 'void') { cls += ' stop'; glyph = minus; }
+      else if (i === st.step && st.live) cls += ' live';
+      return `<div class="${cls}"><div class="dot">${glyph}</div><span>${label}</span></div>`;
+    }).join('') + '</div>';
+  }
+  function logRows(st, open) {
+    if (!st.events.length) return '';
+    const rows = st.events.slice().reverse().map(([m, w, t, id]) =>
+      `<li><span class="m ${m}"></span><span class="w">${esc(w)}${id ? `<span class="id">${id}</span>` : ''}</span><span class="t">${t}</span></li>`).join('');
+    const ids = st.step > 0 ? `<div class="ids"><span>Reader</span><code>tmr_F2EVlAbgE8Z17w</code><span>Action</span><code>pi_3UY61mIItXSfSXNx1ft3Mk7E</code><span>Payment</span><code>994152a5-fa11-4384-9562-67e27b5328fd</code></div>` : '';
+    return `<div class="dtlwrap ${open ? 'open' : ''}"><div class="toggle"><button class="lk" type="button">${open ? 'Hide details' : 'Details'}</button>${open ? '<button class="btn ghost" type="button" style="height:36px">Copy</button>' : ''}</div><div class="dtl"><ul class="log">${rows}</ul>${ids}</div></div>`;
+  }
+  function badge(st) {
+    const cls = st.tone === 'bad' ? 'bad' : st.tone === 'ok' ? 'ok' : (st.live ? 'live' : '');
+    return `<span class="badge ${cls}"><i></i>${esc(st.status)}</span>`;
+  }
+  function chips(readers, disabled) {
+    if (readers.length < 2) return '';
+    return `<div><div class="chips">${readers.map((r, i) => `<span class="chip ${i === 0 ? 'on' : ''}" ${disabled ? 'style="opacity:.5"' : ''}>${r}</span>`).join('')}</div><div class="help" style="margin-top:6px">Choose a terminal</div></div>`;
+  }
+  function actions(key, st, phone) {
+    const wide = phone ? ' wide' : '';
+    if (key === 'idle') return `<div class="actions"><button class="btn primary${wide}">Send ${amount} to Front Desk</button></div>`;
+    if (st.live) return `<div class="actions"><button class="btn danger${wide}">Cancel on terminal</button></div>`;
+    if (st.ended === 'ok') return `<div class="actions"><span class="help">Opening the receipt…</span></div>`;
+    return `<div class="actions"><button class="btn primary${wide}">Try again</button></div>`;
+  }
+  const head = (on, dim) => `<div class="totals"><span>Total:</span><b>${amount}</b></div><div class="method ${dim ? 'dim' : ''}"><span class="radio"></span>Cash</div><div class="method on"><span class="radio"></span>Stripe Terminal</div>`;
+  const tail = dim => `<div class="method ${dim ? 'dim' : ''}"><span class="radio"></span>Email Invoice</div><div class="method ${dim ? 'dim' : ''}"><span class="radio"></span>SumUp Terminal</div>`;
+
+  // Today: the panel as shipped (2.0.0-beta.2 + #758).
+  function today(key, st, readers, open) {
+    const wire = { idle: `Ready to send ${amountWire} to the terminal.`, sending: 'Sending to the terminal…', waiting: 'Waiting for the customer at the terminal…', approved: 'Approved — finishing…', paid: 'Paid. Finishing the order…', declined: 'The terminal declined or cancelled the payment. Card declined.', cancelled: 'Cancelled on the terminal. Nothing was charged.', timeout: 'No card was presented in time.', refused: 'The terminal declined or cancelled the payment. Command ID must be a UUID.' }[key];
+    const raw = { waiting: ['2026-11-04T16:23:10+00:00 info Reader action in_progress','2026-11-04T16:23:07+00:00 info Reader action pi_3UY61mIItXSfSXNx1ft3Mk7E created on tmr_F2EVlAbgE8Z17w'], refused: ['2026-11-04T16:23:07.000Z error intent 400 rest_invalid_param: Command ID must be a UUID.'] }[key] || st.events.slice().reverse().map(e => `2026-11-04T${e[2]}+00:00 ${e[0] === 'err' ? 'error' : 'info'} ${e[1]}`);
+    const sel = readers.length > 1 ? `<p>Terminal <select><option>Front Desk</option><option>Bar</option><option>Back office</option></select></p>` : '';
+    return `<div class="box today">${sel}<div>Pay in person using Stripe Terminal.</div><div>${amountWire}</div><div>${wire}</div>
+      <div class="btns"><button ${key !== 'idle' ? 'disabled' : ''}>Send to terminal</button><button ${!st.live ? 'disabled' : ''}>Cancel</button><button ${!(st.ended && st.ended !== 'ok') ? 'disabled' : ''}>Try again</button></div>
+      ${raw.length ? `<details ${open ? 'open' : ''}><summary>Details</summary><ul>${raw.map(r => `<li>${esc(r)}</li>`).join('')}</ul></details>` : ''}</div>`;
+  }
+  // A: the app's terminal moment, rehosted inside the accordion row.
+  function A(key, st, readers, open, phone) {
+    // The figure appears once a leg was sent: a request refused before any row never reached the terminal.
+    const hero = key === 'idle' || key === 'refused' ? '' : `<div><div class="eyebrow">ON THE TERMINAL</div><div class="amt">${amount}</div></div>`;
+    return `<div class="box"><div class="panel">
+      <div class="row"><span class="help">Stripe Terminal · Front Desk</span><span class="conn"><i></i>Connected</span></div>
+      ${key === 'idle' ? chips(readers) : ''}
+      ${hero}
+      ${badge(st)}
+      ${key === 'idle' || key === 'refused' ? '' : stepper(st)}
+      ${actions(key, st, phone)}
+      ${st.events.length ? '<div class="hr"></div>' + logRows(st, open) : ''}
+    </div></div>`;
+  }
+  // B: one line and a bar: the smallest panel that still says where and why.
+  function B(key, st, readers, open, phone) {
+    let lead;
+    if (key === 'idle') lead = '<span class="mark-s void" style="background:var(--border)"></span>';
+    else if (st.live) lead = '<span class="spin"></span>';
+    else lead = `<span class="mark-s ${st.ended}">${st.ended === 'ok' ? tick : st.ended === 'fail' ? cross : minus}</span>`;
+    const bar = key === 'idle' ? '' : '<div class="bar">' + steps.map((_, i) => `<i class="${i < st.step || (st.ended === 'ok') ? 'done' : i === st.step ? (st.ended === 'fail' ? 'fail' : st.ended === 'void' ? 'stop' : 'live') : ''}"></i>`).join('') + '</div>';
+    const last = st.events.length ? st.events[st.events.length - 1][2] : '';
+    const text = key === 'idle' ? `Front Desk · Connected` : esc(st.status) + (last ? ` <span class="help">· ${last}</span>` : '');
+    const btn = key === 'idle' ? `<button class="btn primary${phone ? ' wide' : ''}">Send ${amount} to Front Desk</button>` : st.live ? `<button class="btn danger">Cancel on terminal</button>` : st.ended === 'ok' ? '' : `<button class="btn primary">Try again</button>`;
+    return `<div class="box"><div class="panel" style="gap:10px">
+      ${key === 'idle' ? chips(readers) : ''}
+      <div class="strip-row" style="${phone ? 'flex-wrap:wrap' : ''}">${lead}<span style="flex:1;font-weight:500;color:${st.tone === 'bad' ? 'var(--destructive)' : 'inherit'}">${text}</span>${btn}</div>
+      ${bar}
+      ${st.events.length ? logRows(st, open) : ''}
+    </div></div>`;
+  }
+  // C: the reader takes the page: other methods fold while a leg is live.
+  function C(key, st, readers, open, phone) {
+    if (key === 'idle') return A(key, st, readers, open, phone);
+    let big = st.live ? '<div class="ring"></div>' : st.ended === 'ok' ? `<div class="mark ok">${tick}</div>` : st.ended === 'fail' ? `<div class="mark fail">${cross}</div>` : `<div class="mark void">${minus}</div>`;
+    return `<div class="box"><div class="take">
+      ${big}
+      <div><div class="eyebrow">ON THE TERMINAL</div><div class="amt">${amount}</div></div>
+      ${st.ended === 'ok' ? '<span class="stamp">PAID</span>' : badge(st)}
+      <div class="w panel">
+        <div class="row"><span class="help">Stripe Terminal · Front Desk</span><span class="conn"><i></i>Connected</span></div>
+        ${stepper(st)}
+        ${actions(key, st, true)}
+        ${st.events.length ? '<div class="hr"></div>' + logRows(st, open) : ''}
+      </div>
+    </div></div>`;
+  }
+
+  const cols = [
+    ['Today', 'The panel as shipped. Three lines of prose, a WordPress button row with two greyed buttons, the server events printed raw under Details.', today, false],
+    ['A · The terminal moment, rehosted <span class="rec">chosen</span>', 'The app\'s decided design inside the accordion row: reader line with the connected badge, the amount as the one figure, the status said once, the horizontal stepper, one verb-with-object button, Details with word rows, ids and Copy. Same strings as the tender pane, so a cashier who knows one knows the other.', A, false],
+  ];
+  const board = document.getElementById('board');
+  const ctl = { state: document.getElementById('state'), readers: document.getElementById('readers'), details: document.getElementById('details'), width: document.getElementById('width') };
+  let open = false, phone = false;
+  function render() {
+    const key = ctl.state.value, st = S[key], readers = readersOf(Number(ctl.readers.value));
+    document.body.classList.toggle('phone', phone);
+    board.innerHTML = cols.map(([title, cap, fn, dims]) => {
+      const dim = dims && key !== 'idle';
+      return `<div class="opt"><div class="frame"><div class="wc">${head(true, dim)}${fn(key, st, readers, open, phone)}${tail(dim)}</div></div><div class="cap"><b>${title}</b><br>${cap}</div></div>`;
+    }).join('');
+    board.querySelectorAll('.lk').forEach(b => b.addEventListener('click', () => { open = !open; render(); }));
+    ctl.details.classList.toggle('on', open); ctl.width.classList.toggle('on', phone);
+  }
+  ctl.state.addEventListener('change', render); ctl.readers.addEventListener('change', render);
+  ctl.details.addEventListener('click', () => { open = !open; render(); });
+  ctl.width.addEventListener('click', () => { phone = !phone; render(); });
+  const q = new URLSearchParams(location.search);
+  if (q.get('state') && S[q.get('state')]) ctl.state.value = q.get('state');
+  if (q.get('details') === '1') open = true;
+  if (q.get('phone') === '1') phone = true;
+  render();
+})();
+</script>
+</body>
+</html>
