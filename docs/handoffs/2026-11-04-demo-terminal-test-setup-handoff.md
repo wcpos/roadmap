@@ -78,5 +78,13 @@ through idle, waiting, cancel and paid.
    my.mollie.com, Point of Sale is enabled on the test profile (which creates the test terminal), the test key is
    installed on the demo, and an auto-complete helper like the Stripe one drives the payment's
    `changePaymentState` link. As of 2026-11-04 the API does not offer point of sale on the unverified profile.
+   **Walked in Paul's signed-in dashboard the same evening (Codex computer use, five screenshots):** the
+   profile's In-person payments page offers only "Buy a terminal", the payment-methods list has no Point of
+   sale entry to enable, the profile page says *"Almost there! We are reviewing the last details of your profile
+   before you can start accepting in-person payments"*, and the footer links *"Provide additional information to
+   activate payments"* to the onboarding page, which lists three items still **To do**: Business registration
+   document, ID document, Link a bank account. Test mode is on; `GET /v2/terminals` still answers zero. So the
+   gate is Mollie's verification, not the sign-in: the tile stays hidden until Paul completes onboarding (his
+   documents, his call) or decides the demo ships without Mollie.
 
 Memory: `demo-site-terminal-test-setup` in the roadmap memory index.
