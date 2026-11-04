@@ -74,8 +74,9 @@ through idle, waiting, cancel and paid.
    #33888). The US Store answers "this merchant can only accept 'EUR'", so the gateway description on the demo
    points testers at the page and the EU Store. For the beta post: *SumUp: pair a Virtual Solo at
    demo.wcpos.com/sumup-pair/ and use the EU Store.*
-2. **Mollie: tile hidden on the demo** until Paul signs in at my.mollie.com; then enable Point of Sale on the test
-   profile, install the test key and add an auto-complete helper like the Stripe one (drive `changePaymentState`).
-   Test-mode point of sale is not offered on the unverified profile by API today.
+2. **Mollie: tile hidden on the demo** until the Mollie side and the demo are ready: Paul signs in at
+   my.mollie.com, Point of Sale is enabled on the test profile (which creates the test terminal), the test key is
+   installed on the demo, and an auto-complete helper like the Stripe one drives the payment's
+   `changePaymentState` link. As of 2026-11-04 the API does not offer point of sale on the unverified profile.
 
 Memory: `demo-site-terminal-test-setup` in the roadmap memory index.
