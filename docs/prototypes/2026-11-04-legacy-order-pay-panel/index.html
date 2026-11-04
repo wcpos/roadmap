@@ -145,6 +145,7 @@
   </div>
   <div class="note"><b>Change log</b>
     <ul>
+      <li><b>2026-11-04 17:30</b> A: a request refused before any row shows no figure and no stepper (nothing reached the terminal).</li>
       <li><b>2026-11-04 16:55</b> A chosen; B and C removed. Today stays as the reference column.</li>
       <li><b>2026-11-04 16:40</b> First board: Today · A · B · C, nine states, one or three readers, tablet and phone widths.</li>
     </ul>
@@ -261,13 +262,14 @@
   }
   // A: the app's terminal moment, rehosted inside the accordion row.
   function A(key, st, readers, open, phone) {
-    const hero = key === 'idle' ? '' : `<div><div class="eyebrow">ON THE TERMINAL</div><div class="amt">${amount}</div></div>`;
+    // The figure appears once a leg was sent: a request refused before any row never reached the terminal.
+    const hero = key === 'idle' || key === 'refused' ? '' : `<div><div class="eyebrow">ON THE TERMINAL</div><div class="amt">${amount}</div></div>`;
     return `<div class="box"><div class="panel">
       <div class="row"><span class="help">Stripe Terminal · Front Desk</span><span class="conn"><i></i>Connected</span></div>
       ${key === 'idle' ? chips(readers) : ''}
       ${hero}
       ${badge(st)}
-      ${key === 'idle' ? '' : stepper(st)}
+      ${key === 'idle' || key === 'refused' ? '' : stepper(st)}
       ${actions(key, st, phone)}
       ${st.events.length ? '<div class="hr"></div>' + logRows(st, open) : ''}
     </div></div>`;
