@@ -52,6 +52,17 @@ Send to terminal → paid, order #33874 completed with its captured row in about
 final head (3771089, squash-merged unchanged), so the run exercised the merged content of those two files; it is
 not a test of a Pro build.
 
+## 2b. The Legacy panel's look
+
+Paul, the same afternoon: *"Can we improve the UI for the legacy screen though?? Can you mock up some
+examples?"* Board: `docs/prototypes/2026-11-04-legacy-order-pay-panel` (roadmap#530); A, the app's terminal
+moment rehosted, chosen (*"recommended looks good"*) and built as wcpos/woocommerce-pos-pro#760 (merged the same
+day): reader line with a Connected badge, chips when there is more than one reader, the amount as the one figure
+once sent, the status said once with a tone dot, the horizontal Sent · On terminal · Approved · Captured stepper,
+"Send <amount> to <reader>" as the one button, "Cancel on terminal" in outline red, Details with cashier words,
+ids in mono and Copy. The demo carries #760's three files hotpatched; walked live there at tablet and phone width
+through idle, waiting, cancel and paid.
+
 ## 3. Open for Paul
 
 1. **SumUp for testers.** Options: (a) a demo-only "pair your Virtual Solo" REST route on the sandbox merchant
