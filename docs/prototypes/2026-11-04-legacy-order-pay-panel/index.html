@@ -230,7 +230,7 @@
     if (!st.events.length) return '';
     const rows = st.events.slice().reverse().map(([m, w, t, id]) =>
       `<li><span class="m ${m}"></span><span class="w">${esc(w)}${id ? `<span class="id">${id}</span>` : ''}</span><span class="t">${t}</span></li>`).join('');
-    const ids = st.step > 0 || st.ended ? `<div class="ids"><span>Reader</span><code>tmr_F2EVlAbgE8Z17w</code><span>Action</span><code>pi_3UY61mIItXSfSXNx1ft3Mk7E</code><span>Payment</span><code>994152a5-fa11-4384-9562-67e27b5328fd</code></div>` : '';
+    const ids = st.step > 0 ? `<div class="ids"><span>Reader</span><code>tmr_F2EVlAbgE8Z17w</code><span>Action</span><code>pi_3UY61mIItXSfSXNx1ft3Mk7E</code><span>Payment</span><code>994152a5-fa11-4384-9562-67e27b5328fd</code></div>` : '';
     return `<div class="dtlwrap ${open ? 'open' : ''}"><div class="toggle"><button class="lk" type="button">${open ? 'Hide details' : 'Details'}</button>${open ? '<button class="btn ghost" type="button" style="height:36px">Copy</button>' : ''}</div><div class="dtl"><ul class="log">${rows}</ul>${ids}</div></div>`;
   }
   function badge(st) {
