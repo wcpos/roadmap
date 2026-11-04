@@ -36,9 +36,18 @@ The terminal declined or cancelled the payment. Command ID must be a UUID.
 
 Free has required a UUID `command_id` and the order `revision` on every money command since
 wcpos/woocommerce-pos@2b13db79 (2026-10-20, ADR 0040 rules 5 and 6a); Pro's `assets/js/order-pay-panel.js` sent
-neither. Fix: wcpos/woocommerce-pos-pro#755 (one id per logical command, kept across lock waits and transport
-retries; answered revision adopted; a stale revision retries once). Live proof on the demo is owed once a Pro build
-carrying it is installed there.
+neither. Fixed and merged the same day:
+
+- wcpos/woocommerce-pos-pro#755: one id per logical command, kept across lock waits and transport retries; the
+  answered revision adopted; a stale `intent` ends the payment (its amount is the page-load balance), a stale
+  `capture` or `void` is re-sent once; a cancel that lands mid-command voids instead of re-charging.
+- wcpos/woocommerce-pos-pro#757: the panel reads the revision as the token's cashier. Free's `Form_Handler` serves
+  the pay page as the order's **customer** (a guest on most POS orders), so the compared read ran as user 0 and
+  every command drew a 428 once #755 was in.
+
+Live, observed on the demo with both files hotpatched into the Pro dir (originals kept in the php container at
+`/tmp/pro-legacy-backup-755`; the next Pro beta installed there replaces them): Legacy tab → Stripe Terminal →
+Send to terminal → paid, order #33874 completed with its captured row in about 16 s.
 
 ## 3. Open for Paul
 
