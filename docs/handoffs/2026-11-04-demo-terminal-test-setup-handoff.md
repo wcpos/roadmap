@@ -47,7 +47,10 @@ neither. Fixed and merged the same day:
 
 Live, observed on the demo with both files hotpatched into the Pro dir (originals kept in the php container at
 `/tmp/pro-legacy-backup-755`; the next Pro beta installed there replaces them): Legacy tab → Stripe Terminal →
-Send to terminal → paid, order #33874 completed with its captured row in about 16 s.
+Send to terminal → paid, order #33874 completed with its captured row in about 16 s. The hotpatched files were
+`assets/js/order-pay-panel.js` as merged in #755 and `includes/Payments/OrderPay/Order_Pay_Panel.php` at #757's
+final head (3771089, squash-merged unchanged), so the run exercised the merged content of those two files; it is
+not a test of a Pro build.
 
 ## 3. Open for Paul
 
