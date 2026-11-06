@@ -56,8 +56,12 @@ checks them against the installed `@stripe/stripe-terminal-react-native` before 
   `terms_required` (new on `DriverStatus`), which the row and the pill turn into "Ask an
   administrator to set this up" (`settings.card_readers.tap_to_pay_admin_only`, exists).
 - **`prepare()`** (new on the driver interface, optional): on iOS, calls the SDK's Tap to Pay
-  warm-up for a till that has set up (the remembered reader for this method has
-  `transport: 'tap_to_pay'`, `remembered-readers.ts`); otherwise returns at once. Called from the
+  warm-up for a till where Tap to Pay has been set up; otherwise returns at once. "Set up" is a
+  per-device note (`tapToPaySetUp` beside the reader memory in `remembered-readers.ts`), written
+  on the first successful Tap to Pay connect and cleared only by Forget on the Card readers page.
+  It is deliberately not the current selection: a till that switched to a smart reader keeps
+  warming up, so switching back is instant. The note is a warm-up hint only; whether the merchant
+  has accepted the terms is still read from the SDK, never from this note. Called from the
   app root on cold start and on `AppState` active, after the drivers are registered. Decision 4
   bounds it: a till with no Tap to Pay memory never touches the SDK at launch.
 - **Progress** already flows from `onDidReportReaderSoftwareUpdateProgress` into
@@ -111,8 +115,10 @@ What this slice adds:
   payment method. Allow the app's readers on its WooCommerce settings page.") with the docs link,
   never a disabled control.
 - **Permission pre-alerts** (Apple 2.x): location, and notifications for slice 4's missed-result
-  alert, are asked from this page at set-up time, each behind one sentence that says why, never
-  first at checkout.
+  alert, are steps of the set-up flow itself (awareness sheet, pre-alerts, the SDK's terms), each
+  behind one sentence that says why. The flow is one component, opened from this page's Set up
+  and from the pay sheet's pill (slice 3), so an administrator who starts at checkout meets the
+  same pre-alerts; no system permission is ever requested first at checkout.
 
 Board questions (the options board precedes the build; see "Options board" below): how the
 Selected chip reads on the This phone and Bluetooth rows beside their state line, where the
@@ -163,8 +169,10 @@ local-notification helper under `apps/main/lib/`.
   it so the stepper does not go blank). Apple's screens own the tap itself; ours frame it.
 - **Receipt after any outcome** (Apple 5.10): the Approved step keeps today's receipt actions. The
   Declined and Timed out steps gain the same **Receipt** action, which builds a client-side
-  declined-payment receipt (store, time, last four when the SDK gives it, amount, "Declined",
-  no order number) and offers it through the share sheet or email. Nothing is posted to the
+  receipt (store, time, last four when the SDK gives it, amount, the outcome word, no order
+  number) and offers it through the share sheet or email. The outcome word is the step's own:
+  "Declined" for a decline, "Timed out" for a read that ended with no card or no answer; a
+  timeout is never written as a decline. Nothing is posted to the
   store for a declined tap.
 - **Missed result** (Apple 5.12): if the app is backgrounded between Reading and the outcome and
   the outcome is anything but Approved, a local notification says "Your last Tap to Pay payment
