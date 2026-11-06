@@ -1,0 +1,54 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Close Register Mockup</title>
+<style>
+:root{--bg:#f6f7f8;--card:#fff;--fg:#16181d;--muted:#5b616e;--line:#dfe2e6;--accent:#1f5fd6}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1114;--card:#181b20;--fg:#eceef1;--muted:#a0a6b1;--line:#2b2f36;--accent:#6c9cf5}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+main{max-width:1320px;margin:0 auto;padding:32px 16px 64px}
+h1{font-size:26px;margin:0 0 4px}h2{font-size:19px;margin:48px 0 6px}h3{font-size:15px;margin:24px 0 8px}
+p.lead,.note{color:var(--muted);margin:0 0 16px;max-width:760px}
+img{display:block;max-width:100%;height:auto;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+figure{margin:0}figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+.hero{display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.phones{display:grid;grid-template-columns:repeat(2,minmax(0,300px));gap:16px}
+.ba{display:grid;grid-template-columns:repeat(2,minmax(0,392px));gap:16px;margin-bottom:8px}
+.rej{display:grid;grid-template-columns:1fr 220px;gap:16px;align-items:start}
+table{border-collapse:collapse;width:100%;background:var(--card);font-variant-numeric:tabular-nums;font-size:14px}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}td:not(:first-child),th:not(:first-child){text-align:right}
+.scroll{overflow-x:auto}
+details{margin-top:12px}summary{cursor:pointer;color:var(--accent);min-height:44px;display:flex;align-items:center}
+@media (max-width:767px){.hero,.pair,.rej{grid-template-columns:1fr}.ba,.phones{grid-template-columns:1fr 1fr}}
+</style></head><body><main>
+<h1>Close Register</h1>
+<p class="lead">WCPOS 2.0 web, end of shift. The pick is <strong>V1, a right-side sheet</strong> over the dimmed register: the counted cash leads, and Close register is pinned at the bottom. It scored highest on Codex in both rounds (r1 average 8.45, against 7.90 for V2 and 7.60 for V3). Anchors: none (no existing screen; no reference screens available).</p>
+<h2>Picked: V1, right-side sheet</h2>
+<p class="note">Drawer short state: −$15.00, note written, Close enabled. Desktop at 1280 × 800, phone at 390 × 844. Follows your system theme.</p>
+<div class="hero"><figure class=""><picture><source srcset="img/v1-screen-dark.png" media="(prefers-color-scheme: dark)"><img src="img/v1-screen-light.png" alt="V1 desktop, drawer short"></picture></figure><figure class=""><picture><source srcset="img/v1-phone-dark.png" media="(prefers-color-scheme: dark)"><img src="img/v1-phone-light.png" alt="V1 phone, drawer short"></picture></figure></div>
+<h3>Light and dark</h3>
+<div class="pair"><figure><img src="img/v1-screen-light.png" alt="V1 desktop, light"><figcaption>Light</figcaption></figure><figure><img src="img/v1-screen-dark.png" alt="V1 desktop, dark"><figcaption>Dark</figcaption></figure></div>
+<div class="phones" style="margin-top:16px"><figure><img src="img/v1-phone-light.png" alt="V1 phone light"><figcaption>Phone, light</figcaption></figure><figure><img src="img/v1-phone-dark.png" alt="V1 phone dark"><figcaption>Phone, dark</figcaption></figure></div>
+<h2>States</h2>
+<p class="note">Drawer over, drawer balanced, first-ever close (no opening float), offline, plus nothing counted yet and the closed confirmation. Each frame shows the sheet at 80%.</p>
+<div class="pair"><figure><img src="img/v1-states-light.png" alt="V1 states board, light"><figcaption>Light</figcaption></figure><figure><img src="img/v1-states-dark.png" alt="V1 states board, dark"><figcaption>Dark</figcaption></figure></div>
+<h2>What changed between rounds</h2>
+<h3>First-ever close: an unknown float is no longer shown as a discrepancy</h3>
+<div class="ba"><figure><img src="img/first-r0.png" alt="First close, round 0"><figcaption>Before: "Unchecked +$150.00"</figcaption></figure><figure><img src="img/first-r1.png" alt="First close, round 1"><figcaption>After: "Difference unknown · Opening float not recorded"</figcaption></figure></div>
+<h3>Offline: the badge says the closure syncs later</h3>
+<div class="ba"><figure><img src="img/offline-r0.png" alt="Offline, round 0"><figcaption>Before: "Offline · saves on this device"</figcaption></figure><figure><img src="img/offline-r1.png" alt="Offline, round 1"><figcaption>After: "Offline · saves here, syncs when online"</figcaption></figure></div>
+<h2>Rejected variants</h2>
+<h3>V2: full-screen counting desk (r1 re-score 7.90)</h3>
+<p class="note">Keypad on the left, expected, counted and difference on the right. The 68 px keypad stays the loudest thing on screen even while the note is focused, and "Count by notes and coins" sits below Close on the phone.</p>
+<div class="rej"><figure class=""><picture><source srcset="img/v2-screen-dark.png" media="(prefers-color-scheme: dark)"><img src="img/v2-screen-light.png" alt="V2 desktop"></picture></figure><figure class=""><picture><source srcset="img/v2-phone-dark.png" media="(prefers-color-scheme: dark)"><img src="img/v2-phone-light.png" alt="V2 phone"></picture></figure></div>
+<details><summary>V2 states</summary><div class="pair"><figure><img src="img/v2-states-light.png" alt="V2 states board, light"><figcaption>Light</figcaption></figure><figure><img src="img/v2-states-dark.png" alt="V2 states board, dark"><figcaption>Dark</figcaption></figure></div></details>
+<h3>V3: the close as an equation (r1 re-score 7.60)</h3>
+<p class="note">Counted − Expected = Difference, as three cards. Clear on desktop, but on the phone the float, the bank figure and the other payments drop out of view.</p>
+<div class="rej"><figure class=""><picture><source srcset="img/v3-screen-dark.png" media="(prefers-color-scheme: dark)"><img src="img/v3-screen-light.png" alt="V3 desktop"></picture></figure><figure class=""><picture><source srcset="img/v3-phone-dark.png" media="(prefers-color-scheme: dark)"><img src="img/v3-phone-light.png" alt="V3 phone"></picture></figure></div>
+<details><summary>V3 states</summary><div class="pair"><figure><img src="img/v3-states-light.png" alt="V3 states board, light"><figcaption>Light</figcaption></figure><figure><img src="img/v3-states-dark.png" alt="V3 states board, dark"><figcaption>Dark</figcaption></figure></div></details>
+<h2>Scores</h2>
+<h3>Round 1: V1 after fixes, with r0 re-scored on corrected shots</h3>
+<div class="scroll"><table><tr><th>Category</th><th>V1 · r1</th><th>V1 · r0 baseline</th><th>V2 · r0</th><th>V3 · r0</th></tr><tr><td>Hierarchy</td><td>8.5</td><td>8.5</td><td>8</td><td>7.5</td></tr><tr><td>Typography</td><td>8.5</td><td>8.5</td><td>8</td><td>8</td></tr><tr><td>Spacing and alignment</td><td>8.5</td><td>8.5</td><td>8</td><td>8</td></tr><tr><td>Colour and contrast · light</td><td>8</td><td>8</td><td>8</td><td>8</td></tr><tr><td>Colour and contrast · dark</td><td>8</td><td>8</td><td>8</td><td>8</td></tr><tr><td>Iconography and indicators</td><td>8.5</td><td>8.5</td><td>8</td><td>8</td></tr><tr><td>Consistency</td><td>8.5</td><td>8.5</td><td>8</td><td>7.5</td></tr><tr><td>Clarity for the person in the brief</td><td>8</td><td>7.5</td><td>7.5</td><td>7</td></tr><tr><td>Density</td><td>9</td><td>9</td><td>7.5</td><td>6.5</td></tr><tr><td>States covered</td><td>9</td><td>8</td><td>8</td><td>7.5</td></tr><tr><td><strong>Average</strong></td><td><strong>8.45</strong></td><td><strong>8.30</strong></td><td><strong>7.90</strong></td><td><strong>7.60</strong></td></tr></table></div>
+<h3>Round 0: three variants (phone shots were centre-cropped by the shoot script, so spacing reads low for all three)</h3>
+<div class="scroll"><table><tr><th>Category</th><th>V1 · Side sheet</th><th>V2 · Counting desk</th><th>V3 · Equation</th></tr><tr><td>Hierarchy</td><td>7.5</td><td>7</td><td>7.5</td></tr><tr><td>Typography</td><td>8</td><td>8</td><td>8</td></tr><tr><td>Spacing and alignment</td><td>4</td><td>4</td><td>4</td></tr><tr><td>Colour and contrast (light)</td><td>7.5</td><td>7.5</td><td>7.5</td></tr><tr><td>Colour and contrast (dark)</td><td>7.5</td><td>7.5</td><td>7.5</td></tr><tr><td>Iconography and indicators</td><td>7</td><td>7</td><td>7</td></tr><tr><td>Consistency</td><td>5</td><td>5</td><td>5</td></tr><tr><td>Clarity for the person in the brief</td><td>6</td><td>5.5</td><td>5.5</td></tr><tr><td>Density</td><td>8</td><td>6</td><td>5.5</td></tr><tr><td>States covered</td><td>8</td><td>8</td><td>8</td></tr><tr><td><strong>Average</strong></td><td><strong>6.85</strong></td><td><strong>6.55</strong></td><td><strong>6.55</strong></td></tr></table></div>
+<p class="note">Judge: Codex (gpt-6-astra) only. Opus was never added, because no round had every category at 9.0. Stopped at the rounds=2 cap.</p>
+</main></body></html>
