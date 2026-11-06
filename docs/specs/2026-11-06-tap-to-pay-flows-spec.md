@@ -92,13 +92,20 @@ What this slice adds:
   overflow as **About Tap to Pay**. The education flow (slice 5) opens right after terms are
   accepted (Apple 4.2) and from the same overflow (4.3); until slice 5 lands the overflow item is
   absent, not disabled.
-- **Cloud readers on the same page** (#523 part two): when the method's `capture.modes` carries a
-  `server` entry, a third section **Smart readers** lists `hardware.readers` (name, online or
-  offline, location), with the store's `lock_to_default` honoured as it is on web. A tap selects
-  the row for this till; the selection is remembered per device beside the Bluetooth memory
-  (`remembered-readers.ts` gains `{ transport: 'server', reader_id }`). One selected row per
-  method across all three sections: selecting a smart reader releases a held Bluetooth reader
-  after the same confirm Disconnect uses today, and vice versa.
+- **Cloud readers on the same page** (#523 part two): the **Smart readers** section already
+  exists (monorepo #3322, merged 2026-11-06): one row per cloud reader the store allows, the
+  provider as the chip, Online or Offline, the location on the second line, a read-only
+  **Selected** chip on the reader this till pays with, **Use this reader** on every other online
+  one, and "Set by the store" under a locked default. It shows rows for the gateway's primary
+  connection only, because checkout routes by `capture.mode` today. This slice makes it show the
+  `server` entry of `capture.modes` on a native till whose store also allows the app's readers,
+  and lets checkout route by the selected row's connection (`capture_mode` from
+  `rememberedMode(reader)`, `remembered-readers.ts`). The memory stays one slot per gateway per
+  till, written only by `useReaderActions.choose()`: choosing a smart reader releases a held
+  Bluetooth reader after the same confirm Disconnect uses today, and connecting the phone's own
+  reader replaces a smart-reader memory. The **Selected** chip is the one mark of the chosen row
+  in every section; the Tap to Pay row and the Bluetooth rows adopt it when they are the chosen
+  one, so a page with three sections has exactly one Selected chip per gateway.
 - **The empty and the unavailable lines** follow the handoff's rule: a section the store does not
   allow shows one line naming the gateway setting ("Only smart readers are allowed for this
   payment method. Allow the app's readers on its WooCommerce settings page.") with the docs link,
@@ -107,9 +114,10 @@ What this slice adds:
   alert, are asked from this page at set-up time, each behind one sentence that says why, never
   first at checkout.
 
-Board questions (the options board precedes the build; see "Options board" below): the shape of
-the selected state across three sections, where the awareness sheet's Continue leads on Android,
-and how a phone with every section populated reads at phone width.
+Board questions (the options board precedes the build; see "Options board" below): how the
+Selected chip reads on the This phone and Bluetooth rows beside their state line, where the
+awareness sheet's Continue leads on Android, and how a phone with every section populated reads
+at phone width.
 
 Budget: 600, with the cloud section allowed to split out as its own PR if the board lands it
 heavier than the Tap to Pay states.
@@ -213,9 +221,11 @@ The logging audit epic for this area is #408; each slice's PR names the log line
 One HTML board, opened locally, four frames per question, one recommended, per the rule that an
 unbuilt visual form gets a board, not a question:
 
-1. **The selected-row mark across three sections** on the Card readers page: a check on the
-   selected row's action slot; a "Selected" state word; a radio column; the selected row lifted
-   into This phone as "Paying with".
+1. **The Selected chip on the phone's own rows**: the Smart readers rows already carry a
+   read-only Selected chip and Use this reader (#3322). The This phone row and a Bluetooth row have
+   a state line and an action slot already; the board shows the chip in the action slot, the chip
+   after the state word, the chip replacing Connected on the state line, and the chosen row
+   lifted into This phone as "Paying with", at phone width with all three sections filled.
 2. **The Tap to Pay pill beside the gateway's pill** when the same gateway also has a smart
    reader selected: two pills in the card group; one gateway pill with a reader switch in the
    terminal moment's first step (rejected by decision 3 unless the board shows it never asks); the
