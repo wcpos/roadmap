@@ -93,11 +93,11 @@ Native (part two, with #113):
 3. **When #236 lands SumUp's SDK driver:** SumUp's gateway page gains the same allowed set (`server` cloud Solo/Go, `device` SDK readers and Tap to Pay); the app side needs nothing new.
 4. **Never:** a per-till setting on the WooCommerce side, a mode prompt at checkout, or a POS-settings modal that fans out per gateway (the 2026-09-11 lesson).
 
-## 6. Rulings still needed (Paul; one question each when they come up)
+## 6. The three remaining picks, settled
 
-- **SumUp's allowed set** follows the same shape when #236 lands. Proposed: yes, same checkboxes; pick: yes.
-- **Mollie's Tap app handoff** (tier 2) has no ticket; not for 2.0. Pick: 2.1 ticket when a merchant asks.
-- **Upgrade default** for a store with a saved **Default terminal** and no saved `wcpos_connection`: proposed `{server}` only (today's inference), never both. Pick: as proposed.
+- **SumUp's allowed set** follows the same shape when #236 lands: the same two checkboxes (cloud Solo and Go; SDK readers and Tap to Pay). Ruled by Paul 2026-11-06, *"yes A"*.
+- **Mollie's Tap app handoff** (tier 2) has no ticket and is not for 2.0; a 2.1 ticket when a merchant asks (routine, decided here).
+- **Upgrade default** for a store with a saved **Default terminal** and no saved `wcpos_connection`: `{server}` only, today's inference, never both (routine, decided here).
 
 ## 7. Tickets
 
