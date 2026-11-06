@@ -20,6 +20,8 @@ None. The system sheet (`v2/system.html`) draws the amount's siblings in light a
 - new: the difference band's Exact state on `--muted` with `--muted-foreground` and a check icon.
 - new: Pay out over the limit shows the limit as a `--warning-text` line beside the button, and the button reads "Continue to approval".
 - new: the Keypad (key face `bg-muted rounded-lg`, `text-xl` semibold) under every money amount, with 56 px rows on the tablet and 48 px on the phone. The component's own steps are `h-tile` (64) or `shrink` (`min-h-ctl` and up).
+  - Ruled (Paul, 2026-11-06, "as you recommend"): on Close register the keypad collapses once the amount is entered and reopens on tapping the amount; collapsed, a `--muted-foreground` line under the field says "Tap the amount to change it". The other amounts (float, Pay in, Pay out) keep the keypad open: the ruling named the count.
+- Round 3: the Closures scope row is a grid (four columns on desktop, two on the phone) and its date filter reads as a date range with a calendar glyph; the register panel's Expected ledger has an unfolded frame per layout; "Leave in drawer $…" and "To bank $…" each stay on one line.
 - new: an `outline` Button 56 px tall (`h-14`) with its icon over its label (the three verbs in the panel). Button `lg` is `h-14` with `rounded-commit`; this one keeps `rounded-control`.
 - new: Chip at 44 px tall (`h-ctl`) in a fixed grid of rows with 8 px gaps (reason chips, three per row; float chips, two per row on the tablet and one on the phone), against the Chip's own 32 px.
 - new: the Stat strip's lead figure ("Net difference") at 24 px bold, one step above the other stats' `text-lg`.

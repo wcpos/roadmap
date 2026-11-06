@@ -12,6 +12,7 @@ from _v1 import *
 # Ruled surfaces (Choose register, the cashier sheet) are V1's, unchanged.
 
 I['bksp'] = '<path d="M9 5h11v14H9l-6-7z"/><path d="M12 9l5 6M17 9l-5 6"/>'
+I['calendar'] = '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'
 
 CSS = _v1.CSS + '''
 .amtbig{font-size:var(--text-amt);line-height:1.1;font-weight:700;display:flex;align-items:baseline;gap:6px}
@@ -40,7 +41,7 @@ CSS = _v1.CSS + '''
 .lblrow{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px}
 .lblrow .lbl{margin:0}
 .count .pb{gap:6px;padding:8px 16px}
-.count .keypad{gap:6px}
+/* Round 3: the count's keypad keeps the component's 8 px gaps (the sheet's); 6 px was a SYSTEM BREAK */
 .count .lblrow{align-items:center}.count .lblrow>*{white-space:nowrap}.count .lblrow .textbtn{min-height:36px;margin:-9px 0}
 .diff.muted{background:var(--muted);color:var(--muted-foreground)}
 .pf .why.warn{color:var(--warning-text)}
@@ -73,6 +74,7 @@ CSS = _v1.CSS + '''
 .splitrow{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--muted-foreground)}
 .splitrow b{color:var(--foreground);font-weight:var(--w-ui)}
 .splitrow .textbtn{min-height:36px;margin:-8px 0}
+.splitrow .pair{white-space:nowrap}
 .fold summary small{color:var(--muted-foreground);font-weight:400;font-size:var(--text-xs);margin-left:4px}
 .scrollcue{font-size:var(--text-xs);color:var(--muted-foreground);display:flex;align-items:center;gap:6px}
 /* The closed moment: the variance leads, Counted and Expected as two tiles, the paper folds open */
@@ -91,7 +93,14 @@ CSS = _v1.CSS + '''
 .crow .res,.chead span:nth-child(5){padding-left:10px}
 .crow .csub{display:none}
 .room .pane.doc .pb{gap:10px}
+/* Round 3 (Paul, 2026-11-06, "as you recommend"): the count's keypad collapses once the amount is entered
+   and reopens on tapping the amount; collapsed, the amount shows a tap hint under it */
+.count .taphint{display:flex;align-items:center;gap:6px;color:var(--muted-foreground);font-size:var(--text-base);margin-top:6px}
+/* Round 3: the Closures scope row is an explicit grid, never a clipped flex row */
+.scope{display:grid;grid-template-columns:repeat(4,max-content);gap:8px}
 @media (max-width:767px){
+ .scope{grid-template-columns:1fr 1fr}
+ .scope .chip{justify-content:space-between;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
  .key{height:48px}
  .count .pb{gap:8px}
  .cartbody .card{gap:8px;padding:14px}.cartcol .tabs{flex-shrink:0}
@@ -147,12 +156,12 @@ def other_tenders_fold():
             f'<div class="bd"><div class="kv"><span class="k">Card <small>{S["card_n"]}</small></span><span class="v">${S["card"]}</span></div><div class="kv"><span class="k">Gift card <small>{S["gift_n"]}</small></span><span class="v">${S["gift"]}</span></div><div class="kv"><span class="k">Store credit <small>{S["credit_n"]}</small></span><span class="v">${S["credit"]}</span></div></div></details>')
 
 # 4 · Register panel: one figure, a verb row, the ledger folded under Expected
-def panel(offline=False):
+def panel(offline=False, ledger_open=False):
     head = pane_head(S['reg'], f'{S["store"]} · open since {S["opened"]} · {S["age"]} · {S["cashier"]}', disc=f'<div class="disc ok">{ic("reg")}</div>')
     badge = f'<div class="sbadge"><span class="badge warn">{ic("cloudoff","i sm")}Offline · 3 sales to send</span></div>' if offline else ''
     lead = f'<div class="figlead"><span class="k">In the drawer</span>{amount(S["expected"], caret=False, editable=False)}<span class="line">Session sales <b>${S["session_sales"]}</b> · 87 sales</span></div>'
     verbs = f'<div class="verbs"><button class="btn outline">{ic("in")}Pay in</button><button class="btn outline">{ic("out")}Pay out</button><button class="btn outline">{ic("nosale")}No sale</button></div>'
-    led = f'<details class="fold"><summary>{ic("coins")}<span class="grow">Expected</span><b>${S["expected"]}</b>{ic("chev","i sm")}</summary><div class="bd">{ledger()}</div></details>'
+    led = f'<details class="fold"{" open" if ledger_open else ""}><summary>{ic("coins")}<span class="grow">Expected</span><b>${S["expected"]}</b>{ic("chev","i sm")}</summary><div class="bd">{ledger()}</div></details>'
     last = f'<div class="row"><span class="lbl">Last closure #41 · yesterday 17:52</span><span class="badge ok">{ic("check","i sm")}over $1.80</span>{ic("chevr","i sm")}</div>'
     foot = f'<footer class="pf"><button class="btn lg block primary">Close register · it\'s past 17:30</button></footer>'
     return f'<section class="pane">{head}{badge}<div class="pb">{lead}{verbs}{led}{other_tenders()}{last}</div>{foot}</section>'
@@ -206,23 +215,33 @@ COUNT_STATES = {
     'exact': (S['expected'], 'muted', 'check', 'Exact', '$0.00', '369.35', ('muted', 'Optional'), ''),
 }
 
-def count(scrolled=False, state='short'):
+def count(scrolled=False, state='short', typing=False):
+    """typing=True: the keypad is open and the amount is being entered (the caret). Otherwise
+    the amount is entered, the keypad is collapsed, and tapping the amount reopens it (round 3, Paul's
+    ruling 2026-11-06)."""
     counted, tone, icon, word, diff, bank, (rule_tone, rule), text = COUNT_STATES[state]
     head = pane_head(f'Close {S["reg"]}', f'{S["cashier"]} · {S["opened"]} to {S["now"]}', back=True)
-    a = (f'<div><div class="lblrow"><span class="lbl">Cash counted, float included</span><span class="textbtn">{ic("coins","i sm")}Count by notes and coins</span></div>'
-         f'{amount(counted)}</div>')
+    if typing:
+        a = (f'<div><div class="lblrow"><span class="lbl">Cash counted, float included</span><span class="textbtn">{ic("coins","i sm")}Count by notes and coins</span></div>'
+             f'{amount(counted)}</div>')
+    else:
+        a = (f'<div><div class="lblrow"><span class="lbl">Cash counted, float included</span><span class="textbtn">{ic("coins","i sm")}Count by notes and coins</span></div>'
+             f'{amount(counted, caret=False)}<div class="taphint">{ic("pencil","i sm")}Tap the amount to change it</div></div>')
     joined = (f'<div class="joined"><details class="fold"><summary><span class="grow">Expected</span><b>${S["expected"]}</b>{ic("chev","i sm")}</summary><div class="bd">{ledger()}</div></details>'
               f'<div class="diff {tone}"><span class="l">{ic(icon)}{word}</span><span>{diff}</span></div></div>')
     ph = {'over': 'Why is the drawer over?', 'exact': 'Add a note', 'short': ''}[state]
     note = (f'<div><div class="lblrow"><span class="lbl">Note</span><span class="xs {rule_tone}">{rule}</span></div>'
             f'<textarea class="note" rows="3" placeholder="{ph}">{text}</textarea></div>')
-    split = f'<div class="splitrow"><span>Leave in drawer <b>${S["keep"]}</b> · To bank <b>${bank}</b></span><span class="textbtn">{ic("pencil","i sm")}Change</span></div>'
+    split = f'<div class="splitrow"><span><span class="pair">Leave in drawer <b>${S["keep"]}</b></span> · <span class="pair">To bank <b>${bank}</b></span></span><span class="textbtn">{ic("pencil","i sm")}Change</span></div>'
     if state == 'over':
         foot = (f'<footer class="pf"><div class="why">{ic("info","i sm")}Add a note: the drawer is over</div><div class="pfrow" style="display:flex;gap:8px">'
                 f'<button class="btn lg disabled" style="flex:1">Close register</button><button class="btn lg disabled" style="flex:1.4">{ic("printer")}Close &amp; print</button></div></footer>')
     else:
         foot = f'<footer class="pf pfrow"><button class="btn lg outline" style="box-shadow:none">Close register</button><button class="btn lg primary">{ic("printer")}Close &amp; print</button></footer>'
-    top = f'<div class="scrollcue">{ic("up","i sm")}Counted ${counted} · keypad above</div>' if scrolled else a + keypad()
+    if scrolled:
+        top = f'<div class="scrollcue">{ic("up","i sm")}Counted ${counted} · keypad above</div>'
+    else:
+        top = a + (keypad() if typing else '')
     return f'<section class="pane count">{head}<div class="pb">{top}{joined}{note}{split}{other_tenders_fold()}</div>{foot}</section>'
 
 def paper(open_=True):
@@ -275,7 +294,7 @@ def closures_list():
             rows += (f'<div class="crow{" on" if on else ""}"><div class="who"><span class="strong">{name}</span><small>{sub}</small></div>'
                      f'<span class="c r">{exp}</span><span class="c r">{cnt}</span><span class="c r {dt}">{diff}</span><span class="res">{b}</span>'
                      f'<span class="chev">{ic("chevr","i sm")}</span><div class="csub">{csub}</div></div>')
-    scope = f'<div class="scope"><span class="chip">{S["store"]} {ic("chev","i sm")}</span><span class="chip">All registers {ic("chev","i sm")}</span><span class="chip">All cashiers {ic("chev","i sm")}</span><span class="chip">This week {ic("chev","i sm")}</span></div>'
+    scope = f'<div class="scope"><span class="chip">{S["store"]} {ic("chev","i sm")}</span><span class="chip">All registers {ic("chev","i sm")}</span><span class="chip">All cashiers {ic("chev","i sm")}</span><span class="chip">{ic("calendar","i sm")}31 Oct – 6 Nov {ic("chev","i sm")}</span></div>'
     return f'<div class="list"><h1>Closures</h1>{scope}{strip}{head}{rows}</div>'
 
 def closure_doc(back=False):
@@ -294,6 +313,7 @@ def build():
         ('2b · First-ever open', 'no float on record, Open disabled with its reason', cartcol(open_card(first=True), 'closed')),
         ('3 · Cashier sheet', 'the avatar; the drawer card is the one door', cashier_sheet()),
         ('4 · Register panel, offline', 'one badge at the top of the pane', panel(offline=True)),
+        ('4b · Register panel, Expected open', 'the ledger unfolded under the figure', panel(ledger_open=True)),
         ('5 · Pay in', '$20.00 · Change', pay_in()),
         ('5b · Pay in, nothing typed', 'the button says why', pay_in(empty=True)),
         ('5c · Pay in, no reason', 'amount typed; "Add a reason" beside the button', pay_in(noreason=True)),
@@ -301,7 +321,8 @@ def build():
         ('6a · Pay out under the limit', '$12.00 · Petty cash, no approval', pay_out(under=True)),
         ('6b · Pay out over the limit', 'a manager approves in place', pay_out(approval=True)),
         ('6c · Over the limit, offline', 'approval needs a connection', pay_out(approval=True, offline=True)),
-        ('7 · Close register', 'short $15.00, note required; full 800 px pane', count(), 'fwrap tall'),
+        ('7 · Close register, counting', 'keypad open while the amount is entered; full 800 px pane', count(typing=True), 'fwrap tall'),
+        ('7a · Close register', 'amount entered, keypad collapsed; short $15.00, note required', count(), 'fwrap tall'),
         ('7b · Close register, over', 'counted $522.55 · +$3.20, note required', count(state='over'), 'fwrap tall'),
         ('7c · Close register, exact', 'counted $519.35, note optional, one tap', count(state='exact'), 'fwrap tall'),
         ('8 · Closure written', 'the variance leads; the paper open', written()),
@@ -317,14 +338,15 @@ def build():
         ('2b · First-ever open', 'Open disabled with its reason', cartcol(open_card(first=True), 'closed', tabs=True)),
         ('3 · Cashier sheet', 'full width', cashier_sheet()),
         ('4 · Register panel', 'full width', panel()),
+        ('4b · Register panel, Expected open', 'the ledger unfolded', panel(ledger_open=True)),
         ('5 · Pay in', '$20.00 · Change', pay_in()),
         ('5b · Pay in, nothing typed', 'the button says why', pay_in(empty=True)),
         ('5c · Pay in, no reason', '"Add a reason" beside the button', pay_in(noreason=True)),
         ('6 · Pay out', '$45.00 · over the limit, approval next', pay_out()),
         ('6b · Pay out over the limit', 'a manager approves in place', pay_out(approval=True)),
         ('6c · Over the limit, offline', 'approval needs a connection', pay_out(approval=True, offline=True)),
-        ('7 · Close register', 'the pane scrolls; first screen', count()),
-        ('7 · Close register, scrolled', 'past the keypad: note, Change, Other tenders', count(scrolled=True)),
+        ('7 · Close register, counting', 'keypad open while the amount is entered', count(typing=True)),
+        ('7a · Close register', 'entered: keypad collapsed, the split line on the first screen', count()),
         ('7b · Close register, over', '+$3.20, note required', count(state='over')),
         ('7c · Close register, exact', 'note optional, one tap', count(state='exact')),
         ('8 · Closure written', 'the paper open', written()),

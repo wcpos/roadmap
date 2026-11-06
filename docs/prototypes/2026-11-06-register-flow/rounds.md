@@ -184,3 +184,37 @@ To bank · Change" below the first phone viewport (a keypad that collapses after
 the amount); (3) the register panel's Expected ledger is only drawn folded (one expanded frame per layout).
 
 Shots: the per-round shot sets were left out of the record (the final V2 and the round-0 sets are under `img/`); the judges' tables are in `rounds/r*/codex.md`.
+
+## Round 3 (Codex, gpt-6.1-sol) — the three open findings applied after Paul's ruling; r2c as baseline
+
+Paul (2026-11-06, "as you recommend"): the count's keypad collapses once the amount is entered and reopens on
+tapping the amount. Applied with the other two: the Closures scope row is a grid (two columns on the phone)
+with the date filter drawn as a date range; the register panel has an Expected-open frame per layout.
+Also: "Leave in drawer $…" and "To bank $…" each stay on one line (the family's own round-1 finding).
+
+| Category | V2 · r3 | V2 · r2c baseline | System r3 | System r2c | Family close | Base ref | Shopify ref | System gallery |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Hierarchy | 8.5 | 8 | 7.5 | 7.5 | 9 | 9 | 8 | 7.5 |
+| Typography | 7.5 | 7.5 | 7.5 | 7.5 | 8.5 | 8.5 | 8 | 7.5 |
+| Spacing and alignment | 7 | 7 | 7 | 7.5 | 8.5 | 8.5 | 8.5 | 7.5 |
+| Colour and contrast · light | 8 | 8 | 8 | 8 | 8.5 | 7.5 | 8.5 | 8.5 |
+| Colour and contrast · dark | 6.5 | 6.5 | 7.5 | 7.5 | 8.5 | — | — | 7.5 |
+| Iconography and indicators | 7.5 | 7.5 | 8 | 8 | 8.5 | 7.5 | 8.5 | 8 |
+| Consistency | 5 | 5 | 9 | 9 | 7.5 | 9 | 9 | 9 |
+| Clarity for the person in the brief | 7 | 7.5 | 6.5 | 6.5 | 9 | 6.5 | 8 | 6 |
+| Density | 8.5 | 7.5 | 6.5 | 7 | 8.5 | 8.5 | 8 | 7.5 |
+| States covered | 8.5 | 7.5 | 1.5 | 1.5 | 3 | 1 | 1 | 1.5 |
+| **Average** | **7.40** | **7.20** | **6.90** | **7.00** | **7.95** | **7.33** | **7.50** | **7.05** |
+
+A fresh context: r2c re-scores at 7.20 here against 7.70 in its own round, so the columns are read against
+the baseline column. Hierarchy, density and states covered rose (8 → 8.5, 7.5 → 8.5, 7.5 → 8.5); clarity fell
+(7.5 → 7) because the counting frame showed a partial figure ($504.3) while the shortage and the bank amount
+stayed at the full count. Reverted per the skill: the counting frame keeps the keypad open with the whole amount
+and the caret, as r2c drew it. The judge also named a SYSTEM BREAK that r2c already carried: the count's keypad
+drew 6 px gaps against the sheet's 8 px. Fixed: the count reads the component's 8 px. Both changes are shot into
+`img/` and not re-scored (one follow-up round, the cap already reached).
+
+Open findings, not applied: (2) on the phone the Closures filter chips are ~32 px tall, under the brief's 44 px
+touch minimum (make them 44 px in the same two-column grid); (3) in the dark theme the shortage text (`--bad` on
+`--bad-bg`, #F85452 on #442321) measures ~4.23:1, under 4.5:1 for small text: a token pairing to adjust in the
+repo's dark theme with the sibling error states together, not in a mockup.

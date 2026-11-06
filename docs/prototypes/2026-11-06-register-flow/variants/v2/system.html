@@ -1054,7 +1054,7 @@ textarea.note{width:100%;min-height:64px;border:var(--shape-ctl-border) solid va
 .lblrow{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px}
 .lblrow .lbl{margin:0}
 .count .pb{gap:6px;padding:8px 16px}
-.count .keypad{gap:6px}
+/* Round 3: the count's keypad keeps the component's 8 px gaps (the sheet's); 6 px was a SYSTEM BREAK */
 .count .lblrow{align-items:center}.count .lblrow>*{white-space:nowrap}.count .lblrow .textbtn{min-height:36px;margin:-9px 0}
 .diff.muted{background:var(--muted);color:var(--muted-foreground)}
 .pf .why.warn{color:var(--warning-text)}
@@ -1087,6 +1087,7 @@ textarea.note{width:100%;min-height:64px;border:var(--shape-ctl-border) solid va
 .splitrow{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--muted-foreground)}
 .splitrow b{color:var(--foreground);font-weight:var(--w-ui)}
 .splitrow .textbtn{min-height:36px;margin:-8px 0}
+.splitrow .pair{white-space:nowrap}
 .fold summary small{color:var(--muted-foreground);font-weight:400;font-size:var(--text-xs);margin-left:4px}
 .scrollcue{font-size:var(--text-xs);color:var(--muted-foreground);display:flex;align-items:center;gap:6px}
 /* The closed moment: the variance leads, Counted and Expected as two tiles, the paper folds open */
@@ -1105,7 +1106,14 @@ textarea.note{width:100%;min-height:64px;border:var(--shape-ctl-border) solid va
 .crow .res,.chead span:nth-child(5){padding-left:10px}
 .crow .csub{display:none}
 .room .pane.doc .pb{gap:10px}
+/* Round 3 (Paul, 2026-11-06, "as you recommend"): the count's keypad collapses once the amount is entered
+   and reopens on tapping the amount; collapsed, the amount shows a tap hint under it */
+.count .taphint{display:flex;align-items:center;gap:6px;color:var(--muted-foreground);font-size:var(--text-base);margin-top:6px}
+/* Round 3: the Closures scope row is an explicit grid, never a clipped flex row */
+.scope{display:grid;grid-template-columns:repeat(4,max-content);gap:8px}
 @media (max-width:767px){
+ .scope{grid-template-columns:1fr 1fr}
+ .scope .chip{justify-content:space-between;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
  .key{height:48px}
  .count .pb{gap:8px}
  .cartbody .card{gap:8px;padding:14px}.cartcol .tabs{flex-shrink:0}
