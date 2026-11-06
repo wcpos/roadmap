@@ -1,0 +1,213 @@
+// Throwaway prototype verification: one browser, #frame only, no app/server required.
+const fs = require('fs');
+const path = require('path');
+const { pathToFileURL } = require('url');
+const assert = require('node:assert/strict');
+const roots = ['/Users/kilbot/Projects/monorepo-v2'];
+for (let p = __dirname; ; p = path.dirname(p)) {
+  roots.push(p);
+  if (p === path.dirname(p)) break;
+}
+const { chromium } = require(require.resolve('playwright', { paths: roots }));
+const OUT = path.join(__dirname, 'screens');
+const QUICK = process.argv.includes('--quick');
+const STATES = ['today','last-week','excluded','date','scope','payments','orders','busy','session','closed','closure','recount','empty','loading','offline','offline-recount','free-sales','free-closures','bell','error'];
+const WIDTHS = QUICK ? ['tablet'] : ['phone','tablet','desktop'];
+const THEMES = QUICK ? ['light'] : ['light','dark'];
+const SCALES = QUICK ? ['regular'] : ['regular','compact'];
+const checks = {
+  today: '.hero .big', 'last-week': '.chart[data-unit="week"]', excluded: '[data-act="resetTicks"]',
+  date: '[data-menu="date"]', scope: '[data-menu="scope"]', payments: '.detail .touch-report, .detail .t',
+  orders: '.detail input[data-act="tick"]', session: '[data-testid="session-expected"]',
+  closed: '[data-testid="session-reprint"]', closure: '[data-testid="closure-settled"]',
+  recount: '#recount-reason', empty: '[data-testid="closures-empty"]', loading: '.skeleton',
+  offline: '.bar .st.warn', 'offline-recount': '[data-testid="recount-offline"]',
+  'free-sales': '[data-testid="reports-lock-hint"]', 'free-closures': '[data-testid="reports-lock-hint"]',
+  bell: '.bd.notif', error: '[data-testid="closure-document-error"]', busy: '.till .eq .term, .till .eq.ledger .lr >> nth=5',
+};
+(async () => {
+  assert(fs.existsSync(path.join(__dirname, 'index.html')), 'Reports index.html must exist');
+  const browser = await chromium.launch();
+  try {
+    const page = await browser.newPage({ viewport: { width: 1500, height: 1400 }, reducedMotion: 'reduce' });
+    const errors = [];
+    page.on('pageerror', e => errors.push('pageerror: ' + e.message));
+    page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
+    await page.goto(pathToFileURL(path.join(__dirname, '../pos-register/index.html')).href);
+    fs.mkdirSync(OUT, { recursive: true });
+    const set = (k, v) => page.click(`.strip [data-set="${k}"][data-v="${v}"]`);
+    await page.click('.rail [data-nav="reports"]');   // Reports is reached from the rail, as in the app
+    assert(await page.locator('.frame[data-screen="reports"]').count(), 'the rail did not open Reports');
+    const scn = v => page.click(`.strip [data-scn="${v}"]`);
+    let n = 0;
+    for (const w of WIDTHS) for (const theme of THEMES) for (const scale of SCALES) {
+      await set('w', w); await set('theme', theme); await set('scale', scale);
+      for (const s of STATES) {
+        await scn(s);
+        assert(await page.locator(checks[s]).count(), `${w}/${theme}/${scale}/${s}: distinguishing element missing`);
+        if (['today','last-week'].includes(s)) assert(await page.locator('.ref-line').count(), 'comparison line missing');
+        if (s === 'today') assert.equal(await page.locator('.future-bar').count(), 2, 'hours still to come missing');
+        if (['today','last-week'].includes(s)) {
+          assert(await page.locator('.bars rect:not(.hit)').evaluateAll(bars => bars.every(b => b.getBoundingClientRect().width <= 40.1)), 'bar exceeds 40 px');
+          assert.equal(await page.locator('.peak-label').count(), 1, 'busiest hour not labelled on the chart');
+          assert.equal(await page.locator('.chart-mode button.on').textContent(), s === 'today' ? 'By hour' : 'By day');
+          assert(/ vs /.test(await page.locator('.hero .prev .delta').textContent()), 'delta chip must name the comparison');
+          assert.equal(await page.locator('.hero .kpi .delta').count(), 3, 'companions carry deltas');
+          assert((await page.locator('.hero .datebtn:not(.scope)').textContent()).startsWith(s === 'today' ? 'Today' : 'Last week'), 'the date is the chart title');
+          assert.equal(await page.locator('.rp-panel').count(), 8, 'eight cards under the chart (Top products and Categories are two, Paul 2026-09-18)');
+          assert.equal(await page.locator('.till').count(), 1, 'the till strip sits above the chart (Paul 2026-09-17)');
+          assert(await page.locator('.till').evaluate(t => t.getBoundingClientRect().bottom <= document.querySelector('.hero').getBoundingClientRect().top + 1), 'the till strip is above the hero');
+          assert((await page.locator('.rp-sec.dated .rp-h').textContent()).startsWith(s === 'today' ? 'Today' : 'Last week'), 'the period section is headed by the date');
+          assert.equal(await page.locator('.rp-panel[data-k="deposits"], .rp-panel[data-k="cash"]').count(), 0, 'deposits and cash movements have no card (audit 2026-09-17)');
+          assert.equal(await page.locator('.till .eq').count(), 1, 'the equation chips in the till strip (Paul 2026-09-18: decided, the switch retired)');
+          assert.equal(await page.locator('.till svg.lvl, .rlist, .tiles').count(), 0, 'the cash-level line, the list and the tiles are gone with their switches');
+          assert.equal(await page.locator('.till .eq .term.res, .till .eq.ledger .lr.res').count(), 1, 'the result chip');
+          if (w !== 'phone') assert.equal(await page.locator('.till .eq .keep .term.res').count(), 1, '"= Expected" is one unbreakable piece');
+          assert.equal(await page.locator('.till [data-testid="card-xreport"]').count(), s === 'closed' ? 0 : 1, 'X-report on the strip while the till is open');
+          assert.equal(await page.locator('.till[data-k="closures"]').count(), 1, 'the till strip carries the closures (Paul 2026-09-17)');
+          assert(await page.locator('.rp-panel .br .sh b').count() >= 4, 'bars on the ranked panel (Top products)');
+          assert.equal(await page.locator('.rp-panel[data-k="orders"] .stats .n').count(), 6, 'orders as six figures');
+          assert.equal(await page.locator('.rp-panel[data-k="orders"] .hbar').count(), 1, 'orders status bar');
+          assert.equal(await page.locator('.rp-panel[data-k="cashiers"] svg.donut').count(), 1, 'cashiers as a donut');
+          assert(await page.locator('.rp-panel svg.donut').count() >= 3, 'donuts on the parts-of-a-whole panels (Payments, Cashiers, Where sold)');
+          assert.equal(await page.locator('.rp-panel[data-k="taxes"] .hbar, .rp-panel[data-k="refunds"] .hbar').count(), 2, 'taxes and refunds are cards with a proportional bar');
+          assert.equal(await page.locator('.rlist.more').count(), 0, 'no rows under the cards');
+        }
+        if (s === 'session') {
+          assert.equal(await page.locator('[data-p="overflow"][aria-label="More"]').count(), 1);
+          assert.equal(await page.locator('.detail .rrow, .segt[aria-label="Report room"]').count(), 0, 'Closures is a panel, not a room');
+          assert.equal(await page.locator('.hero .hero-chips [data-p="cashier"]').count(), 1, 'the cashier is a chip under the title (Paul 2026-09-18)');
+          assert.equal(await page.locator('.hero .hero-chips [data-p="status"]').count(), 1, 'the order status is its own chip');
+          assert.equal(await page.locator('.hero .datebtn.scope, .hero [data-p="filter"]').count(), 0, 'the Everyone menu is gone');
+          if (s === 'today') assert.equal(await page.locator('.hero .hero-chips .fchip.on').count(), 0, 'nothing filtered by default');
+          assert.equal(await page.locator('.bar [data-p="scope"]').count(), 1, 'register and store are the bar title');
+          assert.equal(await page.locator('.pad [data-p="overflow"]').count(), 0);
+        }
+        if (s === 'busy') assert(await page.locator('.till .eq .term, .till .eq.ledger .lr').count() >= 6, 'float, sales, paid in, paid out, refunds, expected');
+        if (s === 'busy' && w !== 'phone') assert(await page.locator('.till').evaluate(t => getComputedStyle(t).gridTemplateAreas.includes('"eq eq"')), 'a busy day: the chips take the whole row, X-report on the title row');
+        if (s === 'today' && w === 'tablet') assert(await page.locator('.till').evaluate(t => getComputedStyle(t).gridTemplateAreas.includes('"eq eq"')), 'tablet: the chips take the whole row');
+        if (s === 'today') assert.equal(await page.locator('.till .eq .term, .till .eq.ledger .lr').count(), 4, 'float, sales, the paid-out, expected');
+        if (s === 'closure') {
+          assert.equal(await page.locator('.detail .h [aria-label="Close"]').count(), w === 'phone' ? 0 : 1);
+          assert.equal(await page.locator('.detail .ft .status').textContent(), w === 'phone' ? 'Recorded 17:45' : 'As recorded at 17:45');
+        }
+        if (s === 'orders') {
+          assert.equal(await page.locator('.orders-head label').textContent(), 'All orders');
+          assert.equal(await page.locator('.orders-left-out').count(), 0);
+          if (w !== 'phone') assert(await page.locator('.order-row').evaluateAll(rows => rows.every(r => Math.abs(r.getBoundingClientRect().height - parseFloat(getComputedStyle(r).getPropertyValue('--row'))) <= 1.5 /* the hairline border sits on top of --row */)), 'order row too tall');
+        }
+        if (s === 'recount') {
+          assert.equal(await page.locator('.sheet-h .t').textContent(), 'Recount');
+          assert.equal(await page.locator('.sheet-context').textContent(), 'Recorded £412.00 · expected £422.00');
+          assert.equal(await page.locator('.fold > button').textContent(), 'Count by denominations');
+          assert.equal(await page.locator('#save-recount').evaluate(b => getComputedStyle(b).opacity), '0.45');
+          assert(await page.locator('#recount-reason').evaluate(input => { const r=input.getBoundingClientRect(), b=input.closest('.sheet-b').getBoundingClientRect(); return r.left >= b.left+4 && r.right <= b.right-4; }), 'focus ring has no room');
+        }
+        if (s === 'free-closures') {
+          const row = await page.locator('[data-act="hint"][data-v="closures"]').first().boundingBox(), pop = await page.locator('.pop').boundingBox();
+          assert(Math.abs(pop.x-row.x)<1 && Math.abs(pop.y-row.y-row.height-6)<1 && Math.abs(pop.width-row.width)<1, 'gate is not under full locked row');
+        }
+        if (s === 'last-week') assert.equal(await page.locator('.cur-bar').count(), 7, 'week must have seven day buckets');
+        if (s.startsWith('free-')) {
+          assert.equal(await page.locator('[data-testid="reports-lock-hint"]').textContent(), s === 'free-sales' ? 'Earlier days are in WCPOS Pro' : 'Earlier closures are in WCPOS Pro');
+          assert.equal(await page.locator('.gate-action').textContent(), 'See Pro');
+        }
+        if (s === 'error') assert.equal(await page.locator('.detail .docv').count(), 0, 'stale document shown on online error');
+        if (s === 'offline-recount') assert(await page.locator('#save-recount').isDisabled(), 'offline recount enabled');
+        assert(await page.locator('#frame').evaluate(f => f.scrollWidth <= f.clientWidth + 1), `${s}: frame overflow`);
+        assert(await page.locator('.main').evaluate(f => f.scrollWidth <= f.clientWidth + 1), `${s}: main overflow`);
+        await page.locator('#frame').screenshot({ path: path.join(OUT, `${w}-${theme}-${scale}-${s}.jpg`), type: 'jpeg', quality: 82, animations: 'disabled' });
+        n++;
+      }
+      for (const plan of ['top','pro']) {   // Paul 2026-09-17: the strip is at the top, decided; the bottom option is gone from the register
+        await scn('today'); await set('plan', plan);
+        assert.equal(await page.locator('.upstrip').count(), plan === 'pro' ? 0 : 1);
+        if (plan !== 'pro') assert(await page.locator(`#frame > .upstrip.${plan}`).count(), 'strip must be outside body');
+        if (plan !== 'pro') {   // Paul 2026-09-18: the strip has its × on Reports too; dismissed for the session
+          await page.click('.upstrip .x'); assert.equal(await page.locator('.upstrip').count(), 0, 'strip dismissed');
+          await set('plan', plan); assert.equal(await page.locator('.upstrip').count(), 1, 'strip back when the plan is set again');
+        }
+      }
+    }
+    // Exercise interactions, not just strip presets.
+    await set('w','tablet'); await set('theme','light'); await set('scale','regular'); await scn('today');
+    const total = await page.locator('.hero .big').textContent();
+    assert.equal(await page.locator('.rp-panel[data-k="categories"] svg.donut').count(), 1, 'categories donut, its own card');
+    assert(await page.locator('.rp-panel[data-k="products"] .br').count() >= 4, 'top products bars, its own card');
+    await page.click('.rp-panel[data-k="orders"] .ph');
+    await page.locator('[data-act="tick"]').first().click();
+    await page.locator('[data-act="tick"]').nth(1).click();
+    assert.equal(await page.locator('.orders-left-out').textContent(), '2 orders left out');
+    assert.equal(await page.locator('.order-row.off').count(), 2);
+    await page.click('.detail [data-act="closePanel"]');
+    assert.notEqual(await page.locator('.hero .big').textContent(), total, 'unticking must change totals');
+    assert((await page.locator('.hero-chips .fchip.on').textContent()).includes('2 orders left out'), 'the orders left out are a chip in the filter row');
+    await page.click('[data-act="resetTicks"]');
+    assert.equal(await page.locator('.hero .big').textContent(), total);
+    assert.equal(await page.locator('.hero-chips .fchip.on').count(), 0, 'the × on the left-out chip puts them back');
+    // the filter chips (Paul 2026-09-18): a set chip fills and carries an ×; the × returns it to the default
+    await page.click('.hero-chips [data-p="cashier"]'); await page.click('[data-menu="cashier"] [data-act="cashier"][data-v="Priya"]');
+    assert((await page.locator('.hero-chips .fchip.on').textContent()).includes('Priya'), 'a set cashier fills its chip');
+    await page.click('.hero-chips .fchip .x[data-act="cashier"]');
+    assert.equal(await page.locator('.hero-chips .fchip.on').count(), 0, 'the × puts the chip back to Everyone');
+    await page.click('.hero-chips [data-p="status"]'); await page.click('[data-menu="status"] [data-act="status"][data-v="all"]');
+    assert((await page.locator('.hero-chips .fchip.on').textContent()).includes('Every status'), 'every status fills the orders chip');
+    await page.click('.hero-chips .fchip .x[data-act="status"]');
+    await page.click('.hero-chips [data-p="cmp"]'); await page.click('[data-menu="cmp"] [data-act="cmp"][data-v="lastweek"]');
+    assert((await page.locator('.hero-chips .fchip.on').textContent()).startsWith('vs last'), 'the comparison is a chip');
+    await page.click('.hero-chips .fchip .x[data-act="cmp"]');
+    assert.equal(await page.locator('.hero-chips .fchip.on').count(), 0);
+    await page.click('[data-act="chart"][data-v="run"]');   // the chart toggle (Paul 2026-09-17)
+    assert.equal(await page.locator('.run-line').count(), 1, 'running total did not draw');
+    assert.equal(await page.locator('.chart-mode button.on').textContent(), 'Running total');
+    await page.click('[data-act="chart"][data-v="hour"]');
+    assert.equal(await page.locator('.cur-bar').count(), 9, 'hour bars did not come back');
+    assert.equal(await page.locator('.strip [data-set="till"], .strip [data-set="layout"]').count(), 0, 'the Till and Below-the-chart switches are retired (Paul 2026-09-18)');
+    await page.click('.till [data-act="detail"][data-v="closures"]');   // the till strip opens the Closures room
+    assert.equal(await page.locator('.detail [data-testid="session-expected"]').count(), 1, 'closures panel did not open');
+    await page.locator('.detail [data-act="closure"]').first().click();
+    assert.equal(await page.locator('.detail [data-act="backClosures"]').count(), 1, 'a closure from the list has no way back');
+    await page.click('.detail [data-act="backClosures"]');
+    assert.equal(await page.locator('.detail [data-testid="session-expected"]').count(), 1, 'back did not return to closures');
+    await page.click('.detail [data-act="closePanel"]');
+    await set('plan','pro'); await page.click('.hero [data-p="date"]');   // the picker: quick ranges beside a calendar (Paul 2026-09-17)
+    assert.equal(await page.locator('.pop .quick .pr').count(), 6); assert.equal(await page.locator('.pop .cal .d').count(), 30, 'September has 30 days');
+    await page.click('.pop .cal .d[data-v="6"]'); await page.click('.pop .cal .d[data-v="1"]');
+    assert((await page.locator('.hero .datebtn:not(.scope)').textContent()).startsWith('8–13 Sep'), 'two taps make a range');
+    await page.click('.pop [data-act="preset"][data-v="day:0"]'); assert.equal(await page.locator('.pop').count(), 1, 'a quick range keeps the picker open');
+    await page.click('.pop [data-act="closePop"]'); assert.equal(await page.locator('.pop').count(), 0);
+    await scn('free-closures'); await page.click('.popwrap', { position: { x: 1, y: 1 } });
+    const locked = page.locator('[data-act="hint"][data-v="closures"]').nth(1);
+    await locked.scrollIntoViewIfNeeded();
+    const lockedId = await locked.getAttribute('data-id');
+    const scroll = await page.locator('.page>.pad').evaluate(p => p.scrollTop);
+    await locked.click();
+    assert.equal(await page.locator('.page>.pad').evaluate(p => p.scrollTop), scroll, 'gate reset list scroll');
+    const rowBox = await page.locator(`[data-id="${lockedId}"]`).boundingBox(), gateBox = await page.locator('.pop').boundingBox();
+    assert(Math.abs(gateBox.y-rowBox.y-rowBox.height-6)<1, 'gate anchored to a different locked row');
+    await set('plan','pro');
+    assert.equal(await page.locator('[data-testid="reports-lock-hint"]').count(), 0, 'Pro left an obsolete gate');
+    await scn('date'); await set('plan','pro');
+    await page.click('.pop .cal .d[data-v="13"]'); await page.click('.pop .cal .d[data-v="0"]');   // 1–14 Sep on the calendar
+    assert.equal(await page.locator('.chart').getAttribute('data-unit'), 'custom');
+    await scn('scope'); await set('plan','pro'); await page.click('[data-act="register"][data-v="all"]');
+    assert.equal(await page.locator('[data-act="where"][data-v="registers"]').count(), 1, 'All registers must add the Registers view to Where sold');
+    await page.click('[data-act="where"][data-v="registers"]'); assert.equal(await page.locator('.rp-panel[data-k="registers"] svg.donut').count(), 1, 'registers donut');
+    await scn('payments'); await page.selectOption('#template','thermal');
+    assert(await page.locator('.docv.thermal').count(), 'template did not change document');
+    await scn('bell'); await page.click('.bd.notif');
+    assert(await page.locator('.bd.notif').count(), 'panel interior closed overlay');
+    await page.click('.sidewrap', { position: { x: 10, y: 20 } });
+    assert.equal(await page.locator('.bd.notif').count(), 0, 'scrim did not close overlay');
+    await scn('recount');
+    assert(await page.locator('#save-recount').isDisabled(), 'blank reason accepted');
+    await page.fill('#recount-reason','Coins found in tray'); await page.fill('#recount-total','422.00');
+    assert(!(await page.locator('#save-recount').isDisabled()), 'valid recount did not enable save');
+    await page.click('#save-recount');
+    assert(await page.locator('[data-testid="closure-settled"]').count(), 'recount did not return to correction');
+    await scn('error'); await page.click('[data-act="retry"]');
+    assert.equal(await page.locator('[data-testid="closure-document-error"]').count(), 0);
+    assert.deepEqual(errors, [], errors.join('\n'));
+    console.log(`PASS · ${n} state captures; plan and interaction assertions · ${OUT}`);
+  } finally { await browser.close(); }
+})().catch(e => { console.error(e); process.exitCode = 1; });

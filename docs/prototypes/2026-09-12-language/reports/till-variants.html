@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Till strip · options</title>
+<!-- Paul 2026-09-17: "What happens if there's money paid in, money paid out, and other things? … give me at least four or five different
+     examples to display that information." Six strips, each drawn in five states of the till, at the desktop page width.
+
+     WHAT CAN HAPPEN IN A SESSION (plugin origin/next, Sessions_Controller and Closure_Store): an opening float; cash sales; cash refunds;
+     movements of four kinds — paid_in (change from the safe, a loan), paid_out (to the bank, a supplier, petty cash), no_sale (drawer
+     opened, no money), void (a movement reversed) — each with a reason, an actor and a time; expected per tender (cash = float + sales +
+     paid in − paid out − refunds; card and other tenders are expected too, from the terminal); then counting (a cashier is closing),
+     then closed with counted, variance, corrections, unsynced. And "All registers" shows every till at once.
+
+     STATES DRAWN: A open, sales only (today's fixture). B open, busy: float £100 + cash sales £343.70 + paid in £20 (change from the safe)
+     − paid out £150 (to bank) − paid out £30 (milk, petty cash) − cash refunds £12.50 = £271.20; plus one no-sale and one void, which move
+     no money. C counting: Priya is closing the till against £271.20. D closed: #412, expected £211.90, counted £209.90, £2.00 short.
+     E all registers: Front till open £293.70; Back office closed, exact.
+
+     RESEARCH. Square's cash drawer report (starting cash + cash sales − cash refunds + paid in − paid out = expected; actual; difference).
+     Zoho's breakdown waterfall (start, +steps, −steps, end). Xero's cash-flow strip (four figures in a row) and HoneyBook's payments strip
+     (Paid · Processing · Overdue · Upcoming, one figure each). Cofounder's spend breakdown (one segmented bar, legend rows). Chase UK's
+     Money in / Spending rows. Few: a bridge is the honest picture of "start, changes, end". Throwaway: the winner moves into
+     ../pos-register/index.html (tillStrip). -->
+<style>
+:root{--font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif}
+body{margin:0;background:#141416;color:#ddd;font:14px/1.4 var(--font)}
+.strip{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;padding:10px 18px;background:#1c1c1f;border-bottom:1px solid #2a2a2e}
+.strip b{font-weight:600;margin-right:8px;color:#aaa}.seg{display:inline-flex;border:1px solid #3a3a40;border-radius:6px;overflow:hidden}
+.seg button{background:transparent;border:0;color:#bbb;padding:5px 10px;font:inherit;cursor:pointer}.seg button.on{background:#e8e8ea;color:#111}
+.stage{padding:24px 18px 60px;display:flex;flex-direction:column;gap:26px;align-items:flex-start}
+h1{font-size:16px;margin:8px 0 0;color:#eee}h1+p{margin:0 0 6px;color:#999;max-width:1100px}
+h2{font-size:13px;font-weight:600;margin:0 0 6px;color:#eee}
+.opt .why{color:#9a9aa0;margin:6px 0 0;font-size:12.5px;max-width:1100px}
+
+.frame{--u:4px;--fs:14px;--ctl:44px;--r:8px;--hair:1px;--floor:24px;
+  --bg:oklch(0.975 0.004 250);--fg:oklch(0.22 0.02 250);--card:oklch(1 0 0);--muted:oklch(0.955 0.006 250);--muted-fg:oklch(0.50 0.02 250);--border:oklch(0.90 0.008 250);
+  --primary:oklch(0.50 0.18 240);--primary-fg:oklch(0.99 0.01 240);--ok:oklch(0.55 0.16 155);--bad:oklch(0.58 0.2 25);--warn:oklch(0.68 0.16 70);
+  --c1:var(--primary);--c2:oklch(0.62 0.15 160);--c3:oklch(0.72 0.15 70);--c4:oklch(0.58 0.16 320);--c5:oklch(0.70 0.02 250);
+  color-scheme:light;background:var(--bg);color:var(--fg);font:var(--fs)/1.4 var(--font);padding:12px;border-radius:10px;width:1122px;box-sizing:border-box}
+.frame[data-theme="dark"]{--bg:oklch(0.19 0.018 250);--fg:oklch(0.93 0.01 250);--card:oklch(0.23 0.018 250);--muted:oklch(0.28 0.018 250);--muted-fg:oklch(0.70 0.015 250);--border:oklch(0.33 0.02 250);
+  --primary:oklch(0.70 0.17 240);--primary-fg:oklch(0.16 0.02 250);--ok:oklch(0.72 0.15 155);--bad:oklch(0.68 0.18 25);--warn:oklch(0.78 0.15 75);
+  --c2:oklch(0.75 0.14 160);--c3:oklch(0.80 0.14 75);--c4:oklch(0.72 0.15 320);--c5:oklch(0.60 0.02 250);color-scheme:dark}
+.frame button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+.mut{color:var(--muted-fg)}.sm{font-size:calc(var(--fs)*.9)}.xs{font-size:calc(var(--fs)*.86)}.b{font-weight:600}.num{font-variant-numeric:tabular-nums}
+.st{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.st i{width:8px;height:8px;border-radius:50%;background:currentColor;flex:none}.st.ok{color:var(--ok)}.st.warn{color:var(--warn)}.st.bad{color:var(--bad)}.st.neutral{color:var(--muted-fg)}
+.card{background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r)}
+.till{display:grid;grid-template-columns:1fr auto auto;grid-template-areas:"tl mid tr";align-items:center;column-gap:20px;row-gap:12px;padding:12px 16px}
+.till.stack{grid-template-columns:1fr auto;grid-template-areas:"tl tr" "mid mid"}
+.till .tl{grid-area:tl;display:flex;flex-direction:column;gap:2px;min-width:0}.till .mid{grid-area:mid;min-width:0}.till .tr{grid-area:tr;display:flex;align-items:center;gap:8px;justify-self:end}
+.who{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 12px;border:var(--hair) solid var(--border);border-radius:var(--r);font-weight:500;background:var(--card);white-space:nowrap}.btn svg{width:16px;height:16px}
+.ibtn{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg)}.ibtn svg{width:16px;height:16px}
+/* V1 equation chips */
+.eq{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.eq .term{display:flex;flex-direction:column;gap:1px;padding:4px 10px;border-radius:var(--r);background:var(--muted);min-width:0}.eq .term .l{color:var(--muted-fg);font-size:calc(var(--fs)*.8);white-space:nowrap}.eq .term .v{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}.eq .term.res{background:var(--primary);color:var(--primary-fg)}.eq .term.res .l{color:var(--primary-fg);opacity:.85}.eq .term.warn{background:var(--warn);color:#fff}.eq .term.warn .l{color:#fff;opacity:.9}.eq .op{color:var(--muted-fg);font-weight:600;font-size:calc(var(--fs)*1.1)}.eq .note{color:var(--muted-fg);font-size:calc(var(--fs)*.86);margin-left:4px}
+/* V2 bridge */
+svg.plot{display:block;overflow:visible}svg.plot text{font-family:var(--font)}
+/* V3 composition bar */
+.comp{display:flex;flex-direction:column;gap:6px;min-width:520px}.comp .bar{display:flex;height:14px;border-radius:7px;overflow:hidden;gap:2px}.comp .bar i{display:block;height:100%}.comp .bar i.out{background:repeating-linear-gradient(135deg,var(--border) 0 3px,var(--card) 3px 6px);outline:1px solid var(--border);outline-offset:-1px}.comp .leg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:calc(var(--fs)*.86);color:var(--muted-fg)}.comp .leg span{display:inline-flex;align-items:center;gap:5px}.comp .leg i{width:9px;height:9px;border-radius:2px;display:inline-block}.comp .leg i.out{background:repeating-linear-gradient(135deg,var(--border) 0 2px,var(--card) 2px 4px);outline:1px solid var(--border)}.comp .leg b{color:var(--fg);font-weight:600}
+/* V4 ledger */
+.ledger{display:grid;grid-template-columns:auto auto;gap:2px 28px;font-size:calc(var(--fs)*.93)}.ledger .h{color:var(--muted-fg);font-size:calc(var(--fs)*.8);text-transform:uppercase;letter-spacing:.04em}.ledger .r{display:flex;justify-content:space-between;gap:16px;min-height:20px}.ledger .r b{font-weight:600;font-variant-numeric:tabular-nums}
+.big{display:flex;flex-direction:column;align-items:flex-end}.big .a{font-size:calc(var(--fs)*1.7);font-weight:700;letter-spacing:-.02em;line-height:1.1;font-variant-numeric:tabular-nums}.big .l{color:var(--muted-fg);font-size:calc(var(--fs)*.86)}
+/* V5 pills */
+.pills{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.pill{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 10px;border-radius:13px;background:var(--muted);font-size:calc(var(--fs)*.9);white-space:nowrap}.pill b{font-weight:600;font-variant-numeric:tabular-nums}.pill.up b{color:var(--ok)}.pill.down b{color:var(--bad)}.pill.ghost{background:none;border:var(--hair) dashed var(--border);color:var(--muted-fg)}
+.bignum{display:flex;align-items:baseline;gap:10px}.bignum .a{font-size:calc(var(--fs)*1.9);font-weight:700;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}.bignum .bl{font-weight:600;color:var(--muted-fg)}
+/* V6 tenders */
+.tenders{display:flex;gap:8px}.tender{display:flex;flex-direction:column;gap:1px;padding:6px 12px;border-radius:var(--r);border:var(--hair) solid var(--border);min-width:120px}.tender .l{color:var(--muted-fg);font-size:calc(var(--fs)*.8);white-space:nowrap}.tender .v{font-weight:600;font-variant-numeric:tabular-nums}.tender .s{color:var(--muted-fg);font-size:calc(var(--fs)*.8);white-space:nowrap}.tender.cash{border-color:var(--primary)}
+.rows{display:flex;flex-direction:column;gap:10px}
+</style>
+<div class="strip">
+  <span><b>Theme</b><span class="seg"><button class="on" data-set="theme" data-v="light">Light</button><button data-set="theme" data-v="dark">Dark</button></span></span>
+  <span><b>State</b><span class="seg"><button class="on" data-set="state" data-v="A">A · open, sales only</button><button data-set="state" data-v="B">B · open, paid in and out, refunds</button><button data-set="state" data-v="C">C · counting</button><button data-set="state" data-v="D">D · closed, short</button><button data-set="state" data-v="E">E · all registers</button></span></span>
+</div>
+<div class="stage" id="stage"></div>
+<script>
+const fmt=(n,sign=false)=>{const a=Math.abs(n).toFixed(2);return `${n<0?'−':sign&&n>0?'+':''}£${a}`};const sum=(a,f)=>a.reduce((s,x)=>s+(f?f(x):x),0);
+const chev='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+const print='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17h2a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2"/><path d="M17 9V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v4"/><rect x="7" y="13" width="10" height="8" rx="2"/></svg>';
+/* a session: float, sales, refunds, movements; status open | counting | closed */
+const SESS={
+  A:{reg:'Front till',by:'Dylan',since:'13:00',status:'open',float:100,sales:343.70,salesN:6,refunds:0,moves:[{k:'out',l:'Paid out',note:'to bank',amt:150,t:'15:40'}],last:{num:'#412',t:'Today 12:30',v:-2}},
+  B:{reg:'Front till',by:'Dylan',since:'13:00',status:'open',float:100,sales:343.70,salesN:6,refunds:12.50,moves:[{k:'in',l:'Paid in',note:'change from the safe',amt:20,t:'13:20'},{k:'out',l:'Paid out',note:'to bank',amt:150,t:'15:40'},{k:'out',l:'Paid out',note:'milk, petty cash',amt:30,t:'16:05'},{k:'nosale',l:'No sale',note:'drawer opened',amt:0,t:'14:12'},{k:'void',l:'Void',note:'paid out reversed',amt:0,t:'16:20'}],last:{num:'#412',t:'Today 12:30',v:-2}},
+  C:{reg:'Front till',by:'Priya',since:'13:00',status:'counting',float:100,sales:343.70,salesN:6,refunds:12.50,moves:[{k:'in',l:'Paid in',note:'change from the safe',amt:20,t:'13:20'},{k:'out',l:'Paid out',note:'to bank',amt:150,t:'15:40'},{k:'out',l:'Paid out',note:'milk, petty cash',amt:30,t:'16:05'}],last:{num:'#412',t:'Today 12:30',v:-2}},
+  D:{reg:'Front till',by:'Priya',since:'09:02',closedAt:'12:30',status:'closed',num:'#412',float:100,sales:111.90,salesN:8,refunds:0,moves:[],expected:211.90,counted:209.90,last:{num:'#411',t:'Saturday 18:10',v:0}},
+};
+const E=[SESS.A,{reg:'Back office',by:'Paul',since:'10:00',closedAt:'16:30',status:'closed',num:'#410',float:0,sales:0,salesN:0,refunds:0,moves:[],expected:0,counted:0,last:null}];
+const expected=s=>s.status==='closed'?s.expected:Math.round((s.float+s.sales+sum(s.moves.filter(m=>m.k==='in'),m=>m.amt)-sum(s.moves.filter(m=>m.k==='out'),m=>m.amt)-s.refunds)*100)/100;
+const ins=s=>s.moves.filter(m=>m.k==='in'), outs=s=>s.moves.filter(m=>m.k==='out'), quiet=s=>s.moves.filter(m=>m.k==='nosale'||m.k==='void');
+const who=s=>s.status==='open'?`<b>${s.reg}</b> <span class="st ok"><i></i>Open</span><span class="mut"> · since ${s.since} · ${s.by}</span>`:s.status==='counting'?`<b>${s.reg}</b> <span class="st warn"><i></i>Counting</span><span class="mut"> · ${s.by} is closing the till</span>`:`<b>${s.reg}</b> <span class="st neutral"><i></i>Closed</span><span class="mut"> · at ${s.closedAt} · ${s.by}</span>`;
+const lastLine=s=>s.last?`Last closure ${s.last.num} · ${s.last.t} · ${s.last.v?fmt(Math.abs(s.last.v))+(s.last.v<0?' short':' over'):'exact'}`:'No closures yet';
+const actions=s=>`${s.status==='closed'?`<button class="btn">${print}Reprint</button>`:s.status==='counting'?`<button class="btn">Continue count</button>`:`<button class="btn">${print}X-report</button>`}<button class="ibtn">${chev}</button>`;
+const shell=(s,mid,stack=false)=>`<section class="card till ${stack?'stack':''}"><div class="tl"><div class="who">${who(s)}</div><div class="mut sm">${lastLine(s)}</div></div><div class="mid">${mid}</div><div class="tr">${actions(s)}</div></section>`;
+const S={theme:'light',state:'A'};
+
+const V={};
+/* V1 · equation chips (as drawn), grown to every term; repeats of a kind fold into one chip with a count */
+V['V1']=['Equation chips (as drawn)','Every term is a chip; several paid-outs fold into one chip with a count; quiet movements (no sale, void) are a note. Counting swaps the result chip for an amber one; closed shows expected · counted = result.',(s)=>{
+  const term=(l,v,op='',cls='')=>`${op?`<span class="op">${op}</span>`:''}<span class="term ${cls}"><span class="l">${l}</span><span class="v">${v}</span></span>`;
+  let t='';
+  if(s.status==='closed'){t=term('Expected',fmt(s.expected))+term('Counted',fmt(s.counted),'·')+term('Drawer result',(s.expected-s.counted)?fmt(Math.abs(s.expected-s.counted))+(s.counted<s.expected?' short':' over'):'Exact','=',s.counted!==s.expected?'warn':'res');}
+  else{t=term('Opening float',fmt(s.float))+term(`Cash sales · ${s.salesN}`,fmt(s.sales),'+');const i=ins(s),o=outs(s);if(i.length)t+=term(i.length>1?`Paid in · ${i.length}`:`Paid in · ${i[0].note}`,fmt(sum(i,m=>m.amt)),'+');if(o.length)t+=term(o.length>1?`Paid out · ${o.length}`:`Paid out · ${o[0].note}`,fmt(sum(o,m=>m.amt)),'−');if(s.refunds)t+=term('Cash refunds',fmt(s.refunds),'−');t+=term(s.status==='counting'?'Count against':'Expected in drawer',fmt(expected(s)),'=',s.status==='counting'?'warn':'res');const q=quiet(s);if(q.length)t+=`<span class="note">· ${q.map(m=>m.l.toLowerCase()).join(', ')}</span>`;}
+  return `<div class="eq">${t}</div>`;}];
+/* V2 · the bridge */
+V['V2']=['The bridge','Zoho’s breakdown waterfall in miniature: start at the float, step up for sales and paid in, step down for paid out and refunds, land on expected. The honest picture of start, changes, end; it needs the width it takes.',(s)=>{
+  const steps=s.status==='closed'?[['Expected',s.expected,'base'],['Counted',s.counted,'base']]:[['Float',s.float,'base'],[`Sales`,s.sales,'up'],...ins(s).map(m=>['Paid in',m.amt,'up']),...outs(s).map(m=>[`Out · ${m.note.split(',')[0]}`,-m.amt,'down']),...(s.refunds?[['Refunds',-s.refunds,'down']]:[]),[s.status==='counting'?'Count against':'Expected',expected(s),'end']];
+  const W=Math.max(420,steps.length*92),H=84,max=Math.max(1,...steps.map(x=>Math.abs(x[1])),s.float+s.sales+sum(ins(s),m=>m.amt))*1.05,y=v=>14+52*(1-v/max),bw=44,step=W/steps.length;let run=0,svg=`<svg class="plot" viewBox="0 0 ${W} ${H}" style="width:${W}px">`;
+  steps.forEach(([l,v,k],i)=>{const x=i*step+(step-bw)/2;let y0,y1,fill;if(k==='base'||k==='end'){y0=y(Math.abs(v));y1=y(0);fill=k==='end'?'var(--primary)':'var(--c5)';run=Math.abs(v);}else{const from=run,to=run+v;y0=y(Math.max(from,to));y1=y(Math.min(from,to));fill=v>0?'var(--c2)':'var(--warn)';run=to;}
+    svg+=`<rect x="${x}" y="${y0}" width="${bw}" height="${Math.max(2,y1-y0)}" rx="3" fill="${fill}"/><text x="${x+bw/2}" y="${y0-4}" text-anchor="middle" font-size="10.5" font-weight="600" fill="var(--fg)">${k==='down'?'−':''}£${Math.abs(v).toFixed(0)}</text><text x="${x+bw/2}" y="${H-2}" text-anchor="middle" font-size="10" fill="var(--muted-fg)">${l}</text>`;
+    if(i<steps.length-1&&k!=='base')svg+=`<line x1="${x+bw}" x2="${x+step}" y1="${k==='end'?y0:(v>0?y0:y1)}" y2="${k==='end'?y0:(v>0?y0:y1)}" stroke="var(--border)" stroke-dasharray="2 2"/>`;});
+  return svg+'</svg>';}];
+/* V3 · one composition bar */
+V['V3']=['One composition bar','Cofounder’s spend bar. What went in as filled segments, what came out as hatched ones, the expected figure at the end. Compact and it scales to any number of movements; the hatching is the only new mark.',(s)=>{
+  if(s.status==='closed')return `<div class="comp"><div class="bar"><i style="flex:${s.counted};background:var(--primary)"></i>${s.expected>s.counted?`<i class="out" style="flex:${s.expected-s.counted}"></i>`:''}</div><div class="leg"><span><i style="background:var(--primary)"></i>Counted <b>${fmt(s.counted)}</b></span><span><i class="out"></i>Short <b>${fmt(s.expected-s.counted)}</b></span><span>Expected <b>${fmt(s.expected)}</b></span></div></div>`;
+  const i=sum(ins(s),m=>m.amt),o=sum(outs(s),m=>m.amt);
+  return `<div class="comp"><div class="bar"><i style="flex:${s.float};background:var(--c5)"></i><i style="flex:${s.sales};background:var(--primary)"></i>${i?`<i style="flex:${i};background:var(--c2)"></i>`:''}${o?`<i class="out" style="flex:${o}"></i>`:''}${s.refunds?`<i class="out" style="flex:${s.refunds}"></i>`:''}</div><div class="leg"><span><i style="background:var(--c5)"></i>Float <b>${fmt(s.float)}</b></span><span><i style="background:var(--primary)"></i>Cash sales <b>${fmt(s.sales)}</b></span>${i?`<span><i style="background:var(--c2)"></i>Paid in <b>${fmt(i)}</b></span>`:''}${o?`<span><i class="out"></i>Paid out <b>${fmt(o)}</b>${outs(s).length>1?` · ${outs(s).length}`:''}</span>`:''}${s.refunds?`<span><i class="out"></i>Refunds <b>${fmt(s.refunds)}</b></span>`:''}<span style="margin-left:auto">${s.status==='counting'?'Count against':'Expected'} <b style="font-size:1.15em">${fmt(expected(s))}</b></span></div></div>`;}];
+/* V4 · in and out columns, the number at the end */
+V['V4']=['In and out, the figure at the end','Two short columns like the X-report’s own layout, with the expected figure big on the right. Handles any number of movements by adding a line; the quiet ones sit under Out as a note.',(s)=>{
+  if(s.status==='closed')return `<div style="display:flex;align-items:center;gap:28px"><div class="ledger"><div class="h">Expected</div><div class="h">Counted</div><div class="r"><b>${fmt(s.expected)}</b></div><div class="r"><b>${fmt(s.counted)}</b></div></div><div class="big"><span class="a ${s.counted<s.expected?'st warn':''}">${(s.expected-s.counted)?fmt(Math.abs(s.expected-s.counted))+(s.counted<s.expected?' short':' over'):'Exact'}</span><span class="l">drawer result</span></div></div>`;
+  const inRows=[['Opening float',s.float],[`Cash sales · ${s.salesN}`,s.sales],...ins(s).map(m=>[`Paid in · ${m.note}`,m.amt])], outRows=[...outs(s).map(m=>[`Paid out · ${m.note}`,m.amt]),...(s.refunds?[['Cash refunds',s.refunds]]:[])];
+  const col=(h,rows)=>`<div><div class="h">${h}</div>${rows.map(([l,v])=>`<div class="r"><span class="mut">${l}</span><b>${fmt(v)}</b></div>`).join('')||'<div class="r mut">—</div>'}</div>`;
+  return `<div style="display:flex;align-items:center;gap:28px"><div class="ledger">${col('In',inRows)}${col('Out',outRows)}${quiet(s).length?`<div></div><div class="mut xs">${quiet(s).map(m=>m.l.toLowerCase()).join(' · ')}</div>`:''}</div><div class="big"><span class="a">${fmt(expected(s))}</span><span class="l">${s.status==='counting'?'to count against':'expected in drawer'}</span></div></div>`;}];
+/* V5 · the figure, then the story as pills */
+V['V5']=['The figure, then the story as pills','The one number big, then each thing that happened as a pill, signed and coloured. Reads as a sentence; grows by one pill per event; the quiet events are dashed pills.',(s)=>{
+  if(s.status==='closed')return `<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap"><div class="bignum"><span class="a">${fmt(s.counted)}</span><span class="bl">counted</span></div><div class="pills"><span class="pill">expected <b>${fmt(s.expected)}</b></span><span class="pill ${s.counted<s.expected?'down':'up'}"><b>${(s.expected-s.counted)?fmt(s.counted-s.expected,true)+(s.counted<s.expected?' short':' over'):'exact'}</b></span></div></div>`;
+  return `<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap"><div class="bignum"><span class="a">${fmt(expected(s))}</span><span class="bl">${s.status==='counting'?'to count against':'in the drawer'}</span></div><div class="pills"><span class="pill">float <b>${fmt(s.float)}</b></span><span class="pill up"><b>${fmt(s.sales,true)}</b> sales · ${s.salesN}</span>${ins(s).map(m=>`<span class="pill up"><b>${fmt(m.amt,true)}</b> ${m.note}</span>`).join('')}${outs(s).map(m=>`<span class="pill down"><b>${fmt(-m.amt,true)}</b> ${m.note}</span>`).join('')}${s.refunds?`<span class="pill down"><b>${fmt(-s.refunds,true)}</b> refunds</span>`:''}${quiet(s).map(m=>`<span class="pill ghost">${m.l.toLowerCase()}</span>`).join('')}</div></div>`;}];
+/* V6 · every tender, the X-report at a glance */
+V['V6']=['Every tender, the X-report at a glance','Not just the drawer: cash, card and other, each with what the till expects, the cash tile carrying the movement count. The owner reconciles the card batch here too; the drawer maths sits behind the cash tile.',(s)=>{
+  const cash=expected(s),card=s.status==='closed'?468.29:468.29,other=s.status==='closed'?49:49,moves=s.moves.length;
+  const tile=(l,v,sub,cls='')=>`<div class="tender ${cls}"><span class="l">${l}</span><span class="v">${v}</span><span class="s">${sub}</span></div>`;
+  if(s.status==='closed')return `<div class="tenders">${tile('Cash',fmt(s.counted),`${(s.expected-s.counted)?fmt(Math.abs(s.expected-s.counted))+(s.counted<s.expected?' short':' over'):'exact'} · expected ${fmt(s.expected)}`,'cash')}${tile('Card',fmt(card),'matched the batch')}${tile('Other',fmt(other),'PayPal')}</div>`;
+  return `<div class="tenders">${tile('Cash in drawer',fmt(cash),`${moves?`${moves} movement${moves===1?'':'s'}`:'no movements'} · float ${fmt(s.float)}`,'cash')}${tile('Card',fmt(card),'on the terminal')}${tile('Other',fmt(other),'PayPal')}</div>`;}];
+
+function render(){
+  document.querySelectorAll('.strip [data-set]').forEach(b=>b.classList.toggle('on',S[b.dataset.set]===b.dataset.v));
+  const sessions=S.state==='E'?E:[SESS[S.state]];
+  document.getElementById('stage').innerHTML=`<h1>The till strip · six ways, five states</h1><p>Switch the state above. B is the busy one: a paid-in, two paid-outs, cash refunds, a no-sale and a void. E draws every register at once. Each strip sits where the real one does, above the chart at the desktop page width.</p>`+Object.entries(V).map(([k,[t,why,f]])=>`<div class="opt"><h2>${k} · ${t}</h2><div class="frame" data-theme="${S.theme}"><div class="rows">${sessions.map(s=>shell(s,f(s),k==='V2'||k==='V3'||k==='V4'||k==='V5'||(k==='V1'&&S.state!=='A'&&S.state!=='D'))).join('')}</div></div><p class="why">${why}</p></div>`).join('');
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-set]');if(!b)return;S[b.dataset.set]=b.dataset.v;render();});
+render();
+</script>
+</html>
