@@ -108,7 +108,7 @@ behaviour change beyond the keypad ruling, any token value (V2 changes none).
 ## 4. Questions for Paul before the `new:` lines are built
 
 Each `new:` line in `variants/v2/changes.md` is a component variant the repo lacks. Ask once, as one list,
-with a pick, before slice 1 (they decide slices 1–3):
+with a pick, before slice 1 (they decide slices 1–4):
 
 1. AmountFigure `hero` inside a FieldBox (64 px) for editable money: build it, or keep the field's 22 px
    numerals? Recommend build: it is the whole idea of V2.
@@ -123,6 +123,9 @@ with a pick, before slice 1 (they decide slices 1–3):
    Recommend as drawn; it is the 2026-10-21 approval ruling's wording made visible.
 6. The Stat strip's lead figure at 24 px bold, one step above `text-lg`: a new text step or `text-amt`?
    Recommend `text-amt`, no new step.
+7. The Keypad's rows at 56 px on the tablet and 48 px on the phone, against the component's own steps
+   (`h-tile` 64, or `shrink` from `min-h-ctl` up): a new size, or the existing `shrink` step on the phone
+   and `h-tile` on the tablet? Recommend the existing steps; the collapse ruling is about behaviour, not size.
 
 Plus one defect the judge found that is the repo's, not the mockup's: in the dark theme `--bad` on
 `--bad-bg` measures about 4.2:1. Paul's pick pending (options put to him 2026-11-06: darken `--bad-bg`,
