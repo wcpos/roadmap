@@ -1,0 +1,102 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Register flow mockup sweep</title>
+<style>
+:root{--bg:#f6f7f8;--card:#fff;--fg:#16181d;--muted:#5b616e;--line:#dfe2e6;--accent:#1f5fd6}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1114;--card:#181b20;--fg:#eceef1;--muted:#a0a6b1;--line:#2b2f36;--accent:#6c9cf5}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+main{max-width:1320px;margin:0 auto;padding:32px 16px 64px}
+h1{font-size:26px;margin:0 0 4px}h2{font-size:19px;margin:48px 0 6px}h3{font-size:15px;margin:24px 0 8px}
+p.lead,.note{color:var(--muted);margin:0 0 16px;max-width:820px}
+img{display:block;max-width:100%;height:auto;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+figure{margin:0}figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.phones{display:grid;grid-template-columns:repeat(2,minmax(0,320px));gap:16px}
+.anch{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.rej{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;opacity:.72}
+table{border-collapse:collapse;width:100%;background:var(--card);font-variant-numeric:tabular-nums;font-size:14px}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:right}th:first-child,td:first-child{text-align:left}
+th{color:var(--muted);font-weight:600}td.pick{font-weight:700}
+ol li,ul li{margin:4px 0}
+.tall{max-height:1400px;overflow:auto;border:1px solid var(--line);border-radius:8px}.tall img{border:0;border-radius:0}
+</style></head><body><main>
+<h1>Register flow · mockup sweep</h1>
+<p class="lead">WCPOS 2.0 web, the cashier's register session as one family: choose register, open with a float, the cashier sheet and register panel, pay in, pay out (with the approval case), close with a count, the closure written, and Reports › Closures. Paul's words: "a sweep of that whole flow … choose register, entering the float, Paid in, paid out, close register etc etc" (2026-11-06). Three variants, judged by Codex GPT-6.1 Sol over the cap of three rounds; the pick climbed through two rounds and two corrective sheet passes, then one follow-up round after Paul ruled on the keypad.</p>
+
+<h2>Picked: V2 · The figure leads</h2>
+<p class="lead">One 40 px amount leads every money surface, framed as a field when the cashier types it and unframed when it is only shown; the checkout keypad sits under it; the ledger folds under Expected; the register panel is one figure and a verb row; the closed moment leads with the variance; Closures opens with a stat strip. Round 2c: 7.7 average, every category at or above its round-0 score, Consistency 8. Round 3 (Paul's ruling applied: the count's keypad collapses once the amount is entered and reopens on tapping it): 7.4 against the same judge's 7.2 for r2c, hierarchy, density and states up; the one category that fell was reverted. The three rejected ideas and every table are below.</p>
+<h3>Desktop, 1280 (each frame is the pane or the cart column at full size)</h3>
+<div class="pair"><figure><div class="tall"><img src="img/pick-desktop-light.png" alt="V2 desktop, light"></div><figcaption>Light</figcaption></figure><figure><div class="tall"><img src="img/pick-desktop-dark.png" alt="V2 desktop, dark"></div><figcaption>Dark</figcaption></figure></div>
+<h3>Phone, 390</h3>
+<div class="phones"><figure><div class="tall"><img src="img/pick-phone-light.png" alt="V2 phone, light"></div><figcaption>Light</figcaption></figure><figure><div class="tall"><img src="img/pick-phone-dark.png" alt="V2 phone, dark"></div><figcaption>Dark</figcaption></figure></div>
+<h3>States drawn</h3>
+<p class="note">1 Choose register (ruled 2P·A) · 2 Open register, 2b first-ever open with an empty float · 3 Cashier sheet (the drawer card is the one door, ruled) · 4 Register panel, and offline · 5 Pay in, 5b nothing typed, 5c no reason · 6 Pay out over the limit, 6a under the limit, 6b manager approval, 6c approval offline · 7 Close register: short, 7b over, 7c exact · 8 Closure written, 8b unsynced · 9 Reports › Closures and the Closure 42 document. Not yet drawn: the register panel with its Expected ledger expanded (an open finding).</p>
+<h3>System sheet (the controls that share the pick's tokens, light and dark rows)</h3>
+<div class="pair"><figure><img src="img/pick-system-light.png" alt="V2 system sheet, light"><figcaption>Light row on top, dark row beneath; shot in the light theme</figcaption></figure><figure><img src="img/pick-system-dark.png" alt="V2 system sheet, dark"><figcaption>The same sheet shot in the dark theme</figcaption></figure></div>
+
+<h2>What changed between rounds</h2>
+<p class="lead">Before is V2 as first drawn (round 0); after is the final round. The frame numbers point into the boards above.</p>
+<ol>
+<li><b>Typed and shown amounts told apart.</b> Round 0's 40 px amount was unframed everywhere, which the judge read as two grammars for one editable role and a look-alike of the panel's read-only balance. Now every amount the cashier types sits inside the field's frame (64 px), and only the displayed figures are bare.</li>
+<li><b>The count keeps the family's reach.</b> The keypad had displaced Other tenders and "Leave in drawer · To bank · Change" (frame 7); both are back, and the desktop frame is the tablet's real 800 px pane.</li>
+<li><b>The written moment keeps its accounting.</b> "Closure 42 written" (frame 8) had become a variance headline; Counted · Expected are back as tiles beside it, and the Closure paper (all eight lines) folds beneath. Same in the Closures document.</li>
+<li><b>Touch targets.</b> Reason and float chips were 32 px; every chip is 44 px in rows with 8 px gaps.</li>
+<li><b>The ledger reads on the phone.</b> Closures rows carry a labelled Expected · Counted · Difference (columns on desktop, one labelled line on the phone), with the result badge separate.</li>
+<li><b>Frame 6 stopped contradicting 6b.</b> Pay out $45.00 now shows "Over the $40.00 limit · a manager must approve" and leads to approval; a new 6a is a plain under-limit pay-out.</li>
+<li><b>Missing states drawn.</b> "Add a reason", a true empty first open, the count's Over and Exact with their note rule; on the phone also the offline approval and the unsynced closure.</li>
+<li><b>Nothing a cashier reads under 14 px,</b> and the count note is a multi-line box again.</li>
+</ol>
+<div class="pair"><figure><div class="tall"><img src="img/before-desktop-light.png" alt="V2 round 0, desktop"></div><figcaption>Before: V2 at round 0</figcaption></figure><figure><div class="tall"><img src="img/pick-desktop-light.png" alt="V2 final, desktop"></div><figcaption>After: V2 at round 3</figcaption></figure></div>
+
+<h2>Rejected variants (round-0 scores; both scored under V2 on hierarchy, typography and density)</h2>
+<div class="rej">
+<figure><div class="tall"><img src="img/v1-desktop-light.png" alt="V1 desktop, light"></div><figcaption><b>V1 · Tiles and ledger</b> (r0 average 6.55): the 2026-10-28 map drawn literally; two equal figures competed in the panel, the Closures rows hid the difference in a badge, the written moment had no ladder.</figcaption></figure>
+<figure><div class="tall"><img src="img/v3-desktop-light.png" alt="V3 desktop, light"></div><figcaption><b>V3 · Rows and sentences</b> (r0 average 6.75): 56 px rows, ✓ reason lists, a receipt column, a dense Closures table; the count opened with the ledger expanded and the counted cash demoted, the Closures rows dropped Expected and Counted.</figcaption></figure>
+</div>
+
+<h2>Anchors (frozen, shot once)</h2>
+<div class="anch">
+<figure><img src="img/anchor-family-light.png" alt="Close Register family anchor"><figcaption>Family: the Close Register pick of 2026-11-05 (its own palette; V2 reads the gallery's tokens)</figcaption></figure>
+<figure><img src="img/anchor-gallery-light.png" alt="System gallery"><figcaption>System: the repo's component gallery</figcaption></figure>
+<figure><img src="img/ref-base-deposit-one-amount-one-action.png" alt="Base deposit reference"><figcaption>Ref: a one-amount-one-action deposit (Mobbin)</figcaption></figure>
+<figure><img src="img/ref-shopify-pos-settings-cash-management-row.png" alt="Shopify POS settings reference"><figcaption>Ref: Shopify POS cash-management row grammar (Mobbin)</figcaption></figure>
+</div>
+<p class="note">No baseline: there is no register-flow screen on main that a headless shoot can reach without a logged-in store.</p>
+
+<h2>Scores</h2>
+<h3>Round 0: three variants</h3>
+<table><tr><th>Category</th><th>V1</th><th>V2</th><th>V3</th><th>Family</th><th>Base ref</th><th>Shopify ref</th><th>Gallery</th></tr>
+<tr><td>Hierarchy</td><td>6.5</td><td class="pick">8</td><td>7</td><td>9</td><td>9</td><td>8</td><td>7</td></tr>
+<tr><td>Typography</td><td>7</td><td class="pick">8</td><td>7</td><td>8.5</td><td>8.5</td><td>8</td><td>7</td></tr>
+<tr><td>Spacing and alignment</td><td>7</td><td class="pick">7.5</td><td>7</td><td>8.5</td><td>8.5</td><td>8.5</td><td>7</td></tr>
+<tr><td>Colour and contrast · light</td><td>7.5</td><td class="pick">7.5</td><td>7.5</td><td>8.5</td><td>7</td><td>7.5</td><td>7.5</td></tr>
+<tr><td>Colour and contrast · dark</td><td>7.5</td><td class="pick">7.5</td><td>7.5</td><td>8.5</td><td>—</td><td>—</td><td>7</td></tr>
+<tr><td>Iconography and indicators</td><td>7</td><td class="pick">7</td><td>7.5</td><td>8</td><td>7</td><td>8</td><td>7.5</td></tr>
+<tr><td>Consistency</td><td>5</td><td class="pick">5</td><td>5</td><td>6.5</td><td>8</td><td>8</td><td>8</td></tr>
+<tr><td>Clarity for the person in the brief</td><td>6</td><td class="pick">6.5</td><td>6.5</td><td>8.5</td><td>7</td><td>6</td><td>3</td></tr>
+<tr><td>Density</td><td>6.5</td><td class="pick">7</td><td>6.5</td><td>8.5</td><td>8</td><td>7.5</td><td>6.5</td></tr>
+<tr><td>States covered</td><td>5.5</td><td class="pick">5</td><td>6</td><td>3</td><td>1</td><td>1</td><td>2</td></tr>
+<tr><td><b>Average</b></td><td>6.55</td><td class="pick">6.90</td><td>6.75</td><td>7.75</td><td>7.11</td><td>6.94</td><td>6.25</td></tr></table>
+<p class="note">Every set carried the same SYSTEM BREAK, "no system sheet", so Consistency sat at 5 for all three and did not separate them. The pick reads columns: V2 leads hierarchy, typography, spacing and density and ties on clarity; its one low column, states, was three missing drawings.</p>
+<h3>The climb: V2 by round (with its system sheet from round 1)</h3>
+<table><tr><th>Category</th><th>r0</th><th>r1</th><th>r2</th><th>r2b</th><th>r2c</th><th>r2c as r3's baseline</th><th>r3 · final</th></tr>
+<tr><td>Hierarchy</td><td>8</td><td>8.5</td><td>8</td><td>8</td><td>8</td><td>8</td><td class="pick">8.5</td></tr>
+<tr><td>Typography</td><td>8</td><td>7.5</td><td>7</td><td>7.5</td><td>8</td><td>7.5</td><td class="pick">7.5</td></tr>
+<tr><td>Spacing and alignment</td><td>7.5</td><td>7.5</td><td>6.5</td><td>7</td><td>7.5</td><td>7</td><td class="pick">7</td></tr>
+<tr><td>Colour and contrast · light</td><td>7.5</td><td>7</td><td>7.5</td><td>7.5</td><td>7.5</td><td>8</td><td class="pick">8</td></tr>
+<tr><td>Colour and contrast · dark</td><td>7.5</td><td>7</td><td>7.5</td><td>7</td><td>7.5</td><td>6.5</td><td class="pick">6.5</td></tr>
+<tr><td>Iconography and indicators</td><td>7</td><td>8</td><td>8</td><td>7.5</td><td>7.5</td><td>7.5</td><td class="pick">7.5</td></tr>
+<tr><td>Consistency</td><td>5</td><td>5</td><td>5</td><td>5</td><td>8</td><td>5</td><td class="pick">5</td></tr>
+<tr><td>Clarity for the person in the brief</td><td>6.5</td><td>7</td><td>7.5</td><td>7.5</td><td>7.5</td><td>7.5</td><td class="pick">7</td></tr>
+<tr><td>Density</td><td>7</td><td>7.5</td><td>7</td><td>6.5</td><td>7</td><td>7.5</td><td class="pick">8.5</td></tr>
+<tr><td>States covered</td><td>5</td><td>7</td><td>8.5</td><td>7.5</td><td>8.5</td><td>7.5</td><td class="pick">8.5</td></tr>
+<tr><td><b>Average</b></td><td>6.90</td><td>7.20</td><td>7.30</td><td>7.10</td><td>7.70</td><td>7.20</td><td class="pick">7.40</td></tr></table>
+<p class="note">Each round is a fresh judge context, so the anchors' own scores drift and the columns are read as relative. r1 and r2 were the climb's two findings rounds; r2b and r2c changed only the system sheet (its cells now draw the flow's own elements) and applied the brief's 14 px rule, which is why Consistency moved from 5 to 8 without the design moving. Full tables, findings and the pick's reasoning: <code>rounds.md</code> and <code>rounds/r*/codex.md</code>.</p>
+
+<h2>Round 3: Paul's ruling applied</h2>
+<p class="note">Paul (2026-11-06, "as you recommend"): the count's keypad collapses once the amount is entered and reopens on tapping the amount. Applied with the other two r2c findings: the Closures scope row is a grid (two columns on the phone) with the date filter as a date range; the register panel has an Expected-open frame per layout. Clarity fell by half a point for a counting frame that showed a partial figure against the full count's shortage; that frame was reverted to r2c's (keypad open, whole amount, caret). The judge also named a system break r2c already carried, the count's keypad at 6 px gaps against the sheet's 8 px, now fixed. Neither change was re-scored.</p>
+<h2>Open findings (not applied)</h2>
+<ul>
+<li>On the phone the Closures filter chips are about 32 px tall, under the brief's 44 px touch minimum: 44 px in the same two-column grid.</li>
+<li>In the dark theme the shortage text (<code>--bad</code> on <code>--bad-bg</code>) measures about 4.23:1, under 4.5:1 for small text: a token pairing to adjust in the repo's dark theme together with the sibling error states, not in a mockup.</li>
+</ul>
+</main></body></html>
