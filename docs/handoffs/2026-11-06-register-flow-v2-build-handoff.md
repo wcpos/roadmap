@@ -132,6 +132,32 @@ Plus one defect the judge found that is the repo's, not the mockup's: in the dar
 or draw the band's text on `--foreground` with the tint as background only; recommended the second).
 Slice 4 carries whichever he picks.
 
+## 4a. Answers (Paul, 2026-11-06, asked one by one; every answer the recommended option)
+
+Three of the picks above rested on facts the code contradicts; the answers below are the ones given to him with
+the corrected facts.
+
+1. **Build it.** Hero numerals inside the field for every editable amount, the count's other tenders included;
+   muted regular `0.00` placeholder. (Today's float and count already sat in a 64 px frame at regular weight.)
+2. **A new Button size**, 56 px tall with the control radius and the base label, icon over label (node children
+   already stack). Not `lg`: `lg` carries the pill radius and the commit label, and the eslint ratchet refuses a
+   caller's height or radius class. One line in the ruled size table, one gallery row.
+3. **A fixed grid** (reasons three per row; floats two per row on the tablet, one on the phone; 8 px gaps), chips
+   filling their cell through a layout class. No Chip size: the default Chip is already 44 px; the "32 px" was
+   the small Chip.
+4. **Exact as drawn**: muted surface, muted text, a check glyph (Reports › Closures already reads exact as muted).
+5. **Not in this build.** The app has no pay-out approval; every approval string and path belongs to the close.
+   The restyle changes no behaviour. No issue filed.
+6. **AmountFigure `headline`** (`text-2xl`, 24 px) for the Stat strip's lead figure. Not `text-amt` (40 px);
+   no new step.
+7. Not put to him (a plumbing choice between existing steps): the Keypad keeps its own steps, `fit="tile"`
+   (`h-tile`, 64) on the tablet and `shrink` on the phone; no new Keypad size. Decided by the building session.
+8. **Dark `--bad` on `--bad-bg`** (recomputed from the live tokens: 4.24:1): the band's text draws on
+   `--foreground`, the tint stays background only (11.3:1). No token value changes.
+
+Slice 1 is wcpos/monorepo#3349. On the way it fixed a defect in `field-box`: every placeholder drew in the
+foreground on the web (react-native-web's `::placeholder` rule reads `--placeholderTextColor`, unset).
+
 ## 5. State on 2026-11-06
 
 - roadmap#562 (Close Register record) merged 34578099; roadmap#564 (register flow sweep) merged 3ade2d7f.
