@@ -1,0 +1,1326 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Register flow · V2 system sheet</title>
+<style>/* Extracted verbatim from /Users/kilbot/Projects/monorepo-v2/apps/main/global.css by tokens-from-css.py; do not edit, overlay. */
+html:not([data-theme]), html[data-theme="light"] {
+  --hairline-width: 1px;
+  --background: oklch(0.97 0.005 262);
+  --foreground: oklch(0.16 0.005 262);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.16 0.005 262);
+  --popover: var(--card);
+  --popover-foreground: var(--card-foreground);
+  --primary: oklch(0.42 0.24 262);
+  --primary-foreground: oklch(0.99 0.01 262);
+  --secondary: var(--muted-foreground);
+  --secondary-foreground: var(--card);
+  --muted: oklch(0.95 0.007 262);
+  --muted-foreground: oklch(0.45 0.01 262);
+  --accent: oklch(0.965 0.025 262);
+  --accent-foreground: var(--foreground);
+  --destructive: oklch(0.52 0.22 25);
+  --destructive-foreground: oklch(0.99 0.01 25);
+  --success: var(--ok);
+  --success-foreground: oklch(0.98 0.01 160);
+  --info: oklch(0.48 0.12 262);
+  --info-foreground: oklch(0.98 0.01 240);
+  --action: oklch(0.55 0.18 295);
+  --action-foreground: oklch(0.98 0.01 295);
+  --attention: var(--warning);
+  --attention-foreground: oklch(0.25 0.03 90);
+  --warning-foreground: oklch(0.25 0.03 90);
+  --border: oklch(0.885 0.01 262);
+  --input: var(--card);
+  --ring: oklch(0.42 0.24 262);
+  --selected: oklch(0.935 0.045 262);
+  --selected-foreground: oklch(0.42 0.17 262);
+  --card-header: var(--muted);
+  --sidebar: var(--rail);
+  --sidebar-foreground: var(--rail-foreground);
+  --sidebar-border: var(--rail-border);
+  --table-row: var(--card);
+  --table-row-alt: var(--background);
+  --table-header: var(--muted);
+  --footer: var(--muted);
+  --chart-1: var(--c1);
+  --chart-2: var(--c2);
+  --chart-3: var(--c3);
+  --chart-4: var(--c4);
+  --chart-5: var(--c5);
+  --rail: oklch(0.935 0.016 262);
+  --rail-selected: var(--card);
+  --rail-selected-foreground: var(--selected-foreground);
+  --rail-accent: oklch(0.895 0.075 262);
+  --rail-foreground: oklch(0.34 0.01 262);
+  --rail-border: oklch(0.88 0.014 262);
+  --ok: oklch(0.52 0.16 155);
+  --ok-bg: oklch(0.96 0.03 155);
+  --warning: oklch(0.68 0.16 70);
+  --warning-text: oklch(0.50 0.13 70);
+  --warning-bg: oklch(0.97 0.04 85);
+  --bad: var(--destructive);
+  --bad-bg: oklch(0.97 0.02 25);
+  --neutral: oklch(0.62 0.01 262);
+  --scrim: oklch(0.2 0.01 262 / .28);
+  --c1: oklch(0.42 0.24 262);
+  --c2: oklch(0.62 0.15 160);
+  --c3: oklch(0.72 0.15 70);
+  --c4: oklch(0.58 0.16 320);
+  --c5: oklch(0.70 0.02 262);
+  --tile-tint-0: oklch(0.86 0.09 262);
+  --tile-tint-1: oklch(0.88 0.10 160);
+  --tile-tint-2: oklch(0.88 0.10 40);
+  --tile-tint-3: oklch(0.86 0.09 310);
+  --tile-tint-4: oklch(0.90 0.11 90);
+  --tile-tint-5: oklch(0.88 0.09 200);
+  --tile-ink: var(--foreground);
+  --cart: var(--card);
+  --price-chip: transparent;
+  --price-chip-foreground: var(--muted-foreground);
+  --shape-rule-style: solid;
+  --shape-radius-control: 1;
+  --shape-radius-tile: 1;
+  --shape-radius-media: 1;
+  --shape-radius-commit: 1;
+  --shape-radius-field: 1;
+  --shape-radius-chip: 999;
+  --shape-ctl-border: 1px;
+  --shape-commit-shadow: 0 0 0 transparent;
+  --shape-commit-shadow-press: 0 0 0 transparent;
+  --shape-commit-press-y: 0px;
+  --primary-shadow: transparent;
+  --type-w-ui: 500;
+  --type-w-strong: 600;
+  --type-w-commit: 600;
+  --chip: var(--card);
+  --chip-border: var(--border);
+}
+
+html[data-theme="dark"] {
+  --hairline-width: 1px;
+  --background: oklch(0.19 0.018 250);
+  --foreground: oklch(0.93 0.01 250);
+  --card: oklch(0.23 0.018 250);
+  --card-foreground: oklch(0.93 0.01 250);
+  --popover: var(--card);
+  --popover-foreground: var(--card-foreground);
+  --primary: oklch(0.70 0.17 240);
+  --primary-foreground: oklch(0.16 0.02 250);
+  --secondary: var(--muted-foreground);
+  --secondary-foreground: var(--card);
+  --muted: oklch(0.28 0.018 250);
+  --muted-foreground: oklch(0.70 0.015 250);
+  --accent: var(--muted);
+  --accent-foreground: var(--foreground);
+  --destructive: oklch(0.67 0.2 25);
+  --destructive-foreground: oklch(0.15 0.02 25);
+  --success: var(--ok);
+  --success-foreground: oklch(0.15 0.02 160);
+  --info: oklch(0.70 0.13 240);
+  --info-foreground: oklch(0.15 0.02 240);
+  --action: oklch(0.68 0.16 295);
+  --action-foreground: oklch(0.15 0.02 295);
+  --attention: var(--warning);
+  --attention-foreground: oklch(0.18 0.025 90);
+  --warning-foreground: oklch(0.15 0.02 45);
+  --border: oklch(0.33 0.02 250);
+  --input: var(--card);
+  --ring: oklch(0.70 0.17 240);
+  --selected: oklch(0.30 0.06 240);
+  --selected-foreground: oklch(0.82 0.13 240);
+  --card-header: var(--muted);
+  --footer: var(--muted);
+  --sidebar: var(--rail);
+  --sidebar-foreground: var(--rail-foreground);
+  --sidebar-border: var(--rail-border);
+  --table-row: var(--card);
+  --table-row-alt: var(--background);
+  --table-header: var(--muted);
+  --chart-1: var(--c1);
+  --chart-2: var(--c2);
+  --chart-3: var(--c3);
+  --chart-4: var(--c4);
+  --chart-5: var(--c5);
+  --rail: oklch(0.16 0.025 250);
+  --rail-selected: var(--selected);
+  --rail-selected-foreground: var(--selected-foreground);
+  --rail-accent: var(--card);
+  --rail-foreground: oklch(0.72 0.02 250);
+  --rail-border: oklch(0.25 0.02 250);
+  --ok: oklch(0.72 0.15 155);
+  --ok-bg: oklch(0.28 0.04 155);
+  --warning: oklch(0.78 0.15 75);
+  --warning-text: var(--warning);
+  --warning-bg: oklch(0.30 0.05 80);
+  --bad: var(--destructive);
+  --bad-bg: oklch(0.30 0.05 25);
+  --neutral: oklch(0.62 0.01 250);
+  --scrim: oklch(0.05 0.02 250 / .5);
+  --c1: oklch(0.50 0.18 240);
+  --c2: oklch(0.62 0.15 160);
+  --c3: oklch(0.72 0.15 70);
+  --c4: oklch(0.58 0.16 320);
+  --c5: oklch(0.70 0.02 250);
+  --tile-tint-0: oklch(0.32 0.05 250);
+  --tile-tint-1: oklch(0.32 0.05 160);
+  --tile-tint-2: oklch(0.33 0.05 40);
+  --tile-tint-3: oklch(0.32 0.05 300);
+  --tile-tint-4: oklch(0.34 0.05 90);
+  --tile-tint-5: oklch(0.31 0.03 200);
+  --tile-ink: var(--foreground);
+  --cart: var(--card);
+  --price-chip: transparent;
+  --price-chip-foreground: var(--muted-foreground);
+  --shape-rule-style: solid;
+  --shape-radius-control: 1;
+  --shape-radius-tile: 1;
+  --shape-radius-media: 1;
+  --shape-radius-commit: 1;
+  --shape-radius-field: 1;
+  --shape-radius-chip: 999;
+  --shape-ctl-border: 1px;
+  --shape-commit-shadow: 0 0 0 transparent;
+  --shape-commit-shadow-press: 0 0 0 transparent;
+  --shape-commit-press-y: 0px;
+  --primary-shadow: transparent;
+  --type-w-ui: 500;
+  --type-w-strong: 600;
+  --type-w-commit: 600;
+  --chip: var(--card);
+  --chip-border: var(--border);
+}
+
+html[data-theme="ocean"] {
+  --hairline-width: 1px;
+  --background: oklch(0.19 0.03 230);
+  --foreground: oklch(0.94 0.015 200);
+  --card: oklch(0.23 0.03 228);
+  --card-foreground: oklch(0.94 0.015 200);
+  --popover: var(--card);
+  --popover-foreground: var(--card-foreground);
+  --primary: oklch(0.72 0.15 195);
+  --primary-foreground: oklch(0.16 0.04 200);
+  --secondary: var(--muted-foreground);
+  --secondary-foreground: var(--card);
+  --muted: oklch(0.29 0.03 226);
+  --muted-foreground: oklch(0.70 0.03 210);
+  --accent: var(--muted);
+  --accent-foreground: var(--foreground);
+  --destructive: oklch(0.67 0.2 25);
+  --destructive-foreground: oklch(0.15 0.02 25);
+  --success: var(--ok);
+  --success-foreground: oklch(0.15 0.04 165);
+  --info: oklch(0.70 0.13 240);
+  --info-foreground: oklch(0.15 0.04 210);
+  --action: oklch(0.65 0.14 290);
+  --action-foreground: oklch(0.15 0.03 290);
+  --attention: var(--warning);
+  --attention-foreground: oklch(0.18 0.05 85);
+  --warning-foreground: oklch(0.15 0.04 55);
+  --border: oklch(0.34 0.035 225);
+  --input: var(--card);
+  --ring: oklch(0.72 0.15 195);
+  --selected: oklch(0.30 0.06 200);
+  --selected-foreground: oklch(0.84 0.12 195);
+  --card-header: var(--muted);
+  --sidebar: var(--rail);
+  --sidebar-foreground: var(--rail-foreground);
+  --sidebar-border: var(--rail-border);
+  --table-row: var(--card);
+  --table-row-alt: var(--background);
+  --table-header: var(--muted);
+  --footer: var(--muted);
+  --chart-1: var(--c1);
+  --chart-2: var(--c2);
+  --chart-3: var(--c3);
+  --chart-4: var(--c4);
+  --chart-5: var(--c5);
+  --rail: oklch(0.14 0.045 235);
+  --rail-selected: var(--selected);
+  --rail-selected-foreground: var(--selected-foreground);
+  --rail-accent: var(--card);
+  --rail-foreground: oklch(0.75 0.04 200);
+  --rail-border: oklch(0.24 0.04 230);
+  --ok: oklch(0.72 0.15 155);
+  --ok-bg: oklch(0.28 0.04 155);
+  --warning: oklch(0.78 0.15 75);
+  --warning-text: var(--warning);
+  --warning-bg: oklch(0.30 0.05 80);
+  --bad: var(--destructive);
+  --bad-bg: oklch(0.30 0.05 25);
+  --neutral: oklch(0.62 0.01 250);
+  --scrim: oklch(0.05 0.03 230 / .5);
+  --c1: oklch(0.50 0.18 240);
+  --c2: oklch(0.62 0.15 160);
+  --c3: oklch(0.72 0.15 70);
+  --c4: oklch(0.58 0.16 320);
+  --c5: oklch(0.70 0.02 250);
+  --tile-tint-0: oklch(0.32 0.05 250);
+  --tile-tint-1: oklch(0.32 0.05 160);
+  --tile-tint-2: oklch(0.33 0.05 40);
+  --tile-tint-3: oklch(0.32 0.05 300);
+  --tile-tint-4: oklch(0.34 0.05 90);
+  --tile-tint-5: oklch(0.31 0.03 200);
+  --tile-ink: var(--foreground);
+  --cart: var(--card);
+  --price-chip: transparent;
+  --price-chip-foreground: var(--muted-foreground);
+  --shape-rule-style: solid;
+  --shape-radius-control: 1;
+  --shape-radius-tile: 1;
+  --shape-radius-media: 1;
+  --shape-radius-commit: 1;
+  --shape-radius-field: 1;
+  --shape-radius-chip: 999;
+  --shape-ctl-border: 1px;
+  --shape-commit-shadow: 0 0 0 transparent;
+  --shape-commit-shadow-press: 0 0 0 transparent;
+  --shape-commit-press-y: 0px;
+  --primary-shadow: transparent;
+  --type-w-ui: 500;
+  --type-w-strong: 600;
+  --type-w-commit: 600;
+  --chip: var(--card);
+  --chip-border: var(--border);
+}
+
+html[data-theme="sunset"] {
+  --hairline-width: 1px;
+  --background: oklch(0.20 0.035 318);
+  --foreground: oklch(0.95 0.02 50);
+  --card: oklch(0.245 0.04 318);
+  --card-foreground: oklch(0.95 0.02 50);
+  --popover: var(--card);
+  --popover-foreground: var(--card-foreground);
+  --primary: oklch(0.72 0.18 45);
+  --primary-foreground: oklch(0.18 0.05 318);
+  --secondary: var(--muted-foreground);
+  --secondary-foreground: var(--card);
+  --muted: oklch(0.30 0.04 318);
+  --muted-foreground: oklch(0.70 0.04 340);
+  --accent: var(--muted);
+  --accent-foreground: var(--foreground);
+  --destructive: oklch(0.68 0.2 20);
+  --destructive-foreground: oklch(0.15 0.02 25);
+  --success: var(--ok);
+  --success-foreground: oklch(0.18 0.05 155);
+  --info: oklch(0.70 0.13 240);
+  --info-foreground: oklch(0.18 0.05 260);
+  --action: oklch(0.62 0.13 300);
+  --action-foreground: oklch(0.18 0.04 300);
+  --attention: var(--warning);
+  --attention-foreground: oklch(0.20 0.07 70);
+  --warning-foreground: oklch(0.18 0.06 55);
+  --border: oklch(0.35 0.045 322);
+  --input: var(--card);
+  --ring: oklch(0.72 0.18 45);
+  --selected: oklch(0.32 0.07 45);
+  --selected-foreground: oklch(0.84 0.14 45);
+  --card-header: var(--muted);
+  --sidebar: var(--rail);
+  --sidebar-foreground: var(--rail-foreground);
+  --sidebar-border: var(--rail-border);
+  --table-row: var(--card);
+  --table-row-alt: var(--background);
+  --table-header: var(--muted);
+  --footer: var(--muted);
+  --chart-1: var(--c1);
+  --chart-2: var(--c2);
+  --chart-3: var(--c3);
+  --chart-4: var(--c4);
+  --chart-5: var(--c5);
+  --rail: oklch(0.15 0.05 320);
+  --rail-selected: var(--selected);
+  --rail-selected-foreground: var(--selected-foreground);
+  --rail-accent: var(--card);
+  --rail-foreground: oklch(0.78 0.05 40);
+  --rail-border: oklch(0.25 0.05 318);
+  --ok: oklch(0.72 0.15 155);
+  --ok-bg: oklch(0.28 0.04 155);
+  --warning: oklch(0.78 0.15 75);
+  --warning-text: var(--warning);
+  --warning-bg: oklch(0.30 0.05 80);
+  --bad: var(--destructive);
+  --bad-bg: oklch(0.30 0.05 25);
+  --neutral: oklch(0.62 0.01 250);
+  --scrim: oklch(0.05 0.03 318 / .5);
+  --c1: oklch(0.50 0.18 240);
+  --c2: oklch(0.62 0.15 160);
+  --c3: oklch(0.72 0.15 70);
+  --c4: oklch(0.58 0.16 320);
+  --c5: oklch(0.70 0.02 250);
+  --tile-tint-0: oklch(0.32 0.05 250);
+  --tile-tint-1: oklch(0.32 0.05 160);
+  --tile-tint-2: oklch(0.33 0.05 40);
+  --tile-tint-3: oklch(0.32 0.05 300);
+  --tile-tint-4: oklch(0.34 0.05 90);
+  --tile-tint-5: oklch(0.31 0.03 200);
+  --tile-ink: var(--foreground);
+  --cart: var(--card);
+  --price-chip: transparent;
+  --price-chip-foreground: var(--muted-foreground);
+  --shape-rule-style: solid;
+  --shape-radius-control: 1;
+  --shape-radius-tile: 1;
+  --shape-radius-media: 1;
+  --shape-radius-commit: 1;
+  --shape-radius-field: 1;
+  --shape-radius-chip: 999;
+  --shape-ctl-border: 1px;
+  --shape-commit-shadow: 0 0 0 transparent;
+  --shape-commit-shadow-press: 0 0 0 transparent;
+  --shape-commit-press-y: 0px;
+  --primary-shadow: transparent;
+  --type-w-ui: 500;
+  --type-w-strong: 600;
+  --type-w-commit: 600;
+  --chip: var(--card);
+  --chip-border: var(--border);
+}
+
+html[data-theme="monochrome"] {
+  --hairline-width: 1px;
+  --background: oklch(0.15 0 0);
+  --foreground: oklch(0.95 0 0);
+  --card: oklch(0.21 0 0);
+  --card-foreground: oklch(0.95 0 0);
+  --popover: var(--card);
+  --popover-foreground: var(--card-foreground);
+  --primary: oklch(0.92 0 0);
+  --primary-foreground: oklch(0.12 0 0);
+  --secondary: var(--muted-foreground);
+  --secondary-foreground: var(--card);
+  --muted: oklch(0.28 0 0);
+  --muted-foreground: oklch(0.70 0 0);
+  --accent: var(--muted);
+  --accent-foreground: var(--foreground);
+  --destructive: oklch(0.66 0.2 25);
+  --destructive-foreground: oklch(0.15 0.02 25);
+  --success: var(--ok);
+  --success-foreground: oklch(0.12 0 0);
+  --info: oklch(0.70 0.13 240);
+  --info-foreground: oklch(0.12 0 0);
+  --action: oklch(0.66 0 0);
+  --action-foreground: oklch(0.12 0 0);
+  --attention: var(--warning);
+  --attention-foreground: oklch(0.12 0 0);
+  --warning-foreground: oklch(0.12 0 0);
+  --border: oklch(0.36 0 0);
+  --input: var(--card);
+  --ring: oklch(0.92 0 0);
+  --selected: oklch(0.32 0 0);
+  --selected-foreground: oklch(0.95 0 0);
+  --card-header: var(--muted);
+  --sidebar: var(--rail);
+  --sidebar-foreground: var(--rail-foreground);
+  --sidebar-border: var(--rail-border);
+  --table-row: var(--card);
+  --table-row-alt: var(--background);
+  --table-header: var(--muted);
+  --footer: var(--muted);
+  --chart-1: var(--c1);
+  --chart-2: var(--c2);
+  --chart-3: var(--c3);
+  --chart-4: var(--c4);
+  --chart-5: var(--c5);
+  --rail: oklch(0.08 0 0);
+  --rail-selected: var(--selected);
+  --rail-selected-foreground: var(--selected-foreground);
+  --rail-accent: var(--card);
+  --rail-foreground: oklch(0.78 0 0);
+  --rail-border: oklch(0.22 0 0);
+  --ok: oklch(0.72 0.15 155);
+  --ok-bg: oklch(0.28 0.04 155);
+  --warning: oklch(0.78 0.15 75);
+  --warning-text: var(--warning);
+  --warning-bg: oklch(0.30 0.05 80);
+  --bad: var(--destructive);
+  --bad-bg: oklch(0.30 0.05 25);
+  --neutral: oklch(0.62 0.01 250);
+  --scrim: oklch(0 0 0 / .55);
+  --c1: oklch(0.50 0.18 240);
+  --c2: oklch(0.62 0.15 160);
+  --c3: oklch(0.72 0.15 70);
+  --c4: oklch(0.58 0.16 320);
+  --c5: oklch(0.70 0.02 250);
+  --tile-tint-0: oklch(0.32 0.05 250);
+  --tile-tint-1: oklch(0.32 0.05 160);
+  --tile-tint-2: oklch(0.33 0.05 40);
+  --tile-tint-3: oklch(0.32 0.05 300);
+  --tile-tint-4: oklch(0.34 0.05 90);
+  --tile-tint-5: oklch(0.31 0.03 200);
+  --tile-ink: var(--foreground);
+  --cart: var(--card);
+  --price-chip: transparent;
+  --price-chip-foreground: var(--muted-foreground);
+  --shape-rule-style: solid;
+  --shape-radius-control: 1;
+  --shape-radius-tile: 1;
+  --shape-radius-media: 1;
+  --shape-radius-commit: 1;
+  --shape-radius-field: 1;
+  --shape-radius-chip: 999;
+  --shape-ctl-border: 1px;
+  --shape-commit-shadow: 0 0 0 transparent;
+  --shape-commit-shadow-press: 0 0 0 transparent;
+  --shape-commit-press-y: 0px;
+  --primary-shadow: transparent;
+  --type-w-ui: 500;
+  --type-w-strong: 600;
+  --type-w-commit: 600;
+  --chip: var(--card);
+  --chip-border: var(--border);
+}
+
+html[data-theme="paper"] {
+  --hairline-width: 1px;
+  --background: oklch(0.948 0.016 83);
+  --foreground: oklch(0.227 0.016 71);
+  --card: oklch(0.977 0.011 85);
+  --card-foreground: oklch(0.227 0.016 71);
+  --popover: var(--card);
+  --popover-foreground: var(--card-foreground);
+  --primary: oklch(0.227 0.016 71);
+  --primary-foreground: oklch(0.977 0.011 85);
+  --secondary: var(--muted-foreground);
+  --secondary-foreground: var(--card);
+  --muted: oklch(0.918 0.023 85);
+  --muted-foreground: oklch(0.47 0.03 78);
+  --accent: oklch(0.905 0.028 84);
+  --accent-foreground: var(--foreground);
+  --destructive: oklch(0.50 0.15 34);
+  --destructive-foreground: oklch(0.99 0.01 34);
+  --success: var(--ok);
+  --success-foreground: oklch(0.98 0.01 160);
+  --info: oklch(0.48 0.12 262);
+  --info-foreground: oklch(0.98 0.01 240);
+  --action: oklch(0.55 0.18 295);
+  --action-foreground: oklch(0.98 0.01 295);
+  --attention: var(--warning);
+  --attention-foreground: oklch(0.25 0.03 90);
+  --warning-foreground: oklch(0.25 0.03 90);
+  --border: oklch(0.852 0.031 84);
+  --input: var(--card);
+  --ring: oklch(0.227 0.016 71);
+  --selected: oklch(0.885 0.035 84);
+  --selected-foreground: oklch(0.227 0.016 71);
+  --card-header: var(--muted);
+  --sidebar: var(--rail);
+  --sidebar-foreground: var(--rail-foreground);
+  --sidebar-border: var(--rail-border);
+  --table-row: var(--card);
+  --table-row-alt: var(--background);
+  --table-header: var(--muted);
+  --footer: var(--muted);
+  --chart-1: var(--c1);
+  --chart-2: var(--c2);
+  --chart-3: var(--c3);
+  --chart-4: var(--c4);
+  --chart-5: var(--c5);
+  --rail: oklch(0.912 0.023 85);
+  --rail-selected: var(--card);
+  --rail-selected-foreground: var(--selected-foreground);
+  --rail-accent: oklch(0.87 0.035 84);
+  --rail-foreground: oklch(0.437 0.027 78);
+  --rail-border: oklch(0.852 0.031 84);
+  --ok: oklch(0.50 0.16 155);
+  --ok-bg: oklch(0.96 0.03 155);
+  --warning: oklch(0.68 0.16 70);
+  --warning-text: oklch(0.50 0.13 70);
+  --warning-bg: oklch(0.97 0.04 85);
+  --bad: var(--destructive);
+  --bad-bg: oklch(0.96 0.02 34);
+  --neutral: oklch(0.62 0.02 84);
+  --scrim: oklch(0.25 0.02 70 / .3);
+  --c1: oklch(0.52 0.12 45);
+  --c2: oklch(0.55 0.10 150);
+  --c3: oklch(0.70 0.13 80);
+  --c4: oklch(0.50 0.10 320);
+  --c5: oklch(0.65 0.03 84);
+  --tile-tint-0: oklch(0.90 0.05 85);
+  --tile-tint-1: oklch(0.89 0.05 60);
+  --tile-tint-2: oklch(0.90 0.05 130);
+  --tile-tint-3: oklch(0.89 0.04 300);
+  --tile-tint-4: oklch(0.90 0.06 40);
+  --tile-tint-5: oklch(0.90 0.04 200);
+  --tile-ink: var(--foreground);
+  --cart: oklch(0.994 0.007 89);
+  --price-chip: transparent;
+  --price-chip-foreground: var(--muted-foreground);
+  --shape-rule-style: dotted;
+  --shape-radius-control: 0.5;
+  --shape-radius-tile: 0.5;
+  --shape-radius-media: 999;
+  --shape-radius-commit: 0.5;
+  --shape-radius-field: 0.5;
+  --shape-radius-chip: 0.5;
+  --shape-ctl-border: 1px;
+  --shape-commit-shadow: 0 0 0 transparent;
+  --shape-commit-shadow-press: 0 0 0 transparent;
+  --shape-commit-press-y: 0px;
+  --primary-shadow: transparent;
+  --type-w-ui: 500;
+  --type-w-strong: 600;
+  --type-w-commit: 500;
+  --chip: var(--card);
+  --chip-border: var(--foreground);
+}
+
+html[data-theme="warm"] {
+  --hairline-width: 1px;
+  --background: oklch(0.965 0.007 81);
+  --foreground: oklch(0.266 0.012 56);
+  --card: oklch(0.995 0.005 78);
+  --card-foreground: oklch(0.266 0.012 56);
+  --popover: var(--card);
+  --popover-foreground: var(--card-foreground);
+  --primary: oklch(0.484 0.092 41);
+  --primary-foreground: oklch(0.983 0.010 58);
+  --secondary: var(--muted-foreground);
+  --secondary-foreground: var(--card);
+  --muted: oklch(0.937 0.013 75);
+  --muted-foreground: oklch(0.47 0.02 65);
+  --accent: oklch(0.95 0.025 41);
+  --accent-foreground: var(--foreground);
+  --destructive: oklch(0.52 0.135 35);
+  --destructive-foreground: oklch(0.99 0.01 35);
+  --success: var(--ok);
+  --success-foreground: oklch(0.98 0.01 160);
+  --info: oklch(0.48 0.12 262);
+  --info-foreground: oklch(0.98 0.01 240);
+  --action: oklch(0.55 0.18 295);
+  --action-foreground: oklch(0.98 0.01 295);
+  --attention: var(--warning);
+  --attention-foreground: oklch(0.25 0.03 90);
+  --warning-foreground: oklch(0.25 0.03 90);
+  --border: oklch(0.895 0.017 76);
+  --input: var(--card);
+  --ring: oklch(0.484 0.092 41);
+  --selected: oklch(0.92 0.04 41);
+  --selected-foreground: oklch(0.42 0.10 41);
+  --card-header: var(--muted);
+  --sidebar: var(--rail);
+  --sidebar-foreground: var(--rail-foreground);
+  --sidebar-border: var(--rail-border);
+  --table-row: var(--card);
+  --table-row-alt: var(--background);
+  --table-header: var(--muted);
+  --footer: var(--muted);
+  --chart-1: var(--c1);
+  --chart-2: var(--c2);
+  --chart-3: var(--c3);
+  --chart-4: var(--c4);
+  --chart-5: var(--c5);
+  --rail: oklch(0.925 0.015 77);
+  --rail-selected: var(--card);
+  --rail-selected-foreground: var(--selected-foreground);
+  --rail-accent: oklch(0.88 0.03 41);
+  --rail-foreground: oklch(0.456 0.021 67);
+  --rail-border: oklch(0.895 0.017 76);
+  --ok: oklch(0.50 0.16 155);
+  --ok-bg: oklch(0.96 0.03 155);
+  --warning: oklch(0.68 0.16 70);
+  --warning-text: oklch(0.50 0.13 70);
+  --warning-bg: oklch(0.97 0.04 85);
+  --bad: var(--destructive);
+  --bad-bg: oklch(0.96 0.02 35);
+  --neutral: oklch(0.62 0.015 76);
+  --scrim: oklch(0.25 0.02 50 / .3);
+  --c1: oklch(0.484 0.092 41);
+  --c2: oklch(0.60 0.07 131);
+  --c3: oklch(0.72 0.12 80);
+  --c4: oklch(0.55 0.12 330);
+  --c5: oklch(0.70 0.02 76);
+  --tile-tint-0: oklch(0.88 0.07 47);
+  --tile-tint-1: oklch(0.88 0.06 131);
+  --tile-tint-2: oklch(0.88 0.06 76);
+  --tile-tint-3: oklch(0.87 0.06 330);
+  --tile-tint-4: oklch(0.90 0.09 85);
+  --tile-tint-5: oklch(0.88 0.05 200);
+  --tile-ink: oklch(0.42 0.10 41);
+  --cart: var(--card);
+  --price-chip: transparent;
+  --price-chip-foreground: var(--muted-foreground);
+  --shape-rule-style: solid;
+  --shape-radius-control: 1.5;
+  --shape-radius-tile: 1.5;
+  --shape-radius-media: 1;
+  --shape-radius-commit: 999;
+  --shape-radius-field: 1.5;
+  --shape-radius-chip: 999;
+  --shape-ctl-border: 1px;
+  --shape-commit-shadow: 0 0 0 transparent;
+  --shape-commit-shadow-press: 0 0 0 transparent;
+  --shape-commit-press-y: 0px;
+  --primary-shadow: transparent;
+  --type-w-ui: 500;
+  --type-w-strong: 600;
+  --type-w-commit: 600;
+  --chip: var(--card);
+  --chip-border: var(--border);
+}
+
+html[data-theme="bold"] {
+  --hairline-width: 1px;
+  --background: oklch(0.985 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: var(--card);
+  --popover-foreground: var(--card-foreground);
+  --primary: oklch(0.145 0 0);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: var(--muted-foreground);
+  --secondary-foreground: var(--card);
+  --muted: oklch(0.958 0 0);
+  --muted-foreground: oklch(0.45 0 0);
+  --accent: oklch(0.97 0.07 123);
+  --accent-foreground: var(--foreground);
+  --destructive: oklch(0.52 0.22 11);
+  --destructive-foreground: oklch(0.99 0.01 11);
+  --success: var(--ok);
+  --success-foreground: oklch(0.98 0.01 160);
+  --info: oklch(0.48 0.12 262);
+  --info-foreground: oklch(0.98 0.01 240);
+  --action: oklch(0.55 0.18 295);
+  --action-foreground: oklch(0.98 0.01 295);
+  --attention: var(--warning);
+  --attention-foreground: oklch(0.25 0.03 90);
+  --warning-foreground: oklch(0.25 0.03 90);
+  --border: oklch(0.925 0 0);
+  --input: var(--card);
+  --ring: oklch(0.145 0 0);
+  --selected: oklch(0.95 0.12 123);
+  --selected-foreground: oklch(0.145 0 0);
+  --card-header: var(--muted);
+  --sidebar: var(--rail);
+  --sidebar-foreground: var(--rail-foreground);
+  --sidebar-border: var(--rail-border);
+  --table-row: var(--card);
+  --table-row-alt: var(--background);
+  --table-header: var(--muted);
+  --footer: var(--muted);
+  --chart-1: var(--c1);
+  --chart-2: var(--c2);
+  --chart-3: var(--c3);
+  --chart-4: var(--c4);
+  --chart-5: var(--c5);
+  --rail: oklch(0.145 0 0);
+  --rail-selected: oklch(0.908 0.201 123);
+  --rail-selected-foreground: oklch(0.145 0 0);
+  --rail-accent: oklch(0.25 0 0);
+  --rail-foreground: oklch(0.836 0 0);
+  --rail-border: oklch(0.252 0 0);
+  --ok: oklch(0.52 0.16 155);
+  --ok-bg: oklch(0.96 0.03 155);
+  --warning: oklch(0.68 0.16 70);
+  --warning-text: oklch(0.50 0.13 70);
+  --warning-bg: oklch(0.97 0.04 85);
+  --bad: var(--destructive);
+  --bad-bg: oklch(0.97 0.02 11);
+  --neutral: oklch(0.62 0 0);
+  --scrim: oklch(0 0 0 / .35);
+  --c1: oklch(0.145 0 0);
+  --c2: oklch(0.82 0.18 123);
+  --c3: oklch(0.72 0.15 70);
+  --c4: oklch(0.58 0.16 320);
+  --c5: oklch(0.70 0 0);
+  --tile-tint-0: oklch(0.92 0.14 123);
+  --tile-tint-1: oklch(0.93 0 0);
+  --tile-tint-2: oklch(0.90 0.12 123);
+  --tile-tint-3: oklch(0.90 0 0);
+  --tile-tint-4: oklch(0.94 0.10 123);
+  --tile-tint-5: oklch(0.87 0 0);
+  --tile-ink: var(--foreground);
+  --cart: var(--background);
+  --price-chip: oklch(0.908 0.201 123);
+  --price-chip-foreground: oklch(0.145 0 0);
+  --shape-rule-style: solid;
+  --shape-radius-control: 2.25;
+  --shape-radius-tile: 2.5;
+  --shape-radius-media: 1.75;
+  --shape-radius-commit: 999;
+  --shape-radius-field: 999;
+  --shape-radius-chip: 999;
+  --shape-ctl-border: 0px;
+  --shape-commit-shadow: 0 0 0 transparent;
+  --shape-commit-shadow-press: 0 0 0 transparent;
+  --shape-commit-press-y: 0px;
+  --primary-shadow: transparent;
+  --type-w-ui: 500;
+  --type-w-strong: 700;
+  --type-w-commit: 700;
+  --chip: var(--muted);
+  --chip-border: transparent;
+}
+
+html[data-theme="market"] {
+  --hairline-width: 1px;
+  --background: oklch(0.991 0.010 87);
+  --foreground: oklch(0.232 0.038 290);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.232 0.038 290);
+  --popover: var(--card);
+  --popover-foreground: var(--card-foreground);
+  --primary: oklch(0.686 0.205 34);
+  --primary-foreground: oklch(0.99 0.01 34);
+  --secondary: var(--muted-foreground);
+  --secondary-foreground: var(--card);
+  --muted: oklch(0.959 0.016 86);
+  --muted-foreground: oklch(0.47 0.034 296);
+  --accent: oklch(0.96 0.035 34);
+  --accent-foreground: var(--foreground);
+  --destructive: oklch(0.52 0.21 5);
+  --destructive-foreground: oklch(0.99 0.01 5);
+  --success: var(--ok);
+  --success-foreground: oklch(0.98 0.01 160);
+  --info: oklch(0.48 0.12 262);
+  --info-foreground: oklch(0.98 0.01 240);
+  --action: oklch(0.55 0.18 295);
+  --action-foreground: oklch(0.98 0.01 295);
+  --attention: var(--warning);
+  --attention-foreground: oklch(0.25 0.03 90);
+  --warning-foreground: oklch(0.25 0.03 90);
+  --border: oklch(0.926 0.017 85);
+  --input: var(--card);
+  --ring: oklch(0.232 0.038 290);
+  --selected: oklch(0.93 0.06 34);
+  --selected-foreground: oklch(0.50 0.17 34);
+  --card-header: var(--muted);
+  --sidebar: var(--rail);
+  --sidebar-foreground: var(--rail-foreground);
+  --sidebar-border: var(--rail-border);
+  --table-row: var(--card);
+  --table-row-alt: var(--background);
+  --table-header: var(--muted);
+  --footer: var(--muted);
+  --chart-1: var(--c1);
+  --chart-2: var(--c2);
+  --chart-3: var(--c3);
+  --chart-4: var(--c4);
+  --chart-5: var(--c5);
+  --rail: oklch(0.232 0.038 290);
+  --rail-selected: oklch(0.686 0.205 34);
+  --rail-selected-foreground: oklch(0.232 0.038 290);
+  --rail-accent: oklch(0.30 0.045 290);
+  --rail-foreground: oklch(0.881 0.023 297);
+  --rail-border: oklch(0.298 0.040 290);
+  --ok: oklch(0.52 0.16 155);
+  --ok-bg: oklch(0.96 0.03 155);
+  --warning: oklch(0.68 0.16 70);
+  --warning-text: oklch(0.50 0.13 70);
+  --warning-bg: oklch(0.97 0.04 85);
+  --bad: var(--destructive);
+  --bad-bg: oklch(0.97 0.02 5);
+  --neutral: oklch(0.62 0.02 290);
+  --scrim: oklch(0.23 0.04 290 / .35);
+  --c1: oklch(0.52 0.20 34);
+  --c2: oklch(0.62 0.15 160);
+  --c3: oklch(0.80 0.15 98);
+  --c4: oklch(0.58 0.16 300);
+  --c5: oklch(0.70 0.02 290);
+  --tile-tint-0: oklch(0.90 0.09 61);
+  --tile-tint-1: oklch(0.93 0.12 98);
+  --tile-tint-2: oklch(0.90 0.09 151);
+  --tile-tint-3: oklch(0.89 0.09 301);
+  --tile-tint-4: oklch(0.90 0.10 34);
+  --tile-tint-5: oklch(0.90 0.08 220);
+  --tile-ink: var(--foreground);
+  --cart: var(--card);
+  --price-chip: transparent;
+  --price-chip-foreground: var(--muted-foreground);
+  --shape-rule-style: solid;
+  --shape-radius-control: 2;
+  --shape-radius-tile: 2;
+  --shape-radius-media: 1.5;
+  --shape-radius-commit: 999;
+  --shape-radius-field: 999;
+  --shape-radius-chip: 999;
+  --shape-ctl-border: 2px;
+  --shape-commit-shadow: 0 4px 0 var(--primary-shadow);
+  --shape-commit-shadow-press: 0 1px 0 var(--primary-shadow);
+  --shape-commit-press-y: 3px;
+  --primary-shadow: oklch(0.564 0.18 34);
+  --type-w-ui: 600;
+  --type-w-strong: 800;
+  --type-w-commit: 800;
+  --chip: var(--card);
+  --chip-border: var(--foreground);
+}
+</style><style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{--spacing:4px;--text-base:14px;--text-xs:12px;--text-2xs:11px;--text-amt:40px;--radius:8px;--spacing-ctl:44px;--spacing-row:44px;--spacing-tile:64px;
+ --radius-control:calc(var(--radius)*var(--shape-radius-control));--radius-tile:calc(var(--radius)*var(--shape-radius-tile));
+ --radius-commit:calc(var(--radius)*var(--shape-radius-commit));--radius-field:calc(var(--radius)*var(--shape-radius-field));
+ --radius-chip:calc(var(--radius)*var(--shape-radius-chip));--w-ui:var(--type-w-ui);--w-strong:var(--type-w-strong);--w-commit:var(--type-w-commit);
+ font-size:var(--text-base);background:var(--background)}
+body{background:var(--background);color:var(--foreground);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-variant-numeric:tabular-nums;line-height:1.35;-webkit-font-smoothing:antialiased}
+.i{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.i.sm{width:16px;height:16px}.i.lg{width:22px;height:22px}
+.muted{color:var(--muted-foreground)}.strong{font-weight:var(--w-strong)}.xs{font-size:var(--text-xs)}
+.amt{font-variant-numeric:tabular-nums}
+.tone-ok{color:var(--ok)}.tone-bad{color:var(--bad)}.tone-warn{color:var(--warning-text)}.tone-info{color:var(--info)}.tone-muted{color:var(--muted-foreground)}
+/* Button (packages/components/src/button): default 44 / lg 56 */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:var(--spacing-ctl);padding:0 16px;border-radius:var(--radius-control);font-weight:var(--w-ui);border:1px solid transparent;white-space:nowrap;color:var(--foreground)}
+.btn.primary{background:var(--primary);color:var(--primary-foreground);border-color:transparent}
+.btn.outline{background:var(--card);border-color:var(--border)}
+.btn.ghost{background:transparent;color:var(--muted-foreground)}
+.btn.destructive{background:var(--destructive);color:var(--destructive-foreground)}
+.btn.lg{height:56px;border-radius:var(--radius-commit);font-weight:var(--w-commit);font-size:15px;box-shadow:var(--shape-commit-shadow)}
+.btn.sm{height:36px;padding:0 12px}
+.btn[disabled],.btn.disabled{background:var(--muted);color:var(--muted-foreground);border-color:transparent;box-shadow:none}
+.btn.block{width:100%}
+/* FieldBox / Input */
+.field{display:flex;align-items:center;gap:8px;min-height:var(--spacing-ctl);padding:0 12px;border:var(--shape-ctl-border) solid var(--chip-border);background:var(--card);border-radius:var(--radius-field);color:var(--foreground)}
+.field.open{border:1px solid var(--ring);box-shadow:0 0 0 1px var(--ring)}
+.field.invalid{border:1px solid var(--bad)}
+.field input{all:unset;flex:1;min-width:0;font:inherit;color:inherit}.field input::placeholder{color:var(--muted-foreground)}
+.field .ph{color:var(--muted-foreground)}
+.field .cur{color:var(--muted-foreground)}
+/* the field's placeholder span is .ph, which the pane header also is: keep the field's own */
+.pane .field .ph{display:inline;padding:0;border:0}
+/* Tile */
+.tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:var(--spacing-tile);padding:8px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-tile);text-align:center}
+.tile.selected{border-color:var(--primary);background:var(--muted)}
+.tile .t{font-weight:var(--w-ui)}
+.tile .h{font-size:var(--text-xs);color:var(--muted-foreground)}
+.tile.dashed{border-style:dashed;background:transparent}
+/* Chip */
+.chip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:var(--radius-chip);border:var(--shape-ctl-border) solid var(--chip-border);background:var(--chip);color:var(--foreground);white-space:nowrap}
+.chip.on{background:var(--selected);color:var(--selected-foreground);border-color:transparent}
+.chip.sm{height:28px;padding:0 10px;font-size:var(--text-xs)}
+/* Badge tinted */
+.badge{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;border-radius:999px;font-size:var(--text-xs);font-weight:var(--w-ui)}
+.badge.ok{background:color-mix(in oklch,var(--ok) 15%,transparent);color:var(--ok)}
+.badge.bad{background:color-mix(in oklch,var(--bad) 15%,transparent);color:var(--bad)}
+.badge.warn{background:color-mix(in oklch,var(--warning) 15%,transparent);color:var(--warning-text)}
+.badge.muted{background:color-mix(in oklch,var(--neutral) 15%,transparent);color:var(--muted-foreground)}
+.badge.info{background:color-mix(in oklch,var(--info) 15%,transparent);color:var(--info)}
+/* Notice band */
+.notice{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border:1px solid;border-radius:var(--radius)}
+.notice.warn{border-color:color-mix(in oklch,var(--warning) 45%,transparent);background:var(--warning-bg)}
+.notice.info{border-color:color-mix(in oklch,var(--info) 45%,transparent);background:var(--accent)}
+.notice.bad{border-color:color-mix(in oklch,var(--bad) 45%,transparent);background:var(--bad-bg)}
+.notice b{font-weight:var(--w-ui)}
+.notice .d{color:var(--muted-foreground);font-size:var(--text-xs)}
+/* MenuRow */
+.row{display:flex;align-items:center;gap:8px;min-height:var(--spacing-row);padding:6px 10px;border-radius:calc(var(--radius) - 2px)}
+.row .slot{width:20px;display:flex;justify-content:center;color:var(--primary)}
+.row .lbl{flex:1;min-width:0}
+.row .v{color:var(--muted-foreground)}
+.row.on{background:var(--accent)}
+.row.dim{opacity:.55}
+/* ToneDisc */
+.disc{width:36px;height:36px;border-radius:999px;display:flex;align-items:center;justify-content:center;flex:none;background:var(--muted);color:var(--foreground)}
+.disc.ok{background:var(--ok-bg);color:var(--ok)}.disc.bad{background:var(--bad-bg);color:var(--bad)}.disc.warn{background:var(--warning-bg);color:var(--warning-text)}.disc.info{background:var(--accent);color:var(--info)}
+.av{width:32px;height:32px;border-radius:999px;background:var(--selected);color:var(--selected-foreground);display:flex;align-items:center;justify-content:center;font-size:var(--text-xs);font-weight:var(--w-strong);flex:none}
+/* PropertyList / ladder rows */
+.kv{display:flex;justify-content:space-between;gap:12px;min-height:36px;align-items:center;padding:0 2px}
+.kv .k{color:var(--muted-foreground)}.kv .v{font-weight:var(--w-ui)}
+.kv.tot{border-top:1px solid var(--border);padding-top:8px;margin-top:4px}.kv.tot .k{color:var(--foreground)}.kv.tot .v{font-weight:var(--w-strong)}
+.kv small{color:var(--muted-foreground);font-size:var(--text-xs);margin-left:4px}
+.hr{height:1px;background:var(--border)}
+/* The stage: rail + two columns, 1280 × 800 */
+.stage{position:relative;width:1280px;height:800px;overflow:hidden;background:var(--background);display:flex;border:1px solid var(--border);border-radius:12px}
+.rail{width:72px;background:var(--rail);border-right:1px solid var(--rail-border);display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:4px;color:var(--rail-foreground)}
+.rail a{display:flex;flex-direction:column;align-items:center;gap:3px;width:60px;padding:8px 0;border-radius:var(--radius);font-size:var(--text-2xs);font-weight:var(--w-ui);color:inherit;text-decoration:none}
+.rail a.on{background:var(--rail-selected);color:var(--rail-selected-foreground)}
+.rail .mark{width:36px;height:36px;border-radius:10px;background:var(--primary);color:var(--primary-foreground);display:flex;align-items:center;justify-content:center;font-weight:700;margin-bottom:8px}
+.rail .spacer{flex:1}
+.main{flex:1;display:grid;grid-template-columns:1fr 400px;min-width:0}
+.prods{padding:16px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.search{height:44px;border:var(--shape-ctl-border) solid var(--chip-border);border-radius:var(--radius-field);background:var(--card);display:flex;align-items:center;gap:10px;padding:0 12px;color:var(--muted-foreground)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.ptile{height:120px;border:1px solid var(--border);border-radius:var(--radius-tile);background:var(--card);padding:10px;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;font-weight:var(--w-ui)}
+.ptile span{color:var(--muted-foreground);font-weight:400}
+.ptile.tint0{background:var(--tile-tint-0)}.ptile.tint1{background:var(--tile-tint-1)}.ptile.tint2{background:var(--tile-tint-2)}.ptile.tint3{background:var(--tile-tint-3)}.ptile.tint4{background:var(--tile-tint-4)}.ptile.tint5{background:var(--tile-tint-5)}
+.cart{background:var(--cart);border-left:1px solid var(--border);display:flex;flex-direction:column;min-width:0}
+.bar{height:48px;display:flex;align-items:center;gap:10px;padding:0 12px;border-bottom:1px solid var(--border)}
+.bar .place{flex:1;min-width:0;font-weight:var(--w-ui)}.bar .place small{display:block;color:var(--muted-foreground);font-size:var(--text-xs);font-weight:400}
+.pill{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:999px;font-size:var(--text-xs);font-weight:var(--w-ui)}
+.pill.warn{background:var(--warning-bg);color:var(--warning-text)}.pill.muted{background:var(--muted);color:var(--muted-foreground)}.pill.bad{background:var(--bad-bg);color:var(--bad)}
+.cartbody{flex:1;display:flex;flex-direction:column;padding:16px;gap:12px}
+.cart .empty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted-foreground)}
+.cart .foot{padding:12px 16px;border-top:1px solid var(--border)}
+.scrim{position:absolute;inset:0;background:var(--scrim)}
+/* Right-side pane (Dialog right): h-full border-l bg-card */
+.pane{position:absolute;top:0;right:0;bottom:0;width:420px;background:var(--card);border-left:1px solid var(--border);display:flex;flex-direction:column}
+.pane .ph{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.pane .ph h1{font-size:17px;font-weight:var(--w-strong);line-height:1.2}
+.pane .ph .sub{color:var(--muted-foreground);font-size:var(--text-xs);margin-top:2px}
+.pane .ph .grow{flex:1;min-width:0}
+.ibtn{width:36px;height:36px;border-radius:var(--radius-control);display:flex;align-items:center;justify-content:center;color:var(--muted-foreground);flex:none}
+.pane .pb{flex:1;overflow:hidden;padding:16px;display:flex;flex-direction:column;gap:14px}
+.pane .pf{padding:12px 16px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+.pane .pf .why{display:flex;align-items:center;gap:6px;color:var(--muted-foreground);font-size:var(--text-xs);justify-content:center}
+.sbadge{padding:8px 16px 0}
+/* Boards */
+main{max-width:1280px;margin:0 auto;padding:0 0 48px}
+.board h2{font-size:17px;font-weight:var(--w-strong);margin:28px 0 4px}
+.board p.lead{color:var(--muted-foreground);margin-bottom:12px}
+/* three 420 px frames and two 10 px gaps fill the 1280 board exactly */
+.frames{display:grid;grid-template-columns:repeat(3,420px);gap:24px 10px;align-items:start}
+.frame{display:flex;flex-direction:column;gap:6px}
+.flabel{font-weight:var(--w-ui)}.flabel span{color:var(--muted-foreground);font-weight:400}
+.fwrap{position:relative;height:720px;width:420px;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--card)}
+.fwrap .pane{position:absolute;inset:0;width:auto;border:0}
+.fwrap .cartcol{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--cart)}
+/* Phone: the register's cart column is the screen; the family's panes are full width */
+.phone-board{display:none}
+@media (max-width:767px){
+ main{max-width:390px;padding:0}
+ .desk{display:none}
+ .phone-board{display:flex;flex-direction:column;gap:14px;padding:10px}
+ .pframe{display:flex;flex-direction:column;gap:6px}
+ .pwrap{position:relative;width:370px;height:700px;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--card)}
+ .pwrap .pane{position:absolute;inset:0;width:auto;border:0}
+ .pwrap .cartcol{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--cart)}
+ .pwrap .rail{display:none}.pwrap .stage{width:auto;height:100%;border:0;border-radius:0}
+ .pwrap .cartbody{flex:1}.pwrap .tabs{margin-top:auto}
+ .tabs{height:52px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr);align-items:center;background:var(--rail);color:var(--rail-foreground);font-size:var(--text-2xs);font-weight:var(--w-ui)}
+ .tabs a{display:flex;flex-direction:column;align-items:center;gap:2px;color:inherit;text-decoration:none}.tabs a.on{color:var(--rail-selected-foreground)}
+}
+</style><style>
+.figs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fig{padding:12px;border:1px solid var(--border);border-radius:var(--radius-tile);background:var(--card)}
+.fig .k{color:var(--muted-foreground);font-size:var(--text-xs)}.fig .v{font-size:22px;font-weight:var(--w-strong);margin-top:2px}
+.money{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.money .tile{min-height:72px}
+.door{border:1px solid var(--border);border-radius:var(--radius-tile);background:var(--card);padding:12px;display:flex;flex-direction:column;gap:8px}
+.door .top{display:flex;align-items:center;gap:10px}
+.door .verb{color:var(--primary);font-weight:var(--w-ui);padding-top:8px;border-top:1px solid var(--border);display:flex;align-items:center;gap:4px}
+.band{font-size:var(--text-xs);color:var(--muted-foreground);font-weight:var(--w-ui);text-transform:none;margin:6px 0 2px}
+.pickrow{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-tile);background:var(--card)}
+.pickrow .dot{width:10px;height:10px;border-radius:999px;flex:none}
+.dot.ok{background:var(--ok)}.dot.muted{background:var(--neutral)}.dot.warn{background:var(--warning)}
+.pickrow .n{font-weight:var(--w-ui)}.pickrow .s{color:var(--muted-foreground);font-size:var(--text-xs)}
+.card{border:1px solid var(--border);border-radius:var(--radius-tile);background:var(--card);padding:16px;display:flex;flex-direction:column;gap:12px}
+.card h3{font-size:17px;font-weight:var(--w-strong)}
+.lbl{font-size:var(--text-xs);color:var(--muted-foreground);font-weight:var(--w-ui);margin-bottom:6px;display:block}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.bigfield{min-height:56px;font-size:22px;font-weight:var(--w-strong)}
+.bigfield .cur{font-size:18px;font-weight:400}
+.q{font-size:17px;font-weight:var(--w-strong)}
+.fold{border:1px solid var(--border);border-radius:var(--radius-tile);overflow:hidden}
+.fold summary{list-style:none;display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;font-weight:var(--w-ui);cursor:default}
+.fold summary .grow{flex:1}.fold summary::-webkit-details-marker{display:none}
+.fold .bd{padding:4px 12px 10px;border-top:1px solid var(--border)}
+.diff{display:flex;align-items:center;justify-content:space-between;min-height:48px;padding:0 12px;border-radius:var(--radius-tile);font-weight:var(--w-strong);font-size:17px}
+.diff.bad{background:var(--bad-bg);color:var(--bad)}.diff.ok{background:var(--ok-bg);color:var(--ok)}.diff.warn{background:var(--warning-bg);color:var(--warning-text)}
+.diff .l{display:flex;align-items:center;gap:8px}
+textarea.note{width:100%;min-height:64px;border:var(--shape-ctl-border) solid var(--chip-border);background:var(--card);border-radius:var(--radius-field);padding:10px 12px;font:inherit;color:inherit;resize:none}
+.split{display:flex;justify-content:space-between;gap:8px;color:var(--muted-foreground)}.split b{color:var(--foreground);font-weight:var(--w-ui)}.split .pair{white-space:nowrap}
+.tiles3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tiles3 .fig .v{font-size:18px}
+.done{display:flex;align-items:center;gap:12px}
+.done h2{font-size:17px;font-weight:var(--w-strong)}.done p{color:var(--muted-foreground);font-size:var(--text-xs)}
+.textbtn{display:inline-flex;align-items:center;gap:6px;color:var(--primary);font-weight:var(--w-ui);min-height:36px}
+/* Closures room */
+.room{flex:1;display:grid;grid-template-columns:1fr 420px;min-width:0}
+.list{padding:16px 20px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.list h1{font-size:20px;font-weight:var(--w-strong)}
+.scope{display:flex;gap:8px}
+.thead,.trow{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr 1fr;gap:12px;align-items:center;padding:0 12px;min-height:44px}
+.thead{color:var(--muted-foreground);font-size:var(--text-xs);font-weight:var(--w-ui);min-height:32px}
+.trow{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-tile);min-height:56px}
+.trow.on{border-color:var(--primary);background:var(--muted)}
+.trow .who{display:flex;flex-direction:column}.trow .who small{color:var(--muted-foreground);font-size:var(--text-xs)}
+.trow .r{text-align:right}
+.day{color:var(--muted-foreground);font-size:var(--text-xs);font-weight:var(--w-ui);margin-top:6px}
+.room .pane{position:relative;inset:auto;width:auto;height:100%}
+@media (max-width:767px){.room{display:block}.list{padding:12px}.thead{display:none}.trow{grid-template-columns:1fr auto;}.trow .r.hide{display:none}}
+
+.amtbig{font-size:var(--text-amt);line-height:1.1;font-weight:700;display:flex;align-items:baseline;gap:6px}
+.amtbig .cur{font-size:22px;color:var(--muted-foreground);font-weight:400}
+.amtbig.placeholder{color:var(--muted-foreground);font-weight:400}
+/* Round 2: an EDITABLE amount keeps the FieldBox boundary (.field: --chip-border at --shape-ctl-border,
+   --card, --radius-field; .open = the focus ring) with the 40 px numerals inside; a READ-ONLY figure
+   (the panel's In the drawer, the variance, the stat strip) stays unframed. */
+.field.hero{min-height:64px;padding:0 14px}
+.field.hero .amtbig{padding:0}
+.amtbig .caret{width:2px;height:36px;background:var(--ring);align-self:center;margin-left:2px}
+.amtbig.placeholder .caret{margin:0 2px 0 0}
+.amtline{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+/* Keypad (packages/components/src/keypad): key = bg-muted rounded-lg, text-xl semibold; rows gap-2 */
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.key{height:56px;display:flex;align-items:center;justify-content:center;background:var(--muted);border-radius:var(--radius);font-size:20px;font-weight:600}
+.key .i{width:22px;height:22px}
+.verbs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.verbs .btn{height:56px;flex-direction:column;gap:2px;padding:0 8px}
+.figlead{display:flex;flex-direction:column;gap:4px}
+.figlead .k{color:var(--muted-foreground)}
+.figlead .line{color:var(--muted-foreground)}.figlead .line b{color:var(--foreground);font-weight:var(--w-ui)}
+.joined{border:1px solid var(--border);border-radius:var(--radius-tile);overflow:hidden}
+.joined .fold{border:0;border-radius:0}
+.joined .diff{border-radius:0}
+.lblrow{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px}
+.lblrow .lbl{margin:0}
+.count .pb{gap:6px;padding:8px 16px}
+.count .keypad{gap:6px}
+.count .lblrow{align-items:center}.count .lblrow>*{white-space:nowrap}.count .lblrow .textbtn{min-height:36px;margin:-9px 0}
+.diff.muted{background:var(--muted);color:var(--muted-foreground)}
+.pf .why.warn{color:var(--warning-text)}
+.pay .pb{gap:12px}
+.count .pb>*{flex-shrink:0}
+.count textarea.note{height:60px;min-height:60px;padding:10px 12px}
+/* Corrective pass: cashier-facing metadata, labels and validation lines at --text-base (14 px), never 12 */
+.pane .ph .sub,.pane .pf .why,.pane .xs,.card .xs,.cartbody .xs,.pane .lbl,.card .lbl,.pane .kv small,.card .kv small,
+.pane .fig .k,.pane .notice .d,.scrollcue,.pane .fold summary small,.bar .place small,.pickrow .s{font-size:var(--text-base)}
+.card .why{display:flex;align-items:center;gap:6px;color:var(--muted-foreground);font-size:var(--text-base)}
+.pfrow{flex-direction:row!important}.pfrow .btn{flex:1}.pfrow .btn.primary{flex:1.4}
+.vlead{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 0 4px;text-align:center}
+.vlead .k{display:flex;align-items:center;gap:6px;font-weight:var(--w-ui)}
+.vlead .v{font-size:var(--text-amt);font-weight:700;line-height:1.1}
+.vlead .line{color:var(--muted-foreground)}.vlead .line b{color:var(--foreground);font-weight:var(--w-ui)}
+/* Stat strip (packages/components/src/stat): label caption over text-lg semibold; border-b pb-3 */
+.statstrip{display:flex;flex-wrap:wrap;gap:12px 24px;border-bottom:1px solid var(--border);padding-bottom:12px}
+.statstrip .s .k{color:var(--muted-foreground);font-size:var(--text-xs);font-weight:var(--w-ui)}
+.statstrip .s .v{font-size:18px;font-weight:600}
+.statstrip .s.lead .v{font-size:24px;font-weight:700}
+.tabsrow{display:flex;gap:4px;border-bottom:1px solid var(--border)}
+.tabsrow span{min-height:44px;display:flex;align-items:center;padding:0 12px;color:var(--muted-foreground);font-weight:var(--w-ui);border-bottom:2px solid transparent}
+.tabsrow span.on{color:var(--foreground);border-bottom-color:var(--primary)}
+/* Reason and float chips: Chip at 44 px in explicit rows with 8 px gaps (round 1, finding 3) */
+.rchips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rchips.two{grid-template-columns:1fr 1fr}
+.rchips .chip{height:44px;justify-content:center;padding:0 10px}
+/* The count at the tablet's full 800 px pane height */
+.fwrap.tall{height:800px}
+.splitrow{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--muted-foreground)}
+.splitrow b{color:var(--foreground);font-weight:var(--w-ui)}
+.splitrow .textbtn{min-height:36px;margin:-8px 0}
+.fold summary small{color:var(--muted-foreground);font-weight:400;font-size:var(--text-xs);margin-left:4px}
+.scrollcue{font-size:var(--text-xs);color:var(--muted-foreground);display:flex;align-items:center;gap:6px}
+/* The closed moment: the variance leads, Counted and Expected as two tiles, the paper folds open */
+.wr .pb{gap:10px}
+.wr .vlead{padding:4px 0 0}
+.paper .bd{padding:2px 12px 8px}
+.paper .kv{min-height:28px}
+.paper .kv.tot{padding-top:4px;margin-top:2px}
+/* Closures rows: Expected · Counted · Difference on every row, the result badge apart (finding 4) */
+.chead,.crow{display:grid;grid-template-columns:1.7fr 1fr 1fr 1fr 1.25fr 20px;gap:10px;align-items:center;padding:0 12px}
+.chead{color:var(--muted-foreground);font-size:var(--text-xs);font-weight:var(--w-ui);min-height:32px}
+.crow{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-tile);min-height:56px}
+.crow.on{border-color:var(--primary);background:var(--muted)}
+.crow .who{display:flex;flex-direction:column;min-width:0}.crow .who small{color:var(--muted-foreground);font-size:var(--text-xs)}
+.crow .r,.chead .r{text-align:right}
+.crow .res,.chead span:nth-child(5){padding-left:10px}
+.crow .csub{display:none}
+.room .pane.doc .pb{gap:10px}
+@media (max-width:767px){
+ .key{height:48px}
+ .count .pb{gap:8px}
+ .cartbody .card{gap:8px;padding:14px}.cartcol .tabs{flex-shrink:0}
+ .count .lblrow{flex-wrap:wrap;row-gap:4px}.count .lblrow>*{white-space:nowrap}
+ .statstrip{gap:10px 18px}
+ .rchips.two{grid-template-columns:1fr}
+ .wr .pb{gap:8px}.paper .kv{min-height:26px}
+ .chead{display:none}
+ .crow{grid-template-columns:1fr auto;grid-template-areas:"who res" "sub sub";row-gap:4px;padding:8px 12px}
+ .crow .who{grid-area:who}.crow .res{grid-area:res}.crow .c,.crow .chev{display:none}
+ .crow .csub{display:block;grid-area:sub;font-size:var(--text-xs);color:var(--muted-foreground)}
+ .crow .csub b{color:var(--foreground);font-weight:var(--w-ui)}
+}
+.th-light{
+  --hairline-width: 1px;
+  --background: oklch(0.97 0.005 262);
+  --foreground: oklch(0.16 0.005 262);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.16 0.005 262);
+  --popover: var(--card);
+  --popover-foreground: var(--card-foreground);
+  --primary: oklch(0.42 0.24 262);
+  --primary-foreground: oklch(0.99 0.01 262);
+  --secondary: var(--muted-foreground);
+  --secondary-foreground: var(--card);
+  --muted: oklch(0.95 0.007 262);
+  --muted-foreground: oklch(0.45 0.01 262);
+  --accent: oklch(0.965 0.025 262);
+  --accent-foreground: var(--foreground);
+  --destructive: oklch(0.52 0.22 25);
+  --destructive-foreground: oklch(0.99 0.01 25);
+  --success: var(--ok);
+  --success-foreground: oklch(0.98 0.01 160);
+  --info: oklch(0.48 0.12 262);
+  --info-foreground: oklch(0.98 0.01 240);
+  --action: oklch(0.55 0.18 295);
+  --action-foreground: oklch(0.98 0.01 295);
+  --attention: var(--warning);
+  --attention-foreground: oklch(0.25 0.03 90);
+  --warning-foreground: oklch(0.25 0.03 90);
+  --border: oklch(0.885 0.01 262);
+  --input: var(--card);
+  --ring: oklch(0.42 0.24 262);
+  --selected: oklch(0.935 0.045 262);
+  --selected-foreground: oklch(0.42 0.17 262);
+  --card-header: var(--muted);
+  --sidebar: var(--rail);
+  --sidebar-foreground: var(--rail-foreground);
+  --sidebar-border: var(--rail-border);
+  --table-row: var(--card);
+  --table-row-alt: var(--background);
+  --table-header: var(--muted);
+  --footer: var(--muted);
+  --chart-1: var(--c1);
+  --chart-2: var(--c2);
+  --chart-3: var(--c3);
+  --chart-4: var(--c4);
+  --chart-5: var(--c5);
+  --rail: oklch(0.935 0.016 262);
+  --rail-selected: var(--card);
+  --rail-selected-foreground: var(--selected-foreground);
+  --rail-accent: oklch(0.895 0.075 262);
+  --rail-foreground: oklch(0.34 0.01 262);
+  --rail-border: oklch(0.88 0.014 262);
+  --ok: oklch(0.52 0.16 155);
+  --ok-bg: oklch(0.96 0.03 155);
+  --warning: oklch(0.68 0.16 70);
+  --warning-text: oklch(0.50 0.13 70);
+  --warning-bg: oklch(0.97 0.04 85);
+  --bad: var(--destructive);
+  --bad-bg: oklch(0.97 0.02 25);
+  --neutral: oklch(0.62 0.01 262);
+  --scrim: oklch(0.2 0.01 262 / .28);
+  --c1: oklch(0.42 0.24 262);
+  --c2: oklch(0.62 0.15 160);
+  --c3: oklch(0.72 0.15 70);
+  --c4: oklch(0.58 0.16 320);
+  --c5: oklch(0.70 0.02 262);
+  --tile-tint-0: oklch(0.86 0.09 262);
+  --tile-tint-1: oklch(0.88 0.10 160);
+  --tile-tint-2: oklch(0.88 0.10 40);
+  --tile-tint-3: oklch(0.86 0.09 310);
+  --tile-tint-4: oklch(0.90 0.11 90);
+  --tile-tint-5: oklch(0.88 0.09 200);
+  --tile-ink: var(--foreground);
+  --cart: var(--card);
+  --price-chip: transparent;
+  --price-chip-foreground: var(--muted-foreground);
+  --shape-rule-style: solid;
+  --shape-radius-control: 1;
+  --shape-radius-tile: 1;
+  --shape-radius-media: 1;
+  --shape-radius-commit: 1;
+  --shape-radius-field: 1;
+  --shape-radius-chip: 999;
+  --shape-ctl-border: 1px;
+  --shape-commit-shadow: 0 0 0 transparent;
+  --shape-commit-shadow-press: 0 0 0 transparent;
+  --shape-commit-press-y: 0px;
+  --primary-shadow: transparent;
+  --type-w-ui: 500;
+  --type-w-strong: 600;
+  --type-w-commit: 600;
+  --chip: var(--card);
+  --chip-border: var(--border);
+}
+.th-dark{
+  --hairline-width: 1px;
+  --background: oklch(0.19 0.018 250);
+  --foreground: oklch(0.93 0.01 250);
+  --card: oklch(0.23 0.018 250);
+  --card-foreground: oklch(0.93 0.01 250);
+  --popover: var(--card);
+  --popover-foreground: var(--card-foreground);
+  --primary: oklch(0.70 0.17 240);
+  --primary-foreground: oklch(0.16 0.02 250);
+  --secondary: var(--muted-foreground);
+  --secondary-foreground: var(--card);
+  --muted: oklch(0.28 0.018 250);
+  --muted-foreground: oklch(0.70 0.015 250);
+  --accent: var(--muted);
+  --accent-foreground: var(--foreground);
+  --destructive: oklch(0.67 0.2 25);
+  --destructive-foreground: oklch(0.15 0.02 25);
+  --success: var(--ok);
+  --success-foreground: oklch(0.15 0.02 160);
+  --info: oklch(0.70 0.13 240);
+  --info-foreground: oklch(0.15 0.02 240);
+  --action: oklch(0.68 0.16 295);
+  --action-foreground: oklch(0.15 0.02 295);
+  --attention: var(--warning);
+  --attention-foreground: oklch(0.18 0.025 90);
+  --warning-foreground: oklch(0.15 0.02 45);
+  --border: oklch(0.33 0.02 250);
+  --input: var(--card);
+  --ring: oklch(0.70 0.17 240);
+  --selected: oklch(0.30 0.06 240);
+  --selected-foreground: oklch(0.82 0.13 240);
+  --card-header: var(--muted);
+  --footer: var(--muted);
+  --sidebar: var(--rail);
+  --sidebar-foreground: var(--rail-foreground);
+  --sidebar-border: var(--rail-border);
+  --table-row: var(--card);
+  --table-row-alt: var(--background);
+  --table-header: var(--muted);
+  --chart-1: var(--c1);
+  --chart-2: var(--c2);
+  --chart-3: var(--c3);
+  --chart-4: var(--c4);
+  --chart-5: var(--c5);
+  --rail: oklch(0.16 0.025 250);
+  --rail-selected: var(--selected);
+  --rail-selected-foreground: var(--selected-foreground);
+  --rail-accent: var(--card);
+  --rail-foreground: oklch(0.72 0.02 250);
+  --rail-border: oklch(0.25 0.02 250);
+  --ok: oklch(0.72 0.15 155);
+  --ok-bg: oklch(0.28 0.04 155);
+  --warning: oklch(0.78 0.15 75);
+  --warning-text: var(--warning);
+  --warning-bg: oklch(0.30 0.05 80);
+  --bad: var(--destructive);
+  --bad-bg: oklch(0.30 0.05 25);
+  --neutral: oklch(0.62 0.01 250);
+  --scrim: oklch(0.05 0.02 250 / .5);
+  --c1: oklch(0.50 0.18 240);
+  --c2: oklch(0.62 0.15 160);
+  --c3: oklch(0.72 0.15 70);
+  --c4: oklch(0.58 0.16 320);
+  --c5: oklch(0.70 0.02 250);
+  --tile-tint-0: oklch(0.32 0.05 250);
+  --tile-tint-1: oklch(0.32 0.05 160);
+  --tile-tint-2: oklch(0.33 0.05 40);
+  --tile-tint-3: oklch(0.32 0.05 300);
+  --tile-tint-4: oklch(0.34 0.05 90);
+  --tile-tint-5: oklch(0.31 0.03 200);
+  --tile-ink: var(--foreground);
+  --cart: var(--card);
+  --price-chip: transparent;
+  --price-chip-foreground: var(--muted-foreground);
+  --shape-rule-style: solid;
+  --shape-radius-control: 1;
+  --shape-radius-tile: 1;
+  --shape-radius-media: 1;
+  --shape-radius-commit: 1;
+  --shape-radius-field: 1;
+  --shape-radius-chip: 999;
+  --shape-ctl-border: 1px;
+  --shape-commit-shadow: 0 0 0 transparent;
+  --shape-commit-shadow-press: 0 0 0 transparent;
+  --shape-commit-press-y: 0px;
+  --primary-shadow: transparent;
+  --type-w-ui: 500;
+  --type-w-strong: 600;
+  --type-w-commit: 600;
+  --chip: var(--card);
+  --chip-border: var(--border);
+}
+
+body{padding:8px 12px}
+.sys{display:flex;flex-direction:column;gap:8px;max-width:1256px;margin:0 auto}
+.th{background:var(--background);color:var(--foreground);border:1px solid var(--border);border-radius:12px;padding:10px 14px}
+.th h2{font-size:14px;font-weight:var(--w-strong);margin-bottom:4px}
+.cells{display:grid;grid-template-columns:repeat(6,1fr);gap:8px 14px;align-items:start}
+.cell{display:flex;flex-direction:column;gap:6px;min-width:0}
+.cell.w2{grid-column:span 2}
+.cap{font-size:12px;color:var(--muted-foreground)}
+.surface{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:8px}
+.cell .keypad{grid-template-columns:repeat(3,1fr)}
+.cell .key{height:44px}
+.sw{width:34px;height:20px;border-radius:999px;background:var(--border);position:relative;flex:none}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:999px;background:var(--card)}
+.sw.on{background:var(--primary)}.sw.on::after{left:16px}
+.hstack{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.cell .amtbig{font-size:var(--text-amt)}
+@media (max-width:767px){.cells{grid-template-columns:1fr 1fr}.cell.w2{grid-column:span 2}main{max-width:none}}
+</style></head><body><main><div class="sys"><section class="th th-light"><h2>Light</h2><div class="cells"><div class="cell "><span class="cap">FieldBox · amount (V1)</span><div class="field bigfield"><span class="cur">$</span><input value="150.00"></div></div><div class="cell w2"><span class="cap">AmountFigure in FieldBox · editable (as Pay in and the count)</span><div class="field hero open"><div class="amtbig "><span class="cur">$</span>150.00<span class="caret"></span></div></div></div><div class="cell "><span class="cap">AmountFigure · display, read-only</span><div class="amtbig "><span class="cur">$</span>519.35</div></div><div class="cell "><span class="cap">Button lg · outline (the count)</span><button class="btn lg outline" style="box-shadow:none">Close register</button></div><div class="cell "><span class="cap">Button lg · primary (the flow)</span><button class="btn lg block primary">Open register</button></div><div class="cell "><span class="cap">Button · primary, default 44</span><button class="btn primary">Open register</button></div><div class="cell "><span class="cap">Chip · rest · selected (44)</span><div class="hstack"><span class="chip" style="height:44px">Float</span><span class="chip on" style="height:44px">Change</span></div></div><div class="cell "><span class="cap">Switch · off · on</span><div class="hstack" style="min-height:44px"><span class="sw"></span><span class="sw on"></span></div></div><div class="cell w2"><span class="cap">Tabs</span><div class="tabsrow"><span class="on">All</span><span>Open</span><span>Closed</span></div></div><div class="cell "><span class="cap">Card / Tile</span><div class="fig"><div class="k">Counted</div><div class="v">$504.35</div></div></div><div class="cell "><span class="cap">Divider</span><div style="min-height:44px;display:flex;align-items:center"><div class="hr" style="width:100%"></div></div></div><div class="cell "><span class="cap">MenuRow</span><div class="surface" style="padding:0 4px"><div class="row"><span class="slot"><svg class="i sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span class="lbl" style="font-size:14px;color:var(--foreground);margin:0">Supplier</span></div></div></div><div class="cell w2"><span class="cap">Badge · ok bad warn info muted</span><div class="hstack"><span class="badge ok">Over</span><span class="badge bad">Short</span><span class="badge warn">Unsynced</span><span class="badge info">Open</span><span class="badge muted">Exact</span></div></div><div class="cell w2"><span class="cap">Keypad keys</span><div class="keypad"><div class="key">7</div><div class="key">8</div><div class="key">9</div><div class="key">.</div><div class="key">0</div><div class="key"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5h11v14H9l-6-7z"/><path d="M12 9l5 6M17 9l-5 6"/></svg></div></div></div></div></section><section class="th th-dark"><h2>Dark</h2><div class="cells"><div class="cell "><span class="cap">FieldBox · amount (V1)</span><div class="field bigfield"><span class="cur">$</span><input value="150.00"></div></div><div class="cell w2"><span class="cap">AmountFigure in FieldBox · editable (as Pay in and the count)</span><div class="field hero open"><div class="amtbig "><span class="cur">$</span>150.00<span class="caret"></span></div></div></div><div class="cell "><span class="cap">AmountFigure · display, read-only</span><div class="amtbig "><span class="cur">$</span>519.35</div></div><div class="cell "><span class="cap">Button lg · outline (the count)</span><button class="btn lg outline" style="box-shadow:none">Close register</button></div><div class="cell "><span class="cap">Button lg · primary (the flow)</span><button class="btn lg block primary">Open register</button></div><div class="cell "><span class="cap">Button · primary, default 44</span><button class="btn primary">Open register</button></div><div class="cell "><span class="cap">Chip · rest · selected (44)</span><div class="hstack"><span class="chip" style="height:44px">Float</span><span class="chip on" style="height:44px">Change</span></div></div><div class="cell "><span class="cap">Switch · off · on</span><div class="hstack" style="min-height:44px"><span class="sw"></span><span class="sw on"></span></div></div><div class="cell w2"><span class="cap">Tabs</span><div class="tabsrow"><span class="on">All</span><span>Open</span><span>Closed</span></div></div><div class="cell "><span class="cap">Card / Tile</span><div class="fig"><div class="k">Counted</div><div class="v">$504.35</div></div></div><div class="cell "><span class="cap">Divider</span><div style="min-height:44px;display:flex;align-items:center"><div class="hr" style="width:100%"></div></div></div><div class="cell "><span class="cap">MenuRow</span><div class="surface" style="padding:0 4px"><div class="row"><span class="slot"><svg class="i sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span class="lbl" style="font-size:14px;color:var(--foreground);margin:0">Supplier</span></div></div></div><div class="cell w2"><span class="cap">Badge · ok bad warn info muted</span><div class="hstack"><span class="badge ok">Over</span><span class="badge bad">Short</span><span class="badge warn">Unsynced</span><span class="badge info">Open</span><span class="badge muted">Exact</span></div></div><div class="cell w2"><span class="cap">Keypad keys</span><div class="keypad"><div class="key">7</div><div class="key">8</div><div class="key">9</div><div class="key">.</div><div class="key">0</div><div class="key"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5h11v14H9l-6-7z"/><path d="M12 9l5 6M17 9l-5 6"/></svg></div></div></div></div></section></div></main></body></html>
