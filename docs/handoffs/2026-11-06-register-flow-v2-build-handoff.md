@@ -48,8 +48,11 @@ reachable register state, shot per device class); the J1/J2 journeys live in `ap
 - The count's keypad collapses after entry and reopens on tapping the amount (Paul, 2026-11-06, "as you
   recommend", recorded in `variants/v2/changes.md`).
 - Free has no Closures room (2026-10-28); the closures room is the owner's ledger, not the cashier's.
-- Design rules: monorepo `CODING_STANDARDS.md` § Design and `.claude/rules/design.mdc`; the design
-  decisions hub in memory (§ Rulings index: themes, sheets/sides, footers, keypads, chips).
+- Design rules: monorepo `CODING_STANDARDS.md` § Design and `.claude/rules/design.mdc` (both in the
+  repo). Rulings on themes, sheets and their sides, footers, keypads and chips are recorded in the
+  monorepo's `LEDGER.md` files beside the components and screens they bind (`packages/components/src/*/
+  LEDGER.md`, `packages/core/src/screens/main/pos/cart/LEDGER.md`); read the ledger of every file you touch.
+  This doc is self-contained for a machine without the MacBook's session memory.
 
 ## 2. What the build is
 
@@ -87,8 +90,15 @@ behaviour change beyond the keypad ruling, any token value (V2 changes none).
 - Before the first slice: run `/mockup`'s diff discipline in reverse: open the built screen beside
   `variants/v2.html` at 1280 and 390 in light and dark, list every difference, and put that list in the
   slice's PR body as the contract. A difference not in the list is not in the PR.
-- Component changes land in `packages/components` with a gallery cell and the gallery baseline PR in the
-  same run (memory: `gallery-shoot-stops-at-first-mismatch-and-the-baseline-pr-recipe`).
+- Component changes land in `packages/components` with a gallery cell, and the gallery baselines are
+  refreshed in the same run. The recipe (monorepo, proven on #2919 and #3049): the `Gallery shoot (k/3)`
+  job is one Playwright test per component, so a run names only the FIRST stale cell; do not hand-fix cells
+  one per push. Commit the first stale cell's `actual` PNG from the shard's `gallery-report-k` artifact
+  over its baseline (a PNG is a gallery input; a `.md` alone does not trigger the shoot), push, and add the
+  `gallery:update-baselines` label: the bot commits every remaining baseline in ~20 min. The Merge Gate
+  requires Gallery only where `test.yml` reported it.
+- Before opening any slice's PR, search open PRs by symptom (`gh pr list -R wcpos/monorepo --search
+  "<component or screen>"`): the MacBook and the mini have opened the same fix twice before.
 - Tests: the screen's own suite (`--maxWorkers=2`), the components suite for any touched component, and
   `apps/main/e2e/register-captures.spec.ts` reshot so the captures carry the new look (that spec is the
   proof the states still render; the journey specs in `e2e/journeys/` are the proof the flow still runs).
@@ -124,5 +134,7 @@ Slice 4 carries whichever he picks.
 - roadmap#562 (Close Register record) merged 34578099; roadmap#564 (register flow sweep) merged 3ade2d7f.
 - Nothing in the monorepo changed for these screens today. The last merges on `main` touching the cart
   were #3281/#3283 (the POS stack) and the register work of October.
-- The `ui-polish-live` worktree serves Metro on :8081 from `main` for a live look; it is locked and is
-  never a PR branch.
+- On the MacBook the `ui-polish-live` worktree serves Metro on :8081 from `main` for a live look; on the
+  mini, `pnpm start --web` from the repo root serves the same (it frees :8081 first).
+- Paths in this doc are the MacBook's (`/Users/kilbot/Projects/roadmap`, `/Users/kilbot/Projects/monorepo-v2`,
+  worktrees under `/Users/kilbot/Projects/<repo>-worktrees/`); use the mini's clones of the same repos.
