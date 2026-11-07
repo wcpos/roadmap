@@ -1,0 +1,1738 @@
+Reading additional input from stdin...
+OpenAI Codex v0.166.0
+--------
+workdir: /Users/kilbot/Projects/monorepo-v2/docs/mockups/2026-11-07-split-payment/rounds/r3
+model: gpt-6.1-sol
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: high
+reasoning summaries: none
+session id: 01a1b70e-fa3a-74b1-bcc8-58988f4f8aae
+--------
+user
+You are reviewing screenshots of a user-interface mockup. You are read-only: you score and report, you change nothing.
+
+You are given:
+- `shots/`: the screens under review. File names carry the variant, width and theme.
+- `anchors/`: `baseline-*` is the current screen as it exists today (absent when there is none); `ref-*` are the same kind of screen in other products. Score every anchor set too, in the same table, so the numbers are comparable.
+- A baseline round directory, when given: the same variant before this round of work.
+- `brief.md`: who uses this screen, what it is for, and every state it must show.
+- When present, `system-*` anchors (the product's own component gallery and a neighbouring screen, as they are today) and a set named `*-system*` per variant (a system sheet: the sibling controls that read the same tokens as the variant's change, one row per theme). These exist because a screen under review lives inside a design system, and a change that looks right on the one screen can leave its siblings disagreeing with it.
+
+Score every screen set (each variant, the baseline, each ref) from 1 to 10 in each category, half points allowed. 10 means you could not improve it; 5 means a competent designer would redo it. Judge light and dark as separate colour-and-contrast rows when both are present.
+
+Categories: hierarchy · typography · spacing and alignment · colour and contrast (light) · colour and contrast (dark) · iconography and indicators · consistency · clarity for the person in the brief · density · states covered.
+
+Rules for scoring:
+- Compare before you score. Look at the anchors first, then the sets under review.
+- Clarity means the person described in the brief knows what every control does from the screen alone, and every label is a word they would say out loud.
+- Density rewards complexity that is present but tucked away. Do not reward a screen for having fewer features; penalise a screen that has made something harder to reach.
+- States covered: the brief lists states; a set that does not draw one of them loses points here, and a drawn state that would confuse the person in the brief loses points too.
+- Colour is a signal. A muted interface with colour only on the elements that need attention scores higher than a colourful one. Do not penalise restraint; do penalise a screen where a state change or an action is invisible because nothing marks it.
+- Consistency, when a system sheet or `system-*` anchor is present, is judged against them, not within the screen: does every control on the sheet that shares a role with the changed element still read the same weight, colour and shape as it? Two edge weights or two fills for one role across the sheet is a SYSTEM BREAK. Report each one on its own line, before the table, as `SYSTEM BREAK: <set> — <sibling> reads <x> while <subject> reads <y>`, with the measurement when you can take one. A set with a SYSTEM BREAK scores at most 5 in Consistency, whatever else it does well. When no system sheet is present for a set that visibly changed a token, say so on the same kind of line: `SYSTEM BREAK: <set> — no system sheet; the change to <token> is unjudged against its siblings`.
+
+Return, as Markdown:
+0. Any `SYSTEM BREAK` lines (none is a valid answer; write nothing).
+1. The score table: one row per category, one column per screen set, plus an average row.
+2. For each variant under review, your three highest-leverage findings: the screenshot file, the category, what is wrong, and the smallest change that would fix it.
+3. Nothing else. No overall verdict, no praise, no summary.
+
+brief.md:
+mode: inside-a-system
+
+# Split payment — hill-climb brief (2026-11-07)
+
+## Subject
+
+The **Split view** of the checkout tender pane (`packages/core/src/screens/main/pos/checkout/tender/split-view.tsx`) and the **plan strip** it leaves on the keypad pane (`tender-pane.tsx`, `checkout-plan`). One job: let the cashier take one bill as several payments, each defined a different way, without losing track of who has paid what.
+
+## Who stands in front of it
+
+A cashier at a counter, standing, arm's length from a shared tablet, under shop lighting, with a table of six waiting to pay. Sometimes a stall-holder who last opened the app four months ago. Judge at 5 pm with a queue: can the next action be found in under a second without reading?
+
+## The problem, in the reporter's words (Paul, 2026-11-07)
+
+> I'm not convinced these screens are as easy to use as they could be.
+>
+> There are 6 drinks and 8 meals in a cart. One customer wants to pay for 1 drink + 1 meal, another user wants to pay for 1 drink + $10, another customer wants to pay $20 off the bill, and the remaining 3 customers want to split it evenly.
+>
+> There are so many permutations. We need to document each one and make sure we have an intuitive flow to take the payments.
+
+## What exists today (inventory, so no variant evaluates a straw man)
+
+Screen order on the keypad pane (ruled, see constraints): label row (`TO PAY` / `REMAINING` + **Split** chip + offline badge) → amount figure → method tiles (Cash, Card, terminals…) → helpers (quick amounts / Exact) → keypad → commit button (`Take 18,00 € in Cash · 2 of 3`).
+
+Tapping **Split** takes over the pane (no sheet): caption `SPLIT` (or `SPLIT THE REMAINING`), a 192 px ring around the balance (segments = the legs still to take), a four-way segmented control, then per tab:
+
+| Tab | Controls | Plan it makes |
+|---|---|---|
+| Even | tiles 2 · 3 · 4 · 5 · 6 ways, `$x each` | N equal legs over the remaining balance, remainder on the last |
+| Amount | tiles $5 · $10 · $20 · $50 (those under the balance, `then $y`), Half, *Type the first payment* | ONE leg of that amount, then ONE leg of the rest |
+| Percent | tiles 10 · 20 · 25 · 30 · 50 · 75 %, amount shown | same as Amount, titled "25 %" |
+| Item | every cart line as a tick-box row (`paid · Card` on paid lines), `Pay for these · $x`, `or share these between 2 · 3 · 4` | legs over the ticked WHOLE lines, then "the rest"; loops: `Pick next items` after the group lands |
+
+Hint line under the options (one per tab) and `No split` when a plan is set. Back on the keypad: the label becomes `Payment 2 of 3 · $12.00 left`, a strip of pill legs (done = green wash + check, now = primary border, todo = dim, rest = dashed) with `Pick next items` / `Change split` links; the commit reads `Take $6.00 in Card · 2 of 3`. Typing less than the planned leg: `Less than planned · $x moves to the next payment`. Each leg can use any method. Offline: a `Offline` word beside the label; online-only tiles disabled. Busy/saving: everything drawn, nothing pressable. A "legacy" gateway takes the whole order and shows `Takes the whole order, so not once a payment has been taken`.
+
+Strings live in `packages/core/src/contexts/translations/locales/en/core.json` under `pos_checkout.*` (split_even, n_ways, each_amount, then_amount, half, type_first_payment, pay_for_these, tick_items, share_these_between, line_paid_by, items_paid_of, less_than_planned, pick_next_items, change_split, no_split, payment_n_of, rest_of_the_order, item_payment_n_of).
+
+Quantity today: a cart line with qty 6 is ONE row in the Item tab; paying for 1 of the 6 means going back to the cart and using the line's `Split` link (`pos_cart.split_qty`) first. The Item tab cannot take "1 drink + $10". A fixed amount and an even split cannot be planned in one visit: Amount makes two legs, so "$20 then split the rest 3 ways" is two trips through Change split.
+
+### What goes wrong in Paul's scenario today (6 drinks + 8 meals)
+
+1. Guest A, 1 drink + 1 meal: Item tab shows "Lemonade ×4 $20.00" as one row. Cashier must close, go to the cart, split the line, come back. Two screens, four taps, before the first tick.
+2. Guest B, 1 drink + $10: no tab does this. Cashier takes the drink as an item leg, then types $10 as a plain part payment with no plan.
+3. Guest C, $20 off the bill: Amount tab → $20 tile. The plan now says "then $x" as ONE payment, which is wrong for the three left.
+4. Guests D–F split the rest: `Change split` → Even → 3 ways. Works, but the ring, hint and strip have changed meaning three times, and nothing on screen says A, B and C are done.
+
+## Start state and end state
+
+Start: order of 14 line items, total **$182.50** (tax included), no payments, cashier on the keypad pane; a guest says "we'll split it".
+End: six payments recorded, balance $0, the Paid moment; the receipt prints per-line provenance for item legs.
+
+## The worked order (every variant uses exactly this)
+
+| Line | Qty | Each | Total |
+|---|---|---|---|
+| Flat white | 2 | $4.50 | $9.00 |
+| Lemonade | 4 | $5.00 | $20.00 |
+| Burger | 3 | $18.50 | $55.50 |
+| Fish & chips | 3 | $22.00 | $66.00 |
+| Caesar salad | 2 | $16.00 | $32.00 |
+| **Total** | 14 | | **$182.50** |
+
+Legs: **A** Flat white ×1 + Burger ×1 = $23.00 (Card) · **B** Lemonade ×1 + $10.00 = $15.00 (Cash) · **C** $20.00 off the bill (Cash) · **D, E, F** the rest $124.50 split evenly = $41.50 each (Card, Card, Cash). Payment methods on this till: Cash, Card, SumUp (terminal).
+
+## Scenario catalogue (every variant must have an answer for each; the delivered page shows the flow for each)
+
+A leg is one payment. Its amount is defined one of these ways; a bill is any sequence of them.
+
+| # | Leg kind | Example | What the cashier must be able to do |
+|---|---|---|---|
+| S1 | Whole bill, one payment | "I'll get it" | No split at all; never pass through the split view |
+| S2 | Even, N ways, all at once | 4 friends, $45.62 each | Pick N; remainder cents land on the last leg; each leg any method |
+| S3 | Fixed amount, then the rest | "$50 on my card, the rest cash" | Type or tap an amount; the rest is one more payment |
+| S4 | Percent | "I'll cover 25 %" | Pick a share; same as S3 after that |
+| S5 | Whole lines | "Just my burger" | Tap the line(s); the leg is their total; the line is marked paid afterwards |
+| S6 | Part of a line (qty) | "1 of the 4 lemonades" | Pick how many of a multi-qty line WITHOUT leaving the tender pane. Rule: the cart stepper idiom (`− 1 +` with "of 4"), never per-unit dots |
+| S7 | Items + an amount | "my drink, and put $10 towards the rest" | Combine S5/S6 with a typed top-up in ONE leg |
+| S8 | Items shared by k people | "the three of us had the platter" | Items picked, then shared evenly k ways (today's `share these between`) |
+| S9 | Fixed amount, then even N ways | "$20 off, then the three of us split" | Plan both without a second trip through Change split |
+| S10 | Mixed sequence (Paul's case) | A: items, B: items + $10, C: $20, D–F: even | Each leg defined its own way, in any order; the screen shows what is done, what is now, what is left |
+| S11 | The rest, one payment | after any plan | A single "the rest" leg is always one tap |
+| S12 | Less than planned | the planned $41.50 leg, guest has $40 | The difference moves to the legs still to come; the plan re-balances, the screen says so |
+| S13 | More than planned (cash) | $50 for a $41.50 leg | Change due, the leg is $41.50 |
+| S14 | Change the split mid-way | one of the three leaves | Re-plan the remainder only; done legs never move |
+| S15 | Cancel a taken leg | Guest A's card declined after record / wrong amount | Existing Cancel payment flow; the plan recounts |
+| S16 | Everything paid by items, cents left | rounding leaves $0.02 | The last leg absorbs it; never a $0.02 payment to chase |
+| S17 | Offline | no network | Same screens, `Offline` badge, online-only tiles disabled with reason |
+| S18 | Terminal leg fails mid-split | SumUp times out on leg D | Existing terminal failure view; the plan is intact on return |
+| S19 | Legacy (whole-order) gateway | | Hidden/disabled once any payment is taken, with the one-line reason |
+| S20 | Order-level discount / fee / shipping with item legs | 10 % off the bill | Apportioned by line total; the line total shown is what the guest pays (state it once, never a paragraph) |
+
+## States every variant must render (the shot list)
+
+1. **Split opened, nothing taken** — the entry screen at 1280 (register frame: rail + tender pane + ledger) and at 390 (pane only). Light and dark.
+2. **Leg A being built** — 1 Flat white of 2 and 1 Burger of 3 picked; the leg reads $23.00.
+3. **Leg B being built** — 1 Lemonade + $10.00 typed; the leg reads $15.00; A is done.
+4. **Leg C** — $20.00 off the bill; A and B done.
+5. **The rest, 3 ways** — A–C done, D is "now" at $41.50 on the keypad pane with the method row and commit button (`Take $41.50 in Card · 4 of 6`), E and F to come.
+6. **Less than planned** — $40.00 typed on leg D; the hint says what moves.
+7. **Last leg / Paid** — F at $43.00 (absorbed the $1.50 + cents), or the Paid moment.
+8. **Offline** and **busy (saving)** versions of state 5, as two small frames.
+
+Phone (390) renders states 1, 2 and 5 at least. Dark renders state 1 and 5 at least.
+
+## Widths
+
+- 1280 × 800: the register's two-column layout (nav rail 64 px, tender pane ≈ 556 px, ledger ≈ 384 px) exactly as `anchors/baseline-split-open-tablet-light.png` has it. The ledger lists the worked order; paid lines show `paid · Card`.
+- 390 × 844: the tender pane alone (phone layout, tabs; the ledger is a balance bar).
+
+## Constraints (binding; copied from CODING_STANDARDS § Design and rulings)
+
+- **Method row under the amount (Paul, 2026-10-07, ruling):** the pane order is label → amount → method row → helpers → keypad/controls → commit. The split is a sub-view of that pane and keeps that order. A method row at the bottom is a regression of an approved decision.
+- **No per-unit dots for quantity (Paul, 2026-10-07, ruling):** picking "how many of this line" is the cart stepper (`− n +` with "of N", tap the name for the whole line). Never pips.
+- **One way to do each thing (Paul, 2026-09-18):** for every outcome exactly one control. If a variant adds a route, it says which old route it retires.
+- One number leads, one primary action; a second amount appears only when it differs, as a plan (`Payment 1 of 2`), not a second total.
+- Touch: 44 pt minimum, 56 pt for keys and tiles hit every sale; 8 pt gaps; destructive apart from constructive; no hover-only affordance.
+- Tiles are equal width in fixed columns; width never follows label length; a phone stacks to one or two columns.
+- State is visible, not explained: one badge at the top for offline/saving; a disabled control says why in a few words; no walls of text; never colour alone.
+- Calm colour, semantic tokens only (`variants/tokens.css`): one accent per screen (`--primary`), success/warning/destructive carry meaning only; flat surfaces, hairline borders, the theme's radius; no gradients, glass, shadows.
+- Type: system font, tabular numerals for every amount, 14 px base web, nothing under 12 px that a cashier reads.
+- Words the cashier uses: buttons are verbs with the object (`Take $23.00 in Card`); no label repeating the element; survives German length.
+- Components: Tile (`bg-card rounded-tile border border-border`, selected `border-primary bg-muted`, min-h-tile), SegmentedControl (`min-h-ctl border-border bg-card rounded-lg border`, selected segment `bg-muted` + semibold), Chip, ListItem (`min-h-row flex-row gap-3 px-3 py-2` + tile surface), Keypad (`h-tile` keys, `bg-muted` faces), AmountFigure (`text-amt font-bold tabular-nums`), Button `default` (`bg-primary`), `outline` (`border-border bg-card border`), `ghost`. The system anchors (`anchors/system-gallery-*.png`, `anchors/system-real-tender-keypad-*.png`) are what every control must still match.
+- House defaults to avoid: cream backgrounds, italic accent words, 01/02/03 section labels, monospace labels, pill buttons for actions, hairline broadsheet rules, emoji, confetti, mascots.
+- `assumed:` output dir is `docs/mockups/2026-11-07-split-payment/` (the repo has `docs/mockups/`, not `docs/prototypes/`).
+- `assumed:` the register frame at 1280 is drawn in the default light theme and the default dark theme only; the seven other themes are out of this climb.
+- `assumed:` the worked order and leg amounts above (Paul gave counts, not prices).
+
+## What other POS do (tie-breaker is the cashier's expectation)
+
+From `wcpos/roadmap docs/research/2026-09-07-checkout-flow-research/vendor-checkout-flows.md` (sourced) and product knowledge (marked ✱, unverified against current builds):
+
+- **Toast** — `Split evenly` on the payment screen; checks are split by seat/item before tender ("Split check"); any tender for less than the balance is a partial and the balance stays on screen ✱ the check pane on the left keeps every item and `Balance due` visible throughout.
+- **Square for Restaurants** — check-level split before tender: by seat, by item (drag items between checks), evenly; each resulting check is paid on its own. Square POS — `Split Amount` on the tender screen; must finish within five minutes.
+- **Lightspeed X** — overtype the amount field; "the remaining balance of the sale will be adjusted". Lightspeed R — every tender is a simultaneous amount field with `Max`; "enter the amount for each payment type until the Balance is 0".
+- **SumUp POS Pro** — the payment screen keeps the item list; items tap-to-select (blue), paid items turn green with a check; a calculator with `/2`, `/3`, `÷`; methods on the right. ✱ Picking a quantity of a multi-qty line is a tap-per-unit on the line.
+- **Loyverse** — `SPLIT`: `+/−` portions, a type per portion, lines marked Paid, `Done`.
+- **Shopify POS** — `Split payment` → amount only, `Mark as partially paid`; no item split.
+- **Clover** ✱ — Pay Full Amount / Split tabs: by item, evenly, custom amount; a "guest" count.
+- **Zettle** — no tender-time split; saved cart "charge by items".
+- **Fintech references on the anchors** — Chime (an expense split: the amount leads, one editable share per person, `Clear all`, one full-width commit; the Mobbin short link served Chime where Splitwise was expected), Revolut (Amount / Percent / Share tabs over a per-person list with editable amounts), Vipps (Even / Amount / Percentage with `Remaining to distribute: 0`).
+
+The pattern the leaders share and we lack: **the items stay in sight and are the thing you touch**, a running **remaining** figure updates as the leg is built, and a fixed amount never forces "one more payment" on the rest.
+
+Image file names, in the order attached:
+- shots/v1-desktop-dark.png
+- shots/v1-desktop-light.png
+- shots/v1-phone-dark.png
+- shots/v1-phone-light.png
+- shots/v1-s2-phone-light.png
+- shots/v1-s5-desktop-dark.png
+- shots/v1-s5-phone-light.png
+- shots/v1-states-desktop-light.png
+- shots/v1-system-desktop-dark.png
+- shots/v1-system-desktop-light.png
+- shots/v3-desktop-dark.png
+- shots/v3-desktop-light.png
+- shots/v3-phone-dark.png
+- shots/v3-phone-light.png
+- shots/v3-s2-phone-light.png
+- shots/v3-s5-desktop-dark.png
+- shots/v3-s5-phone-light.png
+- shots/v3-states-desktop-light.png
+- shots/v3-system-desktop-dark.png
+- shots/v3-system-desktop-light.png
+- anchors/baseline-split-even-desktop-light.png
+- anchors/baseline-split-open-tablet-dark.png
+- anchors/baseline-split-open-tablet-light.png
+- anchors/ref-chime-split-expense-phone-light.png
+- anchors/ref-revolut-split-bill-phone-dark.png
+- anchors/ref-vipps-split-even-phone-light.png
+- anchors/system-gallery-dark.png
+- anchors/system-gallery-light.png
+- anchors/system-real-tender-keypad-tablet-dark.png
+- anchors/system-real-tender-keypad-tablet-light.png
+- shots/v1-desktop-dark.png
+- shots/v1-desktop-light.png
+- shots/v1-phone-dark.png
+- shots/v1-phone-light.png
+- shots/v1-s2-phone-light.png
+- shots/v1-s5-desktop-dark.png
+- shots/v1-s5-phone-light.png
+- shots/v1-states-desktop-light.png
+- shots/v2-desktop-dark.png
+- shots/v2-desktop-light.png
+- shots/v2-phone-dark.png
+- shots/v2-phone-light.png
+- shots/v2-s2-phone-light.png
+- shots/v2-s5-desktop-dark.png
+- shots/v2-s5-phone-light.png
+- shots/v2-states-desktop-light.png
+- shots/v3-desktop-dark.png
+- shots/v3-desktop-light.png
+- shots/v3-phone-dark.png
+- shots/v3-phone-light.png
+- shots/v3-s2-phone-light.png
+- shots/v3-s5-desktop-dark.png
+- shots/v3-s5-phone-light.png
+- shots/v3-states-desktop-light.png
+warning: Under-development features enabled: context_management. Under-development features are incomplete and may behave unpredictably. To suppress this warning, set `suppress_unstable_features_warning = true` in /Users/kilbot/.codex/config.toml.
+exec
+/bin/zsh -lc "cat /Users/kilbot/.claude/skills/using-superpowers/SKILL.md; cat /Users/kilbot/.claude/CLAUDE.md; find /Users/kilbot/.claude/rules -name '*.mdc' -maxdepth 1 -print" in /Users/kilbot/Projects/monorepo-v2/docs/mockups/2026-11-07-split-payment/rounds/r3
+ succeeded in 0ms:
+---
+name: using-superpowers
+description: Use when starting any conversation - establishes how to find and use skills, requiring skill invocation before ANY response including clarifying questions
+---
+
+<SUBAGENT-STOP>
+If you were dispatched as a subagent to execute a specific task, ignore this skill.
+</SUBAGENT-STOP>
+
+<EXTREMELY-IMPORTANT>
+If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.
+
+IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
+
+This is not negotiable. You cannot rationalize your way out of this.
+</EXTREMELY-IMPORTANT>
+
+## The Rule
+
+**Invoke relevant or requested skills BEFORE any response or action** — including clarifying questions, exploring the codebase, or checking files. If it turns out wrong for the situation, you don't have to use it.
+
+**Before entering plan mode:** if you haven't already brainstormed, invoke the brainstorming skill first.
+
+Then announce "Using [skill] to [purpose]" and follow the skill exactly. If it has a checklist, create a todo per item.
+
+## Skill Priority
+
+When multiple skills apply, process skills come first — they set the approach, then implementation skills (frontend-design, etc.) carry it out. Brainstorming and systematic-debugging are Superpowers' most common process skills, but the rule holds for any of them.
+
+- "Let's build X" → superpowers:brainstorming first, then implementation skills.
+- "Fix this bug" → superpowers:systematic-debugging first, then domain skills.
+
+## Red Flags
+
+These thoughts mean STOP—you're rationalizing:
+
+| Thought | Reality |
+|---------|---------|
+| "This is just a simple question" | Questions are tasks. Check for skills. |
+| "I need more context first" | Skill check comes BEFORE clarifying questions. |
+| "Let me explore the codebase first" | Skills tell you HOW to explore. Check first. |
+| "I can check git/files quickly" | Files lack conversation context. Check for skills. |
+| "Let me gather information first" | Skills tell you HOW to gather information. |
+| "This doesn't need a formal skill" | If a skill exists, use it. |
+| "I remember this skill" | Skills evolve. Read current version. |
+| "This doesn't count as a task" | Action = task. Check for skills. |
+| "The skill is overkill" | Simple things become complex. Use it. |
+| "I'll just do this one thing first" | Check BEFORE doing anything. |
+| "This feels productive" | Undisciplined action wastes time. Skills prevent this. |
+| "I know what that means" | Knowing the concept ≠ using the skill. Invoke it. |
+
+## Platform Adaptation
+
+If your harness appears here, read its reference file for special instructions:
+
+- Claude Code: `references/claude-code-tools.md`
+- Codex: `references/codex-tools.md`
+- Pi: `references/pi-tools.md`
+- Antigravity: `references/antigravity-tools.md`
+- Hermes Agent: `references/hermes-tools.md`
+- Muse: `references/muse-tools.md`
+
+## User Instructions
+
+User instructions (CLAUDE.md, AGENTS.md, GEMINI.md, etc, direct requests) take precedence over skills, which in turn override default behavior. Only skip skill workflows or instructions when your human partner has explicitly told you to.
+# Global Preferences
+
+- **ALWAYS use a git worktree for code changes.** Run `/worktree` before editing any project files. Never create branches in the main working tree — multiple sessions share it and will clobber each other's files. The only exceptions: `.claude/` files, `docs/` files, and single-file edits the user explicitly asks for in-place.
+- **The main working tree stays on its default trunk (`main`).** Never checkout other branches in the main tree — all feature work happens in worktrees, including work on a development trunk like `next` (branch those worktrees from `origin/next`). After merging, worktrees are cleaned up automatically (post-merge hook runs `~/.claude/scripts/cleanup-worktrees.sh`). You can also run it manually: `bash ~/.claude/scripts/cleanup-worktrees.sh` (add `--dry-run` to preview).
+- **Don't assume `main` is the only trunk.** A repo may have more than one long-lived trunk — typically a stable trunk (`main`) and a development trunk (e.g. `next`). Work out which lane a task belongs to, then pull/branch from that lane and target the PR base at it. If it isn't explicit which lane applies, **ask the user rather than defaulting to `main`**. A repo's own `CLAUDE.md` states its lanes and what each is for.
+- **ALWAYS `git pull` the relevant trunk before starting any work.** The local trunk can be stale. Run `git pull origin <lane>` (the task's lane — see the two-trunk rule above) at the start of every session before branching, running scripts, or making decisions based on repo state.
+- **Live verification is encouraged when deployed behavior matters.** For a fix that depends on the live server environment, a small, safe hotpatch before opening a PR is highly encouraged to confirm the change works under real deployment conditions, but it is not required. Keep the repository change as the source of truth, use local tests where they provide sufficient evidence, and label anything not verified live. Server-side OpenClaw review/fix agents must not hotpatch or deploy themselves; they make only small, directed repository fixes.
+
+- **Subagents may be used at assistant discretion when useful.** If the environment provides subagent/task delegation tools, use them for review gates, parallel investigation, or isolated implementation work when they improve quality or speed; do not wait for the user to explicitly ask for subagents unless a higher-priority system/developer instruction forbids them.
+
+
+## PR Size & Review Rounds — LAW (Paul, 2026-10-21)
+
+Two PRs in two days reached ~200 review comments (wcpos/monorepo#2798 at 21 Codex rounds and +2,670 production lines on a 1,200-line budget; a PHP library PR the day before). Full text and the why: `rules/pr-size-and-review-rounds.mdc`. The limits, binding every model and agent:
+
+- **A PR carries at most 600 added production lines** (tests, snapshots, docs, lockfiles, generated files excluded). Over that, split BEFORE opening; never explain the size in the body. Hook: `hooks/block-oversized-pr.js` on PR creation.
+- **A budget breach is a STOP, not a note.** Report what grew and propose the split.
+- **An implementer that stops at its line budget ends the slice; the orchestrator never raises a budget itself** (ruled 2026-10-21 D1 A after five sessions in three days did — 941 against 600, 1,018 against 750, 1,027 against 450, "under your 3x stop, so I kept going" — and two of those PRs were the ones Paul called overengineered). Bring him ONE question with the overrun and a trim option. The 3x stop in `rules/agent-protocol.mdc` bounds the task tree; it is not a licence to accept an overrun.
+- **A brief's budget is a gate too** (ruled 2026-10-25 D1 A): the orchestrator writes the ceiling it briefed to `~/.claude/state/pr-budget/<branch>` before dispatching, and `block-oversized-pr.js` refuses a PR above it exactly as it refuses 600, until Paul's override file exists. **The brief's budget binds when the PR opens, not after** (ruled 2026-10-31 D1 A, after seven one-word "lift?" round trips in a day): once the PR is open, review-round fixes and trunk merges grow it under the 600-line law and the round-5 cap only — no lift question for post-open growth. **A ceiling the session set itself is never under 150 added production lines** (ruled 2026-11-02 D1 A, after three sessions in two days briefed 40, 50 and 120 on their own and each came back for a lift of 11–28 lines): Paul's numbers and the 600 law are untouched, and the budget file is written only for a ceiling he set or one of 150+.
+- **A PR's review loop ends at round 5** (15 top-level bot threads). No sixth round of branch-by-branch fixes: write the missing invariant in one place, split the PR, or bring Paul the open list. Hook: `hooks/block-review-round-cap.js` on push.
+- Only Paul lifts a limit, per PR, with the `/tmp/claude-override-*` file the hook names, and **his "lift" / "go with what you recommend" in chat IS the touch**: the session then creates the file and records his words in the budget file, never a new ceiling number (ruled 2026-10-28 D1 A). **What the session recommends depends on what the overrun is made of** (ruled 2026-10-23 D2 A, qualified 2026-10-28 D1 A after *"don't cut a feature just to save 25 lines of code"*): unasked-for code (locks, fallbacks, abstractions, scope creep) → recommend the trim or split, never the override; formatter re-wraps → counted separately and said so; an overrun that is ALL board-approved behaviour → the ONE question is "lift to N for this PR?" and the recommendation is the lift. Never name a ruled feature as the thing to cut.
+
+## Scope of a Ruling — LAW (Paul, 2026-10-30)
+
+On 2026-10-30 one session turned *"cashier and register modals come from the right … consistent throughout the app"* into #3118 (EVERY side panel right, the subject rule deleted, merged) and then #3123 (the `left` presentation removed from the component library, on nobody's word). Paul: *"Cashier and Register modal come from the right, but not every fucking modal."* Binding on every model and agent:
+
+- **A ruling's scope is the nouns Paul named.** "Consistent throughout the app" / "everywhere" widens WHERE the named things apply, never WHICH things it applies to. Anything beyond the named examples is ONE question before the branch exists, never an inference recorded as his ruling.
+- **A capability removal is never a consequence of a ruling.** Deleting an option, prop value, presentation, animation, hook or setting because a ruling stopped using it is a separate decision only Paul makes. "A public export with no caller is deleted" covers dead code; it is not a licence to retire what a ruling made unused, and an architect-gate or critic "recommendation" is not Paul.
+- **A memory or brief that records a ruling quotes him verbatim and states the scope as the quote has it.** Never write the widened reading as the ruling; a later session reads memory as fact and merges on it.
+- **Standing merge authority covers the ruled scope only.** A PR whose body says "every"/"all"/"drops"/"removes" against a ruling that named specific things is held for Paul, not merged green.
+
+## PR Handoff Default
+
+- **The agent that submits a PR owns its follow-up.** Monitor CI and reviewer comments, make and verify the fixes, and report any unresolved blockers; use `/pr` Phase 5 rather than handing responsibility to another agent or service.
+- **ALWAYS create a PR when a coherent batch of work is finished.** Do not wait for the user to ask. Once implementation has been validated as far as possible, commit the work, push the branch, and open a PR.
+- **Prefer preserving work over keeping it local.** If work is partial, blocked, interrupted, or likely to be lost between sessions, commit the current state and open a **draft PR** with a clear status, remaining TODOs, and any failing/blocked validation. This is explicitly preferred over leaving unpushed local changes in a worktree.
+- **Run applicable validation before pushing and document the results.** If lint/tests/build are blocked by pre-existing tooling issues or the work is intentionally partial, still push the draft PR and record the exact commands and failures in the PR body.
+- **If you believe the work is finished, the PR must be a normal ready-for-review PR, not a draft.** Draft PRs are only for partial checkpoints, incomplete work, or known failures introduced by unfinished implementation.
+
+## Brainstorm Overrides
+
+When running /brainstorm:
+- Do NOT ask questions you can answer yourself from the codebase, docs, git history, or common sense. Answer them yourself and state your assumption.
+- If the task is straightforward, skip clarifying questions entirely and go straight to proposing approaches.
+- Only ask a question if it surfaces a genuinely non-obvious tradeoff or creative angle the user hasn't considered. "What framework?" when there's one in package.json is a waste of time.
+
+## Autonomy & Stops (all models, all subagents)
+
+Applies to the top-level session and to every Agent-tool subagent, which sees this file and not the harness prompt. Source: Addy Osmani's Anthropic guide to Opus 5.5, via Theo (2026-09-25); adopted 2026-09-28.
+
+- When a step doesn't need my input, keep going. Put status notes in the same message as your next action, never as a message on their own.
+- Stop and ask only when you cannot continue without me, or before anything destructive: deleting data, force pushing, or changing anything outside the repo you were given.
+- This narrows conversational check-ins, not the hard gates. The Constitution, the 3x scope-budget stop in `rules/agent-protocol.mdc`, and the no-push / no-PR lines in delegation briefs still apply unchanged.
+- "Want me to continue?", a summary that names the next step without taking it, or a list of choices that don't block the work are not stops. Take the step.
+- If something does not work as expected, say so and ask rather than guessing a workaround. Asking is cheaper than an hour down the wrong path.
+- End every long run with four headings, in this order: **Blocked on you**, **Dangling**, **Changed**, **Found** (omit **Dangling** only when it would be empty) — then one last line: `Safe to exit: yes`, or `Safe to exit: no — <what is still running, roughly how long>` (ruled 2026-10-19 after nine "can I exit?" questions in two days).
+- **Be very concise.** Facts only, no essay. Short bullets under each heading, one line each. No preamble, no restating the task, no narrating how you got there.
+- **Found is not a parking lot (ruled 2026-10-13).** A real defect you discover mid-task, pre-existing or not, gets FIXED before the run ends: in the same PR when it is small and in the same area, otherwise in its own PR, opened and shepherded in the same run. Never write "pre-existing, not filed" or "judged, not changed" against a real bug. Found carries only observations that are not defects (test data left behind, behaviours judged correct, things not evaluated) and real defects that are genuinely too large to fix now, each of which then goes under **Dangling**, not under Found. If I had skipped the Found section, two inventory bugs would have been lost; that is the failure this rule exists to prevent.
+- **Dangling is the only place a defect you did not fix may live (ruled 2026-10-31).** A 10-31 sweep found 44 closing notes since the 10-13 ruling and 26 PR bodies that parked real defects anyway ("untouched; a separate slice", "not changed; say the word", "## Not in this PR", "## Found, not changed", "## Question for Paul"); four sessions in one night each re-noted the same unfixed button. Paul: *"I don't check the notes every time … important issues might be raised in these comments and they're just going to be forgotten, and then we're just going to sit in the code until someone finds the bug."* And: *"If there's a dangling issue that honestly can't be dealt with at the time, then it needs to be raised in a separate section. It needs to be brought to my attention. It needs to be made sure that I can't miss it. I do usually read the 'blocked on me' section so have a section similar to that."* So: one line per defect under **Dangling**, directly after **Blocked on you**: what is broken, why it is not fixed in this run, and `Pick: <own PR | drop | needs your ruling>`; a `needs your ruling` pick ALSO puts the question itself, with options and a pick, under **Blocked on you** (Paul, 2026-10-31, after seven "Pick: your ruling" lines: *"what's blocked on me, give me the questions and options"*). A PR body, a spec, a run record, memory, a wiki page or a Found bullet is never the place; a PR body carries design decisions and what the slice IS, never a defect left behind or a question he has to find. Hooks: `found-is-not-a-parking-lot.js` (Stop) refuses a Found bullet or loose prose that defers, and a Dangling line with no pick; `block-parking-lot-prose.js` refuses deferral headings and vocabulary in PR text.
+
+## Model Routing & Effort
+
+The rubric — which model sits in which seat, effort settings, per-model quirks, and the routing rules — lives in `~/.claude/rubric/ROUTING.md`. **A session that is about to write code, delegate, choose a model, or judge a cheaper model's output reads it first.** An implementer or sub-agent that has been handed a task does not need it: the model was chosen when the task was handed over. Four lines bind everyone regardless: **the main session runs on Fable — orchestration and thinking are never done on Opus, Sonnet or Haiku; those are only ever delegates** (ruled 2026-10-17 after a day's audit, four PRs and three merges ran on Opus 5.5 because the launcher chose the model; **Opus 5.5 is the fallback for the main session only while the TeamClaude pool reports Fable at 100% on every account** (ruled 2026-10-21 D2 A: on 10-20 Paul switched to Opus himself when Fable ran out); the enforcing hook (`require-session-model.js`) was REMOVED on Paul's instruction 2026-11-01 — the rule is a routing preference, not a gate; nothing blocks a session on another model. Work done on Opus that way gets its assumptions re-checked on Fable afterwards — *"we did all this work on a dumber model, now we need to go back and recheck every assumption"* (10-21: the re-check found a wrong diagnosis sent to a merchant and three defects in merged PRs); **the re-check is a listed follow-up, never a merge gate** — an Opus session merges a green, walked PR under standing authority and lists every merge for the Fable re-check (ruled 2026-10-28 D2 A, after three Opus sessions on 10-27 read this line three ways and one parked three clean PRs for a day)); a Fable session edits code itself only for a change under ~20 lines in one file or when the edit is the taste call — everything larger is specced and delegated to Codex (Astra) or an Opus 5.5 Agent (ruled 2026-10-12); Claude effort stays on `high` (never `max`); and Codex is always pinned explicitly (`-m gpt-6-astra`, effort passed on the command line).
+
+## Memory Budget (24 GB machine — added 2026-08-06 after three OOM wedges)
+
+- **Test runs are the #1 memory killer.** Jest/vitest default to ~11 parallel node workers here; several sub-agents each launching a suite wedges the Mac. ALWAYS pass an explicit worker cap (`--maxWorkers=2`); run ONE suite at a time — never in parallel sub-agents or across worktrees. Enforced by PreToolUse hook `~/.claude/hooks/cap-test-workers.js` (blocks uncapped runs, and runs every capped suite under the machine-wide lock `~/.claude/scripts/with-test-lock.py` so a second suite WAITS — ruled 2026-10-30 D3 A; nothing to remember) and `VITEST_MAX_THREADS/FORKS=2` + `NODE_OPTIONS=--max-old-space-size=2048` in settings env. For a genuinely huge build, override per-command: `NODE_OPTIONS=--max-old-space-size=6144 <cmd>`.
+- **Fan-out is split by what the helper does** (ruled 2026-08-31, replacing a flat cap of 3). Anything that builds or runs a suite is **strictly one at a time**, no exceptions. Read-only analysis and research agents get a much higher ceiling — judgement, not a number. An agent that looks read-only but shells out to a build counts as a build.
+- **Docker VM is hard-capped at 3 GB** (hypervisor-enforced via `MemoryMiB` in Docker settings; AutoStart is off). Paul quits Docker Desktop when he's done with it; **a session must never quit the shared daemon** — it cannot see other sessions' containers, and doing so has corrupted the container store and cost an afternoon.
+- **Watchdog backstop:** LaunchAgent `com.kilbot.memory-watchdog` (30 s interval) kills agent/test processes at memory-pressure warning/critical, before the machine wedges. Log: `~/.claude/logs/memory-watchdog.log`; status: `bash ~/.claude/scripts/memory-watchdog.sh --check`.
+
+## Constants, Not Env Vars (all projects — added 2026-08-20)
+
+AI models have a love affair with inventing environment variables. Stop. Nobody human reads or
+sets them; the agent is the one who reads and edits the code, and infra auto-deploys on code
+changes, so "tunable without a deploy" is a benefit nobody collects. Every invented env var adds
+a parse/validate/fallback block, a compose/CI entry, and keep-in-step comments — layers guarding
+a value that will only ever be changed by editing code anyway.
+
+- **If it's a constant, write a named constant in code** with a comment saying why the value.
+- Env vars are for exactly three things: **secrets/credentials**, **values that genuinely differ
+  between environments running the same artifact** (paths, ports, URLs), and **values an outside
+  system injects** (platform contracts).
+- "Someone might tune it someday" is not a justification — when someday comes, edit the constant.
+- When reviewing AI-written diffs (own or delegated), strike new env vars that don't meet this
+  bar. This is a known failure mode of every model in the stack.
+/Users/kilbot/.claude/rules/pr-size-and-review-rounds.mdc
+/Users/kilbot/.claude/rules/lint-before-commit.mdc
+/Users/kilbot/.claude/rules/constitution.mdc
+/Users/kilbot/.claude/rules/agent-protocol.mdc
+/Users/kilbot/.claude/rules/stakes-areas.mdc
+
+exec
+/bin/zsh -lc 'cat /Users/kilbot/.claude/rules/*.mdc; cat /Users/kilbot/Projects/monorepo-v2/CLAUDE.md; cat /Users/kilbot/Projects/monorepo-v2/.claude/rules/*.mdc; find /Users/kilbot/Projects/monorepo-v2/.claude/skills -maxdepth 2 -name SKILL.md -print; cat /Users/kilbot/.claude/skills/using-superpowers/references/codex-tools.md; ls -la' in /Users/kilbot/Projects/monorepo-v2/docs/mockups/2026-11-07-split-payment/rounds/r3
+ succeeded in 0ms:
+---
+description: Core development constraints
+globs:
+alwaysApply: true
+---
+
+# Agent Protocol
+
+## No Assumptions
+- NEVER assume paths, folder names, or conventions. Verify by reading actual code.
+- When debugging: check what EXISTS → read error-throwing source → THEN form hypothesis.
+- If a fix doesn't work after 2 attempts: STOP. Question the fundamental assumption.
+
+## No Unverified Claims
+- Before claiming anything passes/works/is fixed: run the command, read the output, confirm it matches.
+- Never say "should work" — show the evidence.
+
+## Test Restraint
+- Add tests for new features and changed behavior when they prove the feature works or protect the intended contract.
+- Add tests for bug fixes when the bug represents a reusable failure mode or likely regression risk.
+- Do NOT add regression tests reflexively for every smoke check, user complaint, deletion, cleanup, revert, or removed behavior.
+- Prefer proving one-off verification through the smallest relevant existing test, smoke test, harness run, or manual check.
+- Do not turn one-off verification into permanent test coverage without clear value or an explicit user request.
+
+## Scope Budget
+- Before non-trivial work, state the smallest plausible change and estimate its size in changed lines of non-test code. That estimate is a budget for the whole task, sub-agents included.
+- If actual changes reach 3x the estimate, stop and report what grew and why — don't finish first and explain afterwards. (Same contract as `~/.codex/model_instructions.md`; file count alone is not a stop signal.)
+- The 3x stop bounds the task tree; it is not a licence to accept an overrun. An implementer that stops at its line budget ends the slice there, and the orchestrator never raises a budget itself: it brings the owner one question with the overrun and a trim option (ruled 2026-10-22, D1 A).
+
+## Reuse Protocol
+- Before writing ANY new utility, helper, or abstraction: search the codebase first.
+- If similar code exists: reuse, extend, or ask before creating a duplicate.
+- Match existing naming conventions and patterns.
+
+## Documentation-First Lookup
+When troubleshooting framework/package errors:
+1. Official docs for the specific package/framework
+2. GitHub issues/discussions for that repo
+3. General web search (last resort)
+---
+description: Hard constraints — non-negotiable rules
+globs:
+alwaysApply: true
+---
+
+# Constitution
+
+## Security
+- NEVER use GitHub PATs — always GitHub App authentication
+- NEVER expose secrets in code, commits, logs, or output
+- NEVER assume version numbers — ask or look them up
+
+## Git Discipline
+- NEVER commit directly to a trunk — `main`, or a long-lived dev trunk like `next` (exceptions: docs-only or single-line hotfix when explicitly told)
+- NEVER push without running tests and lint first
+- NEVER force push, reset --hard, or destructive git actions without explicit approval
+- ALWAYS use git worktrees for feature work (use /worktree skill)
+- When switching branches, check `git status` first
+
+## Pre-Push Checks
+Before EVERY `git push`:
+1. Check if upstream is gone: `git branch -vv | grep $(git branch --show-current)` — look for `: gone]`
+2. Check for existing PRs: `gh pr list --head $(git branch --show-current)` and `--state merged`
+3. If merged or deleted: create a NEW branch. Never push to recreate a deleted branch.
+
+## GitHub
+- NEVER use GitHub MCP tools — always use `gh` CLI
+- DO NOT blindly apply CodeRabbit suggestions — verify changes work first
+- Playwright requires `({}, testInfo)` NOT `(_, testInfo)`
+
+## Code Generation
+- NEVER generate multi-file implementation code without approved requirements first
+- NEVER add features, refactoring, or "improvements" beyond what was requested
+- NEVER ignore error paths — if a function can fail, handle the failure
+
+## Testing
+- Bug fixes require a failing test first — no exceptions without explicit permission
+- Run the full test suite locally before pushing. Never claim "tests pass" without running them.
+- For TDD guidance use /tdd. For debugging test failures use /debug.
+# Lint Before Committing
+
+Before creating any git commit, run the **full** project lint command (e.g., `pnpm run lint`, `turbo lint`) for every package that has changed files. Do not lint only the files you edited -- run the whole package lint. Fix all errors before committing. Warnings are acceptable if they were pre-existing, but new warnings introduced by your changes should also be fixed.
+
+In this monorepo, use `pnpm run lint --filter <package>` for each affected package, or run from within the package directory.
+---
+description: LAW (Paul, 2026-10-21) — a PR is capped at 600 added production lines and a review loop at 5 bot rounds; past either, stop and split, never explain
+globs:
+alwaysApply: true
+---
+
+# PR Size and Review Rounds — LAW
+
+Ruled by Paul on 2026-10-21 after two PRs in two days reached ~200 review comments each
+(wcpos/monorepo#2798, 21 Codex rounds, +2,670 production lines on a 1,200-line spec budget; and a PHP
+library PR the day before). "Going through a 200-comment PR is fucking outrageous. Clear sign that
+something is deeply, deeply fucking wrong." This binds every model and every agent: Claude sessions,
+Codex runs, sub-agents, and anything that opens or pushes to a PR on Paul's behalf.
+
+## The three limits
+
+1. **A PR carries at most 600 added production lines.** Production = everything except tests,
+   snapshots, fixtures, docs, lockfiles and generated files. Over 600, the PR is split BEFORE it is
+   opened. Size is never explained in a PR body; it is reduced. Enforced by
+   `~/.claude/hooks/block-oversized-pr.js` on `gh pr create`.
+2. **A spec or stated budget breach is a STOP, not a note.** The 3x scope-budget rule in
+   `agent-protocol.mdc` already says this; it also applies when the absolute cap above is nearer than
+   3x. Report what grew and propose the split; do not finish first. The budget a brief set is
+   enforced too (ruled 2026-10-25, dream D1 A): the orchestrator writes it to
+   `~/.claude/state/pr-budget/<branch with / as -->` before dispatching, and `block-oversized-pr.js`
+   refuses a PR above it as it refuses 600, until Paul's `/tmp/claude-override-pr-size-<branch>` exists.
+   **The brief's budget binds when the PR opens, not after** (ruled 2026-10-31, dream D1 A): once the PR
+   is open, review-round fixes and trunk merges grow it under the 600-line law and the round-5 cap only.
+   Post-open growth is never a "lift?" question — on 10-30 seven such questions in one day were each
+   answered with one word, most for 1–15% growth that review fixes or a trunk merge caused.
+   **A ceiling the session sets itself has a floor of 150 added production lines** (ruled 2026-11-02,
+   dream D1 A): three sessions in two days briefed 40, 50 and 120 lines on their own and each came back
+   with a lift question for 11–28 lines. Paul's own numbers and the 600 law are untouched; the budget
+   file is written only for a ceiling he set or one of 150 or more.
+3. **A PR's review loop ends at round 5.** Once an open PR carries 15 or more top-level bot review
+   threads (Codex, CodeRabbit, Macroscope), no further fix round is pushed. Enforced by
+   `~/.claude/hooks/block-review-round-cap.js` on `git push`. The session then (a) writes the
+   invariant the findings keep circling in ONE place and deletes the per-branch patches, or (b) splits
+   the PR, or (c) brings Paul the open list with a recommendation. A sixth round of branch-by-branch
+   fixes is never the answer.
+
+## Why these numbers
+
+- 600 lines is the size one reviewer can hold in their head in one sitting; past it the review becomes
+  a serial scan that finds one hole per pass, which is exactly the 21-round pattern.
+- 15 threads is round 5 of a reviewer that finds about three things per pass. By then the findings are
+  a cluster with one missing invariant, not a tail of independent nits.
+
+## How to split
+
+Ship the mechanical or contract piece first on its own (a protocol bump, a wire-field change, a
+renamed field). Ship a new subsystem as a library with its tests and no callers. Then rewire one
+caller per PR. Each PR targets the trunk; never stack them (`block-stacked-prs.js`).
+
+## Overrides
+
+Only Paul lifts a limit, per PR, by the file the hook names
+(`/tmp/claude-override-pr-size-<branch>` or `/tmp/claude-override-review-cap-<pr>`). His word in chat
+is the touch: once he has said "lift" or "go with what you recommend", the session creates the file
+and records his words in the budget file (ruled 2026-10-28, dream D1 A). A session never creates the
+file unasked and never rewrites a budget ceiling.
+
+What the session recommends depends on what the overrun is made of:
+
+- **Unasked-for code** (locks, fallbacks, abstractions, scope creep) → the **trim or the split, never
+  the override** (ruled 2026-10-23, dream D2 A). On 10-22 a session recommended the override twice
+  ("four lines of real defect fixes") and he clicked both; a cap whose default pick is "lift it" is a
+  button, not a cap.
+- **Formatter re-wraps and moved lines** → counted separately and stated with the real number.
+- **Ruled scope** — every line is behaviour he approved on a board → the ONE question is "lift to N
+  for this PR?" and the recommendation is the lift (ruled 2026-10-28, dream D1 A). On 10-26 a session
+  offered to drop a footer line he had approved that morning; *"don't cut a feature just to save 25
+  lines of code, what the fuck are you thinking?"* Never name a ruled feature as the thing to cut.
+
+The review-round cap keeps its own rule: the recommendation is the invariant or the split.
+---
+description: Declared stakes tier per area of work, and the readiness gate a ticket must pass before it is ready-for-agent
+globs:
+alwaysApply: true
+---
+
+# Stakes Areas
+
+The Codex contract (`~/.codex/model_instructions.md` §3) says a declared stakes level governs and may not be escalated on the agent's own judgement. Until now only `wcpos/woocommerce-pos` declared one (`.ai/rules/stakes-tiers.mdc`). This table declares a default tier for every area Paul works in, derived from three months of his PRs, issues and rulings (2026-09-16). A repo-level declaration wins over this table where they differ.
+
+Tiers mean: **low** — a failure wastes work and someone retries; **medium** — a failure confuses or blocks a cashier or an operator mid-task; **high** — a failure loses money, data, trust, or takes shared infrastructure down.
+
+| area | repos (wcpos/…) | default lane | tier | verification surfaces |
+|---|---|---|---|---|
+| sync-storage | monorepo, woocommerce-pos, electron | next | **high** for persisted writes (silent lost updates have shipped); display-only refreshes are low | Jest `--maxWorkers=2`, live host, packaged Electron when storage is touched |
+| checkout-money | monorepo, woocommerce-pos, woocommerce-pos-pro, terminal extensions (stripe, sumup, mollie, payarc, paypal) | next | **high**: an ambiguous payment outcome can prompt a second sale; stock mutation, refunds, cash and fiscal records live here | Jest, PHPUnit via wp-env, live host, hardware where a reader is involved |
+| reports-print | monorepo, woocommerce-pos(-pro), electron | next | **medium** for print and device delivery; read-only views low; fiscal writes high | Jest, print device or PDF capture |
+| pos-ui | monorepo, woocommerce-pos(-pro) | next | **low** for presentation and settings; sale-mutating logic is checkout-money | Jest, tablet and phone captures |
+| desktop | electron, updates-server | next | **medium**: packaged builds, mirrors and updater need runtime checks; storage or auth changes are assessed as sync-storage or checkout-money | packaged build, updater run |
+| release-ci | every shipping repo, web-bundle | the train's lane | **medium**: wrong-lane tests and stale artifacts recur; production delivery or outage paths are high | dry-run workflow, artifact hash check, `--maxWorkers=2` |
+| docs-web | docs, wiki, wcpos-com, wcpos-wordpress | main | **low** for content; wrong financial instructions are not excused by the tier (docs#435) | render check |
+| agent-harness | claude-config, wcpos-openclaw | main | **low**: instructions and internal tooling; speculative machinery is rejected on sight | skill eval where one exists |
+| infra-deploy | wcpos-infra, updates-server | main | **high** when touching shared live infrastructure (container operations have caused multi-service outages); read-only administration low | staged rollout, rollback command named before the change |
+
+Rules:
+
+- Classify by the operation the change controls, not the screen, route or repo that exposes it. A settings toggle that controls a high operation is high.
+- A prefix never raises a tier by itself. Lowering a tier for a specific ticket is Paul's call and is recorded on the ticket.
+- Every agent brief, ticket and Codex prompt states the tier and one line on what failure costs, in this vocabulary. A sub-agent that is not told the tier guesses high.
+- Which lane is live is read off the remote (`git ls-remote --heads origin next`), never off this table. The lane column is the default when both trunks are open.
+
+## Readiness gate — "no design questions"
+
+The `triage` and `to-tickets` skills are vendored and unedited; this section is the local rule they run under. A ticket earns `ready-for-agent` only when its brief carries, in addition to the vendored template's acceptance criteria and out-of-scope list:
+
+- **Stakes:** `<area> / <tier>` from the table above plus one line on what failure costs and which failure classes are accepted risks at that tier.
+- **Lane:** `main` or `next`, whenever the repo has two live trunks.
+- **Budget:** a ceiling in non-test lines, with the 3x stop rule (more files or commits do not raise it).
+- **Verification:** the exact commands (`--maxWorkers=2` on Jest), the surfaces they cover, the mutation check for a bug fix, and an explicit list of what stays unverified.
+
+These are the sections `codex-implement` copies into its prompt verbatim and that `frontier` checks before dispatching; a brief missing one is *not ready* and keeps `needs-triage`, with the missing section named. The test is Arslan's: the implementer must be able to execute the brief without asking a design question. When a delegated run comes back with one, the session answers it on the ticket, reruns once, and writes `Readiness failure: <question>` in its report so the nightly dream run can propose the template fix.
+# WCPOS Monorepo
+
+React Native + Expo cross-platform POS client app.
+
+## Local Agent Configuration
+
+Coding standards live in `CODING_STANDARDS.md`; `/code-review` enforces them on the diff. They are not repeated here.
+
+This repository keeps project-specific agent configuration local to the repo:
+
+- `CLAUDE.md` — project overview and shared local agent policy.
+- `AGENTS.md` — Codex/agent entrypoint and local discovery instructions.
+- `.claude/rules/*.mdc` — local project rules.
+- `CODING_STANDARDS.md` § Design — **must-read before any UI work** (screens, components, `global.css`, mockups, UI review); `.claude/rules/design.mdc` is the pointer that loads for UI files.
+- `.claude/skills/*/SKILL.md` — local project skills.
+
+Do not move these local rules or skills to global `~/.claude`, `~/.codex`, or other global agent configuration without explicit user approval.
+
+Before substantial work, agents should read the local rules and discover local skills. If the user names a skill, check `.claude/skills` before falling back to global skill directories.
+
+## Wiki
+
+Architecture, product and operations docs live in the [WCPOS wiki](https://github.com/wcpos/wiki) (`wcpos/wiki`, private). It is **not** vendored in this repo — the wiki changes daily, so a pinned copy goes stale fast; always read a fresh copy.
+
+- **Local agents** (on Paul's machine): read from the sibling clone at `/Users/kilbot/Projects/wiki`, but pull first — the clone can be stale:
+
+  ```bash
+  git -C /Users/kilbot/Projects/wiki pull --ff-only
+  ```
+
+- **Cloud/CI agents** (no sibling clone): fetch specific pages fresh via `gh api repos/wcpos/wiki/contents/<path> -H "Accept: application/vnd.github.raw"`, or `https://raw.githubusercontent.com/wcpos/wiki/main/<path>` if you have a token (the repo is private, so unauthenticated raw fetches fail).
+
+Start with `INDEX.md` at the wiki root — one line per page — then fetch only the pages you need.
+
+Relevant wiki pages (paths relative to the wiki repo root):
+
+- `product/overview.md` — what WCPOS is, business context
+- `architecture/client.md` — React Native app architecture, state management, data flow
+- `product/features.md` — feature inventory (free vs Pro)
+- `product/personas.md` — user personas and design implications
+
+## Native E2E: dev client + Metro — builds are rare and cost real money
+
+The `E2E Native` workflow (Maestro; phones on PRs that touch its inputs, all
+four devices on every push to `main`) drives the `development`-profile **dev
+client** — the same build developers use — and the JS under test comes from
+**Metro on the test runner**, bundling the checked-out revision
+(`expo start --no-dev --minify`). The dev client contains no JS, so
+**JS-only changes never need a build**: every run tests the checked-out commit
+for free. An EAS build happens only when `npx @expo/fingerprint` moves — native
+deps, config plugins, app config, native code — historically once or twice a
+month.
+
+**Before writing or diagnosing a flow, read `apps/main/.maestro/README.md`.**
+It holds the flow-authoring rules, the green baseline, every known failure
+class with its signature and handling, and the tripwire scripts.
+
+Builds that do happen are metered: $2 iOS / $1 Android against a $45/month
+credit **shared with release builds** (Expo Starter plan; the Free plan's hard
+limit is the same 15 + 15). History: nine ad-hoc dispatches on 2026-08-27/28
+bought nine build pairs in sixteen hours verifying fixes one commit at a time.
+
+- **Do not dispatch `e2e-native.yml` with `build=true` without asking the
+  owner.** A dispatch defaults to `build=false` and fails fast on a cache miss
+  instead of spending; a miss means the NATIVE fingerprint moved, which is
+  rare and worth a human look anyway.
+- Changes to the workflow, `apps/main/.maestro/**`, the seed script, or ANY
+  app JS/TS need no build — dispatch freely, it runs from cache.
+- When a native change genuinely needs a build, pass `platform=ios` or
+  `platform=android` if only one platform is affected ($1–$2, not $3).
+- Local runs are identical to CI: install the dev client, `npx expo start` in
+  `apps/main` (Android: `adb reverse tcp:8081 tcp:8081`), then
+  `maestro test apps/main/.maestro`.
+
+## Mobile OTA lane (EAS Update)
+
+Mobile release channels are `production` (store) and `adhoc` (internal).
+Ship JS-only patches with `publish-mobile-update.yml` at the release SHA.
+Updates reach only binaries with a matching fingerprint runtime version.
+`apps/main/fingerprint.config.js` skips version fields so patch releases keep
+the runtime version stable; it must not be removed. Native inputs still feed the hash.
+A fingerprint move (native dep, config plugin, app config, native code) needs
+`build.yml` instead: a store submit for `production`, a new internal build for `adhoc`.
+The release train decides with
+`eas fingerprint:compare --build-id <shipped build of that platform and profile>`
+(adhoc builds carry plugins production does not, so compare like with like).
+
+CI sets `EAS_BUILD_PROFILE` to match `--profile`; the CLI does not set it locally. Laptop users must do the same from `apps/main`:
+`EAS_BUILD_PROFILE=development eas build --profile development`.
+Use `adhoc` or `production` in both places for those profiles.
+
+**Historical only — shipped 1.10.16 production baseline:** these binaries included
+version fields in their hashes and can never receive updates from this OTA lane.
+The first OTA-capable cohort is the first store build made after the fingerprint
+config change. When it ships, record its per-platform `.runtime.version` here
+using `eas build:view <build-id> --json` from `apps/main`, not a local fingerprint.
+
+| Platform | Build ID | Runtime version |
+| --- | --- | --- |
+| Android | `2c2a5601-5db5-44ea-abaa-aee8be4fe048` | `0aeafa6969b108dab0f4082f117bc8ee488238a5` |
+| iOS | `98efef84-0804-4d91-ba9e-92b656b3302f` | `d02402d0a158a9b73e6c6666647eeef5e67a2887` |
+
+There is no single production hash: compare each platform with its shipped build of the same profile before OTA.
+
+**First OTA-capable cohort — 1.10.18 store build from `e962c8b6` (after #2087), run 35059240821.**
+This is the baseline every `eas update` on the `production` channel is compared against; a patch
+version bump no longer moves it. Read from `eas build:view <build-id> --json`, not a local fingerprint.
+
+| Platform | Build ID | Runtime version |
+| --- | --- | --- |
+| Android | `247b12c8-4d98-47d2-8f3e-9840666d211d` | `050c0144c106f24ab23db6509c37f998f4c1dddd` |
+| iOS | `d650ce31-d233-481f-99dc-edc037e58fab` | `612a275dcc877f7d400f203cd56c0b8f77490683` |
+
+## E2E store-agnostic policy
+
+Orders are created **through the POS UI** (the app stamps the correct cashier/store scope; `order-cleanup.ts` finalizes them); products/customers via the store API with the captured or writer credentials.
+
+
+The `e2e-product-writer` (shop_manager) identity exists on every dev server with one shared credential pair (`E2E_PRODUCT_WRITER_USER/_PASS` Actions secrets); a new or moved server needs exactly one `wp user create` line and the specs skip-with-reason until it's run.
+
+## Standing rulings
+
+- **Web `multiInstance` is pinned to the storage engine, never set on its own.** On `next` (2.0) the engine is `sqlite-sahpool` and the flag is `false` with one live tab per origin (#2242, #2271); on `main` (1.10.x) the engine is `opfs-filesystem` and the flag is `true` (#1057). The pair is enforced by `multi-instance-ruling.test.ts`; change both halves or neither, and never backport one lane's flag to the other. Read the Decision section of `packages/database/src/adapters/default/README.md` first.
+
+## Branch lanes
+
+Two live trunks during the 2.0 beta period (from the 2.0 promotion of 2026-11-02 until 2.0 GA), and one deleted until GA:
+
+- **`main`** — WCPOS 2.0, this branch: the beta now (`2.0.0` in `apps/main/package.json`; the plugins carry `2.0.0-beta.2`), GA later. dev-free and dev-pro run it; the web lane is `@2.0`. Fixes for 2.0 and work that ships in 2.0.x branch from `origin/main` and target `main`.
+- **`1.11.x`** — the stable patch line for merchants still on 1.11. A 1.11 fix branches from `origin/1.11.x` and targets `1.11.x`; it has no dev site and no E2E. A fix 2.0 also needs is re-applied to `main` through a PR of its own.
+- **`next`** — deleted on 2026-11-03 (Paul: *"you can delete next branches as you recommend"*); its rulesets stay. At GA it is re-cut from `main`.
+
+Never commit directly to a trunk — branch off the right one in a worktree and target the PR's base at the same lane. When the lane is not explicit, ask "main or 1.11.x?" rather than defaulting.
+
+### Web bundle ref per lane (cdn.wcpos.com, jsDelivr as fallback)
+
+The plugin's loader asks `https://cdn.wcpos.com/manifest?ref=<lane>&…` for a signed build descriptor and loads the page from `https://cdn.wcpos.com/b/<build_id>/build/` (monorepo #2623, 2026-10-17). jsDelivr `https://cdn.jsdelivr.net/gh/wcpos/web-bundle@<ref>/build/` is the **fallback** only, used when the manifest service fails. A publish is live only when the manifest answers with the new `build_id`: check `curl -s 'https://cdn.wcpos.com/manifest?ref=next&plugin=2.0.0&worker=17.6.0&pro=2.0.0&site=<uuid>'`, never the green run. A run whose job list lacks "☁️ Publish to cdn.wcpos.com" moved web-bundle but deployed nothing (2026-10-21: four `--ref main` dispatches left dev-next on a three-day-old build). There is exactly **one ref per lane, named after the lane** (owner ruling, 2026-09-04):
+
+- **`next` lane → `@next`** (dormant: the monorepo `next` branch was deleted on 2026-11-03 and returns at the GA re-cut; dev-next keeps serving the last `@next` build until then) — `https://cdn.jsdelivr.net/gh/wcpos/web-bundle@next`. The `next` _branch_ of `wcpos/web-bundle` **is** the dev lane's tag; there is no versioned or prerelease tag for `next`, and nobody should ask for one. Publishing it deploys the page: `gh workflow run publish-web-bundle.yml --ref next -f monorepo_ref=next -f bundle_branch=next -f override_release_gate='I accept a red main'` (`--ref next` is mandatory: the dispatch runs the workflow FILE at that ref, and only `next`'s file has the cdn.wcpos.com job and the dev-next worker check; `monorepo_ref` is a branch name or a FULL SHA, the checkout step rejects a short SHA). `dev-next.wcpos.com` reads `@next` (`WCPOS_WEB_BUNDLE_REF=next` in its `wp-config.php`).
+  - **The storage worker is not in the bundle.** The plugin serves `sqlite.worker.js` (`Frontend.php` hands the app `opfsWorker`), and on dev-next the active plugin is **woocommerce-pos-pro**, whose *vendored copy* of the free plugin is what the page loads — the free plugin dir there is inactive and its own deploy changes nothing. When `apps/main/public/sqlite.worker.js` changes (an rxdb bump), the bundle boots against a stale worker and every tab fails with `RxDB RM1 mainVersion X remoteVersion Y` → "Failed to create user database". The order is: (1) re-vendor the worker in `wcpos/woocommerce-pos` `next` (`assets/js/sqlite.worker.js`, byte-identical to `web-bundle@next`'s), merge; (2) `gh workflow run deploy-dev.yml --repo wcpos/woocommerce-pos-pro --ref next` (Pro runs `composer update` against free `dev-next` at build time); (3) verify by fetching the worker URL the POS page emits, not the free plugin's path. The publish workflow's last step checks dev-next for exactly this and names the two deploys when it fails.
+- **Released lane → `@<major.minor>`** — `@2.0` since 2026-11-02 (the 2.0 beta plugins load it; `@1.11` is frozen for plugins ≤ 1.11.x and moves only through a `1.11.x` train with `allow_frozen_lane`; `@1.10` stays frozen at `v1.10.40` for plugins ≤ 1.10.27). A worker whose `RXDB_VERSION` changes needs a NEW minor ref, never a patch on an existing one: plugins in the field keep their vendored worker, and RxDB remote storage refuses any version mismatch (`RM1`). The plugin derives that ref from its own version, and the release train cuts the tag; `publish-web-bundle.yml` never does.
+- Publishing to the web-bundle `main` _branch_ is staging only. It moves nothing a released plugin loads.
+
+**Patch compatibility rule (Paul, 2026-10-19).** Every patch on a lane is compatible with every other patch on that lane, in both directions: a `2.0.N` app or bundle works with any `2.0.M` plugin and vice versa. The lane ref above forces it (every plugin on `@<major.minor>` loads the newest bundle; desktop and mobile merchants update when they choose), and the RxDB rule is only its best-known case. So a `main` PR that touches a REST call, a response shape it reads, a header, an option, the sync protocol or a storage schema answers one question: *would this fail against the lane floor, the `<major.minor>.0` plugin, or any patch between it and the tip?* The floor, not "one patch older": a capability the plugin gained in 2.0.3 is absent on 2.0.0–2.0.2, and those merchants load the newest bundle too. Yes means feature-detect it (`bareAuthParamSupported`, the echo-probe gates in `packages/utils/src/sync-protocol.ts`) or bump the minor across every line; it never ships as a patch. `MINIMUM_WCPOS_PLUGIN_VERSION` always ends in `.0` (unit-tested); raising it is a minor. The rule and the train-time box live in roadmap `docs/releases/RELEASE-CHECKLIST.md`. The lane-floor E2E leg is filed as #2763 and not built yet; until it is, the question above is answered by review, not CI.
+---
+description: WCPOS UI design rules — must-read before drawing, building or reviewing any screen or component
+globs:
+  - packages/components/**
+  - packages/core/src/screens/**
+  - packages/core/src/components/**
+  - apps/main/components/**
+  - apps/main/**/*.tsx
+  - apps/main/global.css
+alwaysApply: false
+---
+
+# WCPOS UI design rules
+
+The rules themselves live in `CODING_STANDARDS.md` § Design — read that section before you draw a mockup, build a screen, touch a component, or review a UI diff. `/code-review` enforces it on the diff; a PR that breaks a rule needs a stated reason in its body.
+
+## Who is standing in front of it
+
+A cashier at a counter, standing, arm's length from a shared tablet, under shop lighting, with a
+customer waiting. Sometimes a stall-holder who last opened the app four months ago. Judge every
+screen at 5 pm with a queue: can the next action be found in under a second without reading?
+
+## The type floor
+
+Text a cashier reads is never under 12 px in any step (`text-xs` is the floor). `text-2xs` (11 px)
+is only for glyph-like text: avatar initials, badge counts. There is no `text-3xs`.
+---
+description: How to diagnose a failing native (Maestro) E2E run without burning a day on it
+globs:
+  - apps/main/.maestro/**
+  - .github/workflows/e2e-native.yml
+  - scripts/e2e-native-*
+alwaysApply: false
+---
+
+# Diagnosing a native E2E failure
+
+Written after a 12-hour diagnosis session on 2026-08-28/29 that should have taken
+twenty minutes. Every rule here is a scar. Follow them in order.
+
+## 1. Run it locally FIRST. CI is for confirmation, never for diagnosis.
+
+```bash
+scripts/e2e-native-local.sh --platform ios
+```
+
+A local iOS run of flows 01–06 takes **~5 minutes**. The CI round trip is
+**~60 minutes**. That is a 12x difference, and on 2026-08-28 an entire night was
+spent on the 60-minute loop for a bug the 5-minute loop showed immediately.
+
+The dev client contains no JS — Metro serves the bundle — so a local run tests the
+working tree with no build and no EAS spend. There is no reason to use CI as the
+first look.
+
+**Do not open a CI log to diagnose a failure you have not tried to reproduce
+locally.** If it does not reproduce locally, that is itself the most valuable
+finding you will get all day: it means the bug is environmental, and you should
+be reading the runner's differences, not the app's code.
+
+If the local platform prerequisites are unavailable (for example, a cloud/Linux
+agent has no Xcode, booted device, `adb`, or Maestro), record exactly what is
+missing and use the captured CI summary, annotations, and artifacts instead.
+This exception permits diagnosis from an existing run; it does not permit a
+metered native build.
+
+## 2. Read the app's errors BEFORE the Maestro assertion message.
+
+Maestro reports what it could not find. It cannot report *why*, and the two are
+routinely unrelated.
+
+The canonical failure of this suite looks like:
+
+```
+[Failed] 03-authenticated-relaunch (2m 4s)
+   (Assertion is false: id: search-products is visible)
+```
+
+which reads as "the app never launched" or "the search screen is broken or
+slow". On 2026-08-29 (run 33241496921) it was **neither**: the app was fully
+loaded — POS grid rendered, 209 products, cart, customer — with a **red error
+overlay** sitting on top of `search-products`. Maestro waited out its whole
+120-second budget looking at a working app behind a red box.
+
+So:
+
+- **`<element> is visible FAILED` is a SYMPTOM, not a cause.** Before theorising
+  about launch time, sync speed, or a missing testID, establish whether anything
+  was covering the screen.
+- The app errors are already captured. In CI: the **job summary** (`App errors
+  logged during this run`), the `::warning::` annotations, and the
+  `app-errors-*` artifact. Locally: printed first by
+  `scripts/e2e-native-local.sh`. **Look there before you look at the flow.**
+- A red box means a `console.error`. Under `--no-dev` the dev client still draws
+  it — `LogBox.ignoreAllLogs()` does NOT suppress it (it is `// Do nothing.` in
+  the non-`__DEV__` branch of RN's `LogBox.js`), so do not "fix" this by trying
+  to silence LogBox.
+
+## 3. Green is not healthy. Check the measurement, not just the verdict.
+
+The single most expensive habit in this whole episode was **treating a tool's
+verdict as the truth about the system**. Maestro prints a verdict and a duration
+in the same string; only one of them was read.
+
+Run 33243418607 reported:
+
+```
+[Passed] 03-authenticated-relaunch (45m 53s)
+```
+
+That flow's healthy time is **14-45 seconds**. A sixty-fold overrun, marked
+green, sitting next to a `::warning::` that nobody read — while the diagnosis
+effort went to the row labelled `[Failed]`.
+
+- **Compare every measurement to a physical expectation, not to a configured
+  threshold.** A cashier taps a search box and sees results in about a second.
+  So a *step* measured in minutes is a defect at 60x whatever the verdict says.
+  A threshold encodes somebody's past guess; a physical expectation encodes
+  reality. If you print a number, say what it should be.
+- **A pass with an absurd measurement is a failure.** The verdict and the
+  duration are two independent pieces of evidence.
+- This is now a **gate**, not a habit: the timing triage fails the job above
+  1200s (`ABSURD`) and warns above 600s (`STARVED`), on both platforms. Do not
+  weaken it back to a warning — a warning is what let 45m53s pass.
+
+The same reflex explains the rest of the series: `<element> is visible FAILED`
+was accepted as "the element is missing" rather than "what states of the world
+produce this observation?"; a job that exited 0 was accepted as a job that
+passed (#1662). **The label outranked the evidence every time.**
+
+## 4. One screenshot is the final frame, not the story.
+
+Maestro saves a single screenshot at the moment of failure. Everything before it
+is invisible, so a diagnosis built on it alone is backwards inference — and it is
+easy to misread a still (the same frame was misread twice in one night: once as a
+dev-launcher home screen, once as a slow search).
+
+`scripts/e2e-native-local.sh` records the whole run to `screen.mp4` by default.
+**Watch the video before forming a theory.**
+
+## 5. A flow that fails only in CI is usually missing fixtures, not broken.
+
+Flows that assert on seeded records (currently 07 and anything else using
+`VARIABLE_PRODUCT_*`) need `scripts/e2e-native-seed.mjs`, which needs
+`E2E_PRODUCT_WRITER_USER` / `E2E_PRODUCT_WRITER_PASS`. Without them the local run
+warns and those flows fail on missing data, which says nothing about the product.
+Set the credentials locally before concluding anything about a seeded flow.
+
+## 6. Fix the class at the throw site, not the instance at the catch site.
+
+Three separate red boxes in one week were the same class: **a cancellation that
+the classifier could not recognise as one.**
+
+- expo's winter fetch rejects an abort with a plain `Error` wrapping
+  `FetchRequestCanceledException`, not a WHATWG `AbortError` (#1674).
+- React Native's `AbortController` is the `abort-controller` polyfill, whose
+  `abort()` **takes no arguments** — an abort *reason* passed to it is silently
+  discarded, so `signal.reason` is `undefined` on native and only on native
+  (#1677).
+
+Each was first "fixed" by adding another string to a regex in the catch. That is
+an instance fix, and the next variant walks straight past it. **Name the error
+correctly where it is thrown** (`Object.assign(new Error(msg), { name:
+'AbortError' })`) so every downstream classifier inherits it.
+
+See `packages/sync-engine/src/maintenance/variation-prefetch.ts` for the pattern.
+
+## 7. Prefer a unit test over a device test for platform-seam bugs.
+
+Every native-only bug in this series was a **platform fact** — what RN's
+`AbortController` does with a reason, what expo's fetch names an abort, whether
+`DOMException` is a global. Those are testable in milliseconds, and were instead
+found by hour-long device runs.
+
+`packages/sync-engine/src/platform-seam.test.ts` pins these facts. When you find
+a new native/web divergence, **add it there** so the next one is caught by
+`vitest`, not by Maestro.
+
+## 8. Match the red against the known classes before theorising.
+
+`apps/main/.maestro/README.md` is the playbook: the green baseline durations,
+the flow-authoring rules, a table of every failure class seen through
+2026-09-04 (screenshot → mechanism → where it is handled → what not to do),
+the environment facts that decide whether a red is the app's, and the
+tripwire scripts. Read the table first; most reds since 2026-09-03 were a
+listed class recurring, not a new bug. A red that matches no row earns a new
+row in the same PR as its fix.
+
+Rules from that file that agents break most often:
+
+- A retry without a `WCPOS_E2E …` log line hides the defect it papers over.
+- A harness retry is for a lost press on the starved runner; an app defect
+  (a tab that does not re-centre, an input that appends, a button that
+  accepts a second press) is fixed in the app with a unit test.
+- Android relaunches via `openLink`, never `launchApp` (`pm grant` hang).
+- Tablets have a permanent rail: never wait for the drawer to close.
+- The php-fpm worker count lives in `wcpos-wordpress`; box edits revert.
+
+## 9. Cost discipline
+
+Native E2E builds are metered — $2 iOS / $1 Android against a shared $45/month
+credit. **Never dispatch `e2e-native.yml` with `build=true` without asking the
+owner.** JS-only changes never need a build; a dispatch defaults to
+`build=false` and fails fast on a cache miss. See the root `CLAUDE.md`.
+---
+description: Local WCPOS monorepo facts an implementer needs while coding (logging API, platform file resolution, theming quirks, translation source). The standards a reviewer enforces are in CODING_STANDARDS.md.
+alwaysApply: true
+---
+
+# Local Project Rules
+
+These rules are local to this repository. Do not copy them to global `~/.claude` or global Codex/Cursor configuration without explicit user approval.
+
+## React, TypeScript, and Logging
+
+### Logging
+
+- Methods: `log.debug()`, `log.info()`, `log.warn()`, `log.error()`, `log.success()`.
+
+### TypeScript
+
+- Platform files resolve as `.web.ts`, `.electron.ts`, `.ts` for native.
+
+## Styling and Theming
+
+This project uses Uniwind with Tailwind CSS v4. Theme variables are defined in `apps/main/global.css` using OKLCH color space.
+
+### Theme Switching and Native Issues
+
+- Some native components do not update styles on theme switch due to CSS variable lag.
+- If styles look stuck, use `log.debug` to verify current theme state.
+
+## Translations
+
+`packages/core/src/contexts/translations/locales/en/core.json` is the single source of English.
+It is statically bundled as the `en` resource with `fallbackLng: 'en'`, so a key always resolves
+there — an inline `defaultValue` is never read at runtime and only creates drift.
+
+- `pnpm translations:check` fails CI when a literal `t()` key is missing from `en/core.json`.
+   Run it after adding keys.
+/Users/kilbot/Projects/monorepo-v2/.claude/skills/electron-dev/SKILL.md
+## Subagent dispatch requires multi-agent support
+
+Add to your Codex config (`~/.codex/config.toml`):
+
+```toml
+[features]
+multi_agent = true
+```
+
+This enables the multi-agent tools that skills like
+`dispatching-parallel-agents` and `subagent-driven-development` use.
+Which tools you get depends on the multi-agent version your model
+preset selects (current presets run V2; older ones run V1). Trust your
+actual tool list over any table — including this one — when they
+disagree.
+
+- **Spawning:** give children a clean context with
+  `spawn_agent {fork_turns: "none"}`; the default `"all"` copies your
+  entire transcript into the child. On Codex 0.145+, role files under
+  `~/.codex/agents/` attach to isolated forks via `agent_type`.
+  Full-history forks accept `model` and `reasoning_effort` overrides
+  (only `agent_type` is refused there) — isolated forks are the SDD
+  default for context hygiene, not because overrides require them.
+- **Fix rounds:** resume the implementer with `followup_task` — it
+  delivers your message, triggers a turn, and transparently reloads a
+  child the harness evicted. Never dispatch a fresh implementer on the
+  theory that a spawned agent cannot be messaged again; on V2 it
+  always can.
+- **Lifecycle:** V2 has no `close_agent`. Finished children are
+  evicted automatically when slots are needed; leaving them unclosed
+  costs nothing. Only V1 sessions have `close_agent` — there, close
+  reviewers when their review returns, and close each implementer
+  after its task's review passes.
+- **Model names:** never copy a model name from a skill, table, or old
+  session into `spawn_agent` without checking it against your current
+  spawn allowlist — V2 accepts only V2-capable presets and hard-errors
+  on the rest.
+
+## Waiting on children
+
+`wait_agent` is an event subscription, not a poll: a long wait wakes
+the moment a child produces mailbox activity, with the same latency as
+a short one. Short-timeout polling buys nothing and costs a tool call —
+and a context rebill — per poll. In measured sessions, roughly
+two-thirds of all wait calls were short polls that timed out.
+
+- While you still have local work, do not wait at all. A completed
+  child's final answer is pushed into your mailbox and arrives with
+  your next turn.
+- When you are genuinely idle with children outstanding, wait in
+  bounded stretches: `wait_agent` with `timeout_ms` 300000-600000
+  (5-10 minutes). After each stretch — wake or timeout — post one
+  status line, run `list_agents`, and chase any child that finished
+  without reporting. Never stack polls shorter than five minutes; the
+  event subscription wakes a bounded stretch just as fast as a short
+  one.
+- Completion mail cannot wake an idle controller (it is delivered
+  without triggering a turn); covering that idle window is
+  `wait_agent`'s only job. A stretch that times out with no activity
+  is your cue to reconcile, not to shorten the next stretch.
+
+## Model routing on spawns
+
+Every `spawn_agent` you issue — including when you are yourself a
+spawned child running a fan-out — sets `model` AND `reasoning_effort`
+explicitly, per the Model Selection rules of the skill you are
+executing. Setting `model` alone is a trap: the child's effort
+silently resets to that model's default, not to yours.
+
+Ask your human partner to add a machine-level backstop to
+`~/.codex/config.toml` so any spawn that slips through still routes to
+a deliberate tier instead of silently inheriting the session's most
+expensive model:
+
+```toml
+[agents]
+default_subagent_model = "<a mid-tier model from your spawn allowlist>"
+default_subagent_reasoning_effort = "medium"
+```
+
+## Environment Detection
+
+Skills that create worktrees or finish branches should detect their
+environment with read-only git commands before proceeding:
+
+```bash
+GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
+GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
+BRANCH=$(git branch --show-current)
+```
+
+- `GIT_DIR != GIT_COMMON` → already in a linked worktree (skip creation)
+- `BRANCH` empty → detached HEAD (cannot branch/push/PR from sandbox)
+
+See `using-git-worktrees` Step 0 and `finishing-a-development-branch`
+Step 1 for how each skill uses these signals.
+
+## Codex App Finishing
+
+When the sandbox blocks branch/push operations (detached HEAD in an
+externally managed worktree), the agent commits all work and informs
+the user to use the App's native controls:
+
+- **"Create branch"** — names the branch, then commit/push/PR via App UI
+- **"Hand off to local"** — transfers work to the user's local checkout
+
+The agent can still run tests, stage files, and output suggested branch
+names, commit messages, and PR descriptions for the user to copy.
+total 88
+drwxr-xr-x@  4 kilbot  staff    128 Nov  7 18:29 .
+drwxr-xr-x@  6 kilbot  staff    192 Nov  7 18:28 ..
+-rw-r--r--@  1 kilbot  staff  42434 Nov  7 18:29 codex.log
+drwxr-xr-x@ 22 kilbot  staff    704 Nov  7 18:29 shots
+
+exec
+/bin/zsh -lc "sed -n '/"'^## Design/,$p'"' /Users/kilbot/Projects/monorepo-v2/CODING_STANDARDS.md; cat /Users/kilbot/.claude/skills/frontend-design/SKILL.md; cat /Users/kilbot/.claude/skills/mockup/SKILL.md" in /Users/kilbot/Projects/monorepo-v2/docs/mockups/2026-11-07-split-payment/rounds/r3
+ succeeded in 0ms:
+## Design
+
+The owner's UI design position. The long form with sources and rationale is `docs/design/ui-design-guidelines.md` in `wcpos/roadmap`. A PR that breaks one of these rules needs a stated reason in its body, not a quiet exception.
+
+### The two sentences everything else serves
+
+1. **As simple as possible on the surface, with deep complexity a few taps away.** The default
+   screen shows only what the common case needs. Everything else exists, is reachable in one or
+   two taps, and is never deleted to make the screen look clean.
+2. **Clean and modern, following Apple's touch-screen guidance, and it should spark small moments
+   of joy for the cashier.** Joy here means speed, precision and a quiet acknowledgement when
+   something completes. It never means decoration.
+
+### Who is standing in front of it
+
+A cashier at a counter, standing, arm's length from a shared tablet, under shop lighting, with a
+customer waiting. Sometimes a stall-holder who last opened the app four months ago. Judge every
+screen at 5 pm with a queue: can the next action be found in under a second without reading?
+
+### Rules
+
+#### 1. One number, one action
+
+Each screen has one figure that leads and one primary action. Nothing else competes with them
+in size, weight or colour. A second amount (a split leg, a custom amount) appears only when it
+differs from the first, and then as a plan (_Payment 1 of 2_), not a second total.
+
+#### 2. Touch first
+
+- Minimum tap target 44 × 44 pt (Apple HIG); 48 pt preferred (Material, about 9 mm). Gaps of at
+  least 8 pt between adjacent targets, about 12 pt of padding around a bordered control.
+- Keys and tiles the cashier hits every sale (tender keypad, payment tiles, product grid, Pay) are
+  at least 56 pt tall on a tablet. Kiosk research keeps finding fewer touch errors up to about
+  20 mm, so a bigger key is never wasted space.
+- The same CSS size is smaller in millimetres on a phone than on a 24" counter screen; check the
+  physical size on the device class, not the number in the stylesheet.
+- Destructive actions (void, cancel payment, delete) sit apart from constructive ones, never in
+  the same row at the same weight.
+- No hover-only affordances. Hover and keyboard are desktop extras layered on a touch design.
+- A press shows a visible pressed state within 100 ms. Silence after a tap is a bug.
+
+#### 3. Apple's grammar, our accent
+
+- Navigation, modality, sheets, popovers, safe areas and typography follow the Human Interface
+  Guidelines. Full-screen for multi-step tasks; sheets for short, dismissable ones; popovers for
+  small choices; never an enlarged centred modal for a task that grew.
+- **Back points where the content goes.** A back arrow on a pane that sits to the left of what it
+  returns to is wrong; use a close (×) or a labelled action instead.
+- System fonts. Tabular numerals for every amount. Base size 14 px web, 16 px native; nothing
+  below 12 px, and never below 14 px for anything the cashier reads at arm's length.
+  Text a cashier reads is never under 12 px in any step (`text-xs` is the floor). `text-2xs`
+  (11 px) is only for glyph-like text: avatar initials, badge counts. There is no `text-3xs`.
+
+#### 4. Layout is a grid, not a wrap
+
+Tiles are equal width in fixed columns and keep their order. Width never follows label length.
+Five or six payment gateways is normal for a WooCommerce store: design the grid for that, not for
+two. Phones stack to one or two columns; tablets and desktop use the space they have.
+
+- There are two layouts and nothing in between (owner, 2026-10-02): the navigation rail with
+  the register's two columns in a window at least 768 wide and 480 tall, the phone layout
+  (tabs) below that. The boundary is `useIsPhone()` in `@wcpos/components/lib/device`, which a
+  `DeviceScope` (a gallery cell, a test) overrides; layout classes read it too
+  (`cn(phone && 'hidden')`), never a width-only `sm:`/`md:`/`lg:` (a phone on its side is 844
+  wide; the uniwind ratchet refuses new ones). A screen that wants more room for dense content
+  reads the theme's `roomy`; it does not add a breakpoint.
+
+#### 5. State is visible, not explained
+
+- Offline, saving, refused, disabled: one badge in one place, at the top of the pane.
+- A disabled control says why in a few words beside it. Unavailable options are folded or dimmed
+  so they never compete with live ones at full size.
+- No walls of text. An error, empty or trouble state is one line, the actions, and a link to
+  docs.wcpos.com. Explanations live in the docs, not the app.
+- Never rely on colour alone; pair it with an icon or a word.
+
+#### 6. Motion means something
+
+- Durations 150–250 ms for most transitions, ease-out; nothing over 400 ms on a path the cashier
+  is waiting on. Animations are interruptible and never block the next tap.
+- Every completion gets a beat: the change-due line appears as the amount is typed, the total
+  settles, the _Paid_ stamp lands, a capture gets a short haptic on native. That is the joy.
+- Respect reduce-motion. No confetti, no mascots, no emoji in the UI, no animation for its own
+  sake.
+- Anything that moves is smooth, and a beat is a pleasure (owner, 2026-10-01): "fun, smooth and
+  joyful", so that adding to the cart is worth doing just to watch it land. In practice:
+  - Animate only `transform` and `opacity`, with Reanimated, on every platform. A slide that is
+    a plain open/closed state is a Reanimated CSS transition (`SlideOver`): on web the browser
+    runs it off the main thread, so the screen re-rendering around it cannot drop it. Shared
+    values are for motion that follows something (a gesture, two panes on one value).
+  - Leave on an accelerating curve (`EASE_EXIT`); the shared ease creeps at the end. A scrim
+    fades its colour, never its own opacity, or its panel fades with it.
+  - Anything focused while it is moving is focused with `preventScroll`.
+  - Whatever slides keeps what it slides over on stage: both move as one (`PaneStack`), or the
+    cover comes out of an edge and goes back into it (`SlideOver`). Nothing animates on mount.
+  - A tile that opens onto more tiles deals them out of itself and gathers them back
+    (`pos/products/deal-stack.tsx`): the tile walks to the first slot and is the way back,
+    and the grid it came from fades underneath and stays mounted.
+  - What arrives is complete on its first visible frame: no skeleton, spinner or late image
+    inside a moving surface. A beat fires for the cashier's own action, never because a row was
+    recycled or another order came into view.
+  - A beat may use a spring and run past 250 ms (the in-cart count settles in about half a
+    second) because nobody waits on it; it must pick up from where it is when tapped again.
+  - Film it before calling it done: record the frames and read them one by one.
+
+#### 7. Calm colour, semantic tokens
+
+- Use the semantic tokens in `apps/main/global.css` (`bg-background`, `bg-card`, `text-muted-foreground`,
+  `bg-primary`, `text-destructive`, `bg-success`, …). Never a hex or an `oklch()` in a component.
+- One accent colour for the primary action per screen. Semantic colours (success, warning,
+  destructive, info) only carry meaning, never decoration.
+- A state has one name on every surface: `ok`, `warning`, `bad`, `info` or `muted`, read from the
+  tone map (`packages/components/src/lib/tone.ts`). `destructive` names an ACTION (Button, IconButton,
+  MenuRow), never a state, and is the same red as `bad` (`--bad: var(--destructive)`).
+- **Primary is the theme's accent, never red; brand red is destructive only** (owner ruling,
+  2026-09-11). `bg-primary` is blue in the default light and dark themes and varies by theme
+  (Ocean teal, Sunset orange, Monochrome grey): use the token and let it vary. The marketing site's
+  red-as-action does not carry into the app: red on a till means void, cancel, refund, and Pay
+  never shares a colour with Void.
+- Text contrast 4.5:1, UI and icon contrast 3:1 (WCAG). Light and dark are both first-class; check
+  every new surface in both.
+- Flat surfaces, hairline borders, one radius per theme (the theme owns `--shape-*`, components read the
+  utilities); no gradients, glass or decorative shadows — a theme's commit-button shadow is a signature,
+  not decoration (Paul, 2026-10-30); hierarchy comes from spacing, weight and colour, in that order.
+
+#### 8. Words the cashier uses
+
+- Buttons are verbs with the object on them: _Take 18,00 £ in Cash_, _Close register_, _Reprint copy_.
+- A label that repeats what is already on the element is noise: no _OTHER_ above _SumUp Terminal_,
+  no _Cash_ kind above _Cash_. Kinds are icons.
+- Plain words: products, not SKUs; sync, not replication. Every string is translated; it must
+  survive German length and Spanish plurals without wrapping the layout.
+- Brand voice: direct, not blunt; calm, not cute. Error copy says what happened and what to do next.
+
+#### 9. Before you draw, open the real screen
+
+- Inventory what the existing screen does (every state, every string) and rehost it. A mockup that
+  invents a simplified version of an existing surface evaluates a straw man.
+- Then look at what Square, Shopify POS, Lightspeed, Toast, Zettle and SumUp do for the same task.
+  The cashier's expectation is the tie-breaker; deviate only with a stated reason.
+- Take zero leads from WordPress or WooCommerce admin idioms for app UI.
+
+#### 10. Definition of done for a UI change
+
+- Walked every state as a cashier: empty, loading, saving, error, offline, disabled, long text,
+  part-paid, phone width, dark mode.
+- Screenshots of the states that changed are in the PR body, tablet and phone.
+- No new explanatory paragraph in the app. No new hex colour. No new `useEffect` for layout.
+- Touch targets and contrast checked, not assumed.
+- Every interactive element carries a stable `testID`.
+
+#### 11. Settings and admin forms
+
+Applies to every settings form the owner edits, in the app and in the plugins' WordPress admin
+screens (owner, 2026-10-21: _"what is variance, is it a time? is it money? You need better guidelines on
+UI because this is not intuitive"_). The long form with the cited examples is section 11 of
+`docs/design/ui-design-guidelines.md` in `wcpos/roadmap`.
+
+- **A setting is a sentence the owner would say.** The label is the behaviour in the words used at
+  the counter; the control sits where the value goes in the sentence: _Ask a manager when the count
+  is out by more than [£ 5.00]_.
+- **Every value carries its unit inside the control.** A currency symbol in a money field, a time
+  picker for a time, a suffix for minutes or percent. Never a bare box.
+- **Optional behaviour is a switch, and its value appears when the switch is on.** "Leave blank for
+  none" is a bug: blank is not a choice a person makes on purpose.
+- **The help line says what happens at the till, in one sentence.** Never the format, never the
+  label again.
+- **Plain words.** Float, drawer, count, short or over, close. Never variance, threshold, session,
+  expected.
+- **The common case is one switch.** Everything that only matters when it is on is hidden while it
+  is off.
+- **Inherited or customised is shown on the field, never implied by blank:** _Site default · value ·
+  Customise_, or _Overridden · value · Use site default_.
+- **Defaults are prefilled and visible in the control**, not described in a tip.
+
+### Components: one answer per element, app-wide
+
+The owner's rule (2026-10-13, Card readers run): _"I don't want a special UI carved out for this
+sheet, it needs to be consistent across the whole app. If a suggestion is not consistent with
+similar UI elements, warn me."_ So every element below has ONE home and ONE set of rules. A fix
+goes into the shared component in `packages/components`, never into a screen's own override, and
+a request that would make one screen differ from this table is answered with the table first,
+then built only if the owner confirms the exception.
+
+#### Buttons (`@wcpos/components/button`)
+
+The seven kept variants (decision 1[^board]) and the title bar's `bare`; nothing else is in the cva union, so TypeScript refuses any other.
+
+| Variant                         | Role                                                                                                                                               | Where it sits                                                                 | Examples                                                                                                                                  |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `default` (filled `bg-primary`) | Primary: the action the screen exists for; and the swipe strip's Edit block beside its solid Remove (the swipe grammar: solid tiles, white words)  | one per screen, full width on a phone; the strip is the one exception         | _Take 18,00 € in Cash_, _Try again_ after a refusal, _Sync order_ (the cart's unsaved sale), _Connect a reader_ when nothing is connected |
+| `outline`                       | Secondary: the reversible alternative beside the primary                                                                                           | same row or stacked under the primary, never heavier than it                  | _Disconnect_, _Choose another way_, _Close_, _Help_, _Sync_ as a record's own action                                                      |
+| `ghost` (muted label at rest)   | Quiet: navigation, escapes, more                                                                                                                   | after the buttons, on its own line, or in a toolbar                           | _Reader guide_, _Details_, _Cancel_ on a scan                                                                                             |
+| `link`                          | Text that behaves as a button: no surface, the size's height                                                                                       | after the content; inline it is `DocsLink`, which drops the padding           | _Open docs_, _Reader settings_                                                                                                            |
+| `outline-destructive`           | Destructive: what loses something (never filled)                                                                                                   | the footer's leading group, apart from the primary                            | _Void_, _Cancel payment_, _Restore defaults_, _Cancel on terminal_                                                                        |
+| `ghost-destructive`             | The quiet form of the same, in a dense row                                                                                                         | inside a table or list row                                                    | _Remove_ on a queued email's row                                                                                                          |
+| `destructive` (solid red)       | Only the confirm inside an `AlertDialog`, the swipe Remove block, and a gate's `destructive` primary when the gate itself is the confirm of a loss | the alert's footer, the swipe strip, the reset confirm on the root crash gate | _Delete_ in _Delete this order?_, _Reset and restart_                                                                                     |
+| `bare`                          | A desktop title-bar item: no surface on hover or press, the muted key-rank label turns to the foreground (Paul, 2026-10-30)                        | the title-bar strip only (`IconButton` has the same `bare`)                   | the title bar's store button, bell and avatar                                                                                             |
+| any, `disabled`                 | Unavailable, with one line beside it saying why                                                                                                    | in the SAME slot the live button uses                                         | _Connecting…_, _Installing…_                                                                                                              |
+
+| Size      | Height                          | Where                                                                                                                                                         |
+| --------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sm`      | 36 (`h-9`)                      | in table rows and dense toolbars                                                                                                                              |
+| `default` | 44 (`h-ctl`, the control token) | everywhere else                                                                                                                                               |
+| `lg`      | 56 (`h-14`)                     | the pane's one sale button: Pay, Take payment, Open/Close register, New sale                                                                                  |
+| `stack`   | 56 at least (`min-h-14`)        | the control radius, the base label, the icon over the label; a labelled verb among equals (the register panel's Pay in · Pay out · No sale), never the commit |
+
+Heights are at the Regular scale step; Compact and Spacious scale them with `--spacing`, and `h-ctl`
+never goes under 44 on a touch screen. They are what is drawn: a `sm` Button, `IconButton size="sm"` and
+`Chip size="sm"` still owe the finger a 44 pt target (§2). No height or radius class on a Button (lint enforces it); a small pill is a
+`Chip size="sm"`, never a Button. A row with a ⋮ menu puts remove or forget as the menu's last red row;
+`ghost-destructive` is for a dense row that has no menu. A selected choice is a
+`Chip`, never a Button that toggles its variant. Icon-only actions are an `IconButton` (44, `size="sm"`
+32 in dense rows), with an `accessibilityLabel`.
+
+Saving (owner, 2026-10-23 and 2026-10-25): an edit to a record that already exists (a setting, a field of the open
+cart, a product, a customer, a coupon, an order) saves as it is made — `useFormChangeHandler` validates the changed path
+and writes it, the shared `SavedMark` acknowledges it beside the label, and the footer is Close plus the record's own
+actions, never Cancel or Save. A record the store owns reaches the store through the outbox, not a button: `localPatch`
+enqueues a store mutation for every non-cart write and the queue coalesces them per record, so "Saved" means saved on the
+device and on its way. ONE explicit button remains only for an action named for what it does — creating a record
+(_Add customer_, _Add to cart_), moving money (_Pay_, _Refund_), sending something (_Send_), a status intent on an order
+(a status is an intent, never an echo) and the footer's record actions (_Sync_, _Delete_) — and the word Save is on no
+button. The two kinds never share one form: where a sheet carries both, the intent lives in its own bordered card with
+its own form and button, as the cart's Order details sheet does with its Hand over card.
+
+Rules: a slot never empties while its state changes (Connect → Connecting… → Disconnect is one
+slot; the ⋮ beside it stays put); buttons are 44 pt minimum, 48 pt default on a phone; Pay
+never shares a colour with Void (§7).
+
+#### Footers
+
+A footer's buttons are chosen by role: `DialogFooter` and `AlertDialogFooter` take slots and own the variant, the order, the side and the phone stacking; a `Button` is never written inside a footer (ruled 2026-10-25, after two Sync buttons shipped in two looks).
+
+| Slot            | Variant                                       | Side                                           | Examples                                                                      |
+| --------------- | --------------------------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------- |
+| `intent`        | `default`                                     | rightmost; phone first                         | Add to cart, Send, the cart's Sync order                                      |
+| `secondary`     | `outline`                                     | right, before intent; phone after intent       | Print, Email receipt, Download PDF, Update customer too                       |
+| `record`        | `outline`                                     | left, after destructive; phone after close     | Sync, Re-open                                                                 |
+| `destructive`   | `outline-destructive`                         | left, after aside; phone after record          | Void, Delete, Refund, Restore defaults, Sign out                              |
+| `close`         | `outline`                                     | right, before secondary; phone after secondary | always present; Cancel with an intent, Close without, Close on a record shell |
+| `aside`         | no button                                     | leftmost; phone last                           | Count, status line                                                            |
+| alert `confirm` | `destructive` for a loss, otherwise `default` | rightmost; phone first                         | Delete, Confirm                                                               |
+| alert `cancel`  | `outline`                                     | before confirm; phone after confirm            | Cancel                                                                        |
+
+One intent per footer. A record action is never the intent. The footer chooses Cancel versus Close from `DialogLabels`; the caller never chooses the word.
+
+Every footer carries the dismiss: `close` defaults on, and `close={false}` is for a footer whose intent is the dismissal (the written closure's Done), nothing else (ruled 2026-10-29, after the cart's Order details sheet shipped without one). A form that saves as it is edited has nothing to cancel: `RecordDialog` wraps its body (tabs and footer) in `DismissIsClose`, so the dismiss reads Close beside Sync order or Re-open; a call site never chooses the word. Outside an overlay shell (a Reports panel's phone page) there is no dialog to close and no dismiss is drawn.
+
+The ESLint `designSystemOwnershipSelectors` footer selector in `packages/eslint/index.js` refuses a button written inside a footer, including its `aside` prop; a button rendered by a child component inside `aside` (the tax rates' sync control) is the caller's responsibility and the one place this rule is review, not lint.
+
+#### Situation → overlay
+
+One shell (`lib/overlay`) and one answer per situation (decisions 5 and 6[^board]); on a phone every
+anchored menu, select and popover becomes a bottom sheet (a tooltip stays a tooltip) and every side panel
+becomes a page.
+
+| Situation                                                           | Overlay                                                            | Notes                                                                                            |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| Edit or add a record (line, fee, customer, product, order, printer) | side panel, `DialogContent side`                                   | `right` on a page; on the POS `usePanelSide` puts it over the other column                       |
+| Confirm a loss                                                      | `AlertDialog`                                                      | no ×, the scrim does not dismiss, the confirm is solid `destructive`                             |
+| Row actions                                                         | `DropdownMenu` on an `IconButton` ⋮                                | destructive last and red, after a separator                                                      |
+| Display or column settings                                          | side panel (`UISettingsDialog`)                                    | on every screen, never a popover                                                                 |
+| Pick one of a few                                                   | `Select` or `DropdownMenuRadioItem`                                | never a popover full of buttons                                                                  |
+| A small non-modal choice (the bell, a date range, the quantity box) | `Popover`                                                          | a list, a picker or a keypad with at most a Done; never a settings form                          |
+| The cashier (switch user, register, store; sign out)                | `UserSheet` (`right` on every screen, the POS included)            | the one cashier surface on every screen; the stores and registers are its bands                  |
+| A switch needs a yes (hand over, store, register)                   | `SwitchConfirm` (one centred `AlertDialog` over the cashier sheet) | the verb carries its object (_Hand over to Amy_, _Switch to Front counter_); never `destructive` |
+| A multi-step task (checkout)                                        | full screen                                                        | never a centred modal that grew                                                                  |
+
+#### Chips, badges and switches
+
+| Element                                                                                  | Component                                                                                                                                                                                                        | Sizes                                                                                           |
+| ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| A selectable choice (a filter, a reader)                                                 | `Chip`, `on` when selected (border and text go primary)                                                                                                                                                          | default 44 (`h-ctl`); `size="sm"` 32 (`h-8`) only in a dense table cell or a row's filter strip |
+| A count, or a short state tag in a dense row ("1 stuck", "Unsynced")                     | `Badge` (solid tone by `variant`); `tinted` for a quiet state label beside a row's own text (a printer scan's _Ready_): the tone's wash, words in the foreground (`muted` has no wash and stays the solid muted) | `sm` 16, default 20, `lg` 24; full radius                                                       |
+| A named state ("Signed in", "Out of stock", an order's status)                           | `StatusBadge`: a tone dot and the word                                                                                                                                                                           | the text's own line height                                                                      |
+| A few-way view switch (List / Grid, Fixed / Percent)                                     | `SegmentedControl`                                                                                                                                                                                               | 44 (`min-h-ctl`)                                                                                |
+| A choice the cashier hits by position (a split option, a payment method, a denomination) | `Tile`                                                                                                                                                                                                           | 64 at Regular (`min-h-tile`)                                                                    |
+| Sections inside a panel                                                                  | `Tabs`                                                                                                                                                                                                           | 44 (`h-ctl`) triggers                                                                           |
+| An on/off setting                                                                        | `Switch`                                                                                                                                                                                                         | —                                                                                               |
+
+A Button is never a toggle. Among pills, full radius belongs to `Chip` and `Badge` alone; a circular control (`Switch`, `RadioGroup`, a `Slider` thumb) is its own shape.
+
+#### Gutters
+
+Spacing is decided by the system, never per surface (owner, 2026-10-18: the icon rail had been
+left at a 4 px inset and the gap was offered as a choice; it is not one).
+
+- One scale: 4, 8, 12, 16, 32 (`p-1`, `p-2`, `p-3`, `p-4`, `p-8`). Nothing in between.
+- Every container insets its children from its own edges by the gutter of its density, and the
+  children share that one gutter:
+
+  | Container                                                                                                                                                                                                                                                                                                                                                   | Gutter                                                                                                | Today                                                                                                                                                                                                                                                                                                                                            |
+  | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+  | Inside a control: an icon from its button's edge, a row's lines from its card edge                                                                                                                                                                                                                                                                          | 4                                                                                                     | `gap-1`, hitSlop                                                                                                                                                                                                                                                                                                                                 |
+  | Between controls, and a dense strip of them: the icon rail (48 + 2×8), the front drawer's items, the gap between chips, the cart column's rows, a card to its own caption row (the count and the sync button are the card's controls, not a content area)                                                                                                   | 8                                                                                                     | drawer `mx-2`, chips `gap-2`, `TableSurface` `mb-2`, `TileGround` `pb-1` + the tile's 4, rail 16 spacing units = 12 + 2 + 2 (64 at Regular; the drawer reads it through `useRailWidth`)                                                                                                                                                          |
+  | Between content areas on the page ground — the page gutter: `PageBar`'s controls from the top and the sides (16 from the top on a phone, as its screen edge), the chip row, `TableSurface`'s sides, the caption row's bottom, `ListColumn`'s rows, `AreaPage` around its card, the area nav rail, the hold banner and the upgrade strip, the Reports ground | 12 at Regular: the `--spacing-gutter` token, 3 units (10.5 / 12 / 15), so it follows the density step | `p-gutter`, `px-gutter`, `mx-gutter`, `gap-gutter`…: `PageBar` `pt-gutter px-gutter` (a phone's 44 row: `mt-4` outside it), `ListColumn` (its body's `pt-gutter` where no chip row is above), `ChipRow` `p-gutter`, `TableSurface` `mx-gutter` (its `mb-2` is the row above), the caption row's `pb-gutter`, `TileGround`, `AreaPage` `p-gutter` |
+  | Inside a surface: a card's body, a pane's body, a panel's header and footer, a bordered notice; the screen edge of a gate or sign-in screen; and the phone's screen edge: its bar, chip row and page padding (Apple's 16 pt root-view minimum applies at the device edge; the gutter is for the ground inside a window)                                     | 16                                                                                                    | `p-4`                                                                                                                                                                                                                                                                                                                                            |
+
+  Sources: Windows app design (Content layout and spacing): 8 epx between buttons, 12 between
+  content areas, 16 between a surface and edge text. UIKit: 8 pt default view margins; 16/20 is
+  the root view's minimum, i.e. the screen edge. Owner, 2026-10-22: 16/20 read too spacious for
+  an application pane.
+
+- A container's width follows from its items and its gutter (the icon rail is 12 + 2 + 2 = 16 spacing units, 64 at Regular),
+  not the other way round.
+- Nothing sits flush against a container's edge except the container's own border or surface.
+  A lifted item (`bg-card` on the ground) that touches the edge reads as the container, not as an
+  item; that is the tell that a gutter is missing.
+- The bottom edge is a container edge like the top one: the last row of a page or pane (the
+  table's caption row) sits one gutter above it, as the first row sits one gutter below the top.
+- A section heading inside a list (the orders day heading) is a band, not a row: `h-band`, the
+  `--spacing-band` token, 7 units (24.5 / 28 / 35), uppercase `text-xs` muted on the ground (`bg-background`) with
+  the rows' bottom rule. At row height it reads as an empty item (owner, 2026-10-23).
+- Between the rows of a page or pane there is exactly one gutter, and the bar is a row at every
+  width (a phone's included, Paul 2026-10-30): on wide widths `PageBar` has no height of its own, its controls sit the gutter from the top and the
+  sides, and the row under it (the chip row, a page body) brings the gutter between them. A bar
+  that centres a 44 control in a fixed 64 puts 10 above the search and 26 under it; that is the
+  tell (owner, 2026-10-20).
+- Two panes across a resize handle: the handle is the gutter, one page gutter wide with the 4 px grip centred in it (`@wcpos/components/panels`), and the edge of a pane that faces it keeps no inset of its own, so the two panes' surfaces sit one page gutter apart, the gap any two content areas get; an 8 px handle beside a full gutter had put nearly two there. The POS products column names the cart's side through `GroundInnerEdge` (`@wcpos/components/lib/ground`, the one gutter table, which every surface on the ground reads: `PageBar`, `ChipRow`, `TableSurface`, the tile ground and the caption row); the cart is flush with the handle (owner, 2026-10-23).
+- One page gutter at every width: a page does not double its inset on `md` while its neighbour
+  keeps the page gutter (Settings sat at 32 beside Products at 16 until 2026-10-20).
+- A new container takes its gutter from this table. A mockup does not offer padding as an option.
+- The list surfaces (Products, Orders, Customers, Coupons, the POS products column) share one
+  construction: `ListPage` (ground, bar, Pro guard) and `ListColumn` (`ChipRow`, rows, body on
+  `TableSurface` or `TileGround`, caption row), so a change to any of them moves every list as
+  one (owner, 2026-10-22).
+
+#### Page bars
+
+- Every non-POS drawer destination (Orders, Products, Customers, Coupons, Settings, Store health, Support, Reports, Closures) uses `PageBar`, most of them through `ManagementBar`; sign-in and recovery screens have no bar.
+- The bar has the title left where there is one (`text-base` semibold, no store suffix), then search, actions, the bell and the avatar below `lg`, with no rule under it and no height of its own: its controls sit the page gutter from the top and the sides and the row under it brings the page gutter between them (Gutters, above). That holds at every width: on a phone the control row is 44 and sits the phone ground's gutter (16) under the bar's top edge, after any status or title-bar inset, search is its own 44 row directly under it, there is no rule under either, and the row under the bar (the chip row, or the list body where there is none) brings the 16 below (Paul, 2026-10-30).
+- The list pages (Products, Orders, Customers, Coupons) carry no title: the search names the page and the rail marks it (owner, 2026-10-18). Support and Reports keep theirs. Settings and Store health show no bar on `lg`: the rail carries the avatar, those pages need neither the bell nor the offline badge (owner's call; the POS and the list pages keep theirs), and the upgrade notice and the held-session banner render above the area rail; below `lg` they keep the bar.
+- The POS keeps its `RegisterBar` (48, on the cart card) as ruled 2026-09-11; under the desktop title bar it draws nothing, because the title bar carries its place and pill (Paul, 2026-10-30). The POS products column's search row is a `PageBar` too: no title (its column, an `EdgeSurface`, pads the top inset, so the bar has none left to pad), the scan, view and settings controls as its actions.
+- The phone search row is `PageBar`'s: on a phone, a bar with a search shows it on its own 44 row under the control row (no rule: the row under it brings its own gutter, owner 2026-10-23) when that row has a title, a scope control, a back crumb or the menu to share it with. A row of nothing but icon actions (the POS products column, whose register bar above carries the place and the menu) keeps the search in its middle, beside the actions, and spends no second row (owner, 2026-10-28).
+- A side menu's active item is the Settings lift (`bg-card` on `bg-background`); the rail keeps its white square.
+- An area page (Settings, Store health) is one card on the page ground with its heading inside (`text-xl` semibold, an optional muted line, then a hairline rule), at `max-w-4xl` centred, the page gutter around the card at every width: `AreaPage` in `navigation-area/` (owner, 2026-10-18).
+
+#### Gate screens
+
+A screen that replaces the whole app (a protocol refusal, a plugin too old, a missing route) is a `GateScreen` (`@wcpos/components/gate-screen`): the sign-in mark, one card, a tone disc, a title in foreground ink, one line, one primary, at most one outline secondary, one docs link, nothing else.
+The family has three members: `GateScreen` inside the providers, `FallbackScreen` (`@wcpos/components/error-boundary`) as the fallback of a boundary around a whole route, and `PreThemeGate` (`@wcpos/components/gate-screen/pre-theme`) above the providers, where no className resolves; a boundary around part of a screen keeps the inline bar.
+A new gate is registered in `apps/main/components/gate-screens.test.ts`, which also refuses an `EmptyState` and a `Button` hand-centred in a `View`.
+The title never takes a tone colour: the disc carries it, and `bad` stays the only red surface.
+A coded gate's copy comes from the error registry (`error-registry.json`), one source for the screen, the log row and the docs page.
+The lint refuses a hand-centred `absoluteFill` (`StyleSheet.absoluteFill` with `justifyContent: 'center'`) under `screens/` and `app/`.
+
+[^board]: The visual reference for these tables and the twelve decisions (ruled 2026-10-16) is the board `~/Projects/wcpos-handoffs/design-system-gallery-2026-10-16.html`.
+
+#### Rows and cards
+
+A device is a list row, not a card (Paul, 2026-10-29): no border box; a hairline between rows; an
+icon square (40 pt, tinted by state: success / destructive / muted), line 1 the name (14 medium)
+with an optional chip, line 2 the identifiers (serial · location), line 3 ONE state line (dot +
+words, or the error in `text-destructive`). The action slot sits at the right of the same line on
+a wide pane and under the lines on a phone. One `DeviceRow` in a `DeviceList`
+(`@wcpos/components/device-row`) is the Printers, Receipt templates, Card readers, Scanners and
+Customer displays row; the list rules between rows, never above the first or under the last.
+
+#### Property rows
+
+A record's edit form is a list of facts, one row per fact: key · value · verb (Paul, 2026-10-25; boards `~/Projects/wcpos-handoffs/2026-10-25-property-rows-system.html` and `…-every-form.html`). Components: `PropertyList`, `PropertyRow`, `PropertyVerb`, `PropertyAddRow`, `PropertyAdd`, `PropertyPlaceholder` (`@wcpos/components/property-row`); which facts are rows is `useFieldPresence` in core. Nothing folds: no Collapsible, Accordion or chevron heading on a record form.
+
+1. **The name test.** A field is offered behind an add button only if its label alone tells a shop owner what they get (Sale price, Barcode, Tax ID). One that fails stays a row with a help line, or leaves the form.
+2. **Settings have no add buttons.** A setting always has a value; offering is for records (customer, product, order line, coupon).
+3. **Asked is identity, the till's job, or what Woo requires** (customer: name, email, phone). Asked facts are rows even when empty, with a placeholder (`Add Email`); the rest are offered and, once added, sit in their canonical place until their Remove.
+4. **One row, one fact.** Woo's pairs merge: First + Last → Name; Tax status + Tax class → Tax; Manage stock + Quantity → Stock.
+5. **A copy is derived**, never a checkbox and a hidden form: Shipping reads _Same as billing_ with the verb that breaks the link (_Use a different address_), and the write carries the copy.
+6. **Set elsewhere is locked:** the value, where it is set, and _Open ↗_.
+7. **An off-by-default exceptional switch is offered** (Featured, Virtual); adding it adds the row switched on. A switch whose default matters is a row.
+8. **Conditional settings nest** under their switch, indented one gutter, never behind a fold.
+9. **Troubleshooting rows stay findable:** a row at the end with a one-line help, never offered, never folded.
+10. **Developer facts go to the JSON tab** (Parent ID, Meta IDs, raw meta), not the form.
+11. **Lists are one row per item plus an add button,** in Woo's words: _Custom field_, not Meta Data.
+12. **Explicit intent keeps its verb button** (Update status, Send, Generate, Process refund): an action, not a fact.
+
+A compound fact (an address) is one line closed and its parts as indented rows open; open lasts for the dialog's life. Verbs are link Buttons, add buttons outline `sm` Buttons with a plus, never Chips.
+
+#### Sheets, modals and menus on a phone
+
+- A full-size modal IS the screen: no scrim gutter, no radius, card colour to the safe-area
+  edges, top-aligned (`DialogContent` from `dialog` with `size="full"` does this on native).
+- A bottom sheet (a ⋮ menu, a picker, a short choice) sits on the screen edge and paints the
+  bottom inset itself in card colour; the shell leaves that strip unpadded. Both live in
+  `lib/overlay` and `dialog/index.tsx`; a sheet that shows a bar under it is a bug there,
+  not a reason for local padding.
+- A sheet's rows are 48 pt, one icon + one verb each; a destructive row is last and red.
+- The sheet header is title + close; a segmented switch (Payments / Legacy) is its own row
+  under the header on a phone, never in the header row.
+
+#### Where the shared component is
+
+`MenuRow` (`menu-row/`) is the shared action/choice row inside sheets, popovers and side-panel menus: `rounded-md`, one size, a check slot for `choice`, destructive last and red. `MenuRowSeparator` separates groups, never individual rows.
+
+`packages/components/src/<name>/` with its `LEDGER.md`. Before styling anything on a screen,
+check that folder: if the element exists, use it as is; if it needs a new state, add the state
+there with a test and a line in the ledger; if it does not exist, say so before building a local
+one.
+
+### Anti-patterns that have already been rejected
+
+- The centred modal that grew: enlarging it is the one fix the design systems forbid.
+- A paragraph under the tiles telling the cashier how the screen works.
+- Full-size dead tiles for gateways that are not set up.
+- A kind label on every tile when only the title differs.
+- A back arrow pointing away from where the content is.
+- Hosted-artifact-only mockups; write the HTML to disk and open it.
+
+## Native and E2E fixes
+
+The diagnosis playbook is `.claude/rules/native-e2e-diagnosis.mdc` and `apps/main/.maestro/README.md`; these are the rules a fix must follow once the cause is known.
+
+- Fix the class at the throw site, not the instance at the catch site: name a cancellation `AbortError` where it is thrown (`Object.assign(new Error(msg), { name: 'AbortError' })`) so every downstream classifier inherits it — never extend a catch-site regex. Pattern: `packages/sync-engine/src/maintenance/variation-prefetch.ts`.
+- A native/web platform divergence gets a unit test in `packages/sync-engine/src/platform-seam.test.ts`, so `vitest` catches the next one, not Maestro.
+- Never "fix" a red box by trying to silence LogBox; `LogBox.ignoreAllLogs()` is a no-op outside `__DEV__`.
+- A red that matches no row in the Maestro README's failure table earns a new row in the same PR as its fix.
+- A harness retry is for a lost press on the starved runner, and every retry emits a `WCPOS_E2E …` log line; an app defect (a tab that does not re-centre, an input that appends, a button that accepts a second press) is fixed in the app with a unit test.
+- Android relaunches via `openLink`, never `launchApp` (`pm grant` hang). Tablets have a permanent rail: never wait for the drawer to close.
+---
+name: frontend-design
+description: Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults.
+license: Complete terms in LICENSE.txt
+---
+
+# Frontend Design
+
+Approach this as the design lead at a small studio known for giving every client a visual identity that could not be mistaken for anyone else's. This client has already rejected proposals that felt templated, and is paying for a distinctive point of view: make deliberate, opinionated choices about palette, typography, and layout that are specific to this brief, and take one real aesthetic risk you can justify.
+
+## Ground it in the subject
+
+If the brief does not pin down what the product or subject is, pin it yourself before designing: name one concrete subject, its audience, and the page's single job, and state your choice. If there's any information in your memory about the human's preferences, context about what they're building, or designs you've made before – use that as a hint. The subject's own world, its materials, instruments, artifacts, and vernacular, is where distinctive choices come from. Build with the brief's real content and subject matter throughout.
+
+## Design principles
+
+For web designs, the hero is a thesis. Open with the most characteristic thing in the subject's world, in whatever form makes sense for it: a headline, an image, an animation, a live demo, an interactive moment. Be deliberate with your choice: a big number with a small label, supporting stats, and a gradient accent is the template answer, only use if that's truly the best option.
+
+Typography carries the personality of the page. Pair the display and body faces deliberately, not the same families you would reach for on any other project, and set a clear type scale with intentional weights, widths, and spacing. Make the type treatment itself a memorable part of the design, not a neutral delivery vehicle for the content.
+
+Structure is information. Structural devices, numbering, eyebrows, dividers, labels, should encode something true about the content, not decorate it. Many generic designs use numbered markers (01 / 02 / 03), but that's only appropriate if the content actually is a sequence - like a real process or a typed timeline where order carries information the reader needs. Question if choices like numbered markers actually make sense before incorporating them.
+
+Leverage motion deliberately. Think about where and if animation can serve the subject: a page-load sequence, a scroll-triggered reveal, hover micro-interactions, ambient atmosphere. An orchestrated moment usually lands harder than scattered effects; choose what the direction calls for. However, sometimes less is more, and extra animation contributes to the feeling that the design is AI-generated.
+
+Match complexity to the vision. Maximalist directions need elaborate execution; minimal directions need precision in spacing, type, and detail. Elegance is executing the chosen vision well.
+
+Consider written content carefully. Often a design brief may not contain real content, and it's up to you to come up with copy. Copy can make a design feel as templated as the design itself. See the below section on writing for more guidance.
+
+## Process: brainstorm, explore, plan, critique, build, critique again
+
+For calibration: AI-generated design right now clusters around three looks: (1) a warm cream background (near #F4F1EA) with a high-contrast serif display and a terracotta accent; (2) a near-black background with a single bright acid-green or vermilion accent; (3) a broadsheet-style layout with hairline rules, zero border-radius, and dense newspaper-like columns. All three are legitimate for some briefs, but they are defaults rather than choices, and they appear regardless of subject. Where the brief pins down a visual direction, follow it exactly — the brief's own words always win, including when it asks for one of these looks. Where it leaves an axis free, don't spend that freedom on one of these defaults. Just like a human designer who's hired, there's often a careful balance between doing what you're good at and taking each project as a chance to experiment and learn.
+
+Work in two passes. First, brainstorm a short design plan based on the human's design brief: create a compact token system with color, type, layout, and signature. Color: describe the palette as 4–6 named hex values. Type: the typefaces for 2+ roles (a characterful display face that's used with restraint, a complementary body face, and a utility face for captions or data if needed). Layout: a layout concept, using one-sentence prose descriptions and ASCII wireframes to ideate and compare. Signature: the single unique element this page will be remembered by that embodies the brief in an appropriate way.
+
+Then review that plan against the brief before building: if any part of it reads like the generic default you would produce for any similar page (work through a similar prompt to see if you arrive somewhere similar) rather than a choice made for this specific brief — revise that part, say what you changed and why. Only after you've confirmed the relative uniqueness of your design plan should you start to write the code, following the revised plan exactly and deriving every color and type decision from it.
+
+When writing the code, be careful of structuring your CSS selector specificities. It's easy to generate CSS classes that cancel each other out (especially with a type-based selector like .section and a element-based selector like .cta). This can happen often with paddings/margins between sections.
+
+Try to do a lot of this planning and iteration in your thinking, and only show ideas to the user when you have higher confidence it'll delight them.
+
+## Restraint and self-critique
+
+Spend your boldness in one place. Let the signature element be the one memorable thing, keep everything around it quiet and disciplined, and cut any decoration that does not serve the brief. Not taking a risk can be a risk itself! Build to a quality floor without announcing it: responsive down to mobile, visible keyboard focus, reduced motion respected. Critique your own work as you build, taking screenshots if your environment supports it – a picture is worth 1000 tokens. Consider Chanel's advice: before leaving the house, take a look in the mirror and remove one accessory. Human creators have memory and always try to do something new, so if you have a space to quickly jot down notes about what you've tried, it can help you in future passes.
+
+## More on writing in design
+
+Words appear in a design for one reason: to make it easier to understand, and therefore easier to use. They are design material, not decoration. Bring the same intentionality to copy that you would bring to spacing and color. Before writing anything, ask what the design needs to say, and how it can best be said to help the person navigate the experience.
+
+Write from the end user's side of the screen. Name things by what people control and recognize, never by how the system is built. A person manages notifications, not webhook config. Describe what something does in plain terms rather than selling it. Being specific is always better than being clever.
+
+Use active voice as default. A control should say exactly what happens when it's used: "Save changes," not "Submit." An action keeps the same name through the whole flow, so the button that says "Publish" produces a toast that says "Published." The vocabulary of an interface is the signposting for someone navigating the product. Cohesion and consistency are how people learn their way around.
+
+Treat failure and emptiness as moments for direction, not mood. Explain what went wrong and how to fix it, in the interface's voice rather than a person's. Errors don't apologize, and they are never vague about what happened. An empty screen is an invitation to act.
+
+Keep the register conversational and tuned: plain verbs, sentence case, no filler, with tone matched to the brand and the audience. Let each element do exactly one job. A label labels, an example demonstrates, and nothing quietly does double duty.
+---
+name: mockup
+user-invocable: true
+description: Use when Paul asks to mock up, wireframe, lay out or show design options for a screen, page, panel, modal or component, asks "what should this look like", or sends a mockup back as not well designed or not thought through. Also use before any UI design doc that needs a picked layout.
+---
+
+# Mockup
+
+A mockup is a **scored artefact, not a sketch**. Variants are drawn, shot, judged by three models against fixed anchors, polished round by round, and delivered as one static HTML page that Fable picks and opens. Taste calls stay with the main session; the judges rank, they never decide.
+
+**Announce at start:** "Running /mockup — variants, anchors, council rounds."
+
+For a screen that is already built and shot by a journey capture spec (not a mockup), the same loop with the repo's PR rules is in `APP-CLIMB.md`; paste its Block A instead of running the steps below.
+
+## 1. Pin the brief (before any drawing)
+
+**First line of the brief: the mode.** `mode: inside-a-system` when the repo the screen belongs to has design tokens and a component library (a `global.css` of tokens, a `packages/components`, a gallery); `mode: greenfield` otherwise. Inside a system the screen is not a canvas: every element on it already reads a token and a component, and a variant is a change to that system (step 3). Most WCPOS work is inside-a-system.
+
+Write `brief.md` in the output dir with: the mode, the subject (one screen, one job), who stands in front of it, **the problem in the reporter's own words** (Paul's sentence, the ticket's sentence: never the suspected cause, never the category a judge should watch; a brief that says "judge the field affordance" has pointed three judges at fields and away from everything else), the start state, the end state, **every state the screen can be in** (empty, error, long content, loading, offline, permission-denied: whichever apply), the widths to design for, light and dark if the product has both, and the constraints. Constraints come from the repo when it has them: if `.claude/rules/design.mdc` or a `CODING_STANDARDS.md` § Design exists in the current repo, read it and copy the binding lines into the brief. Anything the brief does not pin, pin yourself and mark `assumed:`.
+
+Output dir: the folder Paul named if he named one; else `docs/prototypes/<YYYY-MM-DD>-<slug>/` when the repo has `docs/prototypes/`; else `~/Desktop/mockups/<YYYY-MM-DD>-<slug>/`.
+
+A time or token cap shrinks the round cap (`rounds=1` is the floor: three variants, one judged round, one pick). It never removes variants, anchors or judges. "The process doesn't fit the cap" means set `rounds=1`, not draw one layout and self-assess.
+
+## 2. Freeze the anchors
+
+Shoot once, never change during the climb:
+- `anchors/baseline-*.png`: the current screen, if one exists (run the app or capture spec; a headless page is not computer use).
+- `anchors/ref-<name>-*.png`: two or three reference screens of the same kind. Sources in order: the Mobbin search tool when this session has it (`search_screens`, download `image_url`), then the competitor notes in the journal vault (`Projects/WooCommerce POS Competitors.md`), then none, stated in the report.
+- Inside a system, also `anchors/system-*.png`: the repo's own component gallery (or its gallery shots) and one neighbouring real screen in the same theme, as they are today. Competitors show the task; the system anchors show what every variant must still match. A system mockup with no system anchor has nothing for Consistency to be judged against.
+
+## 3. Draw three variants
+
+Delegate to one Opus agent (the default Agent model; taste ≥ 8). Its prompt carries: `brief.md` in full, `~/.claude/skills/frontend-design/SKILL.md` to read first, the states list as a checklist each variant must render, and the house defaults to avoid by name (cream backgrounds, italic accent words, 01/02/03 section labels, monospace labels, pill buttons, hairline broadsheet rules). Deliverable: `variants/v1.html`, `v2.html`, `v3.html`, each self-contained, CSS only, no JavaScript, each variant a different layout idea, not a recolour. Keep the agent alive; it applies the findings in later rounds.
+
+**Greenfield:** colours as tokens on `:root` with a `:root[data-theme="dark"]` block; the variant invents its system.
+
+**Inside a system, a variant is a diff of the system, and it is written down:**
+- `variants/tokens.css` is the repo's live tokens, extracted verbatim (`scripts/tokens-from-css.py <global.css> <out.css>` turns every `@variant <theme> { … }` block into `body[data-theme="<theme>"] { … }`; the theme's shape and weight tokens come with it). Every page loads it and draws each element with the token the component reads in code: open the component and copy its class string, never guess which token a border or a fill uses.
+- Each variant carries `variants/vN/changes.md`: every token whose value changes, every element that changes which token it reads, and nothing else. A value or a token that does not exist in the repo today is allowed only as a line there marked `new:`; the same line is repeated verbatim under Decisions I made without you in the final message. No `changes.md`, no variant.
+- **Any variant whose `changes.md` touches a token also renders `variants/vN/system.html`: a system sheet.** One row per theme; in the row, every control family that reads the same family of tokens as the change (for an edge or a surface: field, outline button, chip, tab, switch, card, divider; for type: key, value, help, button label, title), each in its resting state, drawn from the same tokens and the same class strings as the subject. The sheet is shot like a variant and handed to the judges as its own set. It is where a change to one element shows what it did to its siblings; the subject screen alone cannot show that, because the subject screen only has the one element on it.
+
+Scope limits what a variant changes; it never licenses what stays to disagree. A sibling control that now reads differently from the changed one (two edge weights, two fills for one role) is inside the scope of every mockup by definition, whatever nouns the request named. The rule about the scope of a ruling (CLAUDE.md) bounds WHICH things change; it is not a reason to drop a finding that an unchanged thing no longer matches.
+
+## 4. Shoot and judge, one round at a time
+
+```bash
+bash ~/.claude/skills/mockup/scripts/shoot.sh variants/v1.html rounds/r0/shots   # light+dark, desktop+phone
+bash ~/.claude/skills/mockup/scripts/judge-codex.sh rounds/r0                   # writes rounds/r0/codex.md; 3–5 min, run with the Bash tool timeout at 600000
+```
+
+Three judges, staged by scarcity, each a **fresh** context every round with `JUDGE.md` verbatim plus the paths of `rounds/rN/shots/`, `anchors/` and (from round 1) `rounds/r0/shots/` as the baseline. Judges never receive the stop condition, a previous round's scores, or another judge's output.
+1. **Codex GPT-6.1 Sol** (the script above) alone until every category is 9.0 or above.
+2. **Opus** (an Agent on the default model) joins; both must hold 9.0 everywhere.
+3. **Fable** (an Agent with `model: "fable"`) judges once, the round after the other two both clear, and its table is the one that confirms the stop. Fable judges only this final round, never earlier.
+A judge that has not answered in 20 minutes is scored absent for that round.
+
+After round 0, **pick one variant** from the two score tables and the findings, write the reason in `rounds.md`, and climb only that one. **The pick reads columns, never the average**: a variant with any category under the baseline's, or with a `SYSTEM BREAK` from either judge (JUDGE.md: a sibling on the system sheet that now disagrees with the subject), cannot be picked or climbed; the break is fixed in the system sheet first, or the variant is dropped. Averages break ties between variants that pass, nothing more. A climb never ends with a `SYSTEM BREAK` open: the stop conditions below apply only once both judges report none. Each later round: hand the findings to the variant agent, reshoot, re-judge. Append every table, anchors included, to `rounds.md`.
+
+Stop when all three judges have every category at 9.0 or above (Sol and Opus for two consecutive rounds, Fable once), or two rounds pass with no category rising, or round 5 is reached (`/mockup rounds=N` changes the cap). Revert a round's change for any category that fell before adding anything new.
+
+Taste bounds that outrank any judge: the palette is neutral and colour appears only where it carries meaning; complexity is hidden, never removed (a judge that rewards fewer controls is wrong on that point); nothing the repo's design rules forbid, whatever the score.
+
+## 5. Deliver
+
+`index.html`, static, no JavaScript: the picked variant first at both widths, the states, its system sheet when it has one, the two rejected variants below, the `rounds.md` table, and one before/after pair per change with a one-line label. `open` it. Never hand over a path alone or a hosted artifact link.
+
+Final message, in order: **Decisions I made without you** (every `assumed:` line, every `new:` line from the picked variant's `changes.md` verbatim, and the pick's reason), then the standing four headings. A pick between two variants the judges split on, with the judges' reasons as the options and your pick marked `(Recommended)`, is the only question that goes to Paul.
+
+## Common mistakes
+
+| Mistake | Fix |
+|---|---|
+| One variant, polished | Three layouts first; the climb starts after the pick |
+| Judges told the bar ("get it to 9") | The bar lives here, not in `JUDGE.md` |
+| Anchors reshot or swapped mid-climb | Shot once in step 2; their scores drift anyway, read them as relative |
+| States missing ("the happy path looks great") | The states checklist is in the brief and is a scored category |
+| Delivering files in the scratchpad | Output dir from step 1, `index.html` opened |
+| "I rendered it and looked at every shot" as the verdict | Your own look is not a round; the two judges' tables are |
+| Skipping the process for a time cap or a named folder | `rounds=1` and the named folder; the shape stays |
+| A new token value for the subject, siblings untouched (2026-11-06: a 3.6:1 field edge beside 1.4:1 buttons passed three rounds) | Inside a system every token change renders the system sheet and is judged on it; `SYSTEM BREAK` blocks the pick |
+| The brief names the cause or the category to watch | The brief carries the reporter's words, the person and the states; the judges find the cause |
+| "Out of scope" used to drop a sibling that no longer matches | Scope bounds what changes, never what must stay coherent |
+| Picking on the average while Consistency sits still | Columns first; a category under the baseline disqualifies |
+
+exec
+/bin/zsh -lc "python3 -c 'from PIL import Image; from pathlib import Path; r=Path(\"/Users/kilbot/Projects/monorepo-v2/docs/mockups/2026-11-07-split-payment/rounds/r3/shots\"); print([(p.name,Image.open(p).size) for p in r.glob(\"*.png\")]); im=Image.open(r/\"v3-s2-phone-light.png\").convert(\"RGB\"); print(\"blue y\", [y for y in range(340,610) if im.getpixel((16,y))[2]>220 and im.getpixel((16,y))[0]<40])'" in /Users/kilbot/Projects/monorepo-v2/docs/mockups/2026-11-07-split-payment/rounds/r3
+ succeeded in 0ms:
+[('v1-states-desktop-light.png', (1328, 2644)), ('v1-system-desktop-light.png', (1280, 800)), ('v3-s5-desktop-dark.png', (1280, 800)), ('v1-s5-desktop-dark.png', (1280, 800)), ('v1-desktop-light.png', (1280, 800)), ('v1-phone-light.png', (390, 844)), ('v3-s5-phone-light.png', (390, 844)), ('v3-desktop-light.png', (1280, 800)), ('v1-desktop-dark.png', (1280, 800)), ('v1-system-desktop-dark.png', (1280, 800)), ('v3-s2-phone-light.png', (390, 844)), ('v3-phone-dark.png', (390, 844)), ('v1-s5-phone-light.png', (390, 844)), ('v3-system-desktop-dark.png', (1280, 800)), ('v1-s2-phone-light.png', (390, 844)), ('v3-system-desktop-light.png', (1280, 800)), ('v3-states-desktop-light.png', (1328, 2644)), ('v3-phone-light.png', (390, 844)), ('v1-phone-dark.png', (390, 844)), ('v3-desktop-dark.png', (1280, 800))]
+blue y []
+
+exec
+/bin/zsh -lc "python3 -c 'from PIL import Image; from collections import Counter; from pathlib import Path; r=Path(\"/Users/kilbot/Projects/monorepo-v2/docs/mockups/2026-11-07-split-payment/rounds/r3/shots\"); im=Image.open(r/\"v3-s2-phone-light.png\").convert(\"RGB\"); print(Counter(im.getdata()).most_common(8)); print([(y,im.getpixel((20,y))) for y in range(340,400)]); im=Image.open(r/\"v3-system-desktop-light.png\").convert(\"RGB\"); print([(y,im.getpixel((665,y))) for y in range(325,401)])'" in /Users/kilbot/Projects/monorepo-v2/docs/mockups/2026-11-07-split-payment/rounds/r3
+ succeeded in 0ms:
+<string>:1: DeprecationWarning: Image.Image.getdata is deprecated and will be removed in Pillow 14 (2027-10-15). Use get_flattened_data instead.
+[((255, 255, 255), 234285), ((236, 239, 243), 45286), ((0, 49, 204), 20497), ((213, 217, 224), 6153), ((12, 13, 15), 2738), ((82, 85, 91), 477), ((0, 0, 0), 390), ((248, 252, 255), 372)]
+[(340, (255, 255, 255)), (341, (255, 255, 255)), (342, (255, 255, 255)), (343, (255, 255, 255)), (344, (245, 247, 253)), (345, (10, 57, 206)), (346, (236, 239, 243)), (347, (236, 239, 243)), (348, (236, 239, 243)), (349, (236, 239, 243)), (350, (236, 239, 243)), (351, (236, 239, 243)), (352, (236, 239, 243)), (353, (236, 239, 243)), (354, (236, 239, 243)), (355, (236, 239, 243)), (356, (236, 239, 243)), (357, (236, 239, 243)), (358, (236, 239, 243)), (359, (236, 239, 243)), (360, (236, 239, 243)), (361, (236, 239, 243)), (362, (236, 239, 243)), (363, (236, 239, 243)), (364, (236, 239, 243)), (365, (236, 239, 243)), (366, (236, 239, 243)), (367, (236, 239, 243)), (368, (236, 239, 243)), (369, (236, 239, 243)), (370, (236, 239, 243)), (371, (236, 239, 243)), (372, (236, 239, 243)), (373, (236, 239, 243)), (374, (236, 239, 243)), (375, (236, 239, 243)), (376, (236, 239, 243)), (377, (236, 239, 243)), (378, (236, 239, 243)), (379, (236, 239, 243)), (380, (236, 239, 243)), (381, (236, 239, 243)), (382, (236, 239, 243)), (383, (236, 239, 243)), (384, (236, 239, 243)), (385, (236, 239, 243)), (386, (236, 239, 243)), (387, (6, 54, 205)), (388, (249, 250, 254)), (389, (255, 255, 255)), (390, (255, 255, 255)), (391, (255, 255, 255)), (392, (255, 255, 255)), (393, (255, 255, 255)), (394, (255, 255, 255)), (395, (255, 255, 255)), (396, (255, 255, 255)), (397, (253, 253, 253)), (398, (214, 218, 225)), (399, (255, 255, 255))]
+[(325, (255, 255, 255)), (326, (255, 255, 255)), (327, (255, 255, 255)), (328, (255, 255, 255)), (329, (255, 255, 255)), (330, (255, 255, 255)), (331, (245, 247, 253)), (332, (10, 57, 206)), (333, (236, 239, 243)), (334, (236, 239, 243)), (335, (236, 239, 243)), (336, (236, 239, 243)), (337, (236, 239, 243)), (338, (236, 239, 243)), (339, (236, 239, 243)), (340, (236, 239, 243)), (341, (236, 239, 243)), (342, (236, 239, 243)), (343, (236, 239, 243)), (344, (236, 239, 243)), (345, (236, 239, 243)), (346, (236, 239, 243)), (347, (236, 239, 243)), (348, (236, 239, 243)), (349, (236, 239, 243)), (350, (236, 239, 243)), (351, (236, 239, 243)), (352, (236, 239, 243)), (353, (236, 239, 243)), (354, (236, 239, 243)), (355, (236, 239, 243)), (356, (236, 239, 243)), (357, (236, 239, 243)), (358, (236, 239, 243)), (359, (236, 239, 243)), (360, (236, 239, 243)), (361, (236, 239, 243)), (362, (236, 239, 243)), (363, (236, 239, 243)), (364, (236, 239, 243)), (365, (236, 239, 243)), (366, (236, 239, 243)), (367, (236, 239, 243)), (368, (236, 239, 243)), (369, (236, 239, 243)), (370, (236, 239, 243)), (371, (236, 239, 243)), (372, (236, 239, 243)), (373, (236, 239, 243)), (374, (236, 239, 243)), (375, (236, 239, 243)), (376, (236, 239, 243)), (377, (236, 239, 243)), (378, (236, 239, 243)), (379, (236, 239, 243)), (380, (236, 239, 243)), (381, (236, 239, 243)), (382, (236, 239, 243)), (383, (236, 239, 243)), (384, (236, 239, 243)), (385, (236, 239, 243)), (386, (236, 239, 243)), (387, (236, 239, 243)), (388, (236, 239, 243)), (389, (236, 239, 243)), (390, (236, 239, 243)), (391, (6, 54, 205)), (392, (249, 250, 254)), (393, (255, 255, 255)), (394, (255, 255, 255)), (395, (255, 255, 255)), (396, (255, 255, 255)), (397, (255, 255, 255)), (398, (255, 255, 255)), (399, (255, 255, 255)), (400, (255, 255, 255))]
+
+exec
+/bin/zsh -lc "python3 -c 'd={\"r3 V1\":[8,8,7.5,8.5,8,8,8.5,7,7,7],\"r3 V3\":[8.5,8,6.5,8.5,8,7.5,5,7.5,8,7],\"r0 V1\":[7.5,7.5,7,8,7.5,7,8,6.5,6.5,6],\"r0 V2\":[7.5,7.5,7,8,7.5,7.5,8,6.5,6,6],\"r0 V3\":[7.5,7.5,7,8.5,8,7,8,6.5,7.5,6],\"Baseline\":[7,7.5,7.5,8,8,7.5,8.5,5,6.5,3],\"Chime\":[8.5,8,8.5,8,None,8,7.5,3,7,1.5],\"Revolut\":[8.5,8.5,8,None,8.5,8.5,7.5,4,7.5,1.5],\"Vipps\":[7,7.5,7.5,7.5,None,7.5,7.5,3.5,6,1.5],\"System gallery\":[6.5,5.5,7,7.5,7.5,7.5,8.5,4.5,6.5,2.5],\"Real tender\":[8,8,8,8,7.5,7,9,6.5,8,2.5]}; print({k:round(sum(x for x in v if x is not None)/sum(x is not None for x in v),2) for k,v in d.items()})'" in /Users/kilbot/Projects/monorepo-v2/docs/mockups/2026-11-07-split-payment/rounds/r3
+ succeeded in 0ms:
+{'r3 V1': 7.75, 'r3 V3': 7.45, 'r0 V1': 7.15, 'r0 V2': 7.15, 'r0 V3': 7.35, 'Baseline': 6.85, 'Chime': 6.67, 'Revolut': 6.94, 'Vipps': 6.17, 'System gallery': 6.35, 'Real tender': 7.25}
+
+codex
+SYSTEM BREAK: r3 V3 — system-sheet Item rows read approximately 62 px high with padded steppers, while phone Item rows read approximately 44 px high with steppers flush against the borders (`shots/v3-system-desktop-light.png` versus `shots/v3-s2-phone-light.png`).
+
+| Category | r3 V1 + sheet | r3 V3 + sheet | r0 V1 | r0 V2 | r0 V3 | Baseline | Chime | Revolut | Vipps | System gallery | Real tender |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Hierarchy | 8 | 8.5 | 7.5 | 7.5 | 7.5 | 7 | 8.5 | 8.5 | 7 | 6.5 | 8 |
+| Typography | 8 | 8 | 7.5 | 7.5 | 7.5 | 7.5 | 8 | 8.5 | 7.5 | 5.5 | 8 |
+| Spacing and alignment | 7.5 | 6.5 | 7 | 7 | 7 | 7.5 | 8.5 | 8 | 7.5 | 7 | 8 |
+| Colour and contrast — light | 8.5 | 8.5 | 8 | 8 | 8.5 | 8 | 8 | — | 7.5 | 7.5 | 8 |
+| Colour and contrast — dark | 8 | 8 | 7.5 | 7.5 | 8 | 8 | — | 8.5 | — | 7.5 | 7.5 |
+| Iconography and indicators | 8 | 7.5 | 7 | 7.5 | 7 | 7.5 | 8 | 8.5 | 7.5 | 7.5 | 7 |
+| Consistency | 8.5 | 5 | 8 | 8 | 8 | 8.5 | 7.5 | 7.5 | 7.5 | 8.5 | 9 |
+| Clarity for the cashier | 7 | 7.5 | 6.5 | 6.5 | 6.5 | 5 | 3 | 4 | 3.5 | 4.5 | 6.5 |
+| Density | 7 | 8 | 6.5 | 6 | 7.5 | 6.5 | 7 | 7.5 | 6 | 6.5 | 8 |
+| States covered | 7 | 7 | 6 | 6 | 6 | 3 | 1.5 | 1.5 | 1.5 | 2.5 | 2.5 |
+| **Average** | **7.75** | **7.45** | **7.15** | **7.15** | **7.35** | **6.85** | **6.67** | **6.94** | **6.17** | **6.35** | **7.25** |
+
+### r3 V1
+
+1. **`shots/v1-s2-phone-light.png` — Clarity:** Selected rows end in $9.00 and $55.50, although this payment contains $4.50 and $18.50. The strongest row amounts do not reconcile with $23.00. **Smallest fix:** Put the selected contribution at the trailing edge; retain unit pricing beneath the item name.
+2. **`shots/v1-phone-light.png` — Clarity:** “% / a share” sits under “Split the rest evenly,” mixing percentage and equal-payment choices under an inaccurate heading. **Smallest fix:** Rename the heading “Choose how to split” and label the percentage tile “Percent.”
+3. **`shots/v1-states-desktop-light.png` — States covered:** No frame demonstrates S16: every item allocated with residual cents absorbed, rather than another payment required. **Smallest fix:** Add one rounding-resolution frame showing the last leg absorbing $0.02.
+
+### r3 V3
+
+1. **`shots/v3-s2-phone-light.png` — Spacing and alignment / Consistency:** Compressed item rows remove the system sheet’s vertical padding; steppers meet the row borders. **Smallest fix:** Restore the shared padded row treatment and scroll the item list above the fixed commit button.
+2. **`shots/v3-s2-phone-light.png` — Clarity:** The trailing $9.00 and $55.50 describe whole lines, not the selected quantities. Their prominence competes with the actual contributions beneath the steppers. **Smallest fix:** Use $4.50 and $18.50 as the trailing selected amounts.
+3. **`shots/v3-states-desktop-light.png` — States covered:** Percent is drawn only as a tab label; no percentage selection or resulting payment is shown. **Smallest fix:** Add a 25% frame showing $45.63 now and $136.87 remaining.
+tokens used
+109,356
+SYSTEM BREAK: r3 V3 — system-sheet Item rows read approximately 62 px high with padded steppers, while phone Item rows read approximately 44 px high with steppers flush against the borders (`shots/v3-system-desktop-light.png` versus `shots/v3-s2-phone-light.png`).
+
+| Category | r3 V1 + sheet | r3 V3 + sheet | r0 V1 | r0 V2 | r0 V3 | Baseline | Chime | Revolut | Vipps | System gallery | Real tender |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Hierarchy | 8 | 8.5 | 7.5 | 7.5 | 7.5 | 7 | 8.5 | 8.5 | 7 | 6.5 | 8 |
+| Typography | 8 | 8 | 7.5 | 7.5 | 7.5 | 7.5 | 8 | 8.5 | 7.5 | 5.5 | 8 |
+| Spacing and alignment | 7.5 | 6.5 | 7 | 7 | 7 | 7.5 | 8.5 | 8 | 7.5 | 7 | 8 |
+| Colour and contrast — light | 8.5 | 8.5 | 8 | 8 | 8.5 | 8 | 8 | — | 7.5 | 7.5 | 8 |
+| Colour and contrast — dark | 8 | 8 | 7.5 | 7.5 | 8 | 8 | — | 8.5 | — | 7.5 | 7.5 |
+| Iconography and indicators | 8 | 7.5 | 7 | 7.5 | 7 | 7.5 | 8 | 8.5 | 7.5 | 7.5 | 7 |
+| Consistency | 8.5 | 5 | 8 | 8 | 8 | 8.5 | 7.5 | 7.5 | 7.5 | 8.5 | 9 |
+| Clarity for the cashier | 7 | 7.5 | 6.5 | 6.5 | 6.5 | 5 | 3 | 4 | 3.5 | 4.5 | 6.5 |
+| Density | 7 | 8 | 6.5 | 6 | 7.5 | 6.5 | 7 | 7.5 | 6 | 6.5 | 8 |
+| States covered | 7 | 7 | 6 | 6 | 6 | 3 | 1.5 | 1.5 | 1.5 | 2.5 | 2.5 |
+| **Average** | **7.75** | **7.45** | **7.15** | **7.15** | **7.35** | **6.85** | **6.67** | **6.94** | **6.17** | **6.35** | **7.25** |
+
+### r3 V1
+
+1. **`shots/v1-s2-phone-light.png` — Clarity:** Selected rows end in $9.00 and $55.50, although this payment contains $4.50 and $18.50. The strongest row amounts do not reconcile with $23.00. **Smallest fix:** Put the selected contribution at the trailing edge; retain unit pricing beneath the item name.
+2. **`shots/v1-phone-light.png` — Clarity:** “% / a share” sits under “Split the rest evenly,” mixing percentage and equal-payment choices under an inaccurate heading. **Smallest fix:** Rename the heading “Choose how to split” and label the percentage tile “Percent.”
+3. **`shots/v1-states-desktop-light.png` — States covered:** No frame demonstrates S16: every item allocated with residual cents absorbed, rather than another payment required. **Smallest fix:** Add one rounding-resolution frame showing the last leg absorbing $0.02.
+
+### r3 V3
+
+1. **`shots/v3-s2-phone-light.png` — Spacing and alignment / Consistency:** Compressed item rows remove the system sheet’s vertical padding; steppers meet the row borders. **Smallest fix:** Restore the shared padded row treatment and scroll the item list above the fixed commit button.
+2. **`shots/v3-s2-phone-light.png` — Clarity:** The trailing $9.00 and $55.50 describe whole lines, not the selected quantities. Their prominence competes with the actual contributions beneath the steppers. **Smallest fix:** Use $4.50 and $18.50 as the trailing selected amounts.
+3. **`shots/v3-states-desktop-light.png` — States covered:** Percent is drawn only as a tab label; no percentage selection or resulting payment is shown. **Smallest fix:** Add a 25% frame showing $45.63 now and $136.87 remaining.

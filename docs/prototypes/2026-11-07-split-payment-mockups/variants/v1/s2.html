@@ -1,0 +1,236 @@
+<!doctype html>
+<html data-theme="light" lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Built payment</title>
+<link rel="stylesheet" href="../tokens.css">
+<style>
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--background);color:var(--foreground);
+ font:14px/1.4 -apple-system,system-ui,"Inter",sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+.num{font-variant-numeric:tabular-nums}
+.ic{flex:none;display:block}
+.frame{display:grid;grid-template-columns:64px minmax(0,3fr) 10px minmax(0,2fr);height:100vh}
+.frame.duo-frame{grid-template-columns:64px minmax(0,3fr) 10px minmax(0,2fr)}
+/* rail */
+.rail{background:var(--rail);border-right:var(--hairline-width) solid var(--rail-border);display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:8px;color:var(--rail-foreground)}
+.rail .r{width:48px;height:48px;display:grid;place-items:center;border-radius:calc(8px * var(--shape-radius-control))}
+.rail .r.on{background:var(--rail-selected);color:var(--rail-selected-foreground)}
+.rail .sp{flex:1}
+.rail .ver{font-size:12px;color:var(--rail-foreground);padding-bottom:8px}
+.grip{background:var(--background);display:flex;align-items:center;justify-content:center}
+.grip i{display:block;width:3px;height:22px;border-left:3px dotted var(--muted-foreground);opacity:.6}
+/* pane */
+.pane{background:var(--card);display:flex;flex-direction:column;min-width:0;min-height:0;padding:8px 16px 16px;gap:8px;height:100vh}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.body{width:100%;max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:12px;flex:1;min-height:0}
+.grow{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
+.scroll{overflow:hidden}
+/* segmented control */
+.seg{display:inline-flex;min-height:44px;border:var(--hairline-width) solid var(--border);border-radius:calc(8px * var(--shape-radius-control));overflow:hidden;background:var(--card)}
+.seg>span{display:flex;align-items:center;justify-content:center;gap:6px;padding:6px 12px;min-width:44px;color:var(--muted-foreground);font-weight:500;font-size:15px;flex:1;white-space:nowrap}
+.seg>span+span{border-left:var(--hairline-width) solid var(--border)}
+.seg>span.on{background:var(--muted);color:var(--foreground);font-weight:600}
+.seg>span.off{opacity:.45}
+.seg.full{display:flex;width:100%}
+.iconbtn{width:44px;height:44px;display:grid;place-items:center;color:var(--muted-foreground);flex:none}
+/* label row */
+.labelrow{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;min-height:44px}
+.caption{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted-foreground);font-weight:500}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:600}
+.badge.warn{color:var(--warning-text)}
+.badge.quiet{color:var(--muted-foreground)}
+/* chip */
+.chip{display:inline-flex;align-items:center;gap:6px;height:44px;padding:0 12px;border-radius:calc(8px * var(--shape-radius-chip));background:var(--chip);border:var(--shape-ctl-border) solid var(--chip-border);color:var(--foreground);white-space:nowrap;font-size:14px;max-width:100%}
+.chip.on{background:var(--selected);border-color:var(--selected);color:var(--selected-foreground)}
+.chip.add{border-style:dashed;color:var(--muted-foreground)}
+.chip .x{margin-right:-4px;opacity:.8}
+.chiprow{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;min-height:44px}
+/* amount */
+.amt{font-size:44px;line-height:52px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.amt.dim{opacity:.7}
+.hint{text-align:center;color:var(--muted-foreground);font-size:14px;min-height:20px}
+.hint.warn{color:var(--warning-text)}
+.hint.ok{color:var(--ok)}
+/* tiles */
+.tiles{display:grid;gap:8px}
+.tile{background:var(--card);border:var(--hairline-width) solid var(--border);border-radius:calc(8px * var(--shape-radius-tile));min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 8px;text-align:center;min-width:0;position:relative}
+.tile .t{font-weight:600;font-size:15px;line-height:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.tile .s{font-size:13px;color:var(--muted-foreground);line-height:17px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tile.sel{border-color:var(--primary);background:var(--muted)}
+.tile.done{background:var(--ok-bg);border-color:var(--ok-bg)}
+.tile.done .t{display:inline-flex;align-items:center;gap:4px}
+.tile.done .t .ic{color:var(--ok)}
+.tile.off{opacity:.45}
+.tile.dashed{border-style:dashed;background:transparent}
+.methods{grid-template-columns:repeat(5,minmax(0,1fr))}
+.methods .tile{min-height:64px}
+.methods .tile .t{font-weight:500}
+/* keypad */
+.keypad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(4,56px);gap:8px;flex:none;height:248px}
+.key{background:var(--muted);border-radius:calc(8px * var(--shape-radius-control));display:grid;place-items:center;font-size:20px;font-weight:500;color:var(--foreground);font-variant-numeric:tabular-nums}
+.keypad.fill{grid-template-rows:repeat(4,minmax(44px,1fr));grid-auto-rows:unset;max-height:248px}
+/* commit */
+.commit{height:56px;border-radius:calc(10px * var(--shape-radius-commit));background:var(--primary);color:var(--primary-foreground);display:flex;align-items:center;justify-content:center;gap:8px;font-size:16px;font-weight:var(--type-w-commit);white-space:nowrap;padding:0 24px;flex:none;font-variant-numeric:tabular-nums;overflow:hidden}
+.commit{flex:0 0 56px;min-height:56px;width:100%;align-self:stretch}
+.ghost-d{display:inline-flex;align-items:center;min-height:44px;padding:0 8px;color:var(--destructive);font-size:14px;font-weight:500;flex:none;white-space:nowrap}
+.leg .chev{margin-left:2px;margin-right:-4px}
+.paylist{display:flex;flex-direction:column;gap:8px;flex:none}
+.paylist .li .ok{color:var(--ok)}
+.paylist .hide{align-self:flex-end}
+.commit.busy,.commit.dis{opacity:.45}
+.notice{display:flex;flex-wrap:wrap;align-items:center;gap:8px;border-radius:calc(8px * var(--shape-radius-control));border:var(--hairline-width) solid color-mix(in oklch, var(--warning) 45%, transparent);background:var(--warning-bg);padding:10px 12px;flex:none}
+.notice .tx{flex:1 1 192px;min-width:0;font-weight:500;color:var(--foreground)}
+.notice .act{display:inline-flex;align-items:center;min-height:36px;padding:4px 12px;border-radius:calc(8px * var(--shape-radius-control));color:var(--muted-foreground);font-size:13px;font-weight:500}
+.btn-outline{height:44px;border-radius:calc(8px * var(--shape-radius-control));border:var(--hairline-width) solid var(--border);background:var(--card);display:inline-flex;align-items:center;justify-content:center;padding:0 16px;font-weight:500;white-space:nowrap}
+.ghost{display:inline-flex;align-items:center;min-height:44px;padding:0 8px;flex:none;font-size:14px;color:var(--muted-foreground);text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+/* stepper (the cart idiom: − n + with "of N") */
+.stepper{display:inline-grid;grid-template-columns:44px 64px 44px;align-items:center;flex:none}
+.stepper .sb{width:44px;height:44px;display:grid;place-items:center;border:var(--hairline-width) solid var(--border);border-radius:calc(8px * var(--shape-radius-control));background:var(--card);color:var(--foreground)}
+.stepper .sb.dis{opacity:.45}
+.stepper .sv{display:flex;flex-direction:column;align-items:center;line-height:1.1}
+.stepper .sv b{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stepper .sv b i{font-style:normal;font-weight:400;color:var(--muted-foreground)}
+.stepper .sv small{font-size:13px;color:var(--muted-foreground);white-space:nowrap;font-variant-numeric:tabular-nums}
+.stepper .sv small.pk{color:var(--selected-foreground);font-weight:500}
+/* list rows (ListItem: min-h-row, tile surface) */
+.list{display:flex;flex-direction:column;gap:8px}
+.li{display:flex;align-items:center;gap:12px;min-height:44px;padding:8px 12px;background:var(--card);border:var(--hairline-width) solid var(--border);border-radius:calc(8px * var(--shape-radius-tile))}
+.li.sel{border-color:var(--primary);background:var(--muted)}
+.li .nm{flex:1;min-width:0;display:flex;flex-direction:column}
+.li .nm b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .nm span{font-size:13px;color:var(--muted-foreground);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .tot{width:72px;text-align:right;font-variant-numeric:tabular-nums;flex:none}
+.li .tot.mute{color:var(--muted-foreground)}
+.li.dashed{border-style:dashed;background:transparent;color:var(--muted-foreground);justify-content:center}
+.cb{width:20px;height:20px;border-radius:2px;border:var(--hairline-width) solid var(--border);display:grid;place-items:center;flex:none;background:var(--card)}
+.cb.on,.cb.ind{background:var(--primary);border-color:var(--primary);color:var(--primary-foreground)}
+.paidmark{display:inline-flex;align-items:center;gap:4px}
+.paidmark .ic{color:var(--ok)}
+/* plan strip (status, not actions) */
+.plan{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;min-height:44px;flex:none}
+
+.leg{display:inline-flex;align-items:center;gap:6px;height:44px;padding:0 14px;flex:none;border-radius:calc(8px * var(--shape-radius-chip));border:var(--hairline-width) solid var(--border);font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.leg.done{background:var(--ok-bg);border-color:var(--ok-bg)}
+.leg.done .ic{color:var(--ok)}
+.leg.now{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary);font-weight:600}
+.leg.todo{color:var(--muted-foreground)}
+.leg.rest{border-style:dashed;color:var(--muted-foreground)}
+.sub-cap{font-size:13px;color:var(--muted-foreground);font-weight:500}
+.rowhead{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px}
+/* ring */
+.ringwrap{position:relative;display:grid;place-items:center;margin:0 auto;width:var(--ring);height:var(--ring)}
+.ringwrap svg{position:absolute;inset:0}
+.ringwrap .amt{font-size:27px;line-height:32px}
+/* ledger */
+.ledger{background:var(--card);display:flex;flex-direction:column;min-width:0;height:100vh;overflow:hidden}
+.lg-head{display:flex;align-items:center;gap:12px;height:48px;padding:0 12px;border-bottom:var(--hairline-width) solid var(--border)}
+.lg-head b{flex:1;font-size:15px}
+.avatar{width:24px;height:24px;border-radius:999px;background:var(--primary);color:var(--primary-foreground);font-size:11px;font-weight:700;display:grid;place-items:center}
+.lg-order{height:48px;display:flex;align-items:center;padding:0 12px;border-bottom:var(--hairline-width) solid var(--border);color:var(--muted-foreground)}
+.lg-order b{color:var(--foreground);margin-right:4px}
+.lg-scroll{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+.lg-tip{display:flex;align-items:center;gap:8px;min-height:36px;padding:0 12px;font-size:13px;color:var(--muted-foreground);border-bottom:var(--hairline-width) solid var(--border)}
+.lg-cols{display:grid;align-items:center;height:36px;padding:0 12px;border-bottom:var(--hairline-width) solid var(--border);font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted-foreground);font-weight:500;gap:8px}
+.lg-row{display:grid;align-items:center;min-height:52px;padding:4px 12px;border:var(--hairline-width) solid transparent;border-bottom-color:var(--border);gap:8px}
+.lg-row.sel{background:var(--muted);border-color:var(--primary);border-radius:calc(8px * var(--shape-radius-tile))}
+.lg-row .q{font-weight:600;text-align:center;font-variant-numeric:tabular-nums}
+.lg-row .n{display:flex;flex-direction:column;min-width:0}
+.lg-row .n b{font-weight:500}
+.lg-row .n span{font-size:13px;color:var(--muted-foreground);line-height:17px}
+.lg-row .n span.tag{color:var(--selected-foreground)}
+.lg-row .r{text-align:right;font-variant-numeric:tabular-nums}
+.lg-row .r.b{font-weight:600}
+.lg-row .r.mute{color:var(--muted-foreground)}
+.receipt{grid-template-columns:28px minmax(0,1fr) 70px 76px}
+.pick{grid-template-columns:28px minmax(0,1fr) 152px 76px}
+.lg-sum{padding:6px 12px;border-bottom:var(--hairline-width) solid var(--border)}
+.lg-line{display:flex;justify-content:space-between;align-items:center;min-height:24px;gap:8px;font-variant-numeric:tabular-nums}
+.lg-line .mute{color:var(--muted-foreground)}
+.lg-line small{font-size:13px;color:var(--muted-foreground);margin-left:4px}
+.lg-pay{padding:6px 12px;border-bottom:var(--hairline-width) solid var(--border)}
+.lg-pay h4{margin:0 0 4px;font-size:14px;font-weight:600}
+.lg-pay .none{color:var(--muted-foreground);min-height:24px}
+.pl{display:flex;align-items:center;gap:6px;min-height:26px;font-variant-numeric:tabular-nums}
+.pl .w{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl .w span{color:var(--muted-foreground);font-size:13px}
+.pl .ic{color:var(--ok)}
+.pl.now{font-weight:600}
+.pl.cancel .w,.pl.cancel>span:last-child{text-decoration:line-through;color:var(--muted-foreground)}
+.pl.cancel .w em{font-style:normal;text-decoration:none;display:inline-block;margin-left:6px}
+.pl.todo{color:var(--muted-foreground)}
+.lg-tot{padding:6px 12px}
+.lg-tot .rem{border-top:var(--hairline-width) solid var(--border);margin-top:4px;padding-top:4px;font-weight:700}
+.lg-foot{height:48px;flex:none;border-top:var(--hairline-width) solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 12px}
+.lg-foot div{display:flex;flex-direction:column;line-height:1.2;border-bottom:2px solid var(--primary);padding:4px 0}
+.lg-foot b{font-weight:600}
+.lg-foot span{font-size:12px;color:var(--muted-foreground)}
+/* phone balance bar */
+.balbar{display:none}
+.t-only{}
+.p-only{display:none!important}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:10px;background:var(--background);min-width:0;height:100vh}
+.duo>.pane{height:100vh}
+.spin{animation:none}
+.compact .methods{grid-template-columns:repeat(3,minmax(0,1fr))}
+.compact .methods .tile{min-height:56px}
+.compact .t-only{display:none!important}
+.compact .p-only{display:flex!important}
+.compact .p-grid{display:grid!important}
+.compact .tiles.c5,.compact .tiles.c6{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.compact .commit{padding:0 10px}
+.compact .li{gap:8px}
+.compact .body{gap:12px}
+.compact .pick-list .li .tot{width:64px}
+.compact .leg{padding:0 10px}
+.compact .li .tot{width:60px}
+.compact .li{gap:8px;padding:8px 10px}
+.compact .plan.t-only{display:none!important}
+.compact .stepper{grid-template-columns:44px 56px 44px}
+@media (max-width:500px){
+body .methods{grid-template-columns:repeat(3,minmax(0,1fr))}
+body .methods .tile{min-height:56px}
+body .t-only{display:none!important}
+body .p-only{display:flex!important}
+body .p-grid{display:grid!important}
+body .tiles.c5,body .tiles.c6{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+body .commit{padding:0 10px}
+body .li{gap:8px}
+body .body{gap:12px}
+body .pick-list .li .tot{width:64px}
+body .leg{padding:0 10px}
+body .li .tot{width:60px}
+body .li{gap:8px;padding:8px 10px}
+body .plan.t-only{display:none!important}
+body .stepper{grid-template-columns:44px 56px 44px}
+.frame{display:block;height:auto}
+.rail,.grip,.ledger{display:none}
+.balbar{display:flex;align-items:center;justify-content:space-between;gap:8px;height:40px;padding:0 16px;background:var(--muted);font-size:14px;font-variant-numeric:tabular-nums;border-bottom:var(--hairline-width) solid var(--border)}
+.balbar b{font-weight:700}
+.pane{height:calc(100vh - 40px);padding:8px 16px 12px}
+.duo{display:block;height:auto}
+.duo>.pane{height:calc(100vh - 40px)}
+}
+</style>
+</head>
+<body>
+<div class="balbar"><span>Nothing paid yet</span><b>$182.50 left</b></div>
+<div class="frame">
+<nav class="rail"><span class="r on"><svg class="ic " width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01M8 18h8"/></svg></span><span class="r"><svg class="ic " width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg></span><span class="r"><svg class="ic " width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg></span><span class="r"><svg class="ic " width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9h.01M15 15h.01"/></svg></span><span class="r"><svg class="ic " width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="r"><svg class="ic " width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg></span><span class="sp"></span><span class="r"><svg class="ic " width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span><span class="r"><svg class="ic " width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg></span><span class="r"><svg class="ic " width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 13h.01M10 8a2 2 0 1 1 2 2"/></svg></span><span class="ver">v 2.0.0</span></nav>
+<main class="pane "><div class="topbar"><div class="seg" role="radiogroup"><span class="on">Payments</span><span class="">Legacy</span></div><span class="iconbtn"><svg class="ic " width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></span></div><div class="body"><div class="labelrow"><span class="caption num">Payment 1 · $182.50 left</span><span class="chip on"><span class="num">Split</span></span></div><div class="amt">$23.00</div><div class="tiles methods"><div class="tile"><svg class="ic " width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg><span class="t">Cash</span></div><div class="tile sel"><svg class="ic " width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg><span class="t">Card</span></div><div class="tile"><svg class="ic " width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M9 6h6M9 10h6M10 17h4"/></svg><span class="t">SumUp</span></div></div><div class="chiprow t-only"><span class="chip"><span class="num">1 Flat white</span><svg class="ic x" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></span><span class="chip"><span class="num">1 Burger</span><svg class="ic x" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></span><span class="chip add"><svg class="ic " width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg><span class="num">amount</span></span></div><div class="chiprow p-only"><span class="chip on"><span class="num">Items · 2</span></span><span class="chip add"><svg class="ic " width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg><span class="num">amount</span></span><span class="chip add"><svg class="ic " width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1a5 5 0 0 1 10 0v1M16 11a3 3 0 1 0 0-6M21 20v-1a5 5 0 0 0-4-4.9"/></svg><span class="num">Share</span></span></div><div class="t-only" style="display:flex;flex-direction:column;gap:8px"><div class="sub-cap">After this payment · $159.50</div><div class="tiles c5" style="grid-template-columns:repeat(5,minmax(0,1fr))"><div class="tile"><span class="t">2 ways</span><span class="s">$79.75 each</span></div><div class="tile"><span class="t">3 ways</span><span class="s">$53.16 each</span></div><div class="tile"><span class="t">4 ways</span><span class="s">$39.87 each</span></div><div class="tile"><span class="t">5 ways</span><span class="s">$31.90 each</span></div><div class="tile"><span class="t">6 ways</span><span class="s">$26.58 each</span></div></div></div><div class="t-only" style="display:contents"><div class="keypad"><div class="key">1</div><div class="key">2</div><div class="key">3</div><div class="key">4</div><div class="key">5</div><div class="key">6</div><div class="key">7</div><div class="key">8</div><div class="key">9</div><div class="key">C</div><div class="key">0</div><div class="key"><svg class="ic " width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><path d="m18 9-6 6M12 9l6 6"/></svg></div></div></div><div class="list pick-list scroll grow p-only" style="flex-direction:column"><div class="li sel"><span class="nm"><b>Flat white</b><span>$4.50 each</span></span><span class="stepper"><span class="sb"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg></span><span class="sv"><b>1 <i>of 2</i></b></span><span class="sb"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></span></span><span class="tot" style="font-weight:600">$4.50</span></div><div class="li"><span class="nm"><b>Lemonade</b><span>$5.00 each</span></span><span class="stepper"><span class="sb dis"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg></span><span class="sv"><b>0 <i>of 4</i></b></span><span class="sb"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></span></span><span class="tot"></span></div><div class="li sel"><span class="nm"><b>Burger</b><span>$18.50 each</span></span><span class="stepper"><span class="sb"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg></span><span class="sv"><b>1 <i>of 3</i></b></span><span class="sb"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></span></span><span class="tot" style="font-weight:600">$18.50</span></div><div class="li"><span class="nm"><b>Fish &amp; chips</b><span>$22.00 each</span></span><span class="stepper"><span class="sb dis"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg></span><span class="sv"><b>0 <i>of 3</i></b></span><span class="sb"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></span></span><span class="tot"></span></div><div class="li"><span class="nm"><b>Caesar salad</b><span>$16.00 each</span></span><span class="stepper"><span class="sb dis"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg></span><span class="sv"><b>0 <i>of 2</i></b></span><span class="sb"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></span></span><span class="tot"></span></div></div><div class="commit">Take $23.00 in Card · $159.50 left</div></div></main>
+<div class="grip"><i></i></div>
+<aside class="ledger">
+<div class="lg-head"><b>Harbour Café</b><span style="color:var(--muted-foreground)"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span><span class="avatar">DC</span></div>
+<div class="lg-order"><b>#221446</b> · Table 6 · Today · 19:42</div>
+<div class="lg-scroll"><div class="lg-tip"><svg class="ic " width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>Tap a line for all of it, or − + for some</div><div class="lg-cols pick"><span>Qty</span><span>Item</span><span style="text-align:center">This payment</span><span style="text-align:right">Total</span></div><div class="lg-row pick sel"><span class="q">2</span><span class="n"><b>Flat white</b><span class="">$4.50 each</span></span><span class="stepper"><span class="sb"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg></span><span class="sv"><b>1 <i>of 2</i></b><small class="pk">$4.50</small></span><span class="sb"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></span></span><span class="r b">$9.00</span></div><div class="lg-row pick"><span class="q">4</span><span class="n"><b>Lemonade</b><span class="">$5.00 each</span></span><span class="stepper"><span class="sb dis"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg></span><span class="sv"><b>0 <i>of 4</i></b></span><span class="sb"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></span></span><span class="r b">$20.00</span></div><div class="lg-row pick sel"><span class="q">3</span><span class="n"><b>Burger</b><span class="">$18.50 each</span></span><span class="stepper"><span class="sb"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg></span><span class="sv"><b>1 <i>of 3</i></b><small class="pk">$18.50</small></span><span class="sb"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></span></span><span class="r b">$55.50</span></div><div class="lg-row pick"><span class="q">3</span><span class="n"><b>Fish &amp; chips</b><span class="">$22.00 each</span></span><span class="stepper"><span class="sb dis"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg></span><span class="sv"><b>0 <i>of 3</i></b></span><span class="sb"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></span></span><span class="r b">$66.00</span></div><div class="lg-row pick"><span class="q">2</span><span class="n"><b>Caesar salad</b><span class="">$16.00 each</span></span><span class="stepper"><span class="sb dis"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg></span><span class="sv"><b>0 <i>of 2</i></b></span><span class="sb"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></span></span><span class="r b">$32.00</span></div>
+<div class="lg-sum"><div class="lg-line"><span>Subtotal</span><span>$182.50</span></div><div class="lg-line"><span>Tax<small>incl</small></span><span>$16.59</span></div></div>
+<div class="lg-pay"><h4>Payments</h4><div class="none">No payments yet</div></div>
+<div class="lg-tot"><div class="lg-line"><span>Total</span><span>$182.50</span></div><div class="lg-line"><span>Paid</span><span>$0.00</span></div><div class="lg-line rem"><span>Remaining</span><span>$182.50</span></div></div>
+</div>
+<div class="lg-foot"><div><b>Table 6</b><span>In checkout</span></div><span style="color:var(--muted-foreground)"><svg class="ic " width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></span></div>
+</aside>
+</div>
+</body>
+</html>
