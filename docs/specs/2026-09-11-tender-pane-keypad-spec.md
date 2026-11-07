@@ -66,6 +66,9 @@ of the split view.
 
 ## Split
 
+> **Superseded 2026-11-07** by `2026-11-07-split-payment-v1-build-spec.md`: the sub-view and its four tabs are
+> retired; a split is a run of ordinary payments built on the keypad pane, the bill being the picker.
+
 The Split chip **takes over the pane** (same header with × back to payment; no sheet). The
 amount being split stays at the top at full size; under it a four-tab segmented control:
 

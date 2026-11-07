@@ -16,3 +16,5 @@ Static HTML, no build. Open `index.html` (double-click). Pages are written again
 **Result:** V1 picked on round 3's columns (at or above the baseline in every category, no system break); climbed to the round cap; best table average 8.15 with Consistency 9. Sol was the only judge: no category reached 9.0 in two consecutive rounds, so Opus and Fable never judged.
 
 **Not decided here:** whether to keep the four-tab structure (the 2026-09-11 approved pane's) or retire it for V1. That is Paul's call; the build spec waits for it.
+
+Build spec for the pick: `docs/specs/2026-11-07-split-payment-v1-build-spec.md` (2026-11-07).
