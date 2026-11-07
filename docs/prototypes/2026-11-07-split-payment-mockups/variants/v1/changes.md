@@ -85,4 +85,4 @@ label row → hero (with its hint line) → method row → plan strip → helper
 - Pane order is final: the strip sits under the method row in every frame and at every width.
 - The phone strip collapses the done pills and never scrolls. **Conflict with "one row":** at 390 (and in the 326 px s8 frames), `✓ 3 paid · $58.00` + `Now $41.50` + `Then 2 × $41.50` + `Change split` measure about 470 px, so the strip wraps to two 44 px lines instead of clipping. No pill is cut.
 - New frames: s9 (Cancel payment on B), s10 (10 % discount, leg A $20.70), s11 (25 % typed); later s12 (terminal failure) and s13 (cents absorbed).
-- Continuity holds across s2–s11. The eyebrow, hero, strip, commit, bill Payments, Paid and Remaining agree in every frame (s6 → s7: D $40.00, E $42.25, F $42.25; s9: Paid $23.00, $159.50 left; s10: total $164.25, $143.55 left after A).
+- Continuity holds across s2–s11. The eyebrow, hero, strip, commit, bill Payments, Paid and Remaining agree in every frame (s6 → s7: D $40.00, E $42.25, F $42.25; s9 (corrected post-climb: cancelling B off s14 keeps A and C): Paid $43.00, $139.50 left; s10: total $164.25, $143.55 left after A).
