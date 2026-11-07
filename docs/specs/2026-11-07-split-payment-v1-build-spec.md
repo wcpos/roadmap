@@ -118,9 +118,12 @@ describes the whole split up front unless they want to (`2–6 ways` does that i
 - **Cancel a payment** (S15) is **one payment**, not the order's. Today's `useVoidPayments(order)`
   voids every live row and is the checkout-abandonment path; it stays for that. New:
   `voidPayment(order, paymentId)` beside it in `checkout/payments/use-void-payments.ts`, the same
-  rules per row (`partitionVoidableRows`: a captured card leg or a counted manual row is retained
-  and reported `captured_refund_required`, never voided), the same journal and log lines with the
-  one id. The payment's `cancel` action in the opened done disclosure and in the bill's Payments
+  rules per row (`partitionVoidableRows`: a captured card leg, or a manual row a **completion**
+  has counted, is retained and reported `captured_refund_required`, never voided). A completion is
+  written when the sale closes, so while the balance is open every manual row is voidable: in S15
+  B's $15.00 cash is recorded but counted by no completion, and the void succeeds. After the sale
+  has closed, the same action reports `captured_refund_required` and the existing refund path is
+  the way back, exactly as today. The same journal and log lines with the one id. The payment's `cancel` action in the opened done disclosure and in the bill's Payments
   section passes that row's id; `cancel-payment-view.tsx` keeps the whole-order list for the
   existing `Cancel payment` entry point. On success the payment's allocation (below) is dropped, so
   its units go back to unpaid (`0 of 4`), the strip and eyebrow recount, and the hint says what came
