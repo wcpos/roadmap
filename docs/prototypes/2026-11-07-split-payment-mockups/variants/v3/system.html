@@ -1,0 +1,229 @@
+<!doctype html>
+<html data-theme="light" lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>System sheet</title>
+<link rel="stylesheet" href="../tokens.css">
+<style>
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--background);color:var(--foreground);
+ font:14px/1.4 -apple-system,system-ui,"Inter",sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+.num{font-variant-numeric:tabular-nums}
+.ic{flex:none;display:block}
+.frame{display:grid;grid-template-columns:64px minmax(0,3fr) 10px minmax(0,2fr);height:100vh}
+.frame.duo-frame{grid-template-columns:64px minmax(0,3fr) 10px minmax(0,2fr)}
+/* rail */
+.rail{background:var(--rail);border-right:var(--hairline-width) solid var(--rail-border);display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:8px;color:var(--rail-foreground)}
+.rail .r{width:48px;height:48px;display:grid;place-items:center;border-radius:calc(8px * var(--shape-radius-control))}
+.rail .r.on{background:var(--rail-selected);color:var(--rail-selected-foreground)}
+.rail .sp{flex:1}
+.rail .ver{font-size:12px;color:var(--rail-foreground);padding-bottom:8px}
+.grip{background:var(--background);display:flex;align-items:center;justify-content:center}
+.grip i{display:block;width:3px;height:22px;border-left:3px dotted var(--muted-foreground);opacity:.6}
+/* pane */
+.pane{background:var(--card);display:flex;flex-direction:column;min-width:0;min-height:0;padding:8px 16px 16px;gap:8px;height:100vh}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.body{width:100%;max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:12px;flex:1;min-height:0}
+.grow{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
+.scroll{overflow:hidden}
+/* segmented control */
+.seg{display:inline-flex;min-height:44px;border:var(--hairline-width) solid var(--border);border-radius:calc(8px * var(--shape-radius-control));overflow:hidden;background:var(--card)}
+.seg>span{display:flex;align-items:center;justify-content:center;gap:6px;padding:6px 12px;min-width:44px;color:var(--muted-foreground);font-weight:500;font-size:15px;flex:1;white-space:nowrap}
+.seg>span+span{border-left:var(--hairline-width) solid var(--border)}
+.seg>span.on{background:var(--muted);color:var(--foreground);font-weight:600}
+.seg>span.off{opacity:.45}
+.seg.full{display:flex;width:100%}
+.iconbtn{width:44px;height:44px;display:grid;place-items:center;color:var(--muted-foreground);flex:none}
+/* label row */
+.labelrow{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;min-height:44px}
+.caption{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted-foreground);font-weight:500}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:600}
+.badge.warn{color:var(--warning-text)}
+.badge.quiet{color:var(--muted-foreground)}
+/* chip */
+.chip{display:inline-flex;align-items:center;gap:6px;height:44px;padding:0 12px;border-radius:calc(8px * var(--shape-radius-chip));background:var(--chip);border:var(--shape-ctl-border) solid var(--chip-border);color:var(--foreground);white-space:nowrap;font-size:14px;max-width:100%}
+.chip.on{background:var(--selected);border-color:var(--selected);color:var(--selected-foreground)}
+.chip.add{border-style:dashed;color:var(--muted-foreground)}
+.chip .x{margin-right:-4px;opacity:.8}
+.chiprow{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;min-height:44px}
+/* amount */
+.amt{font-size:44px;line-height:52px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.amt.dim{opacity:.7}
+.hint{text-align:center;color:var(--muted-foreground);font-size:14px;min-height:20px}
+.hint.warn{color:var(--warning-text)}
+.hint.ok{color:var(--ok)}
+/* tiles */
+.tiles{display:grid;gap:8px}
+.tile{background:var(--card);border:var(--hairline-width) solid var(--border);border-radius:calc(8px * var(--shape-radius-tile));min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 8px;text-align:center;min-width:0;position:relative}
+.tile .t{font-weight:600;font-size:15px;line-height:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.tile .s{font-size:13px;color:var(--muted-foreground);line-height:17px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tile.sel{border-color:var(--primary);background:var(--muted)}
+.tile.done{background:var(--ok-bg);border-color:var(--ok-bg)}
+.tile.done .t{display:inline-flex;align-items:center;gap:4px}
+.tile.done .t .ic{color:var(--ok)}
+.tile.off{opacity:.45}
+.tile.dashed{border-style:dashed;background:transparent}
+.methods{grid-template-columns:repeat(5,minmax(0,1fr))}
+.methods .tile{min-height:64px}
+.methods .tile .t{font-weight:500}
+/* keypad */
+.keypad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(4,minmax(44px,1fr));gap:8px;flex:0 1 248px;min-height:200px}
+.key{background:var(--muted);border-radius:calc(8px * var(--shape-radius-control));display:grid;place-items:center;font-size:20px;font-weight:500;color:var(--foreground);font-variant-numeric:tabular-nums}
+.keypad.fill{grid-template-rows:repeat(4,minmax(44px,1fr));grid-auto-rows:unset;max-height:248px}
+/* commit */
+.commit{height:56px;border-radius:calc(10px * var(--shape-radius-commit));background:var(--primary);color:var(--primary-foreground);display:flex;align-items:center;justify-content:center;gap:8px;font-size:16px;font-weight:var(--type-w-commit);white-space:nowrap;padding:0 24px;flex:none;font-variant-numeric:tabular-nums;overflow:hidden}
+.commit{flex:0 0 56px;min-height:56px;width:100%;align-self:stretch}
+.commit.busy,.commit.dis{opacity:.45}
+.notice{display:flex;flex-wrap:wrap;align-items:center;gap:8px;border-radius:calc(8px * var(--shape-radius-control));border:var(--hairline-width) solid color-mix(in oklch, var(--warning) 45%, transparent);background:var(--warning-bg);padding:10px 12px;flex:none}
+.notice .tx{flex:1 1 192px;min-width:0;font-weight:500;color:var(--foreground)}
+.notice .act{display:inline-flex;align-items:center;min-height:36px;padding:4px 12px;border-radius:calc(8px * var(--shape-radius-control));color:var(--muted-foreground);font-size:13px;font-weight:500}
+.btn-outline{height:44px;border-radius:calc(8px * var(--shape-radius-control));border:var(--hairline-width) solid var(--border);background:var(--card);display:inline-flex;align-items:center;justify-content:center;padding:0 16px;font-weight:500;white-space:nowrap}
+.ghost{display:inline-flex;align-items:center;min-height:44px;padding:0 8px;flex:none;font-size:14px;color:var(--muted-foreground);text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+/* stepper (the cart idiom: − n + with "of N") */
+.stepper{display:inline-grid;grid-template-columns:44px 64px 44px;align-items:center;flex:none}
+.stepper .sb{width:44px;height:44px;display:grid;place-items:center;border:var(--hairline-width) solid var(--border);border-radius:calc(8px * var(--shape-radius-control));background:var(--card);color:var(--foreground)}
+.stepper .sb.dis{opacity:.45}
+.stepper .sv{display:flex;flex-direction:column;align-items:center;line-height:1.1}
+.stepper .sv b{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stepper .sv b i{font-style:normal;font-weight:400;color:var(--muted-foreground)}
+.stepper .sv small{font-size:13px;color:var(--muted-foreground);white-space:nowrap;font-variant-numeric:tabular-nums}
+.stepper .sv small.pk{color:var(--selected-foreground);font-weight:500}
+/* list rows (ListItem: min-h-row, tile surface) */
+.list{display:flex;flex-direction:column;gap:8px}
+.li{display:flex;align-items:center;gap:12px;min-height:44px;padding:8px 12px;background:var(--card);border:var(--hairline-width) solid var(--border);border-radius:calc(8px * var(--shape-radius-tile))}
+.li.sel{border-color:var(--primary);background:var(--muted)}
+.li .nm{flex:1;min-width:0;display:flex;flex-direction:column}
+.li .nm b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .nm span{font-size:13px;color:var(--muted-foreground);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .tot{width:72px;text-align:right;font-variant-numeric:tabular-nums;flex:none}
+.li .tot.mute{color:var(--muted-foreground)}
+.li.dashed{border-style:dashed;background:transparent;color:var(--muted-foreground);justify-content:center}
+.cb{width:20px;height:20px;border-radius:2px;border:var(--hairline-width) solid var(--border);display:grid;place-items:center;flex:none;background:var(--card)}
+.cb.on,.cb.ind{background:var(--primary);border-color:var(--primary);color:var(--primary-foreground)}
+.paidmark{display:inline-flex;align-items:center;gap:4px}
+.paidmark .ic{color:var(--ok)}
+/* plan strip (status, not actions) */
+.plan{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;min-height:44px;flex:none}
+
+.leg{display:inline-flex;align-items:center;gap:6px;height:44px;padding:0 14px;flex:none;border-radius:calc(8px * var(--shape-radius-chip));border:var(--hairline-width) solid var(--border);font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.leg.done{background:var(--ok-bg);border-color:var(--ok-bg)}
+.leg.done .ic{color:var(--ok)}
+.leg.now{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary);font-weight:600}
+.leg.todo{color:var(--muted-foreground)}
+.leg.rest{border-style:dashed;color:var(--muted-foreground)}
+.sub-cap{font-size:13px;color:var(--muted-foreground);font-weight:500}
+.rowhead{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px}
+/* ring */
+.ringwrap{position:relative;display:grid;place-items:center;margin:0 auto;width:var(--ring);height:var(--ring)}
+.ringwrap svg{position:absolute;inset:0}
+.ringwrap .amt{font-size:27px;line-height:32px}
+/* ledger */
+.ledger{background:var(--card);display:flex;flex-direction:column;min-width:0;height:100vh;overflow:hidden}
+.lg-head{display:flex;align-items:center;gap:12px;height:48px;padding:0 12px;border-bottom:var(--hairline-width) solid var(--border)}
+.lg-head b{flex:1;font-size:15px}
+.avatar{width:24px;height:24px;border-radius:999px;background:var(--primary);color:var(--primary-foreground);font-size:11px;font-weight:700;display:grid;place-items:center}
+.lg-order{height:48px;display:flex;align-items:center;padding:0 12px;border-bottom:var(--hairline-width) solid var(--border);color:var(--muted-foreground)}
+.lg-order b{color:var(--foreground);margin-right:4px}
+.lg-scroll{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+.lg-tip{display:flex;align-items:center;gap:8px;min-height:36px;padding:0 12px;font-size:13px;color:var(--muted-foreground);border-bottom:var(--hairline-width) solid var(--border)}
+.lg-cols{display:grid;align-items:center;height:36px;padding:0 12px;border-bottom:var(--hairline-width) solid var(--border);font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted-foreground);font-weight:500;gap:8px}
+.lg-row{display:grid;align-items:center;min-height:52px;padding:4px 12px;border:var(--hairline-width) solid transparent;border-bottom-color:var(--border);gap:8px}
+.lg-row.sel{background:var(--muted);border-color:var(--primary);border-radius:calc(8px * var(--shape-radius-tile))}
+.lg-row .q{font-weight:600;text-align:center;font-variant-numeric:tabular-nums}
+.lg-row .n{display:flex;flex-direction:column;min-width:0}
+.lg-row .n b{font-weight:500}
+.lg-row .n span{font-size:13px;color:var(--muted-foreground);line-height:17px}
+.lg-row .n span.tag{color:var(--selected-foreground)}
+.lg-row .r{text-align:right;font-variant-numeric:tabular-nums}
+.lg-row .r.b{font-weight:600}
+.lg-row .r.mute{color:var(--muted-foreground)}
+.receipt{grid-template-columns:28px minmax(0,1fr) 70px 76px}
+.pick{grid-template-columns:28px minmax(0,1fr) 152px 76px}
+.lg-sum{padding:6px 12px;border-bottom:var(--hairline-width) solid var(--border)}
+.lg-line{display:flex;justify-content:space-between;align-items:center;min-height:24px;gap:8px;font-variant-numeric:tabular-nums}
+.lg-line .mute{color:var(--muted-foreground)}
+.lg-line small{font-size:13px;color:var(--muted-foreground);margin-left:4px}
+.lg-pay{padding:6px 12px;border-bottom:var(--hairline-width) solid var(--border)}
+.lg-pay h4{margin:0 0 4px;font-size:14px;font-weight:600}
+.lg-pay .none{color:var(--muted-foreground);min-height:24px}
+.pl{display:flex;align-items:center;gap:6px;min-height:26px;font-variant-numeric:tabular-nums}
+.pl .w{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl .w span{color:var(--muted-foreground);font-size:13px}
+.pl .ic{color:var(--ok)}
+.pl.now{font-weight:600}
+.pl.cancel .w,.pl.cancel>span:last-child{text-decoration:line-through;color:var(--muted-foreground)}
+.pl.cancel .w em{font-style:normal;text-decoration:none;display:inline-block;margin-left:6px}
+.pl.todo{color:var(--muted-foreground)}
+.lg-tot{padding:6px 12px}
+.lg-tot .rem{border-top:var(--hairline-width) solid var(--border);margin-top:4px;padding-top:4px;font-weight:700}
+.lg-foot{height:48px;flex:none;border-top:var(--hairline-width) solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 12px}
+.lg-foot div{display:flex;flex-direction:column;line-height:1.2;border-bottom:2px solid var(--primary);padding:4px 0}
+.lg-foot b{font-weight:600}
+.lg-foot span{font-size:12px;color:var(--muted-foreground)}
+/* phone balance bar */
+.balbar{display:none}
+.t-only{}
+.p-only{display:none!important}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:10px;background:var(--background);min-width:0;height:100vh}
+.duo>.pane{height:100vh}
+.spin{animation:none}
+.compact .methods{grid-template-columns:repeat(3,minmax(0,1fr))}
+.compact .methods .tile{min-height:56px}
+.compact .t-only{display:none!important}
+.compact .p-only{display:flex!important}
+.compact .p-grid{display:grid!important}
+.compact .tiles.c5,.compact .tiles.c6{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.compact .commit{padding:0 10px}
+.compact .li{gap:8px}
+.compact .body{gap:12px}
+.compact .pick-list .li .tot{width:64px}
+.compact .leg{padding:0 10px}
+.compact .li .tot{width:60px}
+.compact .li{gap:8px;padding:8px 10px}
+.compact .plan.t-only{display:none!important}
+.compact .stepper{grid-template-columns:44px 56px 44px}
+@media (max-width:500px){
+body .methods{grid-template-columns:repeat(3,minmax(0,1fr))}
+body .methods .tile{min-height:56px}
+body .t-only{display:none!important}
+body .p-only{display:flex!important}
+body .p-grid{display:grid!important}
+body .tiles.c5,body .tiles.c6{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+body .commit{padding:0 10px}
+body .li{gap:8px}
+body .body{gap:12px}
+body .pick-list .li .tot{width:64px}
+body .leg{padding:0 10px}
+body .li .tot{width:60px}
+body .li{gap:8px;padding:8px 10px}
+body .plan.t-only{display:none!important}
+body .stepper{grid-template-columns:44px 56px 44px}
+.frame{display:block;height:auto}
+.rail,.grip,.ledger{display:none}
+.balbar{display:flex;align-items:center;justify-content:space-between;gap:8px;height:40px;padding:0 16px;background:var(--muted);font-size:14px;font-variant-numeric:tabular-nums;border-bottom:var(--hairline-width) solid var(--border)}
+.balbar b{font-weight:700}
+.pane{height:calc(100vh - 40px);padding:8px 16px 12px}
+.duo{display:block;height:auto}
+.duo>.pane{height:calc(100vh - 40px)}
+}
+
+body{overflow:auto}
+.sheet{padding:16px;display:flex;flex-direction:column;gap:12px}
+.sheet h1{margin:0;font-size:15px;font-weight:600}
+.sheet h1 span{color:var(--muted-foreground);font-weight:400}
+.row{background:var(--card);border:var(--hairline-width) solid var(--border);border-radius:calc(8px * var(--shape-radius-tile));padding:12px;display:flex;flex-wrap:wrap;gap:12px 16px;align-items:flex-start}
+.cell{margin:0;display:flex;flex-direction:column;gap:6px;max-width:100%}
+.cell-body{display:flex;align-items:center;min-height:44px;max-width:100%;overflow:hidden}
+.cell figcaption{font-size:12px;color:var(--muted-foreground)}
+.cell .tile{width:100%}
+</style>
+</head>
+<body>
+<div class="sheet">
+<h1>System sheet <span>· V3 · split tabs · one row per theme (this row is the page's theme) · resting beside picked</span></h1>
+<div class="row"><figure class="cell"><div class="cell-body"><span class="chip"><span class="num">$45.00</span></span></div><figcaption>Chip rest</figcaption></figure><figure class="cell"><div class="cell-body"><span class="chip on"><span class="num">Split</span></span></div><figcaption>Chip on · the Split chip</figcaption></figure><figure class="cell"><div class="cell-body"><span class="chip add"><svg class="ic " width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg><span class="num">amount</span></span></div><figcaption>Chip add (dashed)</figcaption></figure><figure class="cell"><div class="cell-body"><span class="chip on"><span class="num">1 Lemonade</span><svg class="ic x" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></span></div><figcaption>Chip on · clear</figcaption></figure><figure class="cell" style="width:104px"><div class="cell-body"><div class="tile"><svg class="ic " width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg><span class="t">Card</span></div></div><figcaption>Tile rest</figcaption></figure><figure class="cell" style="width:104px"><div class="cell-body"><div class="tile sel"><svg class="ic " width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg><span class="t">Card</span></div></div><figcaption>Tile selected</figcaption></figure><figure class="cell" style="width:112px"><div class="cell-body"><div class="tile"><span class="t">3 ways</span><span class="s">$41.50 each</span></div></div><figcaption>Tile rest · sub</figcaption></figure><figure class="cell" style="width:112px"><div class="cell-body"><div class="tile sel"><span class="t">3 ways</span><span class="s">$41.50 each</span></div></div><figcaption>Tile selected · sub</figcaption></figure><figure class="cell" style="width:112px"><div class="cell-body"><div class="tile off"><svg class="ic " width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M9 6h6M9 10h6M10 17h4"/></svg><span class="t">SumUp</span><span class="s">Needs internet</span></div></div><figcaption>Tile disabled</figcaption></figure><figure class="cell"><div class="cell-body"><div class="seg" role="radiogroup"><span class="on">Payments</span><span class="">Legacy</span></div></div><figcaption>SegmentedControl</figcaption></figure><figure class="cell"><div class="cell-body"><div class="seg" role="radiogroup"><span class="on">Payments</span><span class="off"><svg class="ic " width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Legacy</span></div></div><figcaption>SegmentedControl · locked segment</figcaption></figure><figure class="cell"><div class="cell-body"><div style="width:380px"><div class="seg full" role="radiogroup"><span class="">Even</span><span class="">Amount</span><span class="">Percent</span><span class="on">Item</span></div></div></div><figcaption>SegmentedControl · four</figcaption></figure><figure class="cell"><div class="cell-body"><div class="li" style="width:300px"><span class="nm"><b>Flat white</b><span>$4.50 each</span></span><span class="tot">$9.00</span></div></div><figcaption>ListItem rest</figcaption></figure><figure class="cell"><div class="cell-body"><div class="li sel" style="width:300px"><span class="nm"><b>Flat white</b><span>$4.50 each</span></span><span class="tot">$9.00</span></div></div><figcaption>ListItem selected (border-primary bg-muted)</figcaption></figure><figure class="cell"><div class="cell-body"><div style="width:300px"><div class="li dashed"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>Add an amount</div></div></div><figcaption>ListItem dashed</figcaption></figure><figure class="cell" style="width:520px"><div class="cell-body"><div class="list" style="width:520px"><div class="li"><span class="cb "></span><span class="nm"><b>Lemonade</b><span>$5.00 each</span></span><span class="stepper"><span class="sb dis"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg></span><span class="sv"><b>0 <i>of 4</i></b></span><span class="sb"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></span></span><span class="tot mute">$20.00</span></div><div class="li sel"><span class="cb ind"><svg class="ic " width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg></span><span class="nm"><b>Flat white</b><span>$4.50 each</span></span><span class="stepper"><span class="sb"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg></span><span class="sv"><b>1 <i>of 2</i></b><small class="pk">$4.50</small></span><span class="sb"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></span></span><span class="tot">$9.00</span></div></div></div><figcaption>Item tab rows rest / picked (ListItem + Checkbox + stepper)</figcaption></figure><figure class="cell" style="width:520px"><div class="cell-body"><div style="width:520px"><div class="li sel" style="flex-wrap:wrap"><span class="cb on"><svg class="ic " width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><span class="nm" style="min-width:110px"><b>Towards the rest</b><span>an amount, no items</span></span><span style="display:flex;gap:8px;flex:none"><span class="chip"><span class="num">$5</span></span><span class="chip on"><span class="num">$10</span></span><span class="chip"><span class="num">$20</span></span><span class="chip"><span class="num">Type</span></span></span><span class="tot">$10.00</span></div></div></div><figcaption>Towards the rest (ListItem selected + Chips)</figcaption></figure><figure class="cell"><div class="cell-body"><span style="display:flex;gap:16px"><span class="cb"></span><span class="cb on"><svg class="ic " width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><span class="cb ind"><svg class="ic " width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg></span></span></div><figcaption>Checkbox off / on / indeterminate</figcaption></figure><figure class="cell"><div class="cell-body"><span style="display:flex;gap:16px"><span class="stepper"><span class="sb dis"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg></span><span class="sv"><b>0 <i>of 4</i></b></span><span class="sb"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></span></span><span class="stepper"><span class="sb"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg></span><span class="sv"><b>1 <i>of 4</i></b><small class="pk">$5.00</small></span><span class="sb"><svg class="ic " width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></span></span></span></div><figcaption>Stepper rest / picked</figcaption></figure><figure class="cell"><div class="cell-body"><div class="key" style="width:96px;height:56px">7</div></div><figcaption>Keypad key</figcaption></figure><figure class="cell"><div class="cell-body"><div class="commit" style="width:240px">Take $41.50 in Card</div></div><figcaption>Button default</figcaption></figure><figure class="cell"><div class="cell-body"><div class="commit dis" style="width:180px">Choose a split</div></div><figcaption>Button default · disabled</figcaption></figure><figure class="cell"><div class="cell-body"><span class="btn-outline">Cancel payment</span></div><figcaption>Button outline</figcaption></figure><figure class="cell"><div class="cell-body"><span class="ghost">Change split</span></div><figcaption>Button ghost</figcaption></figure><figure class="cell"><div class="cell-body"><span style="display:flex;gap:8px;flex-wrap:wrap"><span class="leg done"><svg class="ic " width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Card $23.00</span><span class="leg done"><svg class="ic " width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>3 paid · $58.00</span><span class="leg now">Now $41.50</span><span class="leg todo">Then 2 × $41.50</span><span class="leg rest">Then $144.50</span></span></div><figcaption>Plan pill done / collapsed done / now / to come / open rest</figcaption></figure></div>
+</div>
+</body>
+</html>
