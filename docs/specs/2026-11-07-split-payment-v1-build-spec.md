@@ -98,19 +98,33 @@ describes the whole split up front unless they want to (`2–6 ways` does that i
 
 ## Money rules
 
-- A **unit's price** is its line's displayed total (tax-inclusive when the cart shows prices
-  inclusive) divided by the quantity, floored to the minor unit; the remainder cents sit on the
-  line's last unit, so picking all of a line always sums to the line total.
-- **Even shares** stay `evenSplitShareMinor` (half-up, the last leg takes what is left: $182.50 / 4
-  → 45.62 × 3, 45.64). A **shared item payment** of $37.00 three ways is 12.33, 12.33, 12.34.
+- A **unit's payable price** is the line's `total + total_tax` divided by the quantity, floored to
+  the minor unit; the remainder cents sit on the line's last unit, so picking all of a line always
+  sums to the line's tax-inclusive total. Tax is always inside the money a unit adds to a payment,
+  whatever the cart's tax display: with prices shown exclusive, the bill's sub-line reads
+  `$5.00 + $0.50 tax each` and the stepper cell shows the tax-inclusive figure the unit adds. (Today's
+  item plan reads `total_tax` only when the cart shows prices inclusive, so an exclusive store's
+  item payments leave the tax unpaid; this spec closes that.) Order-level discounts are already in
+  the line totals; nothing else (fees, shipping) is apportioned to units, so a bill with a fee or
+  shipping line keeps that money in the rest, which the even row and `The rest` pay.
+- **Even shares** stay `evenSplitShareMinor` (half-up on the share, the last leg takes what is
+  left: $182.50 / 4 → 45.63 × 3, 45.61; the mockup's 45.62 / 45.64 was drawn by hand and the code's
+  rule wins). A **shared item payment** of $37.00 three ways is 12.33, 12.33, 12.34.
 - **Cents left over** (S16): the hero for a picked line is the line's price plus any outstanding
   rounding when picking it would leave less than one minor unit's worth of lines unpaid, with the
   hint `includes $0.02 left from rounding`. No sub-minimum payment is ever planned.
 - **Less than planned** re-plans the remainder evenly over the legs still to come (unchanged).
   **More than planned** on cash is change (unchanged, #3393).
-- **Cancel a payment**: the existing void flow. Its items go back to unpaid (`0 of 4`), the strip
-  and eyebrow recount, the hint says what came back once (`Cash $15.00 cancelled · its lemonade is
-  unpaid again`).
+- **Cancel a payment** (S15) is **one payment**, not the order's. Today's `useVoidPayments(order)`
+  voids every live row and is the checkout-abandonment path; it stays for that. New:
+  `voidPayment(order, paymentId)` beside it in `checkout/payments/use-void-payments.ts`, the same
+  rules per row (`partitionVoidableRows`: a captured card leg or a counted manual row is retained
+  and reported `captured_refund_required`, never voided), the same journal and log lines with the
+  one id. The payment's `cancel` action in the opened done disclosure and in the bill's Payments
+  section passes that row's id; `cancel-payment-view.tsx` keeps the whole-order list for the
+  existing `Cancel payment` entry point. On success the payment's allocation (below) is dropped, so
+  its units go back to unpaid (`0 of 4`), the strip and eyebrow recount, and the hint says what came
+  back once (`Cash $15.00 cancelled · its lemonade is unpaid again`).
 - **Terminal did not answer** (S18): the existing unanswered-command Notice at the top of the
   pane (`SumUp didn't answer · payment 4 not taken` + `Try again`); the plan, strip and method
   selection are untouched.
@@ -146,11 +160,17 @@ plan; on an amount: a fixed plan with `thenWays`), `set-percent {percent}`, `tog
 `toggle-done`. `planLegs` renders `thenWays` equal legs after the first, and `items` legs from
 `units`. Completion stays derived from payment rows since `from`, never a counter.
 
-**Provenance.** `linesPaidBy` becomes `Record<TenderLineId, { units: number; methods: string[] }>`
-in the checkout-mode store and on the order (the `_wcpos_split` summary keeps `kind / ways /
-shares`; the per-line record gains `units`). The receipt's `paid · Card` mark reads
+**Provenance is per payment.** `linesPaidBy` is replaced by an allocation keyed by the payment
+row: `allocations: Record<PaymentRow['id'], Record<TenderLineId, number>>` (units of each line that
+payment covered; the `+ amount` extra is not allocated, it is money against the order). It is
+written with the leg that records the payment (the manual path's `recorded` and the terminal's
+`captured`), into the checkout-mode store and onto the order's meta beside the `_wcpos_split`
+summary (which keeps `kind / ways / shares`). Everything the UI shows derives from it: a line's
+paid units are the sum over live rows, its methods the titles of those rows, and cancelling a row
+drops exactly its allocation, so two $10 cash payments that covered one $5 unit + $5 extra and two
+$5 units respectively each restore their own units. The receipt's `paid · Card` mark reads
 `1 of 2 paid · Card`. Nothing is recomputed on the order; a part-line payment is money against the
-order plus a provenance note, exactly as an item plan is today.
+order plus this allocation, exactly as an item plan is today.
 
 ## Copy
 
@@ -189,12 +209,18 @@ pill), `checkout-plan-done-open`, `checkout-plan-payment-<i>`, `checkout-plan-pa
 
 ## Build slices (one PR each, `main`, 600-line law; ceilings below are the brief's)
 
-1. **State and maths** (ceiling 350 added production lines): the reducer shape above, `planLegs`
-   with `thenWays` and `units`, unit pricing with the cents rule, percent entry, provenance
-   `units`; `tender-state.test.ts` covers S2, S4, S6, S7, S8, S9, S12, S16 as tables. No UI.
+1. **State and maths** (ceiling 400 added production lines), **additive**: the new state fields,
+   actions and plan shapes above are added beside today's (`lineIds` stays next to `units`,
+   `linesPaidBy` arrays stay next to `allocations`, the four `split*` actions still reduce), so
+   `split-view.tsx` and `tender-pane.tsx` build and behave unchanged; `planLegs` with `thenWays`
+   and `units`, tax-inclusive unit pricing with the cents rule, percent entry, per-payment
+   allocations written with the leg, `voidPayment(order, paymentId)`; `tender-state.test.ts`
+   covers S2, S4, S6, S7, S8, S9, S12, S15, S16 as tables. No UI.
 2. **The pane** (ceiling 500): helpers row in all its states, the strip under the method row with
-   the collapsing done pill and its disclosure, `Change split`, Split-chip-off clears, delete
-   `split-view.tsx` and its test, commit tails, strings. Frames s2–s8, s11, s12, s14, s15.
+   the collapsing done pill and its disclosure (single-payment cancel from it), `Change split`,
+   Split-chip-off clears, commit tails, strings; **then the retirement**: delete `split-view.tsx`
+   and its test, the `split*` actions, `SplitTab`, `lineIds`, `linesPaidBy` and the sixteen strings,
+   in this PR, once nothing reads them. Frames s2–s8, s11, s12, s14, s15.
 3. **The bill is the picker** (ceiling 450): tablet bill rows with the stepper and `This payment`
    column, phone `Pick items` list, paid marks by units, recorded-payments-only with struck
    cancelled rows, the discount line. Frames s2, s9, s10, s13.
