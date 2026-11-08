@@ -1,6 +1,6 @@
 # Split payment: the payment is built, not planned
 
-Date: 2026-11-07. Lane: `main` (2.0). Owner: Paul. Status: **built** (2026-11-08, monorepo #3400, #3405, #3412, #3414; the § Built section records where the build departed from this text); was **approved** (*"continue as you
+Date: 2026-11-07. Lane: `main` (2.0). Owner: Paul. Status: **built** (2026-11-08, monorepo #3400, #3405, #3412, #3414, #3421; the § Built section records where the build departed from this text); was **approved** (*"continue as you
 recommend"* on the V1 pick of `docs/prototypes/2026-11-07-split-payment-mockups/index.html`, the
 hill climb run on *"I'm not convinced these screens are as easy to use as they could be … 6 drinks
 and 8 meals in a cart … so many permutations"*). This spec is the build contract; the mockup's
@@ -237,9 +237,10 @@ cashier reads being one the cashier would say.
 
 ## Built (2026-11-08): where the code departs from this contract
 
-Four PRs on `main`, all merged: #3400 (slice 1, state and maths), #3405 (slice 2, the pane; Paul
+Five PRs on `main`: #3400 (slice 1, state and maths), #3405 (slice 2, the pane; Paul
 lifted its ceiling to 560, *"Lift to 560"*), #3412 (slice 3, the bill is the picker), #3414
-(slice 4, Legacy copy and the E2E walks). Each departure below is the code as merged; the sections
+(slice 4, Legacy copy and the E2E walks), #3421 (a partial leg's picked units journaled on the
+order). Each departure below is the code as merged; the sections
 above stay as the design intent.
 
 - **The phone `Pick items` list moved from slice 2 to slice 3** (slice 2 ran over its ceiling at
@@ -251,10 +252,12 @@ above stay as the design intent.
   never silently keeps a leg the cashier has just re-described.
 - **A gateway leg carries no allocation.** Allocations are frozen at the press for manual and
   terminal legs (`freezePicks`); a Legacy / gateway payment pays the whole bill and has none.
-- **Allocations are journaled with each manual leg's write** (`_wcpos_paid_units`, every live leg's
-  units, this leg's included) and again at completion; a terminal leg's units sit in the till until
-  the next write (a later leg or the completion) journals them. `voidPayments(order, deps,
-  { paymentIds })` replaces the spec's `voidPayment(order, paymentId)`.
+- **Allocations are journaled on the order after every landed leg and after a single cancel**
+  (`_wcpos_paid_units`, every live leg's units; a local order patch in `tenderRecorded` and
+  `cancelOne`, monorepo #3421), and by the completing leg's provenance write as before. The four
+  build PRs wrote the meta with the completing leg only (`persistProvenance` runs when the row pays
+  the balance), so a reload mid-split lost every earlier leg's unit marks; the money was right.
+  `voidPayments(order, deps, { paymentIds })` replaces the spec's `voidPayment(order, paymentId)`.
 - **Bill-wide numbering** (ruled 2026-11-08): payments taken before a plan count toward `n of m`.
 - **Copy as shipped:** `prices_include_discount` reads `Prices include the discount` (a discount may
   be an amount, not a percent); `percent_of_amount` and `type_another_share` are one key
