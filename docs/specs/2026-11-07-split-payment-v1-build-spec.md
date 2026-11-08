@@ -1,6 +1,6 @@
 # Split payment: the payment is built, not planned
 
-Date: 2026-11-07. Lane: `main` (2.0). Owner: Paul. Status: **approved** (*"continue as you
+Date: 2026-11-07. Lane: `main` (2.0). Owner: Paul. Status: **built** (2026-11-08, monorepo #3400, #3405, #3412, #3414; the § Built section records where the build departed from this text); was **approved** (*"continue as you
 recommend"* on the V1 pick of `docs/prototypes/2026-11-07-split-payment-mockups/index.html`, the
 hill climb run on *"I'm not convinced these screens are as easy to use as they could be … 6 drinks
 and 8 meals in a cart … so many permutations"*). This spec is the build contract; the mockup's
@@ -199,7 +199,7 @@ payments {from} and {to}`), `includes_rounding_left` (`includes {amount} left fr
 
 Kept: `checkout-label`, `checkout-entry`, `checkout-entry-hint`, `checkout-split-chip`,
 `checkout-plan`, `checkout-plan-leg-<i>`, `checkout-plan-change`, `checkout-method-<id>`,
-`checkout-quick-<value>`, `checkout-key-<k>`, `checkout-commit`. Removed with the sub-view:
+`checkout-quick-<value>`, `checkout-keypad-key-<k>`, `checkout-commit`. Removed with the sub-view:
 `checkout-split-tab-*`, `checkout-split-option-*`, `checkout-split-item-*`, `checkout-split-items-go`,
 `checkout-split-share-*`, `checkout-plan-pick-items`. New: `checkout-plan-done` (the collapsed
 pill), `checkout-plan-done-open`, `checkout-plan-payment-<i>`, `checkout-plan-payment-<i>-cancel`,
@@ -234,6 +234,43 @@ pill), `checkout-plan-done-open`, `checkout-plan-payment-<i>`, `checkout-plan-pa
 Acceptance for each slice: the named frames of the mockup, screenshotted tablet and phone in the
 PR body, every bullet of CODING_STANDARDS § Design's definition of done, and every string the
 cashier reads being one the cashier would say.
+
+## Built (2026-11-08): where the code departs from this contract
+
+Four PRs on `main`, all merged: #3400 (slice 1, state and maths), #3405 (slice 2, the pane; Paul
+lifted its ceiling to 560, *"Lift to 560"*), #3412 (slice 3, the bill is the picker), #3414
+(slice 4, Legacy copy and the E2E walks). Each departure below is the code as merged; the sections
+above stay as the design intent.
+
+- **The phone `Pick items` list moved from slice 2 to slice 3** (slice 2 ran over its ceiling at
+  614; the list was the trim). Nothing was dropped.
+- **The done pill folds from ONE taken payment, not two** (review on #3405: a lone payment had no
+  way to be cancelled on its own). `checkout-plan-done` is the disclosure for any taken payment.
+- **Picks replace an active plan.** Changing the picked units while a `2–6 ways` or percent plan is
+  open drops the plan and makes the picks the entry (`clear-plan keepSplit keepPicks`); the plan
+  never silently keeps a leg the cashier has just re-described.
+- **A gateway leg carries no allocation.** Allocations are frozen at the press for manual and
+  terminal legs (`freezePicks`); a Legacy / gateway payment pays the whole bill and has none.
+- **Allocations are journaled with each manual leg's write** (`_wcpos_paid_units`, every live leg's
+  units, this leg's included) and again at completion; a terminal leg's units sit in the till until
+  the next write (a later leg or the completion) journals them. `voidPayments(order, deps,
+  { paymentIds })` replaces the spec's `voidPayment(order, paymentId)`.
+- **Bill-wide numbering** (ruled 2026-11-08): payments taken before a plan count toward `n of m`.
+- **Copy as shipped:** `prices_include_discount` reads `Prices include the discount` (a discount may
+  be an amount, not a percent); `percent_of_amount` and `type_another_share` are one key
+  `percent_of_amount_type` (`{percent} % of {amount} · type another share`); `less_than_planned_n`
+  names two payments and `less_than_planned_next_n` (`… moves to the next {n} payments`) names more;
+  `payment_cancelled` (`Payment cancelled`) is the toast; the ledger's unit mark is `units_paid_of`
+  and the phone list's figure `n_of_units`. `cancelled_items_unpaid` was not needed: the done
+  disclosure lists what each payment paid for and the toast is the one line.
+- **Test IDs as shipped:** the keypad's keys are `checkout-keypad-key-<k>` (not `checkout-key-<k>`);
+  a line's picker is `checkout-line-<key>-pick` (a tap on the name) beside `-units`, `-plus`,
+  `-minus`, `-paid`, where `<key>` is the POS line uuid; the cancel question from the done pill is
+  `checkout-cancel-one-confirm`.
+- **Slice 4's E2E walks are S3, S4, S7, S9 and S15**, beside slice 2's even split (S2) and slice 3's
+  shared picked units (S6/S8). Paul's 20-tap table (S10) and S16 are not walked: the live store's
+  E2E order is one line of quantity one, which cannot carry six drinks and eight meals; the
+  tablet and phone frames are judged in the mockup, not screenshotted in the PR bodies.
 
 ## Decisions made without Paul (each marked where it binds)
 
