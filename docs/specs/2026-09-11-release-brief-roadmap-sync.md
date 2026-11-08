@@ -126,7 +126,7 @@ The page paginates `issues` with the cursor; `subIssues(first:100)` is a **hard 
 
 **Control-plane writes are exempt from projection suppression.** Editing the digest issue, the validation comment on a release issue, and the Discord ping are how the sync *reports*; they are never blocked by validation, by the bulk cap, or by dry-run (except the ping, which dry-run suppresses). That is how "release blocked by validation" and "run refused on bulk cap" reach the digest.
 
-**Credential.** `wcpos-bot` (App 2860316) via the existing `PROJECT_BOT_APP_ID` / `PROJECT_BOT_PRIVATE_KEY` secrets; per-run installation token scoped to the five repos. No new App.
+**Credential.** `wcpos-bot` (App 2860316) via the org `WCPOS_BOT_APP_ID` / `WCPOS_BOT_PRIVATE_KEY` secrets (switched 2026-11-08: the `PROJECT_BOT_*` secrets are `wcpos-project-bot`, App 2781103, whose Issues permission is read-only, so every digest write since 21 Oct was refused with a 403); per-run installation token scoped to the five repos. No new App.
 
 **Reconcile (stateless, every run).**
 1. Read: all `release` issues + sub-issue trees (GraphQL); milestones in five repos (REST); `woocommerce-pos` tags; the digest issue; forum threads (`GET /api/roadmap/threads`).
