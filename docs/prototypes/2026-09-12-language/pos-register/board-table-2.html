@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>POS — nine more product lists, side by side (board 2)</title>
+<style>
+:root{--u:4px;--fs:14px;--ctl:44px;--row:44px;--r:8px;--hair:1px;--tile:64px;
+  --bg:oklch(0.975 0.004 250);--fg:oklch(0.22 0.02 250);--card:oklch(1 0 0);--muted:oklch(0.955 0.006 250);--muted-fg:oklch(0.50 0.02 250);--border:oklch(0.90 0.008 250);
+  --primary:oklch(0.50 0.18 240);--primary-fg:oklch(0.99 0.01 240);--ok:oklch(0.55 0.16 155);--warn:oklch(0.68 0.16 70);--bad:oklch(0.58 0.2 25);--info:oklch(0.58 0.14 240);--neutral:oklch(0.62 0.01 250)}
+*{box-sizing:border-box}
+body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;padding:24px}
+h1{font-size:20px;margin:0 0 4px} .lead{color:#374151;margin:0 0 20px;max-width:100ch;font-size:13px}
+.board{display:grid;grid-template-columns:repeat(2,600px);gap:24px}
+.panel .cap{display:flex;align-items:baseline;gap:10px;margin:0 0 8px;font-size:13px;color:#374151;flex-wrap:wrap} .panel .cap b{font-size:15px;color:#111} .panel .cap .n{font-weight:700;color:#6b7280}
+.frame{width:600px;height:520px;background:var(--bg);color:var(--fg);font-size:var(--fs);line-height:1.35;font-variant-numeric:tabular-nums;border:1px solid #c9ced6;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.frame *{font-variant-numeric:tabular-nums}
+svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.mut{color:var(--muted-fg)} .xs{font-size:12px} .b{font-weight:600} .money{white-space:nowrap} .grow{flex:1;min-width:0} .ell{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st{display:inline-flex;align-items:center;gap:6px;white-space:nowrap} .st i{width:8px;height:8px;border-radius:50%;background:var(--neutral);flex:none} .st.warn i{background:var(--warn)} .st.bad i{background:var(--bad)}
+.toolbar{display:flex;align-items:center;gap:8px;padding:12px 16px;flex:none}
+.in{height:44px;border:var(--hair) solid var(--border);border-radius:var(--r);background:var(--card);padding:0 12px 0 40px;flex:1;color:var(--muted-fg);display:flex;align-items:center;position:relative} .in svg{position:absolute;left:12px;top:13px} .in.f{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary);color:var(--fg)}
+.ibtn{width:44px;height:44px;border-radius:var(--r);display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg)}
+.list{flex:1;min-height:0;overflow:hidden;padding:0 16px;display:flex;flex-direction:column;position:relative}
+.thead{display:grid;align-items:center;height:32px;border-bottom:var(--hair) solid var(--border);color:var(--muted-fg);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;flex:none} .th{padding:0 12px;white-space:nowrap} .th.r{text-align:right}
+.tr{display:grid;align-items:center;min-height:44px;border-bottom:var(--hair) solid var(--border)} .td{padding:6px 12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .td.r{text-align:right} .td.c{display:flex;justify-content:center} .td .sub{display:block;color:var(--muted-fg);font-size:12px}
+.img{width:40px;height:40px;border-radius:6px;background:var(--muted);display:inline-block} .img.lg{width:48px;height:48px}
+.add{width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg)}
+.foot{display:flex;align-items:center;height:40px;padding:0 12px;border-top:var(--hair) solid var(--border);color:var(--muted-fg);flex:none;margin-top:auto}
+.chips{display:flex;gap:8px;padding:0 16px 10px;flex:none;overflow:hidden} .chip{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;border-radius:999px;border:var(--hair) solid var(--border);background:var(--card);color:var(--muted-fg);white-space:nowrap} .chip.on{background:var(--fg);color:var(--bg);border-color:var(--fg);font-weight:600}
+.tabs{display:flex;gap:2px;padding:0 16px;border-bottom:var(--hair) solid var(--border);flex:none} .tab{height:40px;padding:0 12px;display:inline-flex;align-items:center;color:var(--muted-fg);border-bottom:2px solid transparent;white-space:nowrap} .tab.on{color:var(--fg);font-weight:600;border-bottom-color:var(--primary)}
+.cat{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:999px;background:var(--muted);color:var(--muted-fg);font-size:12px}
+.step{display:inline-flex;align-items:center;border:var(--hair) solid var(--border);border-radius:8px;height:36px;overflow:hidden} .step span{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center} .step b{width:32px;text-align:center}
+.twocol{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+.idx{position:absolute;right:0;top:40px;bottom:40px;width:20px;display:flex;flex-direction:column;justify-content:space-around;align-items:center;font-size:10px;font-weight:600;color:var(--primary)}
+mark{background:color-mix(in oklch,var(--primary) 18%,transparent);color:inherit;border-radius:2px}
+.kbd{display:inline-flex;align-items:center;height:22px;padding:0 6px;border:var(--hair) solid var(--border);border-radius:5px;font-size:11px;color:var(--muted-fg);background:var(--card)}
+</style>
+</head>
+<body>
+<h1>POS — nine more product lists, side by side</h1>
+<p class="lead">Products column only (600 wide, the tablet column), same products and tokens. Panel 01 is the decided base (frameless rows, variations inline) for comparison; 02–09 are other ways to lay the same list out. Captures: <code>screens/board-table-2/NN-slug.jpg</code>.</p>
+<div class="board" id="board"></div>
+<script>
+const I={search:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',scan:'<svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 9v6M11 9v6M14 9v6M17 9v6"/></svg>',grid:'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>',sliders:'<svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg>',plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',minus:'<svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>',chevd:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',chevu:'<svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>',up:'<svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>'};
+const CUR='£'; const fmt=n=>`${CUR}${n.toFixed(2)}`;
+const P=[['Flat white',3.2,'FW-12','Coffee',12],['Oat latte',3.6,'OL-16','Coffee',30],['Cold brew',3.8,'CB-330','Coffee',20],['Espresso cup',8,'EC-01','Coffee',9],['Sourdough loaf',4.2,'SD-800','Bakery',4],['Croissant',2.4,'CR-01','Bakery',8],['Cinnamon bun',3,'CB-02','Bakery',6],['Tote bag',12,'TB-NAT','Merch',0,'3 variations'],['Beans 250g',9.5,'BN-250','Retail',15],['Granola jar',6.5,'GR-500','Retail',3],['Tea tin',7.5,'TT-01','Retail',11],['Gift card',20,'GC','Retail',null]];
+const stock=s=>s==null?'<span class="mut">—</span>':s===0?'<span class="st bad"><i></i>0</span>':s<5?`<span class="st warn"><i></i>${s}</span>`:String(s);
+const toolbar=(f=false,val='Search products')=>`<div class="toolbar"><span class="in ${f?'f':''}">${I.search}${val}</span><span class="ibtn">${I.scan}</span><span class="ibtn">${I.grid}</span><span class="ibtn">${I.sliders}</span></div>`;
+const foot='<div class="foot">Showing 12 of 1,204</div>';
+const panel=(n,title,after,gives,html)=>`<section class="panel" data-n="${String(n).padStart(2,'0')}-${title.toLowerCase().replace(/[^a-z0-9]+/g,'-')}"><div class="cap"><span class="n">${String(n).padStart(2,'0')}</span><b>${title}</b><span>after ${after}</span><span class="mut">— ${gives}</span></div><div class="frame">${html}</div></section>`;
+const G1='56px 1.5fr 100px 96px 80px 52px';
+const hd=(g=G1,cols=['','Name','SKU','Price','Stock',''],rIdx=[3,4])=>`<div class="thead" style="grid-template-columns:${g}">${cols.map((c,i)=>`<div class="th ${rIdx.includes(i)?'r':''}">${c}</div>`).join('')}</div>`;
+const row=([n,p,sku,cat,s,v],g=G1,img=true)=>`<div class="tr" style="grid-template-columns:${g}">${img?`<div class="td c"><span class="img"></span></div>`:''}<div class="td">${n}<span class="sub">${sku}${v?' · '+v:''}</span></div><div class="td mut">${sku}</div><div class="td r money">${fmt(p)}</div><div class="td r">${stock(s)}</div><div class="td c"><span class="add">${v?I.chevd:I.plus}</span></div></div>`;
+const B=[];
+B.push(panel(1,'Decided base','board 1, 01 + 07','frameless rows with a header; a variable product opens inline',
+ `${toolbar()}<div class="list">${hd()}${P.slice(0,4).map(x=>row(x)).join('')}<div class="tr" style="grid-template-columns:${G1}"><div class="td c"><span class="img"></span></div><div class="td">Tote bag<span class="sub">TB-NAT · 3 variations</span></div><div class="td mut">TB-NAT</div><div class="td r money">from £12.00</div><div class="td r">${stock(0)}</div><div class="td c"><span class="add">${I.chevu}</span></div></div>${[['Natural · S','TB-NAT-S',12,6],['Natural · L','TB-NAT-L',12,0]].map(([n,sk,p,s])=>`<div class="tr" style="grid-template-columns:${G1};background:oklch(0.985 0.005 250)"><div class="td"></div><div class="td" style="padding-left:24px">${n}</div><div class="td mut">${sk}</div><div class="td r money">${fmt(p)}</div><div class="td r">${stock(s)}</div><div class="td c"><span class="add">${I.plus}</span></div></div>`).join('')}${foot}</div>`));
+const G2='1.6fr 90px 96px 70px 44px';
+B.push(panel(2,'Compact, no images','Attio density','36 pt rows, name and SKU on one line; 11 rows where the base shows 8',
+ `${toolbar()}<div class="list">${hd(G2,['Name','SKU','Price','Stock',''],[2,3])}${P.map(([n,p,sku,cat,s,v])=>`<div class="tr" style="grid-template-columns:${G2};min-height:36px"><div class="td">${n}${v?` <span class="mut xs">· ${v}</span>`:''}</div><div class="td mut">${sku}</div><div class="td r money">${fmt(p)}</div><div class="td r">${stock(s)}</div><div class="td c"><span class="add" style="width:28px;height:28px">${v?I.chevd:I.plus}</span></div></div>`).join('')}${foot}</div>`));
+const G3='64px 1fr 110px 52px';
+B.push(panel(3,'Comfortable with category','Shopify POS','56 pt rows, 48 px thumbnail, the category as a quiet tag; fewer rows, easier at arm\'s length',
+ `${toolbar()}<div class="list">${P.slice(0,7).map(([n,p,sku,cat,s,v])=>`<div class="tr" style="grid-template-columns:${G3};min-height:56px"><div class="td c"><span class="img lg"></span></div><div class="td"><span class="b">${n}</span><span class="sub"><span class="cat">${cat}</span> ${s!=null&&s<5?`<span class="st ${s===0?'bad':'warn'}" style="margin-left:6px"><i></i>${s===0?'Out':s+' left'}</span>`:''}</span></div><div class="td r b money">${v?'from ':''}${fmt(p)}</div><div class="td c"><span class="add">${v?I.chevd:I.plus}</span></div></div>`).join('')}${foot}</div>`));
+B.push(panel(4,'Menu board','Toast, Square item library','name and price only, large type, 52 pt; nothing a customer could not read over the counter',
+ `${toolbar()}<div class="list">${P.slice(0,8).map(([n,p,sku,cat,s,v])=>`<div class="tr" style="grid-template-columns:1fr auto;min-height:52px"><div class="td" style="font-size:16px">${n}${v?` <span class="mut xs">· 3 variations</span>`:''}</div><div class="td r money" style="font-size:16px;font-weight:600">${fmt(p)}</div></div>`).join('')}${foot}</div>`));
+const G5='1fr 96px 120px';
+B.push(panel(5,'Quantity steppers','wholesale and stock apps','− 1 + on every row; a cashier taking a case order never opens a line to change the quantity',
+ `${toolbar()}<div class="list">${P.slice(0,8).map(([n,p,sku,cat,s,v],i)=>`<div class="tr" style="grid-template-columns:${G5};min-height:48px"><div class="td">${n}<span class="sub">${sku} · ${stock(s)}</span></div><div class="td r money">${fmt(p)}</div><div class="td c"><span class="step"><span>${I.minus}</span><b>${i===0?2:i===4?1:0}</b><span>${I.plus}</span></span></div></div>`).join('')}${foot}</div>`));
+B.push(panel(6,'Category tabs above','Square item library, Fresha','a tab per category above the rows; the list is one category at a time, no grouping headers',
+ `${toolbar()}<div class="tabs">${['All','Coffee','Bakery','Merch','Retail','Gift cards'].map((c,i)=>`<span class="tab ${i===1?'on':''}">${c}</span>`).join('')}</div><div class="list">${hd()}${P.filter(x=>x[3]==='Coffee').map(x=>row(x)).join('')}${foot.replace('12 of 1,204','4 in Coffee')}</div>`));
+B.push(panel(7,'Two columns','Numbers-style dense lists','the same rows in two columns; twice the products before scrolling, no header, name and price only',
+ `${toolbar()}<div class="list"><div class="twocol">${P.map(([n,p,sku,cat,s,v])=>`<div class="tr" style="grid-template-columns:1fr auto 36px;min-height:44px"><div class="td">${n}${s!=null&&s<5?` <span class="st ${s===0?'bad':'warn'}" style="margin-left:4px"><i></i></span>`:''}</div><div class="td r money">${fmt(p)}</div><div class="td c"><span class="add" style="width:32px;height:32px">${v?I.chevd:I.plus}</span></div></div>`).join('')}</div>${foot}</div>`));
+B.push(panel(8,'Sort chips, no header','Linear display options','sort lives in a chip row (Name · Price · Stock · Popular); the header row goes, rows start higher',
+ `${toolbar()}<div class="chips"><span class="chip on">Name ${I.up}</span><span class="chip">Price</span><span class="chip">Stock</span><span class="chip">Popular</span><span class="grow"></span><span class="chip">In stock only</span></div><div class="list">${P.slice(0,7).map(x=>row(x)).join('')}${foot}</div>`));
+B.push(panel(9,'Search first','Superhuman, Raycast','typing narrows the list and highlights the match; ↑↓ and Enter add the row; the scanner lands here too',
+ `${toolbar(true,'<span style="color:var(--fg)">cro</span>')}<div class="list"><div class="mut xs" style="padding:6px 12px">2 of 1,204 · <span class="kbd">↑↓</span> move · <span class="kbd">Enter</span> add</div>${[['Croissant',2.4,'CR-01',8],['Cinnamon bun (<mark>cro</mark>nut style)',3,'CB-02',6]].map(([n,p,sku,s],i)=>`<div class="tr" style="grid-template-columns:${G1};${i===0?'box-shadow:inset 0 0 0 2px var(--primary);background:var(--card)':''}"><div class="td c"><span class="img"></span></div><div class="td">${n.replace('Croissant','<mark>Cro</mark>issant')}<span class="sub">${sku}</span></div><div class="td mut">${sku}</div><div class="td r money">${fmt(p)}</div><div class="td r">${stock(s)}</div><div class="td c"><span class="add">${I.plus}</span></div></div>`).join('')}</div>`));
+document.getElementById('board').innerHTML=B.join('');
+</script>
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>POS — the end of the sale (board)</title>
+<style>
+:root{--u:4px;--fs:14px;--ctl:44px;--row:44px;--r:8px;--hair:1px;
+  --bg:oklch(0.975 0.004 250);--fg:oklch(0.22 0.02 250);--card:oklch(1 0 0);--muted:oklch(0.955 0.006 250);--muted-fg:oklch(0.50 0.02 250);--border:oklch(0.90 0.008 250);
+  --primary:oklch(0.50 0.18 240);--primary-fg:oklch(0.99 0.01 240);--ok:oklch(0.55 0.16 155);--warn:oklch(0.68 0.16 70);--bad:oklch(0.58 0.2 25);--info:oklch(0.58 0.14 240);--neutral:oklch(0.62 0.01 250);--destructive:oklch(0.55 0.22 25);--destructive-fg:oklch(0.99 0.01 25)}
+*{box-sizing:border-box}
+body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;padding:24px}
+h1{font-size:20px;margin:0 0 4px} .lead{color:#374151;margin:0 0 20px;max-width:110ch;font-size:13px;line-height:1.5}
+.board{display:grid;grid-template-columns:repeat(2,440px);gap:28px}
+.panel .cap{margin:0 0 8px;font-size:13px;color:#374151;line-height:1.45} .panel .cap b{font-size:15px;color:#111;display:block} .panel .cap .n{font-weight:700;color:#6b7280;margin-right:6px} .panel .cap em{color:#111;font-style:normal}
+.frame{width:440px;height:560px;background:var(--card);color:var(--fg);font-size:var(--fs);line-height:1.35;font-variant-numeric:tabular-nums;border:1px solid #c9ced6;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.frame *{font-variant-numeric:tabular-nums}
+svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.mut{color:var(--muted-fg)} .xs{font-size:12px} .b{font-weight:600} .money{white-space:nowrap} .grow{flex:1;min-width:0}
+.bar{height:44px;display:flex;align-items:center;gap:8px;padding:0 8px 0 16px;border-bottom:var(--hair) solid var(--border);flex:none} .bar .av{width:30px;height:30px;border-radius:50%;background:var(--muted);font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-left:auto}
+.ibtn{width:44px;height:44px;border-radius:var(--r);display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg)}
+.custrow{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 16px;border-bottom:var(--hair) solid var(--border);flex:none} .chip{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;border-radius:999px;border:var(--hair) solid var(--border);white-space:nowrap} .chip.q{border-color:transparent;padding:0 8px;color:var(--muted-fg)}
+.cth{display:grid;grid-template-columns:36px 1fr 70px 76px;gap:12px;padding:0 16px;height:28px;align-items:center;background:var(--muted);color:var(--muted-fg);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;border-bottom:var(--hair) solid var(--border);flex:none} .cth .r{text-align:right}
+.line{display:grid;grid-template-columns:36px 1fr 70px 76px;gap:12px;padding:6px 16px;min-height:44px;align-items:center;border-bottom:var(--hair) solid var(--border);position:relative;background:var(--card)} .line .q{height:36px;border:var(--hair) solid var(--border);border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-weight:600} .line .r{text-align:right} .line .sub{display:block;color:var(--muted-fg);font-size:12px}
+.lines{flex:1;min-height:0;overflow:hidden;position:relative}
+.totals{padding:12px 16px 8px;border-top:var(--hair) solid var(--border);flex:none} .totals div{display:flex;justify-content:space-between;padding:3px 0} .totals .big{font-size:18px;font-weight:700;padding-top:6px}
+.f2{display:flex;gap:8px;padding:0 16px 8px;flex:none} .f2 .btn{flex:1}
+.cf{display:flex;gap:8px;padding:0 16px 12px;flex:none;align-items:center}
+.btn{height:44px;border:var(--hair) solid var(--border);border-radius:var(--r);padding:0 16px;display:inline-flex;align-items:center;justify-content:center;font-weight:500;gap:8px;background:var(--card)} .btn.p{background:var(--primary);color:var(--primary-fg);border-color:transparent;font-weight:600;height:56px;font-size:16px;flex:1} .btn.q{border-color:transparent;background:transparent;color:var(--muted-fg)}
+.tabs{display:flex;align-items:center;gap:4px;padding:0 8px;border-top:var(--hair) solid var(--border);flex:none;height:52px} .otab{display:inline-flex;align-items:center;gap:8px;height:52px;padding:0 12px;border-bottom:2px solid transparent;color:var(--muted-fg);font-weight:500;position:relative} .otab.on{color:var(--fg);border-bottom-color:var(--primary);font-weight:600} .otab i{width:7px;height:7px;border-radius:50%;background:var(--warn)}
+.otab .x{width:22px;height:22px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg);background:var(--muted)} .otab .x svg{width:12px;height:12px}
+.menu{position:absolute;left:16px;top:96px;width:240px;background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);padding:8px;z-index:5} .menu div{display:flex;align-items:center;gap:10px;height:44px;padding:0 10px;border-radius:6px} .menu .d{color:var(--destructive)} .menu .sep{height:1px;background:var(--border);margin:4px 0;padding:0} .menu .k{margin-left:auto;font-size:11px;color:var(--muted-fg);border:var(--hair) solid var(--border);border-radius:4px;padding:1px 5px}
+.toast{position:absolute;left:12px;right:12px;top:52px;z-index:6;background:var(--fg);color:var(--bg);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:8px} .toast .u{margin-left:auto;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted-fg);text-align:center;padding:24px} .empty b{color:var(--fg);font-weight:500}
+.swiped .lb{transform:translateX(-112px)} .acts{position:absolute;right:0;top:0;bottom:0;display:flex} .acts span{width:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;font-weight:600;background:var(--muted)} .acts .del{background:var(--destructive);color:var(--destructive-fg)}
+.lb{display:grid;grid-template-columns:36px 1fr 70px 76px;gap:12px;align-items:center;background:var(--card);position:relative;z-index:1;transition:transform .2s}
+.reasons{display:flex;gap:6px;flex-wrap:wrap;padding:8px 16px 12px} .reasons .chip{height:36px}
+.ovl{position:absolute;inset:0;background:var(--card);z-index:4;display:flex;flex-direction:column}
+.orow{display:grid;grid-template-columns:1fr auto;gap:12px;padding:8px 16px;min-height:56px;align-items:center;border-bottom:var(--hair) solid var(--border);position:relative;overflow:hidden} .orow.on{background:color-mix(in oklch,var(--primary) 8%,transparent)} .orow .l1{display:flex;gap:8px;align-items:center} .orow .l2{color:var(--muted-fg);font-size:12px;display:flex;gap:6px;align-items:center}
+.gone{color:var(--muted-fg);text-decoration:line-through}
+
+
+
+
+
+
+
+.v1 .frame{width:440px;height:520px;background:var(--card);color:var(--fg);font-size:var(--fs);line-height:1.35;font-variant-numeric:tabular-nums;border:1px solid #c9ced6;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.v1 .frame *{font-variant-numeric:tabular-nums}
+.v1 svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.v1 .mut{color:var(--muted-fg)} .xs{font-size:12px} .b{font-weight:600} .money{white-space:nowrap} .grow{flex:1;min-width:0}
+.v1 .bar{height:44px;display:flex;align-items:center;gap:8px;padding:0 8px 0 16px;border-bottom:var(--hair) solid var(--border);flex:none} .bar .av{width:30px;height:30px;border-radius:50%;background:var(--muted);font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-left:auto}
+.v1 .ibtn{width:44px;height:44px;border-radius:var(--r);display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg)} .ibtn.d{color:var(--destructive)}
+.v1 .custrow{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 16px;border-bottom:var(--hair) solid var(--border);flex:none} .chip{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;border-radius:999px;border:var(--hair) solid var(--border)}
+.v1 .cth{display:grid;grid-template-columns:36px 1fr 70px 76px;gap:12px;padding:0 16px;height:28px;align-items:center;background:var(--muted);color:var(--muted-fg);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;border-bottom:var(--hair) solid var(--border);flex:none} .cth .r{text-align:right}
+.v1 .line{display:grid;grid-template-columns:36px 1fr 70px 76px;gap:12px;padding:6px 16px;min-height:44px;align-items:center;border-bottom:var(--hair) solid var(--border)} .line .q{height:36px;border:var(--hair) solid var(--border);border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-weight:600} .line .r{text-align:right} .line .sub{display:block;color:var(--muted-fg);font-size:12px}
+.v1 .lines{flex:1;min-height:0;overflow:hidden}
+.v1 .totals{padding:12px 16px 8px;border-top:var(--hair) solid var(--border);flex:none} .totals div{display:flex;justify-content:space-between;padding:3px 0} .totals .big{font-size:18px;font-weight:700;padding-top:6px}
+.v1 .f2{display:flex;gap:8px;padding:0 16px 8px;flex:none} .f2 .btn{flex:1}
+.v1 .cf{display:flex;gap:8px;padding:0 16px 12px;flex:none;align-items:center}
+.v1 .btn{height:44px;border:var(--hair) solid var(--border);border-radius:var(--r);padding:0 16px;display:inline-flex;align-items:center;justify-content:center;font-weight:500;gap:8px;background:var(--card)} .btn.p{background:var(--primary);color:var(--primary-fg);border-color:transparent;font-weight:600;height:56px;font-size:16px;flex:1} .btn.d{color:var(--destructive)} .btn.q{border-color:transparent;background:transparent;color:var(--muted-fg)} .btn.dq{border-color:transparent;background:transparent;color:var(--destructive)}
+.v1 .tabs{display:flex;align-items:center;gap:4px;padding:0 8px;border-top:var(--hair) solid var(--border);flex:none;height:52px} .otab{display:inline-flex;align-items:center;gap:8px;height:52px;padding:0 12px;border-bottom:2px solid transparent;color:var(--muted-fg);font-weight:500} .otab.on{color:var(--fg);border-bottom-color:var(--primary);font-weight:600} .otab i{width:7px;height:7px;border-radius:50%;background:var(--warn)}
+.v1 .menu{position:absolute;right:16px;bottom:84px;width:220px;background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);padding:8px;z-index:5} .menu div{display:flex;align-items:center;gap:10px;height:44px;padding:0 10px;border-radius:6px} .menu .d{color:var(--destructive)} .menu .sep{height:1px;background:var(--border);margin:4px 0;padding:0}
+.v1 .hold{position:relative;overflow:hidden} .hold::before{content:"";position:absolute;left:0;top:0;bottom:0;width:62%;background:color-mix(in oklch,var(--destructive) 18%,transparent)}
+.v1 .sheet{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-top:var(--hair) solid var(--border);border-radius:16px 16px 0 0;padding:16px;z-index:6} .sheet .h{font-weight:700;font-size:16px;margin-bottom:4px}
+.v1 .scrim{position:absolute;inset:0;background:oklch(0.2 0.02 250 / .28);z-index:5}
+
+
+/* round three: the button done properly */
+.r3 .board{grid-template-columns:repeat(3,440px)} .r3 .frame{height:230px;justify-content:flex-end}
+.vd{height:56px;font-weight:600;min-width:98px;padding:0 16px;border:var(--hair) solid var(--border);border-radius:var(--r);display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--card);font-size:16px}
+.vd.pill{background:var(--muted);border-color:transparent;color:var(--destructive)}
+.vd.link{background:transparent;border-color:transparent;color:var(--destructive);font-weight:500}
+.vd.ghost{background:transparent;color:var(--muted-fg);font-weight:500}
+.vd.outline2{color:var(--destructive)}
+.vd.square{width:56px;min-width:0;padding:0;background:transparent;color:var(--muted-fg)}
+.vd.today{height:44px;color:var(--destructive);font-size:14px;font-weight:500;align-self:center}
+.pressed{outline:2px dashed color-mix(in oklch,var(--destructive) 50%,transparent);outline-offset:3px}
+
+/* round four: the end of the sale, re-imagined (whole cart columns) */
+.r4 .board{grid-template-columns:repeat(2,440px)} .r4 .frame{height:600px}
+.r4 .doc{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 16px;border-bottom:var(--hair) solid var(--border);flex:none} .r4 .doc .ttl{font-weight:700;white-space:nowrap} .r4 .doc .ttl .mut{font-weight:500}
+.r4 .sbtn{height:36px;padding:0 12px;border-radius:var(--r);display:inline-flex;align-items:center;gap:6px;font-weight:500;border:var(--hair) solid var(--border);background:var(--card);white-space:nowrap} .r4 .sbtn.d{color:var(--destructive);border-color:transparent;background:transparent}
+.r4 .life{display:flex;gap:4px;justify-content:center;padding:2px 12px 8px;font-size:13px;color:var(--muted-fg);flex:none} .r4 .life span{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 10px;border-radius:6px} .r4 .life span svg{width:16px;height:16px} .r4 .life .d{color:var(--destructive)} .r4 .life .sep{width:1px;background:var(--border);padding:0;height:18px;align-self:center}
+.r4 .barf{display:flex;align-items:center;gap:12px;padding:10px 16px 12px;border-top:var(--hair) solid var(--border);flex:none} .r4 .barf .amt{font-size:24px;font-weight:700;line-height:1.1;letter-spacing:-.01em} .r4 .barf .meta{font-size:12px;color:var(--muted-fg);display:flex;gap:8px;margin-top:3px} .r4 .barf .meta .d{color:var(--destructive)} .r4 .barf .btn.p{flex:0 0 auto;padding:0 22px;margin-left:auto}
+.r4 .tail{margin:8px 12px 12px;background:var(--muted);border-radius:12px;padding:10px 12px 12px;display:flex;flex-direction:column;flex:none} .r4 .tail .th{display:flex;align-items:center;justify-content:space-between;font-weight:600;padding-bottom:6px} .r4 .tail .th .d{color:var(--destructive);font-weight:500;font-size:13px} .r4 .tail .row{display:flex;justify-content:space-between;padding:3px 0;color:var(--muted-fg)} .r4 .tail .pay{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0 10px;font-weight:700;font-size:18px;color:var(--fg);border-top:var(--hair) solid var(--border);margin-top:4px} .r4 .tail .btn.p{width:100%}
+.r4 .rail{width:60px;border-right:var(--hair) solid var(--border);display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:2px;background:var(--card);flex:none} .r4 .rail span{width:52px;height:52px;border-radius:var(--r);display:inline-flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted-fg);font-size:10px;gap:3px} .r4 .rail span svg{width:20px;height:20px} .r4 .rail .d{color:var(--destructive);margin-top:auto}
+.r4 .col{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
+.r4 .line{display:block} .r4 .tail .btn.p{flex:none;height:56px}
+.r4 .topay{display:flex;justify-content:space-between;align-items:baseline;padding:10px 16px 6px;font-weight:700;font-size:16px;flex:none}
+.r4 .sq{width:56px;height:56px;border:var(--hair) solid var(--border);border-radius:var(--r);display:inline-flex;align-items:center;justify-content:center;color:var(--fg);flex:none}
+
+/* round five: the pair again */
+.r5 .board{grid-template-columns:repeat(3,440px)} .r5 .frame{height:230px;justify-content:flex-end}
+.r5 .vd{height:56px;font-weight:600;padding:0 20px;border:var(--hair) solid var(--border);border-radius:var(--r);display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--card);font-size:16px;flex:none}
+.r5 .vd.red{color:var(--destructive);border-color:color-mix(in oklch,var(--destructive) 55%,transparent)}
+.r5 .vd.tonal{color:var(--destructive);background:color-mix(in oklch,var(--destructive) 9%,var(--card));border-color:transparent}
+.r5 .vd.fill{color:var(--destructive-fg);background:var(--destructive);border-color:transparent}
+.r5 .pair{display:flex;flex:1;border-radius:var(--r);overflow:hidden;height:56px;border:var(--hair) solid var(--border)} .r5 .pair .vd,.r5 .pair .btn.p{border-radius:0;border:0;height:100%} .r5 .pair .vd{background:var(--muted);color:var(--destructive);border-right:var(--hair) solid var(--border)}
+.r5 .pills .vd,.r5 .pills .btn.p{border-radius:999px} .r5 .pills .vd{color:var(--destructive);flex:0 0 34%}
+.r5 .vd.today{height:44px;color:var(--destructive);font-size:14px;font-weight:500;align-self:center;padding:0 16px}
+.r5 .dots{width:44px;height:44px;border:var(--hair) solid var(--border);border-radius:var(--r);display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg);align-self:center;flex:none}
+.r5 .frame.ph{width:390px}
+details.rej{margin-top:40px;background:#fff;border:1px solid #d1d5db;border-radius:8px;padding:8px 16px} details.rej summary{cursor:pointer;font-weight:600;font-size:15px;padding:6px 0} details.rej h1{margin-top:28px}
+</style>
+</head>
+<body>
+<h1>Round five — Void | Checkout, again</h1>
+<p class="lead">Paul: <em>"get rid of them all. Only keep the small screen version with the dots, just make sure the dots button is not the same size as the checkout button. Have another try of the Void | Checkout."</em> So: on a phone the footer is a 44 pt ⋮ beside the 56 pt Checkout, no switch. On tablet and desktop the pair stays, and here are five executions of it that were not on the earlier boards, plus today's for comparison. All live in the register under <em>Void button</em>.</p>
+<div class="r5"><div class="board" id="board5"></div></div>
+<details class="rej"><summary>Rejected rounds, kept for the record: four (structures), three (the button restyled), two (no button), one (placements)</summary>
+<h1>Round four — the end of the sale, re-imagined</h1>
+<p class="lead">Paul: <em>"the problem is not whether the button has a border or not, it's far more fundamental than that."</em> Agreed. Today's footer is a dialog's button row (Cancel | OK) put under a cart, so Void and Checkout read as peers, and every round so far restyled the wrong half of that pair. What the references do instead: the money and the sale's fate are two jobs and live in two places. <em>Fresha</em> (the one real POS on Mobbin with this footer): a <em>To pay</em> row, one full-width <em>Pay now</em>, a quiet ⋮ for everything else. <em>Shopify</em> treats the draft order as a document: <em>Discard</em> and <em>Save</em> sit in its title bar, nothing destructive at the foot. <em>Glovo, UNIQLO, 7-Eleven</em>: the footer is a bar, the total is the biggest thing on it, one action beside it. <em>Lightspeed</em>: park and discard are quiet text above Pay. Six structures below, each the whole cart column so the hierarchy is visible, not the button. The first four are live in the register under <em>Void button</em>.</p>
+<div class="r4"><div class="board" id="board4"></div></div>
+<h1 style="margin-top:40px">Round three — the Void button, done properly</h1>
+<p class="lead">Paul: the models are not it; the outlined red is still the best of the lot, "but you need to do better", and the ⋮ stays for phones only. What the references actually do with a destructive secondary beside a primary: <em>Apple</em> puts red text on a neutral grey pill; <em>Linear</em> uses a plain red text link in the danger zone; <em>Stripe</em> keeps Cancel neutral and saves red for the confirm. Nobody draws a red-outlined rectangle. Six treatments below, each the same height as Checkout with a press state; the today button for comparison. All live in the prototype under <em>Void button</em>.</p>
+<div class="r3"><div class="board" id="board3"></div></div>
+<h1 style="margin-top:40px">Round two — five ways to have no Void button</h1>
+
+<p class="lead">What the best products do about discarding a draft: Stripe's invoice editor has no delete on the page at all; Shopify shows <em>Discard</em> only while there are unsaved changes and puts cancellation under the order's own actions; Linear deletes from the item's ⋯ with an Undo toast; Apple swipes the row and keeps a Recently Deleted; browsers close the tab. None puts a red button beside the primary. Five models below, each a different answer to "where does a sale end", in the cart column at 440. Captures: <code>screens/board-void-2/NN-slug.jpg</code>.</p>
+<div class="board" id="board"></div>
+<h1 style="margin-top:40px">For the record — seven placements of a Void button (first board)</h1>
+<p class="lead">The round Paul rejected (<em>"placements of a red button are not design"</em>), kept so the comparison stays on one page. The ⋮ beside Checkout (02) remains a phone-only candidate.</p>
+<div class="v1"><div class="board" id="board1" style="grid-template-columns:repeat(2,440px)"></div></div>
+</details>
+<script>
+const I={sliders:'<svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg>',plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',chevd:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',chev:'<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',drawer:'<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="9" rx="2"/><path d="M3 15h18M10 17.5h4M6 11V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/></svg>',dots:'<svg viewBox="0 0 24 24"><circle cx="12" cy="6" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="18" r="1.2"/></svg>',trash:'<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>',x:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',check:'<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',pen:'<svg viewBox="0 0 24 24"><path d="M4 20h4l10.5-10.5a2 2 0 0 0-4-4L4 16z"/></svg>',park:'<svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 16V8h4a2.5 2.5 0 0 1 0 5H9"/></svg>',print:'<svg viewBox="0 0 24 24"><path d="M7 8V4h10v4M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v6H7z"/></svg>',cart:'<svg viewBox="0 0 24 24"><path d="M3 4h2l2.4 11.2a1 1 0 0 0 1 .8h9.5a1 1 0 0 0 1-.8L21 8H6.5"/><circle cx="9.5" cy="20" r="1.2"/><circle cx="17.5" cy="20" r="1.2"/></svg>',undo:'<svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/></svg>'};
+const bar=(l='UK Store')=>`<div class="bar"><b>${l}</b><span class="grow"></span><span class="ibtn">${I.drawer}</span><span class="av">DC</span></div>`;
+const cust=(lead='')=>`<div class="custrow">${lead||`<span class="mut">Customer</span><span class="chip">Guest ${I.chevd}</span>`}<span class="grow"></span><span class="ibtn">${I.plus}</span><span class="ibtn">${I.sliders}</span></div>`;
+const L=[['2','Flat white','Oat milk','3.20','6.40'],['1','Sourdough loaf','','4.20','4.20'],['1','Tote bag','Natural · L','12.00','12.00']];
+const lines=(rows=L,cls='')=>`<div class="cth"><span>Qty</span><span>Item</span><span class="r">Price</span><span class="r">Total</span></div><div class="lines">${rows.map(([q,n,s,p,t],i)=>`<div class="line ${cls&&i===0?cls:''}"><div class="lb"><span class="q">${q}</span><span>${n}${s?`<span class="sub">${s}</span>`:''}</span><span class="r mut">£${p}</span><span class="r b">£${t}</span></div>${cls&&i===0?`<div class="acts"><span>${I.pen}Edit</span><span class="del">${I.trash}Remove</span></div>`:''}</div>`).join('')}</div>`;
+const totals=`<div class="totals"><div class="mut"><span>Subtotal</span><span>£18.83</span></div><div class="mut"><span>VAT 20%</span><span>£3.77</span></div><div class="big"><span>Total</span><span>£22.60</span></div></div>`;
+const f2=`<div class="f2"><span class="btn">Order details</span><span class="btn">Save order</span></div>`;
+const cf=`<div class="cf"><span class="btn p">Checkout £22.60</span></div>`;
+const tabs=(cur='£22.60',x=false)=>`<div class="tabs"><span class="otab on">${cur}${x?`<span class="x">${I.x}</span>`:''}</span><span class="otab">£8.40 <i></i></span><span class="grow"></span><span class="ibtn">${I.plus}</span></div>`;
+const panel=(n,title,after,why,html)=>`<section class="panel" data-n="${String(n).padStart(2,'0')}-${title.toLowerCase().replace(/[^a-z0-9]+/g,'-')}"><div class="cap"><b><span class="n">${String(n).padStart(2,'0')}</span>${title} <span class="mut" style="font-weight:400">· after ${after}</span></b>${why}</div><div class="frame">${html}</div></section>`;
+const B=[];
+B.push(panel(1,'The tab is the sale','Safari, Arc, Chrome','The current tab carries a small ×. Closing it voids the sale; an Undo toast holds it for a few seconds and the open-orders list keeps a <em>Recently voided</em> row for five minutes. There is no button in the cart at all: a sale ends where it began, in the strip. Other tabs need a long-press first, so a stray tap cannot close the wrong one.',
+ `${bar()}${cust()}${lines()}${totals}${f2}${cf}${tabs('£22.60',true)}<div class="toast">${I.undo}Sale voided<span class="u">Undo</span></div>`));
+B.push(panel(2,'The order chip owns its actions','Linear ⋯, Shopify More actions','The customer row leads with the order\'s identity, <em>#102476 ▾</em>. Its menu is everything you do <em>to</em> the order rather than <em>in</em> it: Save, Park, Print pro-forma, Void. The footer is Checkout alone; Void is one tap in, never red until it is the thing you chose.',
+ `${bar()}${cust(`<span class="chip q"><b>#102476</b> ${I.chevd}</span><span class="chip">Guest ${I.chevd}</span>`)}${lines()}${totals}${cf}<div class="menu"><div>${I.park}Park this sale<span class="k">P</span></div><div>${I.check}Save to server</div><div>${I.print}Print pro-forma</div><div class="sep"></div><div class="d">${I.trash}Void sale<span class="k">⌫</span></div></div>${tabs()}`));
+B.push(panel(3,'Emptying is voiding','Apple Mail, Things','No void action exists. Lines are removed by swipe; when the last one goes the cart is empty and the sale has ended, which is exactly what the app already does with an emptied order. A <em>Remove all</em> appears only after the first swipe, as the bulk version of the gesture the cashier is already making.',
+ `${bar()}${cust()}${lines(L,'swiped')}<div style="padding:4px 16px 8px;display:flex;justify-content:flex-end"><span class="chip q" style="color:var(--destructive)">Remove all 3</span></div>${totals}${f2}${cf}${tabs()}`));
+B.push(panel(4,'Park or void from the open-orders list','Square open tickets, Toast','Voiding is a decision about <em>which</em> sale, so it lives where the sales are listed: the full-width open-orders list. Each row swipes to <em>Park</em> or <em>Void</em>; the current sale has both at the bottom. The cart itself has only Checkout.',
+ `${bar()}<div class="ovl"><div class="bar" style="padding-left:16px"><b>Open orders</b><span class="mut">· 12</span><span class="grow"></span><span class="ibtn">${I.x}</span></div>
+ ${[['£22.60','Guest','This cart',true],['£8.40','Guest','Waiting for terminal'],['£96.40','Sam Reilly','Partly paid · £46.40 due'],['£130.00','Priya Nair','Saving order…']].map(([a,c,s,on],i)=>`<div class="orow ${on?'on':''}" style="${i===1?'':''}"><div><div class="l1"><b>${a}</b><span>${c}</span></div><div class="l2">${s}</div></div>${i===1?`<div class="acts" style="right:0"><span>${I.park}Park</span><span class="del">${I.trash}Void</span></div>`:I.chev}</div>`).join('')}
+ <div style="margin-top:auto;padding:12px 16px;border-top:var(--hair) solid var(--border);display:flex;gap:8px"><span class="btn" style="flex:1">${I.park}Park this sale</span><span class="btn" style="flex:1;color:var(--destructive)">${I.trash}Void this sale</span></div></div>`));
+B.push(panel(5,'Void with a reason, inline','Toast, Lightspeed','For stores that answer to an owner, a void is a recorded event. Choosing Void (from the chip menu of 02) turns the footer into a reason row for one beat: <em>Changed mind · Wrong item · Test sale · Other</em>. Tapping a reason voids and logs it; there is no dialog and no second button. A setting turns reasons off for stores that do not need them.',
+ `${bar()}${cust(`<span class="chip q"><b>#102476</b> ${I.chevd}</span><span class="chip">Guest ${I.chevd}</span>`)}${lines()}${totals}<div style="padding:10px 16px 0" class="mut xs">Why is this sale being voided?</div><div class="reasons"><span class="chip">Changed mind</span><span class="chip">Wrong item</span><span class="chip">Test sale</span><span class="chip">Other…</span><span class="chip q">Keep it</span></div>${tabs()}`));
+document.getElementById('board').innerHTML=B.join('');
+</script>
+<script>(function(){
+const I={sliders:'<svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg>',plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',chevd:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',drawer:'<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="9" rx="2"/><path d="M3 15h18M10 17.5h4M6 11V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3"/></svg>',dots:'<svg viewBox="0 0 24 24"><circle cx="12" cy="6" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="18" r="1.2"/></svg>',trash:'<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>',x:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',check:'<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'};
+const bar=(right='')=>`<div class="bar"><b>UK Store</b><span class="grow"></span>${right}<span class="ibtn">${I.drawer}</span><span class="av">DC</span></div>`;
+const cust=(extra='')=>`<div class="custrow"><span class="mut">Customer</span><span class="chip">Guest ${I.chevd}</span><span class="grow"></span>${extra}<span class="ibtn">${I.plus}</span><span class="ibtn">${I.sliders}</span></div>`;
+const lines=`<div class="cth"><span>Qty</span><span>Item</span><span class="r">Price</span><span class="r">Total</span></div><div class="lines">${[['2','Flat white','Oat milk','3.20','6.40'],['1','Sourdough loaf','','4.20','4.20'],['1','Tote bag','Natural · L','12.00','12.00']].map(([q,n,s,p,t])=>`<div class="line"><span class="q">${q}</span><span>${n}${s?`<span class="sub">${s}</span>`:''}</span><span class="r mut">£${p}</span><span class="r b">£${t}</span></div>`).join('')}</div>`;
+const totals=`<div class="totals"><div class="mut"><span>Subtotal</span><span>£18.83</span></div><div class="mut"><span>VAT 20%</span><span>£3.77</span></div><div class="big"><span>Total</span><span>£22.60</span></div></div>`;
+const f2=`<div class="f2"><span class="btn">Order details</span><span class="btn">Save order</span></div>`;
+const tabs=`<div class="tabs"><span class="otab on">£22.60</span><span class="otab">£8.40 <i></i></span><span class="grow"></span><span class="ibtn">${I.plus}</span></div>`;
+const panel=(n,title,after,gives,html)=>`<section class="panel" data-n="p${String(n).padStart(2,'0')}-${title.toLowerCase().replace(/[^a-z0-9]+/g,'-')}"><div class="cap"><span class="n">${String(n).padStart(2,'0')}</span><b>${title}</b><span>after ${after}</span><span class="mut">— ${gives}</span></div><div class="frame">${html}</div></section>`;
+const B=[];
+B.push(panel(1,'Outlined red beside Checkout','WCPOS today (cut 2)','always visible, sits apart from Checkout in colour; the loudest red on the screen',
+ `${bar()}${cust()}${lines}${totals}${f2}<div class="cf"><span class="btn d">Void</span><span class="btn p">Checkout £22.60</span></div>${tabs}`));
+B.push(panel(2,'⋮ beside Checkout','Fresha checkout','Void, Save and Order details fold into one menu; the footer is the primary alone',
+ `${bar()}${cust()}${lines}${totals}<div class="cf"><span class="btn" style="width:56px;height:56px;padding:0">${I.dots}</span><span class="btn p">Checkout £22.60</span></div><div class="menu"><div>Order details</div><div>Save order</div><div>Print pro-forma</div><div class="sep"></div><div class="d">${I.trash}Void order</div></div>${tabs}`));
+B.push(panel(3,'Quiet Discard in the bar','Shopify draft order','a text button at the top, where the order\'s identity is; the footer keeps Checkout alone',
+ `${bar(`<span class="btn q" style="height:36px;padding:0 10px">Discard</span>`)}${cust()}${lines}${totals}${f2}<div class="cf"><span class="btn p">Checkout £22.60</span></div>${tabs}`));
+B.push(panel(4,'Trash icon in the customer row','Gmail, Linear row actions','one icon at 44 pt with a tooltip, beside add and settings; no red until pressed',
+ `${bar()}${cust(`<span class="ibtn d">${I.trash}</span>`)}${lines}${totals}${f2}<div class="cf"><span class="btn p">Checkout £22.60</span></div>${tabs}`));
+B.push(panel(5,'Hold to void','Slack, Revolut destructive holds','a quiet button that fills over 600 ms while held; the hold is the confirmation, no dialog',
+ `${bar()}${cust()}${lines}${totals}${f2}<div class="cf"><span class="btn q hold" style="color:var(--destructive);border-color:var(--border)"><span style="position:relative">Hold to void</span></span><span class="btn p">Checkout £22.60</span></div>${tabs}`));
+B.push(panel(6,'Destructive row in Order details','iOS settings, Stripe detail sheets','two taps away, at the bottom of the slide-out the cashier already opens for status and note',
+ `${bar()}${cust()}${lines}${totals}${f2}<div class="cf"><span class="btn p">Checkout £22.60</span></div>${tabs}<div class="scrim"></div><div class="sheet"><div class="h">Order details</div><div class="mut xs" style="margin-bottom:12px">#102476 · 3 items · Guest</div>${['Status · POS open','Cashier · Demo Cashier','Customer note','Currency · GBP'].map(l=>`<div style="height:44px;display:flex;align-items:center;border-bottom:var(--hair) solid var(--border)">${l}</div>`).join('')}<div style="height:44px;display:flex;align-items:center;color:var(--destructive);gap:8px;margin-top:8px">${I.trash}Void this order</div></div>`));
+B.push(panel(7,'Quiet text under Checkout','Square "Discard", Stripe "Cancel"','a full-width quiet destructive text button under the primary; visible, never competing',
+ `${bar()}${cust()}${lines}${totals}${f2}<div class="cf" style="flex-direction:column;align-items:stretch;gap:0"><span class="btn p">Checkout £22.60</span><span class="btn dq" style="height:40px">Void order</span></div>${tabs}`));
+document.getElementById('board1').innerHTML=B.join('');
+})();</script>
+<script>(function(){
+const T=`<div class="totals"><div class="mut"><span>VAT 20%</span><span>£3.77</span></div><div class="big"><span>Total</span><span>£22.60</span></div></div>`;
+const CK=`<span class="btn p">Checkout £22.60</span>`;
+const P=[
+ ['pill','Red text on a grey pill','Apple sheets','the same surface as every other secondary, the word carries the meaning; press tints it red'],
+ ['link','Red text, no surface','Linear danger zone','a text button with a 56 pt hit area; nothing drawn until pressed'],
+ ['ghost','Neutral, red on press','Stripe Cancel','grey until the finger lands; hover and press turn it red, so the resting screen has no red at all'],
+ ['iconword','Trash + Void, quiet','Gmail, Linear row actions','the glyph does the recognising, the word confirms; neutral at rest'],
+ ['outline2','Outline, refined','today, corrected','red text, but the border stays the hairline colour and the height matches Checkout; the red box is gone'],
+ ['square','56 pt square, icon only','Square, Fresha','a small neutral square leaves the whole width to Checkout; the label is a tooltip and the press is red'],
+ ['today','Outlined red, 44 pt','WCPOS today','for comparison: a red box on a hairline screen, shorter than the button beside it'],
+];
+document.getElementById('board3').innerHTML=P.map(([k,t,a,w],i)=>`<section class="panel" data-n="r${i+1}-${k}"><div class="cap"><b><span class="n">${String(i+1).padStart(2,'0')}</span>${t} <span class="mut" style="font-weight:400">· after ${a}</span></b>${w}</div><div class="frame">${T}<div class="cf"><span class="vd ${k}">${k==='iconword'?I.trash+'Void':k==='square'?I.trash:'Void'}</span>${CK}</div><div class="tabs"><span class="otab on">£22.60</span><span class="otab">£8.40 <i></i></span></div></div></section>`).join('');
+})();</script>
+<script>(function(){
+/* round four: whole cart columns. What changes is the structure of the column's tail, not the chrome of one button. */
+const I4={user:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',note:'<svg viewBox="0 0 24 24"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5M9 13h6M9 17h6"/></svg>',pct:'<svg viewBox="0 0 24 24"><path d="M19 5L5 19"/><circle cx="7" cy="7" r="2.2"/><circle cx="17" cy="17" r="2.2"/></svg>',arrow:'<svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>'};
+const rows=`<div class="cth"><span>Qty</span><span>Item</span><span class="r">Price</span><span class="r">Total</span></div><div class="lines">${L.map(([q,n,s,p,t])=>`<div class="line"><div class="lb"><span class="q">${q}</span><span>${n}${s?`<span class="sub">${s}</span>`:''}</span><span class="r mut">£${p}</span><span class="r b">£${t}</span></div></div>`).join('')}</div>`;
+const totalsFull=`<div class="totals"><div class="mut"><span>Subtotal</span><span>£18.83</span></div><div class="mut"><span>VAT 20%</span><span>£3.77</span></div><div class="big"><span>Total</span><span>£22.60</span></div></div>`;
+const totalsSmall=`<div class="totals"><div class="mut"><span>Subtotal</span><span>£18.83</span></div><div class="mut"><span>VAT 20%</span><span>£3.77</span></div></div>`;
+const tabs=`<div class="tabs"><span class="otab on">£22.60</span><span class="otab">£8.40 <i></i></span><span class="grow"></span><span class="ibtn">${I.plus}</span></div>`;
+const ck=(l='Checkout £22.60')=>`<div class="cf"><span class="btn p">${l}</span></div>`;
+const P=[
+ ['doc','The sale is a document','Shopify draft order, Uxcel editor','What you do <em>to</em> the sale (save it, discard it) sits at its head, like a document\'s title bar. What you do <em>with</em> the money sits at its foot, alone. The header row today (Customer · Guest · + · ⚙) becomes the sale\'s title: number, customer, then Discard and Save. The footer is one button.',
+  `${bar()}<div class="doc"><span class="ttl">#102476 <span class="mut">· Guest</span></span><span class="chip q">${I.chevd}</span><span class="grow"></span><span class="sbtn d">Discard</span><span class="sbtn">Save</span><span class="ibtn">${I.sliders}</span></div>${rows}${totalsFull}${ck()}${tabs}`],
+ ['life','A lifecycle row above the money','Lightspeed park / discard, Shopify checkout links','The three buttons under the totals (Order details, Save order, Void) become one row of quiet text actions in the same register as each other: details, save, print, void. Only Checkout is a button. Void is still one tap and always visible, but it is a sibling of Save, not of Checkout.',
+  `${bar()}${cust()}${rows}${totalsFull}<div class="life"><span>${I.pen}Details</span><span>${I.drawer}Save</span><span>${I.print}Print</span><span class="sep"></span><span class="d">${I.trash}Void</span></div>${ck()}${tabs}`],
+ ['bar','The footer is a bar: total left, one action right','Glovo, UNIQLO, Yami, 7-Eleven','The amount is the largest thing in the column and it is not inside a button. Under it, the sale\'s metadata: item count, and Void as a small red word in that line, at metadata weight. Checkout is a wide button on the right, not a full-width one. The big Total row leaves the totals block because the bar is the total.',
+  `${bar()}${cust()}${rows}${totalsSmall}<div class="barf"><div><div class="amt">£22.60</div><div class="meta"><span>3 items · incl. VAT</span><span class="d">Void sale</span></div></div><span class="btn p">Checkout ${I4.arrow}</span></div>${tabs}`],
+ ['tail','The receipt tail: one card for the money and the fate','Fresha To pay, Square order summary','Everything under the lines becomes one card on the muted ground: the sale\'s name with Void at its head, the tax lines, a To pay row, and Pay now inside the card. The card is the object the cashier acts on; the lines above are just what is in it.',
+  `${bar()}${cust()}${rows}<div class="tail"><div class="th"><span>Sale #102476</span><span class="d">Void</span></div><div class="row"><span>Subtotal</span><span>£18.83</span></div><div class="row"><span>VAT 20%</span><span>£3.77</span></div><div class="pay"><span>To pay</span><span>£22.60</span></div><span class="btn p">Pay now</span></div>${tabs}`],
+ ['rail','An action rail: the cart\'s verbs down its edge','Toast, Lightspeed K, Square register','Everything a cashier does to the sale other than adding items and paying is a vertical rail on the cart\'s edge: customer, note, discount, save, print, and Void at the bottom in red, as far from Checkout as the column allows. The header row and the button row both disappear; the tail is totals and Checkout.',
+  `<div class="rail"><span>${I4.user}Customer</span><span>${I4.note}Note</span><span>${I4.pct}Discount</span><span>${I.drawer}Save</span><span>${I.print}Print</span><span class="d">${I.trash}Void</span></div><div class="col">${bar()}${rows}${totalsFull}${ck()}${tabs}</div>`],
+ ['fresha','Fresha, exactly','Fresha checkout (web)','For the record, what the best-designed POS on Mobbin does at this spot: a To pay row, a neutral 56 pt ⋮ square, and a full-width Pay now. The ⋮ is the phone treatment by Paul\'s ruling; here is the desktop original it came from.',
+  `${bar()}${cust()}${rows}${totalsSmall}<div class="topay"><span>To pay</span><span>£22.60</span></div><div class="cf"><span class="sq">${I.dots}</span><span class="btn p">Pay now</span></div>${tabs}`],
+];
+document.getElementById('board4').innerHTML=P.map(([k,t,a,w,h],i)=>`<section class="panel" data-n="s${i+1}-${k}"><div class="cap"><b><span class="n">${String(i+1).padStart(2,'0')}</span>${t} <span class="mut" style="font-weight:400">· after ${a}</span></b>${w}</div><div class="frame" ${k==='rail'?'style="flex-direction:row"':''}>${h}</div></section>`).join('');
+})();</script>
+<script>(function(){
+const T=`<div class="totals"><div class="mut"><span>VAT 20%</span><span>£3.77</span></div><div class="big"><span>Total</span><span>£22.60</span></div></div>`;
+const CK=`<span class="btn p">Checkout £22.60</span>`;
+const tabs=`<div class="tabs"><span class="otab on">£22.60</span><span class="otab">£8.40 <i></i></span></div>`;
+const P=[
+ ['red','Outlined red, matched','today, corrected','the outline you said was still best, made right: 56 pt like Checkout, the word at 600, the border a red hairline at half strength so it reads as a line, not a box, and the width is the word plus 40'],
+ ['tonal','Tonal red','Shopify critical secondary, Material tonal','no border at all: a 9 % wash of red under red text; it sits in the same family as Checkout (a filled surface) one tone down, and the press deepens the wash'],
+ ['joined','One control, Void | Checkout','Square split actions, iOS toolbars','the two halves of one 56 pt rounded rectangle, a hairline between them; the pair is read as a single object with a way out on the left and the way through on the right'],
+ ['pills','Two pills, 34 / 66','Talabat, CHOPT, Glovo checkout','the consumer-checkout footer: both fully rounded, the secondary outlined with red text at a third of the width, the primary filled'],
+ ['fill','Filled red','Toast, Material filled error','the honest version of a red box: a real filled destructive button, white on red, narrow, the same height as Checkout'],
+ ['today','Outlined red, 44 pt','WCPOS today','for comparison'],
+];
+const cell=k=>k==='joined'?`<div class="cf"><div class="pair"><span class="vd">Void</span>${CK}</div></div>`:k==='pills'?`<div class="cf pills"><span class="vd">Void</span>${CK}</div>`:`<div class="cf"><span class="vd ${k}">Void</span>${CK}</div>`;
+let h=P.map(([k,t,a,w],i)=>`<section class="panel" data-n="v${i+1}-${k}"><div class="cap"><b><span class="n">${String(i+1).padStart(2,'0')}</span>${t} <span class="mut" style="font-weight:400">· after ${a}</span></b>${w}</div><div class="frame">${T}${cell(k)}${tabs}</div></section>`).join('');
+h+=`<section class="panel" data-n="v7-phone"><div class="cap"><b><span class="n">07</span>Phone: ⋮ at 44 pt beside Checkout at 56 <span class="mut" style="font-weight:400">· decided</span></b>the ⋮ is now visibly the smaller thing: a 44 pt square centred on the 56 pt Checkout, holding Order details, Save, Print and Void</div><div class="frame ph">${T}<div class="cf"><span class="dots">${I.dots}</span>${CK}</div>${tabs}</div></section>`;
+document.getElementById('board5').innerHTML=h;
+})();</script>
+</body>
+</html>
