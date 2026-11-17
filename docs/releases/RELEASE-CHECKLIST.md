@@ -73,7 +73,7 @@ Since the 2.0 promotion (plan: `2026-11-01-wcpos-2.0-promotion-and-beta-plan.md`
 
 ## E. Desktop + mobile
 
-- [ ] **E1. Electron**: drift rerun with the app tag present → ready → merge → cancel the push Publish → `tag-and-release.yml platform=all` → 9 assets → footer names the app version → tag at the merge SHA → publish, latest.
+- [ ] **E1. Electron**: drift rerun with the app tag present → ready → merge → `tag-and-release.yml platform=all` (Publish is dispatch-only since electron#621; there is no push run to cancel on any lane) → 9 assets → footer names the app version → tag at the merge SHA → publish, latest.
 - [ ] **E2. OTA** (if A4 = same): `publish-mobile-update.yml` from the merge SHA, `channel=production` (+ override) → `eas update:list --branch production --json`: both groups' `runtimeVersion` == the shipped builds' from A4, message names the app version + SHA.
 
 ## F. Close
