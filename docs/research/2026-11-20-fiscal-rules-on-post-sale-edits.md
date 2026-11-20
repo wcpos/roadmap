@@ -142,7 +142,8 @@ URL: https://www.fiscoetasse.com/files/9244/decreto-mef-7-12-2016.pdf (a Gazzett
 3. **Buyer data.**
    - Forbidden: "A alteração do NIF, numa ficha de cliente já existente e com documentos emitidos" (3.3.3), except filling a missing NIF or replacing the generic 999999990. CONFIRMED.
    - Name changes are likewise forbidden while no NIF is on the file (3.3.4). CONFIRMED.
-   - Corrections use "documentos retificativos de faturas" that identify the corrected document (2.2.6, 1.4). CONFIRMED.
+   - Corrections to the taxable amount or the tax use "documentos retificativos de faturas" that identify the corrected document (2.2.6, 1.4). CONFIRMED.
+   - A wrong buyer detail is NOT corrected that way. AT binding ruling 10376 (2016-05-19), §10: cancelling the invoice ("anulação de faturas") is the procedure when the correction is due to "motivos não relacionados com a alteração do valor tributável ou do imposto correspondente (ex. erro na indicação do NIF do adquirente)"; §11: value and tax corrections go "exclusivamente" through a documento retificativo. So a wrong buyer NIF is a cancellation and a new invoice. CONFIRMED (ruling read). https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/informacoes_vinculativas/despesa/civa/documents/informacao_10376.pdf
 4. **Status.** The SAF-T status (Normal / Anulado, etc.) is fiscal. Fulfilment status is **silent**.
 5. **Closures.** Not a closure regime.
 6. **Audit trail.** Every status change records the user, the date and time, and the reason (4.1.4.3.x). CONFIRMED.
@@ -215,7 +216,7 @@ URL: https://lovdata.no/dokument/SF/forskrift/2015-12-18-1616
 
 - **G6, the event log**, becomes the home for attribution changes: an event type such as `attribution_changed`, never an in-place edit of a signed record. This is the French "trace", the Spanish *registro de eventos* and the German Protokoll.
 - **G4, corrections are records.** In Croatia and Portugal, and wherever the store is printed (Italy), a store or cashier change is a void of the original plus a reissue. In Croatia the *amendment* service (Pravilnik art. 11) covers only the payment method and the buyer's OIB; any other wrong detail is corrected by a cancellation invoice (*storniranje računa*, Zakon art. 24, which applies the ordinary invoicing obligations to the storno and names no field restriction) and a new invoice. In a Croatian or Portuguese build the cashier and store fields must be **read-only after issue**, with cancel-and-reissue as the correction path.
-- **G3, the closure as a stored document.** With per-operator Z figures (Norway; NF525 probably), a cashier edit is allowed only before the session's Z. After the Z it is either refused or recorded as an event that the next closure reports as an adjustment.
+- **G3, the closure as a stored document.** With per-operator Z figures (Norway; NF525 probably), the original attribution is never edited, before or after the session's Z: Norway's § 2-6(3) has no pre-closure exception. A change of operator can only be a separate correcting record that leaves the registration as made; whether a later closure reports it as an adjustment is a design question for that build.
 - **Buyer data.** A full-invoice build needs a "corrective document" path: a *rectificativa* in Spain, a § 31(5) document in Germany, art. 289-I-5 in France. For simplified receipts, a "convert to full invoice" path is needed (Spain art. 15.6). Italy forbids adding the buyer's tax code after the sale.
 
 ---
