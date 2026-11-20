@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Closures card · options</title>
+<!-- Paul 2026-09-17: "the weakest point at the moment is the closures card … do 10 mockups based on different ways to display that
+     information. Do some research, figure out what information there is available and what information we're trying to get across."
+
+     WHAT THE PLUGIN KNOWS (audit 2026-09-17, plugin origin/next): a SESSION has a register, opened at / by, a status (open, counting,
+     closed), the opening float, expected per tender (cash = float + cash sales + paid in − paid out), the sales count, and its
+     MOVEMENTS (paid_in, paid_out, no_sale, void; reason, actor, time; reversals). A CLOSURE has a number, opened / closed times, closed
+     by, approved by, per-tender expected / counted / variance, the movements, sales and refunds totals, payment methods, cashiers, tax
+     rates, perpetual totals, an unsynced count and amount, print count and reprints, corrections (recounts with reason, by, at), and a
+     business day. The X-report is the live session drawn as a closure document.
+
+     WHAT PEOPLE NEED FROM IT. The cashier: is the till open, since when, by whom; what should be in the drawer now; print the X-report.
+     The owner: did the closures balance (short / over / exact, by how much), anything unsynced, corrected or awaiting approval, who
+     closed, and whether the drawer is drifting over the period. The manager: approve or recount.
+
+     RESEARCH. Square's cash drawer report is the canon for the drawer ladder: starting cash + cash sales + paid in − paid out = expected
+     in drawer; actual; difference. Square Workday draws shifts as bars along the day. 7shifts and Deputy put a status pill on every
+     shift row. Binance's position history pairs opened / closed with a signed, coloured result. Acorns and DoorDash Dasher draw a
+     balance as a ladder of parts. Few: a signed deviation is a bar from zero in both directions, a value against a target is a bullet.
+     Throwaway: the winner moves into ../pos-register/index.html (reportPanels). -->
+<style>
+:root{--font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif}
+body{margin:0;background:#141416;color:#ddd;font:14px/1.4 var(--font)}
+.strip{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;padding:10px 18px;background:#1c1c1f;border-bottom:1px solid #2a2a2e}
+.strip b{font-weight:600;margin-right:8px;color:#aaa}.seg{display:inline-flex;border:1px solid #3a3a40;border-radius:6px;overflow:hidden}
+.seg button{background:transparent;border:0;color:#bbb;padding:5px 10px;font:inherit;cursor:pointer}.seg button.on{background:#e8e8ea;color:#111}
+.stage{padding:24px 18px 60px}
+h1{font-size:16px;margin:8px 0 4px;color:#eee}h1+p{margin:0 0 18px;color:#999;max-width:1100px}
+h2{font-size:13px;font-weight:600;margin:6px 0 6px;color:#eee}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(440px,1fr));gap:22px;margin-bottom:34px}
+.opt .why{color:#9a9aa0;margin:6px 0 0;font-size:12.5px;max-width:440px}
+
+.frame{--u:4px;--fs:14px;--ctl:44px;--r:8px;--hair:1px;--floor:24px;
+  --bg:oklch(0.975 0.004 250);--fg:oklch(0.22 0.02 250);--card:oklch(1 0 0);--muted:oklch(0.955 0.006 250);--muted-fg:oklch(0.50 0.02 250);--border:oklch(0.90 0.008 250);
+  --primary:oklch(0.50 0.18 240);--primary-fg:oklch(0.99 0.01 240);--ok:oklch(0.55 0.16 155);--ok-bg:oklch(0.96 0.03 155);--bad:oklch(0.58 0.2 25);--bad-bg:oklch(0.97 0.02 25);--warn:oklch(0.68 0.16 70);--warn-bg:oklch(0.97 0.04 85);
+  --c1:var(--primary);--c2:oklch(0.62 0.15 160);--c3:oklch(0.72 0.15 70);--c4:oklch(0.58 0.16 320);--c5:oklch(0.70 0.02 250);
+  color-scheme:light;background:var(--bg);color:var(--fg);font:var(--fs)/1.4 var(--font);padding:12px;border-radius:10px;width:440px;box-sizing:border-box}
+.frame[data-theme="dark"]{--bg:oklch(0.19 0.018 250);--fg:oklch(0.93 0.01 250);--card:oklch(0.23 0.018 250);--muted:oklch(0.28 0.018 250);--muted-fg:oklch(0.70 0.015 250);--border:oklch(0.33 0.02 250);
+  --primary:oklch(0.70 0.17 240);--primary-fg:oklch(0.16 0.02 250);--ok:oklch(0.72 0.15 155);--ok-bg:oklch(0.28 0.04 155);--bad:oklch(0.68 0.18 25);--bad-bg:oklch(0.30 0.05 25);--warn:oklch(0.78 0.15 75);--warn-bg:oklch(0.30 0.05 80);
+  --c2:oklch(0.75 0.14 160);--c3:oklch(0.80 0.14 75);--c4:oklch(0.72 0.15 320);--c5:oklch(0.60 0.02 250);color-scheme:dark}
+.frame button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+.mut{color:var(--muted-fg)}.sm{font-size:calc(var(--fs)*.9)}.xs{font-size:calc(var(--fs)*.86)}.b{font-weight:600}.num{font-variant-numeric:tabular-nums}
+.st{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.st i{width:8px;height:8px;border-radius:50%;background:currentColor;flex:none}.st.ok{color:var(--ok)}.st.warn{color:var(--warn)}.st.bad{color:var(--bad)}.st.neutral{color:var(--muted-fg)}
+.rp-panel{background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);display:flex;flex-direction:column;min-height:236px}
+.ph{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px 0 16px;border-bottom:var(--hair) solid var(--border)}
+.ph .n{font-weight:600;flex:1}.ph .v{font-weight:600;color:var(--muted-fg);font-variant-numeric:tabular-nums}.ph svg{width:16px;height:16px;color:var(--muted-fg)}
+.pb{padding:10px 16px 12px;display:flex;flex-direction:column;gap:10px;flex:1}.pf{padding:0 16px 12px;color:var(--muted-fg);font-size:calc(var(--fs)*.9)}
+svg.plot{width:100%;height:auto;display:block;overflow:visible}svg.plot text{font-family:var(--font)}
+.or{display:flex;justify-content:space-between;gap:12px;align-items:center;min-height:26px}.or .l{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.or .r{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px 16px}.stats .l{color:var(--muted-fg);font-size:calc(var(--fs)*.86)}.stats .n{font-size:calc(var(--fs)*1.35);font-weight:600;font-variant-numeric:tabular-nums}
+.bignum{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}.bignum .a{font-size:calc(var(--fs)*2.2);font-weight:700;letter-spacing:-.03em;line-height:1}.bignum .bl{font-size:calc(var(--fs)*1.1);font-weight:600;color:var(--muted-fg)}
+.btn{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border:var(--hair) solid var(--border);border-radius:var(--r);font-weight:500;background:var(--card)}.btn svg{width:16px;height:16px}
+.ladder{display:flex;flex-direction:column;gap:4px}.ladder .or{min-height:24px}.ladder .tot{border-top:var(--hair) solid var(--border);padding-top:6px;margin-top:2px;font-weight:600}
+.tiles2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.tile{border:var(--hair) solid var(--border);border-radius:var(--r);padding:10px 12px;display:flex;flex-direction:column;gap:4px;min-width:0}.tile .l{color:var(--muted-fg);font-size:calc(var(--fs)*.86)}.tile .n{font-size:calc(var(--fs)*1.3);font-weight:600;font-variant-numeric:tabular-nums}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.week .d{border:var(--hair) solid var(--border);border-radius:6px;padding:8px 4px 6px;text-align:center;min-width:0}.week .d .w{color:var(--muted-fg);font-size:calc(var(--fs)*.8)}.week .d .v{font-weight:600;font-size:calc(var(--fs)*.9);font-variant-numeric:tabular-nums;margin-top:4px;white-space:nowrap}.week .d .dot{width:10px;height:10px;border-radius:50%;margin:6px auto 0}.week .d.today{border-color:var(--primary)}
+.checks{display:flex;flex-direction:column;gap:8px}.checks .or .l{white-space:normal}
+</style>
+<div class="strip">
+  <span><b>Theme</b><span class="seg"><button class="on" data-set="theme" data-v="light">Light</button><button data-set="theme" data-v="dark">Dark</button></span></span>
+  <span><b>Period</b><span class="seg"><button class="on" data-set="period" data-v="day">Today</button><button data-set="period" data-v="week">This week</button></span></span>
+</div>
+<div class="stage" id="stage"></div>
+<script>
+/* fixture, copied from the prototype: the open session, the closures of the last week, today's movements */
+const OPEN={reg:'Front till',by:'Dylan',open:'13:00',float:100,cashSales:343.70,paidOut:150,expected:293.70,sales:6};
+const CLOSURES=[
+  {id:'c12',day:0,dayLabel:'Today',reg:'Front till',by:'Priya',open:'09:02',close:'12:30',num:'#412',orders:8,sales:629.19,cash:111.90,float:100,cashOut:0,counted:209.90,variance:-2.00},
+  {id:'c10',day:2,dayLabel:'Saturday',reg:'Front till',by:'Dylan',open:'08:55',close:'18:10',num:'#411',orders:19,sales:1740.30,cash:402.10,float:100,cashOut:150,counted:352.10,variance:0},
+  {id:'c7',day:2,dayLabel:'Saturday',reg:'Back office',by:'Paul',open:'10:00',close:'16:30',num:'#410',orders:4,sales:318,cash:0,float:0,cashOut:0,counted:0,variance:0},
+  {id:'c11',day:3,dayLabel:'Friday',reg:'Front till',by:'Priya',open:'09:00',close:'17:45',num:'#409',orders:16,sales:1436.80,cash:322,float:100,cashOut:0,counted:412,variance:-10,corrected:{counted:422,by:'Paul',at:'Fri 18:40',reason:'coins found in tray'},settled:true},
+  {id:'c2',day:4,dayLabel:'Thursday',reg:'Front till',by:'Dylan',open:'09:05',close:'17:30',num:'#408',orders:15,sales:1288.40,cash:361.20,float:100,cashOut:0,counted:522.40,variance:61.20,unsynced:true},
+  {id:'c1',day:4,dayLabel:'Thursday',reg:'Back office',by:'Paul',open:'11:00',close:'15:00',num:'#407',orders:3,sales:96.50,cash:17.50,float:50,cashOut:0,counted:50,variance:-17.50},
+];
+const fmt=(n,sign=false)=>{const a=Math.abs(n).toFixed(2);return `${n<0?'−':sign&&n>0?'+':''}£${a}`};const sum=(a,f)=>a.reduce((s,x)=>s+(f?f(x):x),0);
+const res=c=>c.variance?`<span class="st ${c.variance<0?'warn':'ok'}"><i></i>${fmt(Math.abs(c.variance))} ${c.variance<0?'short':'over'}</span>`:`<span class="st ok"><i></i>Exact</span>`;
+const chev='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+const print='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17h2a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2"/><path d="M17 9V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v4"/><rect x="7" y="13" width="10" height="8" rx="2"/></svg>';
+const S={theme:'light',period:'day'};
+const inPeriod=()=>S.period==='day'?CLOSURES.filter(c=>c.day===0):CLOSURES.filter(c=>c.day<=6);
+const panel=(fig,body,foot='')=>`<section class="rp-panel"><div class="ph"><span class="n">Closures</span><span class="v">${fig}</span>${chev}</div><div class="pb">${body}</div>${foot?`<div class="pf">${foot}</div>`:''}</section>`;
+
+const C={};
+C['C1']=['As drawn','The till line, the closures with their result, the movements line. Three facts in three formats, none of them leading.',()=>{const cl=inPeriod();
+  return panel(cl.length,`<div class="or"><span class="l">${OPEN.reg} <span class="st ok"><i></i>Open</span><span class="mut"> · since ${OPEN.open} by ${OPEN.by}</span></span><span class="r">${fmt(OPEN.expected)}<span class="mut"> expected</span></span></div>`+cl.slice(0,3).map(c=>`<div class="or"><span class="l">Closure ${c.num}<span class="mut"> · ${c.open}–${c.close} · ${c.by}</span></span><span class="r">${res(c)}</span></div>`).join('')+`<div class="or"><span class="l">Cash movements<span class="mut"> · 4 in the session</span></span><span class="r">−£159.90<span class="mut"> net</span></span></div>`);}];
+C['C2']=['The drawer ladder: what should be in the till right now','Square’s cash drawer report as a card. Opening float plus cash sales minus paid out equals expected, the number a cashier is about to count against, with the X-report one tap away. The closures are the footer.',()=>{const cl=inPeriod();
+  return panel(cl.length,`<div class="or"><span class="l"><b>${OPEN.reg}</b> <span class="st ok"><i></i>Open</span><span class="mut"> · since ${OPEN.open} · ${OPEN.by}</span></span><button class="btn">${print}X-report</button></div><div class="ladder"><div class="or"><span class="l mut">Opening float</span><span class="r">${fmt(OPEN.float)}</span></div><div class="or"><span class="l mut">Cash sales · ${OPEN.sales}</span><span class="r">${fmt(OPEN.cashSales,true)}</span></div><div class="or"><span class="l mut">Paid out · to bank 15:40</span><span class="r">${fmt(-OPEN.paidOut,true)}</span></div><div class="or tot"><span class="l">Expected in drawer</span><span class="r">${fmt(OPEN.expected)}</span></div></div>`,`${cl.length} closure${cl.length===1?'':'s'} ${S.period==='day'?'today':'this week'} · last ${cl[0].num} ${cl[0].variance?fmt(Math.abs(cl[0].variance))+(cl[0].variance<0?' short':' over'):'exact'}`);}];
+C['C3']=['Variance strip: every closure as a dot on a ± line','Few: a signed deviation from zero. Each closure is a dot left or right of the zero line, coloured by result, the worst one named. Fine for a week; today it is one dot.',()=>{const cl=inPeriod();const W=400,H=70,max=70,x=v=>W/2+(W/2-16)*Math.max(-1,Math.min(1,v/max));
+  let s=`<svg class="plot" viewBox="0 0 ${W} ${H}"><line x1="16" x2="${W-16}" y1="36" y2="36" stroke="var(--border)"/><line x1="${W/2}" x2="${W/2}" y1="18" y2="54" stroke="var(--fg)" stroke-width="1.5"/>`;
+  [-60,-30,30,60].forEach(v=>s+=`<text x="${x(v)}" y="62" text-anchor="middle" font-size="10.5" fill="var(--muted-fg)">${v<0?'−':'+'}£${Math.abs(v)}</text>`);
+  s+=`<text x="${W/2}" y="50" text-anchor="middle" font-size="10.5" fill="var(--muted-fg)">exact</text>`;
+  cl.forEach(c=>s+=`<circle cx="${x(c.variance)}" cy="36" r="7" fill="${c.variance<0?'var(--warn)':c.variance>0?'var(--c2)':'var(--ok)'}" fill-opacity=".8"/>`);
+  const worst=cl.reduce((a,c)=>Math.abs(c.variance)>Math.abs(a.variance)?c:a,cl[0]);s+=`<text x="${x(worst.variance)}" y="14" text-anchor="${worst.variance>20?'end':worst.variance<-20?'start':'middle'}" font-size="11" font-weight="600" fill="var(--fg)">${worst.num} ${fmt(worst.variance,true)}</text></svg>`;
+  const net=sum(cl,c=>c.variance);return panel(cl.length,s+`<div class="stats"><div><div class="l">Exact</div><div class="n">${cl.filter(c=>!c.variance).length}</div></div><div><div class="l">Short</div><div class="n">${cl.filter(c=>c.variance<0).length}</div></div><div><div class="l">Net</div><div class="n">${fmt(net,true)}</div></div></div>`,`${OPEN.reg} open since ${OPEN.open} · ${fmt(OPEN.expected)} expected`);}];
+C['C4']=['The register’s day as a timeline','Square Workday’s shape: each session a bar across the day, closed ones with their result, the open one running to now. Handovers are visible; the day reads left to right.',()=>{
+  const W=400,H=96,x=t=>{const [h,m]=t.split(':').map(Number);return 12+(W-24)*((h+m/60)-8)/12};
+  let s=`<svg class="plot" viewBox="0 0 ${W} ${H}">`;
+  [8,10,12,14,16,18,20].forEach(h=>s+=`<text x="${x(h+':00')}" y="90" text-anchor="middle" font-size="10.5" fill="var(--muted-fg)">${h===12?'12pm':h<12?h+'am':(h-12)+'pm'}</text><line x1="${x(h+':00')}" x2="${x(h+':00')}" y1="14" y2="74" stroke="var(--border)"/>`);
+  const c=CLOSURES[0];s+=`<rect x="${x(c.open)}" y="22" width="${x(c.close)-x(c.open)}" height="22" rx="4" fill="var(--muted)"/><text x="${x(c.open)+8}" y="37" font-size="11" fill="var(--fg)">${c.by} · ${c.num} · <tspan fill="var(--warn)" font-weight="600">£2.00 short</tspan></text>`;
+  s+=`<rect x="${x(OPEN.open)}" y="50" width="${x('17:30')-x(OPEN.open)}" height="22" rx="4" fill="var(--primary)" fill-opacity=".15" stroke="var(--primary)"/><text x="${x(OPEN.open)+8}" y="65" font-size="11" fill="var(--fg)">${OPEN.by} · open · ${fmt(OPEN.expected)} expected</text>`;
+  s+=`<line x1="${x('17:30')}" x2="${x('17:30')}" y1="14" y2="78" stroke="var(--fg)" stroke-dasharray="2 3"/><text x="${x('17:30')}" y="10" text-anchor="middle" font-size="10.5" fill="var(--muted-fg)">now</text></svg>`;
+  return panel(1,s,`Paid out £150.00 to bank at 15:40 · ${print.replace('<svg','<svg style="width:12px;height:12px;vertical-align:-2px"')} X-report`);}];
+C['C5']=['Three checks: open, balanced, synced','The owner’s glance as a traffic light. Is the till open and who has it; did the last closure balance; is everything on the server. Green means walk away.',()=>{const cl=inPeriod(),last=cl[0],uns=CLOSURES.filter(c=>c.unsynced).length;
+  return panel(cl.length,`<div class="bignum"><span class="a">Open</span><span class="bl">${OPEN.reg} · ${OPEN.by} · 4 h 30 m</span></div><div class="checks"><div class="or"><span class="l st ok"><i></i>Drawer should hold ${fmt(OPEN.expected)}</span><span class="r mut sm">float £100 · sales £343.70 · out £150</span></div><div class="or"><span class="l st ${last.variance?'warn':'ok'}"><i></i>Last closure ${last.num} ${last.variance?fmt(Math.abs(last.variance))+(last.variance<0?' short':' over'):'exact'}</span><span class="r mut sm">${last.by} · ${last.close}</span></div><div class="or"><span class="l st ${uns?'warn':'ok'}"><i></i>${uns?`${uns} closure not yet on the server`:'All closures on the server'}</span><span class="r mut sm">${uns?'#408 · Thursday':''}</span></div></div>`);}];
+C['C6']=['Two tiles: now and last','Now on the left, the last closure on the right. Each tile is one fact with its number. The list of closures lives behind the head.',()=>{const cl=inPeriod(),last=cl[0];
+  return panel(cl.length,`<div class="tiles2"><div class="tile"><span class="l">Now · ${OPEN.reg}</span><span class="n"><span class="st ok"><i></i>Open</span></span><span class="mut sm">${OPEN.by} since ${OPEN.open}</span><span class="mut sm">${fmt(OPEN.expected)} expected</span></div><div class="tile"><span class="l">Last closure · ${last.num}</span><span class="n">${res(last)}</span><span class="mut sm">${last.by} · ${last.open}–${last.close}</span><span class="mut sm">${fmt(last.counted)} of ${fmt(last.counted-last.variance)}</span></div></div><button class="btn" style="align-self:flex-start">${print}Print X-report</button>`);}];
+C['C7']=['Counted against expected, one bullet per closure','Few’s bullet graph for a value against a target: the counted cash as the bar, the expected as the tick. A short drawer stops before the tick, an over one passes it. The gap is the story.',()=>{const cl=inPeriod().filter(c=>c.counted||c.variance);
+  const row=c=>{const exp=c.counted-c.variance,max=Math.max(exp,c.counted)*1.1,W=400,x=v=>Math.round((W-4)*v/max);return `<div><div class="or"><span class="l">${c.num}<span class="mut"> · ${c.by} · ${c.dayLabel}</span></span><span class="r">${res(c)}</span></div><svg class="plot" viewBox="0 0 ${W} 18"><rect x="0" y="3" width="${W}" height="12" rx="3" fill="var(--muted)"/><rect x="0" y="6" width="${x(c.counted)}" height="6" fill="${c.variance<0?'var(--warn)':'var(--primary)'}"/><line x1="${x(exp)}" x2="${x(exp)}" y1="1" y2="17" stroke="var(--fg)" stroke-width="2"/></svg></div>`};
+  return panel(inPeriod().length,cl.slice(0,4).map(row).join(''),`Tick = expected · bar = counted · ${OPEN.reg} open since ${OPEN.open}`);}];
+C['C8']=['By cashier: who closes short','Each cashier’s net variance over the period as a bar from zero, with how many closures. The accountability view; for a week or a month, not for today.',()=>{const cl=S.period==='day'?CLOSURES.filter(c=>c.day<=6):inPeriod();
+  const by={};cl.forEach(c=>{by[c.by]=by[c.by]||{n:0,v:0};by[c.by].n++;by[c.by].v+=c.variance});const ks=Object.keys(by).sort((a,b)=>Math.abs(by[b].v)-Math.abs(by[a].v));const max=Math.max(...ks.map(k=>Math.abs(by[k].v)))||1;
+  return panel(cl.length,ks.map(k=>`<div class="or"><span class="l" style="min-width:64px">${k}<span class="mut xs"> · ${by[k].n}</span></span><svg class="plot" viewBox="0 0 200 14" preserveAspectRatio="none" style="flex:1;width:auto;min-width:0;height:14px"><line x1="100" x2="100" y1="0" y2="14" stroke="var(--border)"/><rect x="${by[k].v<0?100-90*Math.abs(by[k].v)/max:100}" y="3" width="${90*Math.abs(by[k].v)/max}" height="8" rx="2" fill="${by[k].v<0?'var(--warn)':by[k].v>0?'var(--c2)':'var(--ok)'}"/></svg><span class="r">${by[k].v?fmt(by[k].v,true):'Exact'}</span></div>`).join(''),`Last 7 days · net ${fmt(sum(cl,c=>c.variance),true)} across ${cl.length} closures`);}];
+C['C9']=['Only what needs someone','Unsynced, uncorrected, awaiting approval, left open past closing. Empty most days, and the empty state is the reassurance.',()=>{const cl=inPeriod();
+  const rows=[['warn','#408 not on the server','Thursday · Dylan · £61.20 over'],['neutral','#409 recounted by Paul','coins found in tray · £412.00 → £422.00'],['warn',`${OPEN.reg} open past 18:00`,`${OPEN.by} since ${OPEN.open}`]];
+  return panel(cl.length,rows.map(([k,t,s])=>`<div class="or"><span class="l st ${k}"><i></i>${t}</span><span class="r mut sm">${s}</span></div>`).join('')+`<div class="mut sm" style="margin-top:4px">Everything else is reconciled</div>`,`${cl.length} closure${cl.length===1?'':'s'} in the period · ${OPEN.reg} open · ${fmt(OPEN.expected)} expected`);}];
+C['C10']=['The week as seven cells','One cell a day, the day’s result as its colour and amount, today outlined. The month view would be the same cells five rows deep. Drift shows as a run of the same colour.',()=>{
+  const days=[['Tue',6],['Wed',5],['Thu',4],['Fri',3],['Sat',2],['Sun',1],['Mon',0]];
+  return panel(inPeriod().length,`<div class="week">${days.map(([w,d])=>{const cs=CLOSURES.filter(c=>c.day===d),v=sum(cs,c=>c.variance);const col=!cs.length?'var(--border)':v<0?'var(--warn)':v>0?'var(--c2)':'var(--ok)';return `<div class="d ${d===0?'today':''}"><div class="w">${w}</div><div class="dot" style="background:${col}"></div><div class="v">${cs.length?(v?`${v<0?'−':'+'}£${Math.round(Math.abs(v))}`:'Exact'):'—'}</div></div>`}).join('')}</div><div class="or"><span class="l">${OPEN.reg} <span class="st ok"><i></i>Open</span><span class="mut"> · ${OPEN.by} since ${OPEN.open}</span></span><span class="r">${fmt(OPEN.expected)}<span class="mut"> expected</span></span></div>`);}];
+
+function render(){
+  document.querySelectorAll('.strip [data-set]').forEach(b=>b.classList.toggle('on',S[b.dataset.set]===b.dataset.v));
+  document.getElementById('stage').innerHTML=`<h1>Closures · ten ways to say what the till is doing</h1><p>Same fixture in every card: Front till open since 13:00 by Dylan with £293.70 expected, today’s closure #412 £2.00 short, and last week’s closures behind it (one unsynced, one recounted). The head opens the Closures room in all of them.</p><div class="grid">`+Object.entries(C).map(([k,[t,why,f]])=>`<div class="opt"><h2>${k} · ${t}</h2><div class="frame" data-theme="${S.theme}">${f()}</div><p class="why">${why}</p></div>`).join('')+'</div>';
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-set]');if(!b)return;S[b.dataset.set]=b.dataset.v;render();});
+render();
+</script>
+</html>

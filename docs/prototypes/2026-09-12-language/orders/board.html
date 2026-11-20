@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Orders — twelve ways to show the list (board)</title>
+<style>
+/* the same tokens as index.html, light, regular */
+:root{
+  --u:4px;--fs:14px;--ctl:44px;--row:44px;--r:8px;--hair:1px;
+  --bg:oklch(0.975 0.004 250);--fg:oklch(0.22 0.02 250);--card:oklch(1 0 0);--muted:oklch(0.955 0.006 250);--muted-fg:oklch(0.50 0.02 250);--border:oklch(0.90 0.008 250);
+  --primary:oklch(0.50 0.18 240);--primary-fg:oklch(0.99 0.01 240);--ok:oklch(0.55 0.16 155);--warn:oklch(0.68 0.16 70);--bad:oklch(0.58 0.2 25);--info:oklch(0.58 0.14 240);--neutral:oklch(0.62 0.01 250);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#e6e8ec;color:#111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;padding:24px}
+h1{font-size:20px;margin:0 0 4px} .lead{color:#374151;margin:0 0 20px;max-width:100ch;font-size:13px}
+.board{display:flex;flex-direction:column;gap:28px}
+.panel{width:1080px}
+.panel .cap{display:flex;align-items:baseline;gap:12px;margin:0 0 8px;font-size:13px;color:#374151}
+.panel .cap b{font-size:15px;color:#111} .panel .cap .n{font-weight:700;color:#6b7280}
+.frame{width:1080px;height:440px;background:var(--bg);color:var(--fg);font-size:var(--fs);line-height:1.35;font-variant-numeric:tabular-nums;border:1px solid #c9ced6;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.frame *{font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;font-family:inherit}
+svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.mut{color:var(--muted-fg)} .xs{font-size:12px} .b{font-weight:600} .money{white-space:nowrap} .neg{color:var(--bad)} .up{color:var(--ok)} .grow{flex:1;min-width:0} .ell{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st{display:inline-flex;align-items:center;gap:6px;white-space:nowrap} .st i{width:8px;height:8px;border-radius:50%;background:var(--neutral);flex:none} .st.ok i{background:var(--ok)} .st.warn i{background:var(--warn)} .st.bad i{background:var(--bad)} .st.info i{background:var(--info)}
+.bar{display:flex;align-items:center;gap:8px;padding:12px 16px 0;flex:none} .bar h2{font-size:18px;margin:0 8px 0 0;font-weight:700}
+.in{height:40px;border:var(--hair) solid var(--border);border-radius:var(--r);background:var(--card);padding:0 12px 0 36px;width:320px;color:var(--muted-fg);display:flex;align-items:center;position:relative} .in svg{position:absolute;left:11px;top:11px;color:var(--muted-fg)}
+.chip{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;border-radius:999px;border:var(--hair) solid var(--border);background:var(--card);color:var(--muted-fg);white-space:nowrap} .chip.on{background:var(--fg);color:var(--bg);border-color:var(--fg);font-weight:600}
+.chips{display:flex;gap:8px;padding:10px 16px 0;flex:none}
+.ibtn{width:40px;height:40px;border-radius:var(--r);display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg);margin-left:auto}
+.list{flex:1;min-height:0;overflow:hidden;padding:12px 16px 0}
+.thead{display:grid;align-items:center;height:32px;border-bottom:var(--hair) solid var(--border);color:var(--muted-fg);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+.th{padding:0 12px;white-space:nowrap} .th.r{text-align:right} .th.c{text-align:center}
+.tr{display:grid;align-items:center;min-height:44px;border-bottom:var(--hair) solid var(--border)} .tr:hover{background:var(--card)} .tr.sel{background:color-mix(in oklch,var(--primary) 8%,transparent)}
+.td{padding:6px 12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .td.r{text-align:right} .td.c{text-align:center;text-overflow:clip;display:flex;justify-content:center}
+.td .sub{display:block;color:var(--muted-fg);font-size:12px}
+.foot{display:flex;align-items:center;height:40px;padding:0 16px;border-top:var(--hair) solid var(--border);color:var(--muted-fg);flex:none;gap:16px}
+/* idiom-specific */
+.grp{display:flex;align-items:center;gap:8px;height:30px;padding:0 12px;color:var(--muted-fg);font-size:12px;font-weight:600;background:var(--muted);border-bottom:var(--hair) solid var(--border)} .grp b{color:var(--fg)}
+.stats{display:flex;gap:8px;padding:10px 16px 0} .stat{display:flex;flex-direction:column;gap:1px;min-width:120px;height:52px;padding:0 12px;border:var(--hair) solid var(--border);border-radius:var(--r);background:var(--card);justify-content:center} .stat .l{color:var(--muted-fg);font-size:12px} .stat .v{font-weight:600;font-size:15px} .stat.on{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary)}
+.inbox .tr{min-height:40px;grid-template-columns:8px 180px 1fr 120px 90px;gap:0}
+.inbox .dot{width:8px;height:8px;border-radius:50%;background:var(--primary);margin-left:2px}
+.two{display:flex;flex:1;min-height:0} .two .l{width:360px;border-right:var(--hair) solid var(--border);overflow:hidden} .two .d{flex:1;padding:20px 24px;background:var(--card)}
+.row2{display:grid;grid-template-columns:1fr auto;gap:12px;padding:10px 16px;border-bottom:var(--hair) solid var(--border);min-height:60px;align-items:center} .row2.sel{background:color-mix(in oklch,var(--primary) 8%,transparent)}
+.row2 .l1{display:flex;gap:8px;align-items:center} .row2 .l2{display:flex;gap:8px;align-items:center;color:var(--muted-fg);font-size:12px;margin-top:2px}
+.grid .thead,.grid .tr{grid-template-columns:36px 150px 90px 1fr 170px 130px 110px 100px} .grid .th,.grid .td{border-right:var(--hair) solid var(--border)} .grid .tr{min-height:32px} .grid .td{padding:4px 10px} .grid .th{padding:0 10px} .grid .th:first-child,.grid .td:first-child{color:var(--muted-fg);text-align:center;font-size:12px}
+.sec{display:flex;align-items:center;gap:8px;height:36px;padding:0 4px;font-weight:600} .sec .n{color:var(--muted-fg);font-weight:500} .sec svg{color:var(--muted-fg)}
+.kan{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:12px 16px;flex:1;min-height:0;overflow:hidden}
+.col .h{display:flex;align-items:center;gap:8px;padding:0 4px 8px;font-weight:600} .col .h .n{color:var(--muted-fg);font-weight:500;margin-left:auto}
+.kcard{background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);padding:10px 12px;margin-bottom:8px} .kcard .a{font-weight:600;font-size:15px} .kcard .m{color:var(--muted-fg);font-size:12px;display:flex;justify-content:space-between;margin-top:2px}
+.xero .frame-in{margin:12px 16px 0;background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);overflow:hidden;flex:1;min-height:0;display:flex;flex-direction:column}
+.xero .thead{background:var(--muted)} .tabs{display:flex;gap:2px;padding:10px 16px 0} .tab{height:36px;padding:0 12px;display:inline-flex;align-items:center;gap:6px;color:var(--muted-fg);border-bottom:2px solid transparent} .tab.on{color:var(--fg);font-weight:600;border-bottom-color:var(--primary)} .tab .n{font-size:12px;background:var(--muted);border-radius:10px;padding:1px 7px;color:var(--fg)}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:12px 16px;flex:1;overflow:hidden;align-content:start}
+.ocard{background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);padding:12px 14px;min-height:104px;display:flex;flex-direction:column;gap:4px} .ocard .a{font-size:20px;font-weight:700} .ocard .c{display:flex;justify-content:space-between;align-items:center;color:var(--muted-fg);font-size:12px;margin-top:auto}
+.sumbar{display:flex;gap:24px;padding:10px 16px;margin:12px 16px 0;border-top:var(--hair) solid var(--border);border-bottom:var(--hair) solid var(--border);color:var(--muted-fg);font-size:12px} .sumbar b{color:var(--fg);font-size:14px;display:block}
+.timeline .tr{grid-template-columns:110px 1fr 140px 130px 120px} .timeline .td.d{color:var(--muted-fg)}
+</style>
+</head>
+<body>
+<h1>Orders — twelve ways to show the list</h1>
+<p class="lead">Same twelve orders in every panel, same tokens (light, regular). Each panel is one idiom distilled from Mobbin, named after the app it comes from. None is a variant of another. The caption says what the idiom buys and what it costs. Captures: <code>screens/board/NN-slug.jpg</code>.</p>
+<div class="board" id="board"></div>
+<script>
+const I={search:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',sliders:'<svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></svg>',chevd:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',chev:'<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',dots:'<svg viewBox="0 0 24 24"><circle cx="12" cy="6" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="18" r="1.2"/></svg>',note:'<svg viewBox="0 0 24 24"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-5 4z"/></svg>',pos:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>',globe:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>',print:'<svg viewBox="0 0 24 24"><path d="M7 8V4h10v4M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v6H7z"/></svg>'};
+const CUR='£'; const fmt=n=>`${n<0?'−':''}${CUR}${Math.abs(n).toFixed(2)}`;
+const STATUS={completed:['Completed','ok'],processing:['Processing','info'],pending:['Pending payment','warn'],'on-hold':['On hold','warn'],cancelled:['Cancelled',''],refunded:['Refunded',''],failed:['Failed','bad'],'pos-open':['POS open','info'],'pos-partial':['POS partial','warn'],'partially-refunded':['Partially refunded','warn']};
+const st=k=>{const [l,c]=STATUS[k];return `<span class="st ${c}"><i></i>${l}</span>`;};
+const O=[
+ {n:102476,s:'completed',c:'Guest',d:'2 hours ago',t:'10:42',day:'Today',tot:22.60,pm:'Cash',via:'pos',cash:'Demo Cashier',items:'Flat white ×2, Sourdough loaf, Tote bag',note:''},
+ {n:102475,s:'processing',c:'Amy Okafor',d:'3 hours ago',t:'09:58',day:'Today',tot:48.00,pm:'SumUp',via:'pos',cash:'Demo Cashier',items:'Beans 250g ×4, Cold brew ×2',note:'Ring the bell twice'},
+ {n:102474,s:'partially-refunded',c:'Sam Reilly',d:'Yesterday',t:'17:20',day:'Yesterday',tot:96.40,ref:12,pm:'Card',via:'pos',cash:'Amy Okafor',items:'Espresso cup ×6, Tote bag ×2, Gift wrap',note:''},
+ {n:102473,s:'pos-open',c:'Guest',d:'Yesterday',t:'16:05',day:'Yesterday',tot:8.40,pm:'',via:'pos',cash:'Amy Okafor',items:'Oat latte, Croissant ×2',note:''},
+ {n:102472,s:'on-hold',c:'Priya Nair',d:'Yesterday',t:'12:31',day:'Yesterday',tot:130.00,pm:'Bank transfer',via:'web',cash:'',items:'Gift card ×5, Granola jar ×2, Tea tin ×2',note:'Collect Tuesday'},
+ {n:102471,s:'pending',c:'Guest',d:'Yesterday',t:'11:02',day:'Yesterday',tot:15.20,pm:'PayPal',via:'web',cash:'',items:'Cold brew ×4',note:''},
+ {n:102470,s:'refunded',c:'Tom Baird',d:'12 Sep',t:'15:48',day:'12 September',tot:32.00,ref:32,pm:'Cash',via:'pos',cash:'Demo Cashier',items:'Espresso cup ×4',note:''},
+ {n:102469,s:'cancelled',c:'Guest',d:'12 Sep',t:'14:10',day:'12 September',tot:5.00,pm:'Cash',via:'pos',cash:'Sam Reilly',items:'Croissant ×2',note:''},
+ {n:102468,s:'failed',c:'Jo Lindqvist',d:'12 Sep',t:'13:27',day:'12 September',tot:64.90,pm:'Stripe',via:'web',cash:'',items:'Beans 250g ×5, Tea tin ×2',note:''},
+ {n:102467,s:'completed',c:'Guest',d:'12 Sep',t:'12:05',day:'12 September',tot:11.80,pm:'Card',via:'pos',cash:'Demo Cashier',items:'Flat white, Oat latte, Cinnamon bun ×2',note:''},
+ {n:102466,s:'completed',c:'Marta Kowalczyk',d:'11 Sep',t:'18:40',day:'11 September',tot:27.50,pm:'Cash',via:'admin',cash:'',items:'Granola jar ×2, Tea tin ×2',note:''},
+ {n:102465,s:'pos-partial',c:'Guest',d:'11 Sep',t:'16:12',day:'11 September',tot:200.00,pm:'Cash',via:'pos',cash:'Amy Okafor',items:'Gift card ×10',note:''},
+];
+const via=v=>v==='pos'?I.pos:I.globe;
+const bar=(title='Orders',extra='')=>`<div class="bar"><h2>${title}</h2><span class="in">${I.search}Search orders</span>${extra}<span class="ibtn">${I.sliders}</span></div>`;
+const chips=`<div class="chips"><span class="chip">Unpaid</span><span class="chip">Today</span><span class="chip">My sales</span><span style="width:1px;background:var(--border);margin:6px 4px"></span><span class="chip">Status ${I.chevd}</span><span class="chip">Customer ${I.chevd}</span><span class="chip">Date range ${I.chevd}</span></div>`;
+const GRID='170px 92px 1.1fr 1.3fr 40px 150px 44px 1fr 110px 44px';
+const head=(g=GRID)=>`<div class="thead" style="grid-template-columns:${g}"><div class="th">Status</div><div class="th">Order</div><div class="th">Customer</div><div class="th">Items</div><div class="th"></div><div class="th">Date</div><div class="th"></div><div class="th">Payment</div><div class="th r">Total</div><div class="th"></div></div>`;
+const row=(o,g=GRID,sel=false)=>`<div class="tr ${sel?'sel':''}" style="grid-template-columns:${g}"><div class="td">${st(o.s)}</div><div class="td b">${o.n}</div><div class="td">${o.c}</div><div class="td mut">${o.items}</div><div class="td c mut">${o.note?I.note:''}</div><div class="td">${o.d}</div><div class="td c mut">${via(o.via)}</div><div class="td">${o.pm}</div><div class="td r money b">${fmt(o.tot)}${o.ref?`<span class="sub neg">${fmt(-o.ref)}</span>`:''}</div><div class="td c mut">${I.dots}</div></div>`;
+const foot=(l='Showing 12 of 1,248')=>`<div class="foot"><span>${l}</span></div>`;
+const panel=(n,title,after,gives,html,cls='')=>`<section class="panel" data-n="${String(n).padStart(2,'0')}-${title.toLowerCase().replace(/[^a-z0-9]+/g,'-')}"><div class="cap"><span class="n">${String(n).padStart(2,'0')}</span><b>${title}</b><span>after ${after}</span><span class="mut">— ${gives}</span></div><div class="frame ${cls}">${html}</div></section>`;
+
+const P=[];
+/* 01 frameless table */
+P.push(panel(1,'Frameless table','Linear, Stripe','the page is the surface; hairlines only; the same rows serve the POS product table',
+ `${bar()}${chips}<div class="list">${head()}${O.slice(0,7).map(o=>row(o)).join('')}</div>${foot()}`));
+/* 02 grouped by day */
+P.push(panel(2,'Grouped by day','Linear groups, Superhuman','a header per day with count and takings; the list reads like a day book',
+ `${bar()}${chips}<div class="list">${head()}${['Today','Yesterday','12 September'].map(day=>{const g=O.filter(o=>o.day===day);return `<div class="grp">${I.chevd}<b>${day}</b>${g.length}<span class="grow"></span><span class="money">${fmt(g.reduce((a,o)=>a+o.tot,0))}</span></div>`+g.slice(0,3).map(o=>row(o)).join('');}).join('')}</div>${foot()}`));
+/* 03 status counts */
+P.push(panel(3,'Status counts','Stripe transactions','the store\'s state at a glance; the counts are the status filter, two-state',
+ `${bar()}<div class="stats">${[['All','1,248','',true],['Completed','812','ok'],['Processing','6','info'],['On hold','2','warn'],['Refunded','12',''],['Failed','3','bad']].map(([l,n,c,on])=>`<div class="stat ${on?'on':''}"><span class="l"><span class="st ${c||''}">${l==='All'?'':'<i></i>'}${l}</span></span><span class="v">${n}</span></div>`).join('')}</div>${chips.replace('<span class="chip">Status '+I.chevd+'</span>','')}<div class="list">${head()}${O.slice(0,5).map(o=>row(o)).join('')}</div>${foot()}`));
+/* 04 ledger */
+const LG='96px 1fr 130px 160px 120px 44px';
+P.push(panel(4,'Ledger','Mercury transactions','date first, money coloured by direction, status only when abnormal; reads like a bank statement',
+ `${bar()}${chips}<div class="list timeline"><div class="thead" style="grid-template-columns:${LG}"><div class="th">Date</div><div class="th">Customer · items</div><div class="th r">Amount</div><div class="th">Method</div><div class="th">Cashier</div><div class="th"></div></div>${O.slice(0,7).map(o=>`<div class="tr" style="grid-template-columns:${LG}"><div class="td d">${o.day==='Today'?o.t:o.d}</div><div class="td"><span class="b">${o.c}</span> <span class="mut">${o.items}</span>${['completed','processing'].includes(o.s)?'':` <span class="st ${STATUS[o.s][1]}" style="margin-left:8px;font-size:12px"><i></i>${STATUS[o.s][0]}</span>`}</div><div class="td r money ${o.ref?'':'up'} b">${o.ref?fmt(o.tot-o.ref):fmt(o.tot)}${o.ref?`<span class="sub neg">${fmt(-o.ref)} refund</span>`:''}</div><div class="td">${o.pm||'—'}</div><div class="td mut">${o.cash||'Online'}</div><div class="td c mut">${I.dots}</div></div>`).join('')}</div>${foot('12 orders · takings £549.30 · refunds −£44.00')}`));
+/* 05 inbox */
+P.push(panel(5,'Inbox','Superhuman, Notion Mail','one dense line per order, no column header, unsynced as an unread dot; the most orders per screen',
+ `${bar()}${chips}<div class="list inbox" style="padding-top:8px">${['Today','Yesterday','12 September'].map(day=>{const g=O.filter(o=>o.day===day);return `<div class="mut xs" style="padding:8px 12px 4px;font-weight:600">${day}</div>`+g.slice(0,4).map((o,i)=>`<div class="tr"><span class="dot" style="${o.s==='pos-open'||o.s==='processing'?'':'visibility:hidden'}"></span><div class="td b">${o.c}</div><div class="td"><span>#${o.n}</span> <span class="mut">— ${o.items}</span>${o.s==='completed'||o.s==='processing'?'':` <span class="st ${STATUS[o.s][1]} xs" style="margin-left:6px"><i></i>${STATUS[o.s][0]}</span>`}</div><div class="td r money b">${fmt(o.tot)}</div><div class="td r mut">${o.t}</div></div>`).join('');}).join('')}</div>`));
+/* 06 master-detail */
+P.push(panel(6,'Master–detail','Intercom, Mercury','the order is always open beside a narrow two-line list; nothing to open or close',
+ `${bar()}<div class="two"><div class="l">${chips.replace('class="chips"','class="chips" style="padding:10px 12px 8px;flex-wrap:wrap"')}${O.slice(0,5).map((o,i)=>`<div class="row2 ${i===1?'sel':''}"><div><div class="l1"><b>#${o.n}</b><span>${o.c}</span>${o.note?`<span class="mut">${I.note}</span>`:''}</div><div class="l2">${st(o.s)}<span>·</span><span>${o.d}${o.pm?` · ${o.pm}`:''}</span></div></div><div class="money b">${fmt(o.tot)}</div></div>`).join('')}</div>
+  <div class="d"><div class="mut">Order <b style="color:var(--fg)">#102475</b> · <span class="st info"><i></i>POS</span></div><div style="font-size:32px;font-weight:700;margin-top:6px">£48.00 <span class="st info" style="font-size:14px;font-weight:500"><i></i>Processing</span></div><div class="mut" style="margin-top:4px">Sun 14 Sep 2026 · 09:58 · Demo Cashier · SumUp</div>
+  <div class="mut xs b" style="margin-top:20px;letter-spacing:.05em">ITEMS</div>${[['Beans 250g','4 × £9.50','£38.00'],['Cold brew','2 × £3.80','£7.60'],['Gift wrap','Fee','£2.40']].map(([a,b,c])=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:var(--hair) solid var(--border)"><span>${a}<span class="sub mut" style="display:block;font-size:12px">${b}</span></span><span class="money">${c}</span></div>`).join('')}
+  <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:700;font-size:16px"><span>Total</span><span>£48.00</span></div>
+  <div style="display:flex;gap:8px;margin-top:8px"><span class="chip">Refund</span><span class="chip on">${I.print} Print receipt</span></div></div></div>`));
+/* 07 spreadsheet grid */
+P.push(panel(7,'Spreadsheet grid','Airtable, Attio','row numbers, vertical hairlines, 32 pt rows, a count footer; the densest table, made for a mouse',
+ `${bar()}${chips}<div class="list grid"><div class="thead"><div class="th">#</div><div class="th">Status</div><div class="th">Order</div><div class="th">Items</div><div class="th">Customer</div><div class="th">Date</div><div class="th">Payment</div><div class="th r">Total</div></div>${O.slice(0,9).map((o,i)=>`<div class="tr"><div class="td">${i+1}</div><div class="td">${st(o.s)}</div><div class="td">${o.n}</div><div class="td mut">${o.items}</div><div class="td">${o.c}</div><div class="td">${o.d}</div><div class="td">${o.pm}</div><div class="td r money">${fmt(o.tot)}</div></div>`).join('')}</div>${foot('12 orders · Σ £661.80')}`));
+/* 08 sectioned by status */
+P.push(panel(8,'Sections by state','Asana, Linear','what needs a hand first, then what is open at the till, then the done pile; collapsible',
+ `${bar()}${chips}<div class="list">${[['Needs attention',O.filter(o=>['failed','on-hold','pending'].includes(o.s))],['Open at the POS',O.filter(o=>['pos-open','pos-partial','processing'].includes(o.s))],['Completed today',O.filter(o=>o.s==='completed'&&o.day==='Today')]].map(([l,g])=>`<div class="sec">${I.chevd}<span>${l}</span><span class="n">${g.length}</span></div>${g.map(o=>row(o)).join('')}`).join('')}</div>${foot()}`));
+/* 09 kanban */
+P.push(panel(9,'Board by status','Pipedrive','columns per state with the amount on each card; drag to change state; a manager\'s wall view',
+ `${bar()}<div class="kan">${[['Pending','warn',O.filter(o=>['pending','on-hold'].includes(o.s))],['Open at POS','info',O.filter(o=>['pos-open','pos-partial'].includes(o.s))],['Processing','info',O.filter(o=>o.s==='processing')],['Completed','ok',O.filter(o=>o.s==='completed')]].map(([l,c,g])=>`<div class="col"><div class="h"><span class="st ${c}"><i></i>${l}</span><span class="n">${g.length} · ${fmt(g.reduce((a,o)=>a+o.tot,0))}</span></div>${g.map(o=>`<div class="kcard"><div class="a money">${fmt(o.tot)}</div><div>${o.c}</div><div class="m"><span>#${o.n}</span><span>${o.d}</span></div></div>`).join('')}</div>`).join('')}</div>`));
+/* 10 accounting */
+P.push(panel(10,'Accounting table','Xero invoices','the framed table done properly: state tabs with counts, a grey header, a totals footer; familiar to anyone who does the books',
+ `${bar()}<div class="tabs">${[['All','1,248',true],['Unpaid','8'],['Paid','812'],['Refunded','12'],['Failed','3']].map(([l,n,on])=>`<span class="tab ${on?'on':''}">${l}<span class="n">${n}</span></span>`).join('')}</div><div class="xero" style="display:flex;flex-direction:column;flex:1;min-height:0"><div class="frame-in"><div class="thead" style="grid-template-columns:92px 1.1fr 1.3fr 150px 1fr 100px 100px 110px 170px 44px"><div class="th">Number</div><div class="th">Customer</div><div class="th">Items</div><div class="th">Date</div><div class="th">Payment</div><div class="th r">Paid</div><div class="th r">Due</div><div class="th r">Total</div><div class="th">Status</div><div class="th"></div></div>${O.slice(0,6).map(o=>`<div class="tr" style="grid-template-columns:92px 1.1fr 1.3fr 150px 1fr 100px 100px 110px 170px 44px"><div class="td b">${o.n}</div><div class="td">${o.c}</div><div class="td mut">${o.items}</div><div class="td">${o.d}</div><div class="td">${o.pm}</div><div class="td r money">${['completed','processing','partially-refunded'].includes(o.s)?fmt(o.tot-(o.ref||0)):'—'}</div><div class="td r money">${['pending','on-hold','failed','pos-open','pos-partial'].includes(o.s)?fmt(o.s==='pos-partial'?100:o.tot):'—'}</div><div class="td r money b">${fmt(o.tot)}</div><div class="td">${st(o.s)}</div><div class="td c mut">${I.dots}</div></div>`).join('')}<div class="foot" style="justify-content:flex-end;gap:32px"><span>Paid <b class="money" style="color:var(--fg)">£168.00</b></span><span>Due <b class="money" style="color:var(--fg)">£318.50</b></span><span>Total <b class="money" style="color:var(--fg)">£661.80</b></span></div></div></div>`));
+/* 11 cards */
+P.push(panel(11,'Cards','Fresha, Shopify POS tickets','one card per order with the amount large; touch-first, reads across the counter; four across at this width',
+ `${bar()}${chips}<div class="cards">${O.slice(0,8).map(o=>`<div class="ocard"><div class="a money">${fmt(o.tot)}</div><div>${o.c}<span class="mut"> · #${o.n}</span></div><div class="mut xs ell">${o.items}</div><div class="c">${st(o.s)}<span>${o.d}</span></div></div>`).join('')}</div>`));
+/* 12 summary bar */
+P.push(panel(12,'Summary bar','Origin, Shopify stat strip','the range totals above the list — orders, takings, refunds, average — then a plain frameless list',
+ `${bar()}${chips}<div class="sumbar"><span>Orders<b>1,248</b></span><span>Range<b>1 Sep – 14 Sep 2026</b></span><span>Takings<b class="money">£18,412.30</b></span><span>Refunds<b class="money neg">−£312.00</b></span><span>Average order<b class="money">£14.75</b></span><span>Cash in drawer<b class="money">£480.80</b></span></div><div class="list" style="padding-top:8px">${head()}${O.slice(0,4).map(o=>row(o)).join('')}</div>${foot()}`));
+document.getElementById('board').innerHTML=P.join('');
+</script>
+</body>
+</html>
