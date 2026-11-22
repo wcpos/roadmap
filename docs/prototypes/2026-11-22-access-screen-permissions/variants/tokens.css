@@ -1,0 +1,116 @@
+/*
+ * System tokens for the WCPOS WP Admin settings app (packages/settings + packages/ui).
+ *
+ * Tailwind v4 (prefix `wcpos:`), values copied verbatim from an installed
+ * tailwindcss@4.3.5 `theme.css` (the settings package pins ^4.2.4; the values below
+ * are unchanged between those releases). Only the families the Access and Checkout
+ * components actually read are listed.
+ *
+ * Light only: WP Admin has one theme. There is no dark block on purpose.
+ */
+:root {
+	/* ---- Font: WP Admin's body stack and size (wp-admin common.css), which the app inherits ---- */
+	--wp-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu,
+		Cantarell, "Helvetica Neue", sans-serif;
+	--wp-font-size: 13px;
+	/* WP core literals the app falls through to where no utility is set */
+	--wp-body-text: #3c434a; /* wp-admin body colour */
+	--wp-link-color: #2271b1; /* wp-admin <a> colour (notice link) */
+	/* WP core forms.css fills a checked checkbox with the admin colour scheme's colour; the anchors
+	   (Modern scheme) measure #3858e9 inside the 1px gray-300 border, with a white tick. Switches do
+	   NOT read this: they read --color-wp-admin-theme-color below, which resolves to #007cba. */
+	--wp-core-checkbox-checked: #3858e9;
+
+	/* ---- The five @theme colours in packages/settings/src/index.css, with their fallbacks ---- */
+	--color-wp-admin-theme-color: var(--wp-admin-theme-color, #007cba);
+	--color-wp-admin-theme-color-darker-10: var(--wp-admin-theme-color-darker-10, #006ba1);
+	--color-wp-admin-theme-color-darker-20: var(--wp-admin-theme-color-darker-20, #005a87);
+	--color-wp-admin-theme-color-lightest: #e5f1f8;
+	--color-wp-admin-theme-black: #1d2327;
+
+	/* index.css literals (not @theme tokens, but values the screen draws with) */
+	--wcpos-border-default: #e5e7eb; /* `*{border-color}` reset in index.css */
+	--wcpos-indeterminate: #3582c4; /* checkbox :indeterminate border + bar in index.css */
+
+	/* ---- Tailwind v4 theme.css: colours ---- */
+	--color-black: #000;
+	--color-white: #fff;
+
+	--color-gray-50: oklch(98.5% 0.002 247.839);
+	--color-gray-100: oklch(96.7% 0.003 264.542);
+	--color-gray-200: oklch(92.8% 0.006 264.531);
+	--color-gray-300: oklch(87.2% 0.01 258.338);
+	--color-gray-400: oklch(70.7% 0.022 261.325);
+	--color-gray-500: oklch(55.1% 0.027 264.364);
+	--color-gray-600: oklch(44.6% 0.03 256.802);
+	--color-gray-700: oklch(37.3% 0.034 259.733);
+	--color-gray-800: oklch(27.8% 0.033 256.848);
+	--color-gray-900: oklch(21% 0.034 264.665);
+
+	--color-amber-50: oklch(98.7% 0.022 95.277);
+	--color-amber-100: oklch(96.2% 0.059 95.617);
+	--color-amber-200: oklch(92.4% 0.12 95.746);
+	--color-amber-500: oklch(76.9% 0.188 70.08);
+	--color-amber-700: oklch(55.5% 0.163 48.998);
+	--color-amber-800: oklch(47.3% 0.137 46.201);
+
+	--color-yellow-50: oklch(98.7% 0.026 102.212);
+	--color-yellow-200: oklch(94.5% 0.129 101.54);
+	--color-yellow-500: oklch(79.5% 0.184 86.047);
+	--color-yellow-800: oklch(47.6% 0.114 61.907);
+
+	--color-blue-50: oklch(97% 0.014 254.604);
+	--color-blue-200: oklch(88.2% 0.059 254.128);
+	--color-blue-500: oklch(62.3% 0.214 259.815);
+	--color-blue-700: oklch(48.8% 0.243 264.376);
+	--color-blue-800: oklch(42.4% 0.199 265.638);
+
+	--color-green-50: oklch(98.2% 0.018 155.826);
+	--color-green-200: oklch(92.5% 0.084 155.995);
+	--color-green-500: oklch(72.3% 0.219 149.579);
+	--color-green-700: oklch(52.7% 0.154 150.069);
+	--color-green-800: oklch(44.8% 0.119 151.328);
+
+	--color-red-50: oklch(97.1% 0.013 17.38);
+	--color-red-100: oklch(93.6% 0.032 17.717);
+	--color-red-200: oklch(88.5% 0.062 18.334);
+	--color-red-500: oklch(63.7% 0.237 25.331);
+	--color-red-600: oklch(57.7% 0.245 27.325);
+	--color-red-700: oklch(50.5% 0.213 27.518);
+	--color-red-800: oklch(44.4% 0.177 26.899);
+
+	/* ---- Spacing, type, weight, tracking ---- */
+	--spacing: 0.25rem;
+
+	--text-xs: 0.75rem;
+	--text-xs--line-height: calc(1 / 0.75);
+	--text-sm: 0.875rem;
+	--text-sm--line-height: calc(1.25 / 0.875);
+	--text-base: 1rem;
+	--text-base--line-height: calc(1.5 / 1);
+	--text-lg: 1.125rem;
+	--text-lg--line-height: calc(1.75 / 1.125);
+	--text-xl: 1.25rem;
+	--text-xl--line-height: calc(1.75 / 1.25);
+
+	--font-weight-normal: 400;
+	--font-weight-medium: 500;
+	--font-weight-semibold: 600;
+	--font-weight-bold: 700;
+
+	--tracking-wide: 0.025em;
+	--tracking-wider: 0.05em;
+
+	/* ---- Radii (`rounded` = --radius, deprecated alias kept by v4) ---- */
+	--radius: 0.25rem;
+	--radius-sm: 0.25rem;
+	--radius-md: 0.375rem;
+	--radius-lg: 0.5rem;
+
+	/* ---- Shadows ---- */
+	--shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+	--shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+	--shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+	--shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+	--shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
