@@ -21,7 +21,7 @@ Glossary entries for the monorepo's `CONTEXT.md` land with slice 1.
 1. **Anything a cashier's token could do or read through the API is enforced by the store.** The app hiding it is only the visible half.
 2. Only two things are honoured by the app alone: **store settings with their locks**, and the **Orders and Customers page rows** (the till needs that data to sell). The Access screen says which rows those are.
 3. **Gone or read-only, by what the thing is.** A control that only acts (Refund, Void, Add discount, No sale, a menu page) is gone. A field that also shows a value (line price, tax, a store setting) stays visible and read-only, with no lock decoration. A locked store setting alone carries "Set by your store".
-4. **Every new permission is granted when it is introduced**, to every role that has POS access, with a per-capability "introduced" marker so a later version never re-grants one an owner removed. Nothing changes in a store until its owner switches something off.
+4. **Every new permission is granted when it is introduced**, to every role that has POS access, with a per-capability "introduced" marker so a later version never re-grants one an owner removed. The one exception is a permission **split out of an existing one** (§3, the three splits): it is granted only to roles that held the capability it came from, so a role an owner had already restricted stays restricted. Either way, nothing changes in a store until its owner switches something off.
 5. **A restriction never sits behind a licence check** ([#612](https://github.com/wcpos/roadmap/issues/612)). Everything here is Free except the other-stores scope and per-store setting values, which are Pro.
 6. Permissions are per role. No per-person exceptions. Nothing in WP Admin outside the POS screens is scoped. A manager approving a blocked action at the till is not in this release.
 
@@ -88,6 +88,7 @@ Names follow the pattern 2.0 shipped: `<verb>_woocommerce_pos_<noun>`. 28 rows: 
 - **Fail closed**: a conformance test walks every registered route as a role without the permission and asserts the field's absence. A new route that serializes one of these objects passes through the seam or the test fails.
 - **Revisions and hashes are computed on what the role is sent.** Today the order revision and the product revision signal both hash cost; a till without cost must not look permanently out of date, and must not re-push.
 - The store **ignores `cost_of_goods_sold` in product writes** from a role without the permission.
+- The store also **ignores a posted line cost** from that role. WooCommerce derives a line's cost from its product, but keeps a posted `line_items[].cost_of_goods_sold` on a line with no resolvable product (a custom line, a deleted product); a role that may not see cost may not set one there either.
 
 **App.**
 - A missing key means withheld; a present null or zero means no cost set.

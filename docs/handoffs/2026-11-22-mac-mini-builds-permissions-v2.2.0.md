@@ -33,10 +33,11 @@ Blocking is wired natively, so the tracker shows the frontier. The first takeabl
 ## The order of work
 
 1. **#620 first, alone.** Everything reads the registry.
-2. **Then slice 2 (#623, #624)**: a merchant is waiting on hidden cost, and the reset it builds is what slices 6 and 7 stand on.
-3. **Slices 1's other two tickets (#621, #622), then 3, 4 and 5** in ticket order. They are independent of each other once #620 and #621 are in; take them one at a time anyway (one suite at a time on this machine).
-4. **Slice 6, then 7, then 8.** #635 needs a lock-screen options board picked before it is built; run `/mockup` and post the board as its one question.
-5. **#636** page by page as each slice reaches `main`.
+2. **Then #621**, the app's capability source: every app ticket is blocked by it.
+3. **Then slice 2 (#623, #624)**: a merchant is waiting on hidden cost, and the reset it builds is what slices 6 and 7 stand on.
+4. **Then #622, and slices 3, 4 and 5** in ticket order. They are independent of each other once #620 and #621 are in; take them one at a time anyway (one suite at a time on this machine).
+5. **Slice 6, then 7, then 8.** #635 needs a lock-screen options board picked before it is built; run `/mockup` and post the board as its one question.
+6. **#636** page by page as each slice reaches `main`.
 
 ## Rules that bind every session on this build
 
@@ -65,7 +66,7 @@ Blocking is wired natively, so the tracker shows the frontier. The first takeabl
 ```text
 You own the build of wcpos/roadmap#599, v2.2.0 "Control what each cashier can do", from here to its last ticket. Read first, every session: docs/specs/2026-11-22-cashier-permissions-v2.2.0-spec.md and docs/handoffs/2026-11-22-mac-mini-builds-permissions-v2.2.0.md in wcpos/roadmap, then the ticket you are taking and the resolution comments its spec section links. Every decision is made; never re-decide a closed ticket. If the spec is unclear, that is your one question for the night.
 
-Order of work: #620 first and alone; then #623 and #624 (hidden cost and the reset); then #621, #622, #625, #626, #627, #628, #629, #630 in that order; then #631, #632, #633; then #634 and #635, where #635 needs a lock-screen options board from /mockup posted as a question before it is built; #636 page by page as each slice reaches main. Take the first open, unblocked, unclaimed ticket in that order, claim it with claimed:mini and the assignee, and check open PRs before opening anything.
+Order of work: #620 first and alone; then #621; then #623 and #624 (hidden cost and the reset); then #622, #625, #626, #627, #628, #629, #630 in that order; then #631, #632, #633; then #634 and #635, where #635 needs a lock-screen options board from /mockup posted as a question before it is built; #636 page by page as each slice reaches main. Take the first open, unblocked, unclaimed ticket in that order, claim it with claimed:mini and the assignee, and check open PRs before opening anything.
 
 Rules: the store enforces and the app shows, and no permission ships as a hidden button except the two the spec names; every new permission is granted on introduction, so nothing changes for a store until its owner switches something off; a restriction never sits behind a licence check; scope is the nouns in the rulings and spec §14 lists what is out; failing test first per permission on both order storage modes; the two route-walk tests are never skipped or narrowed; worktrees, 600 added production lines per PR, no stacked PRs, no new env vars, no --no-verify, one suite at a time with --maxWorkers=2, review loop ends at round 5; live evidence from the hosted dev stores only; the Access screen is built to docs/prototypes/2026-11-22-access-screen-permissions and its variants/v3/changes.md; green walked two-way PRs merge under standing authority, one-way PRs wait for Paul.
 
