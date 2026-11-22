@@ -69,7 +69,7 @@ Changes: exception wording phrased as a consequence ("When off: …"); frame 1 r
 
 Reference anchors, Sol: StackAI 6.89, Twenty 7.11, Zoho 6.72, System Checkout 7.33, System General 7.33. Opus: StackAI 6.6, Twenty 7.1, Zoho 6.6.
 
-No SYSTEM BREAK on r2 from either judge. Clarity recovered (Sol 7 to 8). No category fell. Opus's Consistency 7.5 is under its baseline 8; its findings name the cause (the two exception kinds drawn identically, and stacked explanations), which round 3 addresses. Both judges: open tooltips cover the row they explain. Findings: `rounds/r2/codex.md`, `rounds/r2/opus.md`.
+No SYSTEM BREAK on r2 from either judge. Clarity recovered (Sol 7 to 8). One Sol category fell against round 1: colour and contrast, 8.5 to 8; the round changed no colour, and the judge gave no finding for it. Opus's Consistency 7.5 is under its baseline 8; its findings name the cause (the two exception kinds drawn identically, and stacked explanations), which round 3 addresses. Both judges: open tooltips cover the row they explain. Findings: `rounds/r2/codex.md`, `rounds/r2/opus.md`.
 
 Round cap set to 3 for this session (the mockup is one ticket of a larger map); round 3 is the final round and all three judges score it.
 
@@ -90,7 +90,7 @@ Changes: tooltips opened below their icon; the three data rows' line in the grey
 | States covered | 9 | 7.5 | 4 | 9 | 8.5 | 2.5 | 8.5 | 7 | 3 |
 | **Average** | **8.3** | **7.3** | **7.3** | **7.8** | **6.8** | **6.1** | **7.4** | **6.3** | **5.6** |
 
-No SYSTEM BREAK on r3 from any judge (each one reported is against the r0 shots). No category fell between r2 and r3 for Sol or Opus. The climb stops at the round cap (3), not at the 9.0 bar: no judge has every category at 9.
+No SYSTEM BREAK on r3 from any judge (each one reported is against the r0 shots). Between r2 and r3 one category fell: Sol's Consistency, 9 to 8.5 (the off-state wording introduced in round 3 gave the weaker tier two phrasings; the final polish returns it to one). Nothing fell for Opus. The climb stops at the round cap (3), not at the 9.0 bar: no judge has every category at 9.
 
 Still under the baseline: Consistency for Sol (8.5 against 9) and Opus (7.5 against 8). Both judges tie it to the same two things, fixed in the final polish below: the hidden-at-the-till tier worded two ways, and the group count changing grammar.
 
