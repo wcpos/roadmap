@@ -76,6 +76,8 @@ Names follow the pattern 2.0 shipped: `<verb>_woocommerce_pos_<noun>`. 28 rows: 
 - One capability source. **A failed or missing permissions read denies, never allows** (today a missing list grants most capabilities and a failed fetch keeps the old list with no limit).
 - When the stamp on a sync response differs from the one held, the app re-reads the cashier record and the store record at once. Online tills learn within one sync. Offline tills keep what they last knew, with no time limit; the store judges every write on arrival.
 - A **Refresh permissions** action in Store health.
+- **Losing access altogether is learned from the refusal.** Today the cashier record answers 403 to a role without `publish_shop_orders`, and every POS route answers 403 once `access_woocommerce_pos` is gone, so no stamp arrives. The app treats either refusal as "this cashier may no longer use the POS": everything gated is denied and the till shows its existing no-access state. Unsynced sales stay on the device, as today.
+- A hidden browser tab makes no requests, so it learns when it is next visible.
 
 **Access screen (Free, WP Admin).** Rebuilt to the mockup's promise table: one grouped table per role from the registry; the ordinary promise said once above it; a line only on the five rows that work differently; "Show only restrictions"; the changed dot per row. The role list, Restore defaults and its dialog, the notice and Advanced stay where they are. The Restore dialog lists what will change; it does not list every row that is kept.
 
@@ -103,7 +105,7 @@ Names follow the pattern 2.0 shipped: `<verb>_woocommerce_pos_<noun>`. 28 rows: 
 - **A paid sale is never refused for a permission.** If payment has been taken, the store saves the sale as rung up and flags it "made without permission: <permission>", with the cashier and the time: a WooCommerce order note and a row in the POS Logs.
 - **An open, unpaid sale has just the disallowed change refused**, with one error code per permission. The till restores the line and tells the cashier why in one line.
 - **Refunds, voids, reopening and status changes are refused outright**; they reach the store when they are made.
-- A refused cashier reassignment returns its error like the rest (today it is dropped silently), and the POS cart gates it as Orders › Edit already does.
+- **Reassignment** follows the standing ruling ([#209](https://github.com/wcpos/roadmap/issues/209)): `reassign_woocommerce_pos_sales` gates every change to a sale's cashier, including a cashier making themselves the cashier, and every change to its store. Today the code allows the self-claim without the capability and gates a store change only by a filter (Pro narrows it to stores the user may use). A refused reassignment returns its error like the rest (today it is dropped silently), and the POS cart gates it as Orders › Edit already does.
 - The three splits (stock, drawer, expected cash) land here.
 - App gating follows §2 rule 3 for every row.
 
@@ -115,7 +117,7 @@ Names follow the pattern 2.0 shipped: `<verb>_woocommerce_pos_<noun>`. 28 rows: 
 ## 8. Slice 5: store-wide settings and locks ([#607](https://github.com/wcpos/roadmap/issues/607))
 
 - Set in **WP Admin only**: a "Till settings" table on Free's Checkout settings screen (Setting / Store setting / Cashiers can change), and the same on the Pro store edit screen for per-store values. Nothing is set from inside the app.
-- **Carrier**: the store record. Free serves the values and locks on its single store; Pro on each store.
+- **Carrier**: the store record. Free serves the values and locks on its single store; Pro on each store. The new values and every lock are **server-owned, auto-synced store fields**: today an existing store takes only its auto-synced fields from the server and its app-editable fields change only through "Restore server settings", so a lock that was not auto-synced would never reach a till that already knows the store.
 
 | Setting | Store value today | v2.2.0 |
 |---|---|---|
@@ -135,6 +137,7 @@ Names follow the pattern 2.0 shipped: `<verb>_woocommerce_pos_<noun>`. 28 rows: 
 
 - Without `view_others_woocommerce_pos_sales`, the store narrows orders to the cashier's own on **every read path**: both lanes, list and pull streams, bulk-id fast paths, the single read (a row outside scope is a 404), and receipts, receipt PDFs, print jobs, order email and payments for an order, none of which check ownership today.
 - **Own** means rung up by (`_pos_user_created`) or currently assigned to (`_pos_user`).
+- **The scope covers writes as well as reads.** A push, refund, payment or delete against an order outside scope is refused as not found. Without this a scoped cashier, who holds `edit_others_shop_orders` by default, could write to another cashier's sale by id.
 - **No lookup exception.** A scoped cashier cannot open anyone else's sale by any route. Paul: "either they have permissions to do a return (and look up past orders) or they don't."
 - A scope change runs the reset on orders, so a checkpoint never serves two result sets and needs no scope key.
 - Register figures (X-report, closure) are not this scope; "See expected cash" and Reports govern them.
@@ -151,12 +154,13 @@ Names follow the pattern 2.0 shipped: `<verb>_woocommerce_pos_<noun>`. 28 rows: 
 - **Set by the owner or a manager in WP Admin, on the user's profile.** Replaceable and clearable there; never shown again. 4 to 6 digits; not required to be unique.
 - **Two store settings**: "Cashier PINs" (off by default) and "Lock the till" (never, after each sale, or after 1, 5, 15 or 30 minutes without use).
 - With PINs on, a PIN is needed to take over the till from another cashier and to unlock it. The till asks who you are first (pick from the saved cashiers), then the PIN.
-- **Checked by the store when it can be reached**, under the shared credential lockout the login page and approval routes use. **Offline, checked on the device** for cashiers already saved on that till, against a per-cashier salted verifier refreshed at each online check; 5 wrong tries lock that cashier on the device until it reconnects.
+- **Checked by the store when it can be reached**, under the shared credential lockout the login page and approval routes use. **Offline, checked on the device** for cashiers already saved on that till, against a per-cashier salted verifier made with a deliberately slow hash and refreshed at each online check; 5 wrong tries lock that cashier on the device until it reconnects.
 - A cashier with no PIN signs in with their WordPress password, which needs a connection.
 - The lock keeps the till's state exactly. The open sale stays with the cashier who started it.
 - Anyone who signs in on a device is added to its saved cashiers, including through WordPress on the browser till.
 - **The browser till**: with PINs on it starts locked and asks the signed-in user's PIN, but the WordPress login underneath is the boundary; the setting's help says so in one line.
 - Hand-over with PINs off stays as it is today.
+- The offline check is not a defence of a copied device: someone who copies the verifier can try every 4 to 6 digit PIN away from the till, and the five-try limit only counts tries made at it. The slow hash raises the cost; it does not remove it. The ruling accepts this ([#617](https://github.com/wcpos/roadmap/issues/617)): the PIN stops the person at a shared till, and saved tokens are unprotected on the device today.
 - Not in this release: a cashier setting their own PIN, a PIN as approval for a blocked action, clocking in, protecting saved tokens on the device.
 
 ## 12. Order of work ([#614](https://github.com/wcpos/roadmap/issues/614))
