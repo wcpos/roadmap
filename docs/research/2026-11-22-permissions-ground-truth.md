@@ -238,7 +238,7 @@ Denial is `rest_forbidden` with 401 or 403 unless noted. **All Observed**, excep
 | Route | Method | Caps checked | On denial / notes | Cite |
 |---|---|---|---|---|
 | v2 `/push/{collection}` (the order writer and other writes) | POST | `access_woocommerce_pos` + health. Then forwards to `wc/v3` under `Permission_Rules` "writes" scope. Product, variation and coupon edit and delete are pre-checked with WooCommerce. | WooCommerce's errors. Order edit and delete by a non-owner need `{ctx}_others_shop_orders`. | `free:includes/API/V2/Write_Controller.php:115,439-450,715-731` |
-| — the cashier reassignment inside a v2 order push | | `reassign_woocommerce_pos_sales`, and the target must hold `access_woocommerce_pos` | **Silently not applied**: no error and no note for a refused cashier change | `free:includes/API/V2/Writers/Order_Writer.php:816-850` |
+| — the cashier reassignment inside a v2 order push | | to another user: `reassign_woocommerce_pos_sales`, and the target must hold `access_woocommerce_pos`. To the pushing user: always allowed, no capability checked (`:819-824`) | **Silently not applied**: no error and no note for a refused cashier change | `free:includes/API/V2/Writers/Order_Writer.php:816-850` |
 | — the store reassignment inside a v2 order push | | filter `wcpos_order_store_reassignment_allowed`; Pro requires an authorized store | Silently skipped | `free:includes/API/V2/Writers/Order_Writer.php:643,689`; `pro:includes/Orders.php:30,49-64` |
 | v1 orders update and delete | PUT, DELETE | `Permission_Rules::verdict`, v1 lane | WooCommerce's errors | `free:includes/API/V1/Orders_Controller.php:171-181` |
 | v2 and v1 `/orders/{id}/email` | POST | `publish_shop_orders` (WooCommerce `shop_order` create) | `woocommerce_rest_cannot_create`. No ownership check. | `free:includes/API/V2/Order_Email_Controller.php:27`; `free:includes/API/V1/Orders_Controller.php:284,668-674` |
@@ -439,7 +439,7 @@ All rows **Observed**, except the route chains, which are **Inferred** where mar
 | Reopen a sale | `orders/use-reopen-order.ts`, `orders/edit/view.tsx:149` | orders push | Pro | none beyond WC order edit + ownership |
 | Refund | `orders/edit/view.tsx:170` → `orders/refund/use-refund-mutation.ts:127` | REST `POST orders/{id}/refunds` | Pro; no capability | WC refunds controller (Unverified) |
 | Park, or multiple open carts | `pos/cart/tabs.tsx:425` | orders push (`pos-open`) | none | none beyond WC |
-| Reassign cashier or store, from the **POS cart** | `pos/cart/buttons/edit-order-meta/form.tsx:483-503` | orders push | **none** | `reassign_woocommerce_pos_sales`; a refusal is silently dropped (`Order_Writer.php:816-850`) |
+| Reassign cashier or store, from the **POS cart** | `pos/cart/buttons/edit-order-meta/form.tsx:483-503` | orders push | **none** | cashier: `reassign_woocommerce_pos_sales`, except to oneself; store: only the filter `wcpos_order_store_reassignment_allowed` (Pro: an authorized store), no capability. A refusal is silently dropped (`Order_Writer.php:642-645,816-850`) |
 | Reassign cashier or store, from **Orders › Edit** | `orders/edit/form.tsx:564-607` | orders push | `canReassignSales` | same |
 | Change order status | POS `edit-order-meta/form.tsx:466-475`; Orders `orders/edit/form.tsx:547` | orders push | allowed-status list only | none beyond WC |
 | Change the cart's customer | `pos/cart/cart-header.tsx:136` | orders push | none | none beyond WC |

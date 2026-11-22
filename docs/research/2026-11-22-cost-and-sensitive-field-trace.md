@@ -19,7 +19,7 @@
   - **Unverified**: I could not check it.
 - No store was run.
 
-**Precondition for everything below.** WooCommerce adds cost fields only when its `cost_of_goods_sold` feature is enabled (`wc:src/Internal/CostOfGoodsSold/CostOfGoodsSoldController.php:44-46`, `CogsAwareTrait.php:20-23`). With the feature off, no response carries cost. Observed.
+**Precondition for everything below.** WooCommerce adds cost fields only when its `cost_of_goods_sold` feature is enabled (`wc:src/Internal/CostOfGoodsSold/CostOfGoodsSoldController.php:44-46`, `CogsAwareTrait.php:20-23`). With the feature off, no response carries WooCommerce's own cost fields. Observed. Stored `_cogs_value` item rows and third-party cost meta may still ride in `meta_data` (§2.1, §7). Inferred.
 
 ---
 
@@ -295,7 +295,7 @@ From a read-only helper trace. The headline claims were spot-checked: customers 
 - **Margin columns disappear.** They show only when some line carries cost (`app:.../reports/report/sales-figures.ts:133-141`), so a till that never receives cost shows no Cost, Profit or Margin columns. Observed.
 - **The Products table cost cell would read 0.** It reads `values[0].defined_value`, defaulting to 0 (`app:.../products/cells/cogs.tsx:28`). Committing an edit from that state would write the typed value. Observed.
 - **Revisions and digests hash cost on the server.** Order CAS revisions are built from WooCommerce's schema, cost included, and the product revision signal includes cost (§2.3). The server compares the client's *claimed* revision string, not a revision the client computes. Whether a per-role response that drops the field would still match is a design question this note does not answer. Observed for the hashing; the consequence is not evaluated.
-- **The order write path never reads cost.** Withholding it from a cashier's payloads changes nothing the server stores (§5). Observed.
+- **The order write path overwrites any posted cost on a line whose product resolves.** For those lines, withholding it from a cashier's payloads changes nothing the server stores (§5). Observed. The exception is a line with no resolvable product (a misc line, a deleted product), where a posted line cost would persist, so withholding it there does change what is stored (§5.1). Inferred.
 
 ## Could not determine
 

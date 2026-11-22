@@ -263,7 +263,7 @@ All of this is **Observed** on [permissions](https://doc.toasttab.com/doc/platfo
 5. **When permissions change.**
    - Employee and job changes "do not require publishing… they are published immediately" ([publishing](https://doc.toasttab.com/doc/platformguide/platformChangesThatRequirePublishing.html)).
    - Yet "Permission changes made in Toast Web may not immediately reflect on the POS device"; the fix is Resync Data or a restart ([troubleshooting](https://support.toasttab.com/en/article/Troubleshooting-Permissions)).
-   - **Offline, nobody can sign in.** "You will not be able to log back in until the connection is restored." Resync is disabled to prevent "the erasure of stored information" ([offline](https://doc.toasttab.com/doc/platformguide/platformOfflineMode.html)).
+   - **Offline, nobody can log the device's POS app back in.** "Do not log in or log out of the Toast POS app… You will not be able to log back in until the connection is restored." Employees can still clock in and take orders on a device that stays signed in ([offline employees](https://doc.toasttab.com/doc/platformguide/adminOfflineEmployees.html)). Resync is disabled to prevent "the erasure of stored information" ([offline](https://doc.toasttab.com/doc/platformguide/platformOfflineMode.html)).
    - What happens to a queued action: not documented.
 6. **Own sales only.**
    - **Yes.** Without View Other Employees' Orders, staff see only their own checks; with it they "review all open, paid, and closed orders, not just their own".
@@ -423,7 +423,7 @@ The base for every source link below is `https://github.com/odoo/odoo/blob/465ae
   - Square modes: after the next transaction.
   - Odoo: next reload (Inferred).
   - **Choose:** state the latency the till guarantees, and give a "refresh permissions" action. Two vendors (Toast, Shopify) document that action as the fix.
-- **Offline sign-in.** Toast refuses to sign anyone in while offline ("You will not be able to log back in until the connection is restored"), and Oliver's PIN check is "online-only". Loyverse, Square and Lightspeed X keep selling offline without saying how they authorise. This is the real trade-off: an offline till either trusts its last-known permissions or stops letting people in.
+- **Offline sign-in.** Toast refuses to log the device's POS app back in while offline ("You will not be able to log back in until the connection is restored"), though employees still clock in and take orders on a device that stays signed in; and Oliver's PIN check is "online-only". Loyverse, Square and Lightspeed X keep selling offline without saying how they authorise. This is the real trade-off: an offline till either trusts its last-known permissions or stops letting people in.
 - **Where enforcement lives.**
   - Jovvie labels each permission as server-enforced or button-only, in the admin UI itself.
   - FooSales enforces refunds on the server.
@@ -452,7 +452,7 @@ WCPOS's ruled shape matches the convergence: per-role WordPress capabilities, gr
 - **Hidden data.** No vendor says whether withheld data leaves the device. The only systems whose source can be read ship it and hide it on screen. A WCPOS till that replicates products and orders locally would repeat that by default. "Completely hidden, even in the response" therefore has to be a store-side query or field scope, the shape of Lightspeed X's `products:read:costs`, rather than an app gate. It also has to come with a defined purge of rows or fields already replicated when the capability is revoked.
 - **Permission changes.** Nobody documents what happens to queued actions or cached data. WCPOS has to choose and state all three:
   - how fast a till picks up a new set of effective capabilities;
-  - whether an offline till trusts its last-known set (Loyverse and Square in practice) or refuses sign-in (Toast, Oliver);
+  - whether an offline till trusts its last-known set (Loyverse and Square in practice) or refuses sign-in (Oliver; Toast only for the device's own app login);
   - what happens to a queued mutation whose capability was revoked before it synced. The store should judge it against the capability at sync time and never silently drop it (Loyverse's no-sign-out-with-unsynced rule is the precedent).
 
 Labelling each Access-matrix row as "enforced by the store" or "the app only", as Jovvie does, answers the merchant-facing half of the API-versus-app question. (Inferred throughout.)

@@ -27,7 +27,7 @@ Each conclusion carries one of three labels:
 1. **A device keeps every cashier's access and refresh token in plain text, in the same User DB, on every platform.** No secure store, keychain or encryption is used. The server keeps only a session row per refresh `jti` and cannot see whether a device still holds the token (§1.4, §1.5). **Observed** (storage); **Inferred** (what the server cannot see).
 2. **Nothing stands between a person at the till and another stored cashier's valid token.** On the connect screen it is select a tile, then "Open POS". In the user sheet it is "Hand the till to {name}", then one confirm dialog. No password, PIN or biometric (§2). **Observed.**
 3. **There is no idle, lock or timeout of any kind in the app.** The only "idle" notions slow sync down. Activity and visibility signals exist (`user-activity`, `host-visibility`, `requestStateManager.onWake`, RN `AppState`, Electron `powerMonitor`), but none of them locks or signs anyone out (§5). **Observed.**
-4. **Native and desktop boot and switch offline with any stored token; sign-in and refresh need the network.** The web embedded POS cannot boot offline (§6). **Observed / Inferred.**
+4. **Native and desktop boot offline with any stored token; sign-in and refresh need the network.** A switch offline is narrower: the connect screen cannot enter offline, and the user sheet's "Hand the till to" is not disabled offline but reaches only a stored cashier with a store matching the current one (otherwise it drops to `/connect`); that it completes fully offline is not verified. The web embedded POS cannot boot offline (§3.1, §6). **Observed / Inferred.**
 5. **On embedded web, a reload always returns the till to the WordPress cookie user**, minting a fresh access token from that cookie session (§7). **Observed** (re-point); **Inferred** (consequence).
 6. **The only credential check after sign-in is manager approval by WordPress username and password** (close-time variance approval and closure recount), done inline with `wp_authenticate()`, with no rate limit and no token issued. The app login uses a separate private `wp_check_password` path that has rate limiting and lockout. No PIN or passcode code exists (§8). **Observed.**
 
@@ -72,7 +72,7 @@ Each conclusion carries one of three labels:
 - **After the latch.** Requests fail preflight with `AUTH_REQUIRED`; the fallback handler opens OAuth for an invalid refresh token, or shows "Please log in to continue" with a Login action. The session-hold banner shows while `writeSessionHeld || authRequired` and clears itself if the credential's `access_token` changes underneath it. **Observed** ([app] `use-http-client/request-state-manager.ts:285-291`; `screens/main/hooks/use-rest-http-client/auth-error-handler.ts:148-184`; `screens/main/components/session-hold-banner/index.tsx:48,63-95`). `authFailed` is in-memory, so a reload retries with the stored tokens. **Inferred** (`request-state-manager.ts:146-148`).
 - **Server revocation triggers:** `wp_logout` (revokes the session named by this browser's cookie only), password reset or change (revokes all, with blacklist). No revoke on role, capability or deletion. **Observed** ([free] `Auth.php:72-108,796-815,1116-1131`; `includes/Init.php:306-308`; [till §2.1]).
 - **Revocation is immediate for access tokens.** Access validation rejects a blacklisted `jti`/`refresh_jti` and also rejects when the session row is not live, so removing a row kills its outstanding access tokens. **Observed** ([free] `Auth.php:297-335`).
-- **The app never revokes a session on logout.** **Observed (absence)** (no `auth/sessions` call in [app]).
+- **The app itself never revokes a session on logout.** **Observed (absence)** (no `auth/sessions` call in [app]). On embedded web, though, logout sends the browser to the WordPress logout URL, and `wp_logout` then revokes that browser's cookie-named POS session (§7).
 
 ### 1.4 Where tokens are stored on each device
 
@@ -113,7 +113,7 @@ Each conclusion carries one of three labels:
   | Both expired | validation fails: "Sign in again" + "Re-authenticate", Open POS disabled; the login window opens only on "Re-authenticate" | Inferred (`use-user-validation.ts:339-373`; `store-select.tsx:152`) |
   | Offline | validation fails, Open POS disabled on this screen | Inferred (`use-user-validation.ts:356-372`) |
 
-- **Logging out keeps both tokens on the device.** Logout nulls the `current` session pointer only. **Observed** ([app] `user-db/state.ts:36-38`; `contexts/app-state/store-session.ts:101-104`).
+- **Logging out keeps both tokens on the device.** On native and standalone web, logout nulls the `current` session pointer only. **Observed** ([app] `user-db/state.ts:36-38`; `contexts/app-state/store-session.ts:101-104`). On embedded web it keeps the pointer, clears the till stamp and goes to the WordPress logout URL, which revokes that browser's POS session on the server (§7). **Observed** ([app] `contexts/app-state/index.tsx:170-184`).
 - **Nothing stands between a person at the till and another cashier's valid token**, on either the connect screen or the user sheet (§3.1). No password, confirm-as-that-person, PIN or biometric exists. **Observed** (absence in both paths; [app] `screens/main/pos/cart/switch-confirm.tsx:135-172,284-294`; `user-sheet.tsx:534-560`).
 
 ---
