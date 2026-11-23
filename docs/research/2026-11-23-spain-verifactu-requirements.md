@@ -55,7 +55,7 @@ AEAT summarises scope as the "regla de los 4 «NO»". The RRSIF applies to a bus
 - **Retail tickets are in.** "Las facturas simplificadas están sometidas al RRSIF". A day-end summary invoice does not replace the per-ticket records. **Observed** (FAQ *ámbitos*, "Una tienda emite facturas simplificadas…").
 - **Online shops are in.** "la forma convencional o virtual … es indiferente". **Observed** (FAQ *ámbitos*, "¿Están afectadas las tiendas online?").
 - **Special VAT regimes.** Businesses under the equivalence surcharge, simplified or agricultural regimes are generally not obliged to issue invoices. They fall in scope only when they do issue invoices or simplified invoices through an invoicing system. Pharmacies on direct estimation are in. **Observed.**
-- **Simplified invoice ceilings.** €400, or €3,000 for retail and the other activities listed in ROF art. 4.2. AEAT rejects an F2 record whose base plus VAT exceeds €3,000 (+€10 tolerance) (validations §15.8). **Observed.**
+- **Simplified invoice ceilings.** €400, or €3,000 for retail and the other activities listed in ROF art. 4.2. AEAT rejects an F2 record whose base plus VAT exceeds €3,000 (+€10 tolerance), except when the record carries a billing-agreement number (`NumRegistroAcuerdoFacturacion`) or `FacturaSinIdentifDestinatarioArt61d = S` (validations §15.8). **Observed.**
 
 ### 2.2 How the software would know
 
@@ -351,7 +351,7 @@ Whether a producer with no Spanish establishment can sign Convenio 17 is not sta
 
 ### 9.7 Correction and resubmission
 
-- Rejected records must be corrected and sent again (`Subsanacion = S`, `RechazoPrevio = X` when AEAT never stored the original).
+- A record rejected for an error in the record only is corrected and sent again as an alta de subsanación (`Subsanacion = S`, `RechazoPrevio = X` when AEAT never stored the original). Where the issued invoice itself carries an ROF-defined error, §8's decision tree calls for a factura rectificativa instead; whether the rejected original must also be resent first is not stated in the texts read (Unverified).
 - An annulment of a record AEAT does not hold uses `SinRegistroPrevio = S`.
 - Records that already exist in a no-VERI\*FACTU system and are sent after switching to VERI\*FACTU use `RechazoPrevio = X` (list L17).
 

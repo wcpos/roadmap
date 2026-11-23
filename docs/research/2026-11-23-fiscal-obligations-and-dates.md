@@ -37,7 +37,7 @@ Labels:
 - **[Primary]** Technical duties come from RD 1007/2023 and Orden HAC/1177/2024 (https://www.boe.es/buscar/act.php?id=BOE-A-2024-22138):
   - chained hash of the billing records;
   - QR code on the invoice;
-  - an event log;
+  - an event log, in the non-submitting mode only (Orden art. 3 lifts art. 9, the event log, from a system while it runs as VERI\*FACTU);
   - either the "VERI\*FACTU" mode, which submits records to AEAT in real time, or a non-submitting mode with signed records.
 - **[Primary]** Producers had to offer fully adapted products within 9 months of the Order entering into force, which the AEAT FAQ gives as **29 Jul 2025**. Source: https://sede.agenciatributaria.gob.es/Sede/iva/sistemas-informaticos-facturacion-verifactu/preguntas-frecuentes/cuestiones-generales-ambitos-aplicacion.html (updated 21 Oct 2026).
 - **[Inferred]** Since 29 Jul 2025, producing or selling non-compliant software exposes the producer to the art. 201 bis LGT penalty. **[Memory]** That penalty is €150,000 per financial year per type of system; the amount was not re-checked.
@@ -132,7 +132,7 @@ Labels:
 
 | Regime | Applies to POS receipts? | What the vendor must do | Hard date | Met by integrating a certified third-party service? |
 |---|---|---|---|---|
-| Spain Veri\*factu | Yes (simplified invoices) | Self-declaration, hash chain, QR, event log, optional real-time submission | Producer: 29 Jul 2025. Users: 1 Jan / 1 Jul 2027. Oct 2028 announced, not enacted | Partly. The vendor still declares its own system; each component is declared by its maker |
+| Spain Veri\*factu | Yes (simplified invoices) | Self-declaration, hash chain, QR, event log (non-submitting mode only), optional real-time submission | Producer: 29 Jul 2025. Users: 1 Jan / 1 Jul 2027. Oct 2028 announced, not enacted | Partly. The vendor still declares its own system; each component is declared by its maker |
 | Spain TicketBAI | Yes | Foral software registration, signature, submission | In force | Unverified |
 | France | Yes (B2C) | Publisher attestation or accredited certificate | In force; no upcoming deadline | The attestation is the vendor's own; no third party is needed |
 | Germany | Yes | Certified TSE, DSFinV-K, receipts. Merchant reports through ELSTER | In force. Cash-register duty from 2028 is a draft | Yes, a certified cloud TSE |

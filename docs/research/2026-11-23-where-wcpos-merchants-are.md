@@ -45,35 +45,35 @@ All read on **2026-11-23**.
 
 **Combined share [Inferred]** = the plain mean of a country's share in S3 (active Pro licences), S4 (stores with orders, Free and Pro) and S5 (active app installs). The three are independent and biased differently (billing address vs store setting vs till IP; paying vs opted-in vs erroring), so no one of them is weighted above the others. The first 15 countries below hold 72% of the combined figure; the 54 further countries the three sources list are each at 1.7% or less, and a tail of countries with one or two merchants each is not listed by the sources at all.
 
-**Free installs ≈ [Inferred]** = 5,000 (the WordPress.org floor) × the country's share of Free stores with orders in S4. It is a floor and inherits S4's small sample.
+**Free installs ≈ [Inferred]** = 5,000 (the WordPress.org floor) × the country's share of Free stores with orders in S4. It is a rough estimate, not a floor: 5,000 bounds the total from below, but opted-in stores may be spread across countries differently from the rest, so no country's figure is a minimum. It also inherits S4's small sample.
 
 | Rank | Country | Combined | S3 active Pro licences (n=612) | S2 Pro buyers, 24 mo (n=909) | S4 stores with orders (n=593) | S4 Free only (n=427) | S5 app installs (n=1,519) | Free installs ≈ |
 |---|---|---|---|---|---|---|---|---|
-| 1 | United States | 14.6% | 17.8% | 18.6% | 11.5% | 8.4% | 14.6% | ≥420 |
-| 2 | Spain | 10.0% | 11.1% | 10.1% | 7.9% | 7.5% | 11.0% | ≥380 |
-| 3 | Netherlands | 7.0% | 8.3% | 6.9% | 4.6% | 4.0% | 8.1% | ≥200 |
-| 4 | Australia | 4.6% | 5.1% | 5.1% | 3.0% | 1.4% | 5.8% | ≥70 |
-| 5 | United Kingdom | 4.4% | 6.0% | 6.1% | 3.9% | 3.5% | 3.3% | ≥180 |
-| 6 | Belgium | 3.8% | 4.9% | 4.1% | 3.5% | 2.6% | 3.0% | ≥130 |
-| 7 | France | 3.5% | 2.8% | 2.6% | 2.4% | 2.1% | 5.5% | ≥110 |
-| 8 | Mexico | 3.1% | 1.6% | 2.4% | 5.7% | 7.7% | 1.8% | ≥390 |
-| 9 | India | 2.7% | 0.5% | 0.3% | 4.0% | 5.4% | 3.6% | ≥270 |
-| 10 | Nigeria | 2.6% | 0.8% | 0.7% | 3.0% | 2.8% | 4.0% | ≥140 |
-| 11 | South Africa | 2.6% | 2.6% | 2.9% | 3.2% | 3.3% | 1.9% | ≥160 |
-| 12 | Chile | 2.5% | 1.0% | 1.0% | 3.4% | 4.0% | 3.3% | ≥200 |
-| 13 | Switzerland | 2.4% | 2.9% | 2.6% | 2.2% | 1.6% | 2.0% | ≥80 |
-| 14 | Canada | 2.2% | 3.6% | 4.5% | 1.0% | 0.5% | 2.1% | ≥20 |
-| 15 | Argentina | 1.8% | 1.5% | 1.5% | 2.4% | 3.0% | 1.6% | ≥150 |
-| 16 | Pakistan | 1.7% | 0.0% | 0.0% | 3.2% | 4.4% | 1.8% | ≥220 |
-| 17 | Germany | 1.2% | 1.5% | 2.3% | 1.3% | 1.4% | 0.8% | ≥70 |
-| 18 | Brazil | 1.1% | 0.8% | 1.3% | 1.2% | 1.4% | 1.4% | ≥70 |
-| 19 | Thailand | 1.1% | 0.8% | 0.6% | 1.5% | 1.6% | 0.9% | ≥80 |
-| 20 | Bangladesh | 1.0% | 0.0% | 0.0% | 2.5% | 3.5% | 0.6% | ≥180 |
-| 21 | Denmark | 1.0% | 1.5% | 1.7% | 1.2% | 0.5% | 0.4% | ≥20 |
-| 22 | Estonia | 1.0% | 1.1% | 0.8% | 0.5% | 0.5% | 1.3% | ≥20 |
-| 23 | Greece | 0.9% | 0.0% | 0.1% | 0.7% | 0.2% | 2.1% | ≥10 |
-| 24 | Italy | 0.9% | 0.8% | 0.9% | 1.2% | 1.6% | 0.7% | ≥80 |
-| 25 | New Zealand | 0.8% | 1.1% | 0.8% | 0.8% | 0.7% | 0.3% | ≥40 |
+| 1 | United States | 14.6% | 17.8% | 18.6% | 11.5% | 8.4% | 14.6% | ~420 |
+| 2 | Spain | 10.0% | 11.1% | 10.1% | 7.9% | 7.5% | 11.0% | ~380 |
+| 3 | Netherlands | 7.0% | 8.3% | 6.9% | 4.6% | 4.0% | 8.1% | ~200 |
+| 4 | Australia | 4.6% | 5.1% | 5.1% | 3.0% | 1.4% | 5.8% | ~70 |
+| 5 | United Kingdom | 4.4% | 6.0% | 6.1% | 3.9% | 3.5% | 3.3% | ~180 |
+| 6 | Belgium | 3.8% | 4.9% | 4.1% | 3.5% | 2.6% | 3.0% | ~130 |
+| 7 | France | 3.5% | 2.8% | 2.6% | 2.4% | 2.1% | 5.5% | ~110 |
+| 8 | Mexico | 3.1% | 1.6% | 2.4% | 5.7% | 7.7% | 1.8% | ~390 |
+| 9 | India | 2.7% | 0.5% | 0.3% | 4.0% | 5.4% | 3.6% | ~270 |
+| 10 | Nigeria | 2.6% | 0.8% | 0.7% | 3.0% | 2.8% | 4.0% | ~140 |
+| 11 | South Africa | 2.6% | 2.6% | 2.9% | 3.2% | 3.3% | 1.9% | ~160 |
+| 12 | Chile | 2.5% | 1.0% | 1.0% | 3.4% | 4.0% | 3.3% | ~200 |
+| 13 | Switzerland | 2.4% | 2.9% | 2.6% | 2.2% | 1.6% | 2.0% | ~80 |
+| 14 | Canada | 2.2% | 3.6% | 4.5% | 1.0% | 0.5% | 2.1% | ~20 |
+| 15 | Argentina | 1.8% | 1.5% | 1.5% | 2.4% | 3.0% | 1.6% | ~150 |
+| 16 | Pakistan | 1.7% | 0.0% | 0.0% | 3.2% | 4.4% | 1.8% | ~220 |
+| 17 | Germany | 1.2% | 1.5% | 2.3% | 1.3% | 1.4% | 0.8% | ~70 |
+| 18 | Brazil | 1.1% | 0.8% | 1.3% | 1.2% | 1.4% | 1.4% | ~70 |
+| 19 | Thailand | 1.1% | 0.8% | 0.6% | 1.5% | 1.6% | 0.9% | ~80 |
+| 20 | Bangladesh | 1.0% | 0.0% | 0.0% | 2.5% | 3.5% | 0.6% | ~180 |
+| 21 | Denmark | 1.0% | 1.5% | 1.7% | 1.2% | 0.5% | 0.4% | ~20 |
+| 22 | Estonia | 1.0% | 1.1% | 0.8% | 0.5% | 0.5% | 1.3% | ~20 |
+| 23 | Greece | 0.9% | 0.0% | 0.1% | 0.7% | 0.2% | 2.1% | ~10 |
+| 24 | Italy | 0.9% | 0.8% | 0.9% | 1.2% | 1.6% | 0.7% | ~80 |
+| 25 | New Zealand | 0.8% | 1.1% | 0.8% | 0.8% | 0.7% | 0.3% | ~40 |
 
 All percentages in the table are [Inferred] from [Observed] counts. Further observations:
 
@@ -124,17 +124,21 @@ Computed over the countries each source lists; the rest is the long tail of coun
 | Certified device or signing service | 3.4% | 4.2% | 3.0% |
 | Not mapped, plus the unlisted tail | 8.2% | 4.6% | 16.4% |
 
+Fiscal hardware and real-time reporting are upper bounds for the merchants those regimes bind: they count all of Belgium, whose regime binds hospitality only, and all of Pakistan, whose regime binds Tier-1 retailers only. No source shows what fraction of either country's merchants is in scope.
+
 ### Share of merchants under each named regime [Inferred]
+
+A ≤ marks a country share that bounds a sector-limited regime from above; the share the regime actually binds is unknown.
 
 | Named regime | Kind | Combined | Active Pro (S3) | Free with orders (S4) |
 |---|---|---|---|---|
 | ES Veri\*factu (incl. TicketBAI) | Self-declared chain | 10.0% | 11.1% | 7.5% |
-| BE SCE 2.0 / FDM (hospitality only) | Fiscal hardware | 3.8% | 4.9% | 2.6% |
+| BE SCE 2.0 / FDM (hospitality only) | Fiscal hardware | ≤3.8% | ≤4.9% | ≤2.6% |
 | FR art. 286 CGI | Self-declared chain | 3.5% | 2.8% | 2.1% |
 | MX CFDI | Clearance | 3.1% | 1.6% | 7.7% |
 | CL boleta electrónica | Clearance | 2.5% | 1.0% | 4.0% |
 | AR factura electrónica | Clearance | 1.8% | 1.5% | 3.0% |
-| PK FBR POS integration | Real-time | 1.7% | 0.0% | 4.4% |
+| PK FBR POS integration (Tier-1 retailers only) | Real-time | ≤1.7% | 0.0% | ≤4.4% |
 | DE KassenSichV TSE | Certified device / service | 1.2% | 1.5% | 1.4% |
 | BR NFC-e | Clearance | 1.1% | 0.8% | 1.4% |
 | TH RD POS approval | Certified device | 1.1% | 0.8% | 1.6% |
