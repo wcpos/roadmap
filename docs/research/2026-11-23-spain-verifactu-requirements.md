@@ -351,7 +351,7 @@ Whether a producer with no Spanish establishment can sign Convenio 17 is not sta
 
 ### 9.7 Correction and resubmission
 
-- A record rejected for an error in the record only is corrected and sent again as an alta de subsanación (`Subsanacion = S`, `RechazoPrevio = X` when AEAT never stored the original). Where the issued invoice itself carries an ROF-defined error, §8's decision tree calls for a factura rectificativa instead; whether the rejected original must also be resent first is not stated in the texts read (Unverified).
+- A record rejected for an error in the record only is corrected and sent again as an alta de subsanación (`Subsanacion = S`, `RechazoPrevio = X` when AEAT never stored the original). Where the issued invoice itself carries an ROF-defined error, §8's decision tree calls for a factura rectificativa instead. Nothing more is done with the rejected original or its record: the error counts as resolved once AEAT receives the rectificativa's record, which names the invoice it rectifies (developer FAQ no. 17, clarification on case 2.a).
 - An annulment of a record AEAT does not hold uses `SinRegistroPrevio = S`.
 - Records that already exist in a no-VERI\*FACTU system and are sent after switching to VERI\*FACTU use `RechazoPrevio = X` (list L17).
 
