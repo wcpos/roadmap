@@ -416,9 +416,9 @@ Proposed landing tickets. None is created by this file. Size classes are against
 
 | # | Landing ticket | Repos | Delivers | Depends on | Size |
 |---|---|---|---|---|---|
-| 1 | Chaining engine | app, Free | §4: chain format, `fr-1` and AEAT hash, shared test vectors, till-side chain state, PHP verifier; the replaceable protector interface and a closure record type a till chain may hold (§20) | #625 to #627 merged | L |
+| 1 | Chaining engine | app, Free | §4: chain format, `fr-1` and AEAT hash, shared test vectors, till-side chain state, PHP verifier; the replaceable protector interface and a closure record type a till chain may hold (§20) | none: ships dark and touches neither the order writer nor the paid-sale path | L |
 | 2 | Till codes and series | app, Free | §5: codes, gapless till series, store series, chain end on wipe; a legal-number field apart from the till counter (§20) | 1 | M |
-| 3 | Store receipt, verification and health | app, Free | §6: in-order acceptance, refusal and quarantine, health walk, start-up check, unsent count, restore detection; the record status local, sent, accepted, rejected (§20) | 1, 2 | L |
+| 3 | Store receipt, verification and health | app, Free | §6: in-order acceptance, refusal and quarantine, health walk, start-up check, unsent count, restore detection; the record status local, sent, accepted, rejected (§20) | 1, 2; #625 to #627 merged | L |
 | 16 | Completion that can wait | app, Free | §20 seam 1: the paid-sale path can wait for an outside answer with a defined result when none comes; unused by France and Spain; tested with a stand-in; uses slice 3's record status | 3 | M |
 | 4 | After-issue records | app, Free | §7 French column: cancel-and-reissue, completed void, change records, delete refusal, WP Admin correcting records | 3 | L |
 | 5 | Fiscal closures and running total | Free | §8: daily, monthly, annual closures, wait, chain heads, `adjustments`, `approval`, store-derived breakdowns | 3 | M–L |
