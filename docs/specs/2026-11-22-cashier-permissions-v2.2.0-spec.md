@@ -1,6 +1,6 @@
 # Control what each cashier can do: the v2.2.0 contract
 
-Date: 2026-11-22. Lane: `main` (2.0) in every repo. Owner: Paul. Status: **decided, not built**. Release: [v2.2.0](https://github.com/wcpos/roadmap/issues/452). Map: [wcpos/roadmap#599](https://github.com/wcpos/roadmap/issues/599), every ticket closed.
+Date: 2026-11-22. Lane: `next` in Free, Pro and the app (Paul, 2026-11-23: *"All work on permissions and fiscal compliance should be done on the next branch"*); `next` was re-cut from `main` that day. Docs for this repo stay on `main`. Owner: Paul. Status: **decided, not built**. Release: [v2.2.0](https://github.com/wcpos/roadmap/issues/452). Map: [wcpos/roadmap#599](https://github.com/wcpos/roadmap/issues/599), every ticket closed.
 
 This document is the build contract. It gathers what the map's sixteen tickets decided into one place; where a section is short, the linked ticket's resolution comment holds the detail and the reasons. It does not re-decide anything. If the two disagree, the ticket's resolution is the ruling and this file has a defect.
 
