@@ -48,12 +48,12 @@ Three tickets are Paul's and are not for the mini: #646 and #659 (written answer
 - **Scope is France and Spain** outside the Basque Country and Navarre. Spec §18 lists what is out. Seam 1 (Fiscal 16) is built and used by no country.
 - **Where a ruling met Spanish law, the spec follows the law** and says so in that section (separate chains for events and closures, the QR's place, corrective invoices). Build the spec's text.
 - **Secrets:** a merchant's certificate and its private key never appear in a repo, a ticket, a PR, a log or a test fixture. Tests use generated throwaway certificates.
-- **PR laws as for permissions:** worktrees, 600 added production lines per PR, no stacked PRs, no new env vars, no `--no-verify`, one suite at a time with `--maxWorkers=2`, review loop ends at round 5, failing test first. Green, walked two-way PRs merge under standing authority; one-way PRs wait for Paul.
+- **PR laws as for permissions:** worktrees, 600 added production lines per PR, no stacked PRs, no new env vars, no `--no-verify`, one suite at a time with `--maxWorkers=2`, review loop ends at round 5, failing test first. Green two-way PRs with every review thread read and answered merge under standing authority, and the live walk on dev-next follows the merge and deploy, as the permissions handoff's "Order of proof" line sets out; one-way PRs wait for Paul.
 - **Claims and reporting as for permissions:** `claimed:mini` plus assignee; one comment per ticket touched with what was walked and the four headings, then `Safe to exit`. Questions for Paul go on the Mac mini board (#561), one per night, with options and a recommendation. A defect not fixed goes under Dangling, never Found.
 
 ## What is not decided
 
-- **The attestation and declaration (#657).** Nothing in the build waits on it except Fiscal 10.
+- **The attestation and declaration (#657).** No landing ticket waits on it. It waits on #646 and #659; Fiscal 10 (#679) waits on #659 directly.
 - **France itself.** From 1 January 2027 the French rule moves to the CIBS and its wording names only a certificate. If the French professional (#659) says the publisher's attestation no longer counts, the destination for France is redrawn. Only Fiscal 10 is France-only; everything else is shared or Spanish and is unaffected.
 - **Proof of submission.** Without the certificate from #668, Fiscal 13 can only be proven against recorded responses, and its PR must say so.
 
