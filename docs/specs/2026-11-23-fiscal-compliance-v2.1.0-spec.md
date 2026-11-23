@@ -1,12 +1,12 @@
 # Fiscal compliance for France and Spain: the v2.1.0 contract
 
-Date: 2026-11-23. Lane: `next` in Free, Pro and the app (Paul, 2026-11-23: *"All work on permissions and fiscal compliance should be done on the next branch"*). Docs for this repo stay on `main`. Owner: Paul. Status: **decided except the attestation and declaration, which wait on [#646](https://github.com/wcpos/roadmap/issues/646) and [#659](https://github.com/wcpos/roadmap/issues/659)**. Release: [v2.1.0](https://github.com/wcpos/roadmap/issues/225). Map: [wcpos/roadmap#640](https://github.com/wcpos/roadmap/issues/640).
+Date: 2026-11-23. Lane: `next` in Free, Pro and the app (Paul, 2026-11-23: *"All work on permissions and fiscal compliance should be done on the next branch"*). Docs for this repo stay on `main`. Owner: Paul. Status: **decided except the attestation and declaration ([#657](https://github.com/wcpos/roadmap/issues/657)), which wait on [#646](https://github.com/wcpos/roadmap/issues/646) and [#659](https://github.com/wcpos/roadmap/issues/659)**. Release: [v2.1.0](https://github.com/wcpos/roadmap/issues/225). Map: [wcpos/roadmap#640](https://github.com/wcpos/roadmap/issues/640).
 
 This document is the build contract. It gathers what the map's tickets decided into one place. It does not re-decide anything. Where a section is short, the linked ticket's resolution comment holds the detail and the reasons. If the two disagree, the ticket is the ruling and this file has a defect.
 
-Where a ticket left a choice to "the spec", this file makes the smallest sensible choice and marks it **`assumed:`** so each one can be seen and overruled. Conclusions drawn by reading are marked **Inferred**. Nothing in this file is legal advice.
+Where a ticket left a choice to "the spec", this file made the smallest sensible choice. Paul ruled on the product choices among them on 2026-11-23 ([#640](https://github.com/wcpos/roadmap/issues/640#issuecomment-7104344981)): *"as you recommend"*; those are written as rulings. The constants and formats that remain are marked **`assumed:`** so each one can be seen and overruled. Conclusions drawn by reading are marked **Inferred**. Nothing in this file is legal advice.
 
-Evidence is in seven research files, all dated 2026-11-23:
+Evidence is in seven research files, all dated 2026-11-23 and on `main` since [#664](https://github.com/wcpos/roadmap/pull/664), with that PR's review corrections:
 
 - [`fiscal-ground-truth`](../research/2026-11-23-fiscal-ground-truth.md): what is built on `main` and what was already ruled ("ground truth").
 - [`fiscal-obligations-and-dates`](../research/2026-11-23-fiscal-obligations-and-dates.md): the law and dates in each country ("dates research").
@@ -135,7 +135,7 @@ Where tickets disagree, the later ruling wins. Each case:
 - The store is restored from a backup: tills report heads the store no longer has; the anomaly is recorded and shown in WP Admin.
 
 **For the spec.**
-- `assumed:` a refused record is still kept, exactly as received, in a quarantine list on the store, so the store remains the durable copy of every issued document. In VERI\*FACTU mode it is still sent to AEAT as generated, because no record may be left unsent (Spain research §3.3); AEAT's answer is recorded.
+- **Ruled** (Paul, 2026-11-23, [#640](https://github.com/wcpos/roadmap/issues/640#issuecomment-7104344981)): a refused record is still kept, exactly as received, in a quarantine list on the store, so the store remains the durable copy of every issued document. In VERI\*FACTU mode it is still sent to AEAT as generated, because no record may be left unsent (Spain research §3.3); AEAT's answer is recorded.
 - `assumed:` restore detection works in two directions. Each till sends, with every sync, the last head the store acknowledged for each of its chains. Each sync response carries the store's own chain heads, and the till keeps the latest. A store asked about a head it does not hold has been rolled back.
 
 ## 7. Slice 4: what may be done after issue ([#650](https://github.com/wcpos/roadmap/issues/650))
@@ -146,7 +146,7 @@ Paul, shown the table against a stricter alternative: *"as you recommend"*. The 
 |---|---|---|---|---|
 | Refund, full or part | Allowed. A new refund record. | `refund`, till R series | **R5, by difference** (`TipoRectificativa = I`), negative amounts, `FacturasRectificadas` = the original (§4, §8) | Refund |
 | Void a completed sale | Allowed. Recorded as a cancellation of the original. | `cancellation`, till R series | **R5 by difference for the full amount.** Annulment is only for an invoice that should never have existed, "un concepto fáctico, no jurídico" (§5, §8) | Change an order's status (Inferred: v2.2.0's Void is for open sales) |
-| Reopen and edit a completed sale | Allowed, as cancel-and-reissue: the original is cancelled by one record and the edited sale is a new one with a new number. | `cancellation` of the original, then a new `sale` with `supersedes` (exists) | **R5 by substitution** (`TipoRectificativa = S`, with `ImporteRectificacion`), one record in the R series carrying the corrected sale (§4, §8) | Reopen or edit |
+| Reopen and edit a completed sale | Allowed, as cancel-and-reissue: the original is cancelled by one record and the edited sale is a new one with a new number. | `cancellation` of the original, then a new `sale` with `supersedes` (exists) | **R5 by substitution** (`TipoRectificativa = S`, with `ImporteRectificacion`), one record in the R series carrying the corrected sale, only when an amount, the tax or the customer's identity changed; otherwise nothing (§4, §8; see below) | Reopen or edit |
 | Cancel an open, unpaid sale | As today. Nothing was issued. | none | none | Void an open sale |
 | Change status of a completed sale | Free where no money moves; to Cancelled or Refunded it follows the void or refund row. | none, or as those rows | none, or as those rows | Change an order's status |
 | Reassign cashier | Allowed with the permission. Writes a change record; the original stays as issued. | `reattribution` on the store's chain (exists) | none to AEAT: the record holds no cashier (§4) | Reassign |
@@ -160,15 +160,15 @@ Paul, shown the table against a stricter alternative: *"as you recommend"*. The 
 **Till holds:** the records it issues for these rows, in its chain. **Store holds:** the same once received, and the records it issues itself (WP Admin edits, reattributions, annulments) on its own chain.
 
 **Failure cases.**
-- A refund, void, reopen or status change is refused by the store for a permission: v2.2.0 refuses these outright, and "they reach the store when they are made" (permissions spec §6). `assumed:` the till chains the record for these rows only after the store has accepted the action, so a refused action never leaves an issued record. If the till then loses the record before sending it, the store issues the record itself on its own chain.
+- A refund, void, reopen or status change is refused by the store for a permission: v2.2.0 refuses these outright, and "they reach the store when they are made" (permissions spec §6). **Ruled** (Paul, 2026-11-23, [#640](https://github.com/wcpos/roadmap/issues/640#issuecomment-7104344981)): refunds, voids and reopens need the store to be reachable in fiscal mode; sales work offline. The till chains the record for these rows only after the store has accepted the action, so a refused action never leaves an issued record. If the till then loses the record before sending it, the store issues the record itself on its own chain.
 - A paid sale made without permission: v2.2.0 saves it and flags it. Its record was issued at the till and stands; the flag is not a fiscal record.
-- A Spanish sale over the simplified-invoice ceiling: AEAT rejects an F2 whose total passes €3,000 plus €10 (Spain research §2.1). `assumed:` above €3,000 the till asks for the customer's name and tax number before taking payment and issues an F1 instead of an F2. The €400 ceiling for activities outside ROF art. 4.2 is not checked: the store does not know its activity.
+- A Spanish sale over the simplified-invoice ceiling: AEAT rejects an F2 whose total passes €3,000 plus €10, unless the record carries a billing-agreement number or `FacturaSinIdentifDestinatarioArt61d = S` (Spain research §2.1). WCPOS uses neither, so the ceiling binds. **Ruled** (Paul, 2026-11-23, [#640](https://github.com/wcpos/roadmap/issues/640#issuecomment-7104344981)): above €3,000 the till asks for the customer's name and tax number before taking payment and issues an F1 instead of an F2. The €400 ceiling for activities outside ROF art. 4.2 is not checked: the store does not know its activity.
 
 **For the spec.**
 - **The Spanish column is for the usual case, a correction of a simplified invoice (F2).** R5 is the corrective type for simplified invoices only; a correction of a full invoice uses R1 to R4, by the reason the law gives (Spain research §4, §8). So a refund, a completed void or an edit of an F1 or F3 is an R1 to R4, by difference or by substitution exactly as the F2 rows say. `assumed:` the till and the store issue R1 for these; the code is checked against AEAT's list L2 when the slice is built, because the research does not quote the meaning of each of R1 to R4 (Inferred). An F3 that is itself wrong is corrected by a negative F3 and then a correct F3; a partial return after an F3 is an R5 against the F2, then an F3 that repeats the R5 (Spain research §8, developer FAQ no. 27).
-- `assumed:` an edit that changes nothing the AEAT record carries still issues the R5 by substitution in Spain, so there is one path. The groundwork already counts documents, not differences ("even at the same total, because the regimes count documents, not differences", ground truth §E).
+- **Ruled** (Paul, 2026-11-23, [#640](https://github.com/wcpos/roadmap/issues/640#issuecomment-7104344981)): in Spain, reopening and editing a sale issues a corrective invoice only when something the tax agency holds has changed: an amount, the tax, or the customer's identity. An edit that changes only something AEAT does not hold, such as a note, issues nothing to AEAT (Spain research §8, the decision tree's "neither an ROF error nor a record field" row). France keeps cancel-and-reissue on every reopen-and-edit, as #650 rules.
 - `assumed:` new record types `annulment` (Spain), `full_invoice` (Spain F1 and F3) and `approval` (ruled, not built; §8) join the existing constant. An F3 takes its number from the till's sales series.
-- `assumed:` in Spain a document issued in error (a test sale, or one that never reached the customer) is annulled from WP Admin by the store, which may annul another system's record (Spain research §5). The annulled number stays used.
+- **Ruled** (Paul, 2026-11-23, [#640](https://github.com/wcpos/roadmap/issues/640#issuecomment-7104344981)): in Spain a document issued in error (a test sale, or one that never reached the customer) is annulled from WP Admin by the store, which may annul another system's record (Spain research §5). The annulled number stays used.
 
 ## 8. Slice 5: fiscal closures and the running total ([#651](https://github.com/wcpos/roadmap/issues/651))
 
@@ -182,6 +182,8 @@ Paul, shown this against "the cashier must close the register every day": *"as y
 - A register left open across midnight blocks nothing; its session closure spans two fiscal days.
 - Fiscal closures are immutable and chained on the store's chain. The `adjustments` counter and the `approval` record that were ruled and not built are part of this slice. Breakdowns are derived by the store from records, never taken from the app (French gap 7).
 
+BOFiP §170's remark exempts billing software with a till function from the three closures; WCPOS is a till, not billing software, so the closures apply (French research C3, Inferred there).
+
 **What exists** (ground truth §B; French research C3–C5): numbered session closures per register with `perpetual_sales_total` and `perpetual_refunds_total`, late records carried by `carried_by_closure_id`, recount and CSV export. No monthly or annual closure; breakdowns come from the app; the perpetual totals restart if the sessions table is recreated; `perpetual_adjustments_total` is ruled and not built.
 
 **Till holds:** nothing new. **Store holds:** every fiscal closure and the running total.
@@ -194,7 +196,7 @@ Paul, shown this against "the cashier must close the register every day": *"as y
 **For the spec.**
 - `assumed:` the wait is 48 hours after the day ends. [#651](https://github.com/wcpos/roadmap/issues/651) left the length to the spec.
 - The day boundary is the store's timezone (ruled).
-- `assumed:` the annual closure follows the calendar year. BOFiP §170 also allows the fiscal year; a setting for it is not built.
+- **Ruled** (Paul, 2026-11-23, [#640](https://github.com/wcpos/roadmap/issues/640#issuecomment-7104344981)): the annual closure follows the calendar year. BOFiP §170 also allows the fiscal year; a setting for it is not built.
 - `assumed:` in Spain, where the store's AEAT chain may hold only invoice records (Spain research §3.2), closures go on the store's WCPOS chain, the same chain that carries them in France (§9).
 
 ## 9. Slice 6: the event log ([#654](https://github.com/wcpos/roadmap/issues/654))
@@ -262,7 +264,7 @@ Paul answered "A": a locked fiscal block.
 - The QR is ISO/IEC 18004, error correction M, 30 to 40 mm, with a quiet zone; its URL has exactly `nif`, `numserie`, `fecha` and `importe`, to `ValidarQR` in VERI\*FACTU mode and `ValidarQRNoVerifactu` in non-reporting mode. "QR tributario:" is printed above it. In VERI\*FACTU mode "VERI\*FACTU" is printed below it; in non-reporting mode that legend is forbidden.
 - `assumed:` the built-in templates print the QR at 35 mm.
 - `assumed:` the document-type caption follows the invoice type issued: "Factura simplificada" for F2, "Factura" for F1 and F3, "Factura rectificativa" for R1 to R5. The research quotes no caption for the full and corrective types, so the wording is checked against ROF arts. 6 and 7 when the slice is built.
-- AEAT says the QR goes "at the start of the invoice", is the first QR on the document, and may move only within the top area (Spain research §7). That limits "a merchant can move it" in Spain. `assumed:` in Spain the QR and its caption are fixed at the top of the receipt, and the rest of the block moves freely.
+- AEAT says the QR goes "at the start of the invoice", is the first QR on the document, and may move only within the top area (Spain research §7). That limits "a merchant can move it" in Spain. **Ruled** (Paul, 2026-11-23, [#640](https://github.com/wcpos/roadmap/issues/640#issuecomment-7104344981)): in Spain the QR and its caption are fixed at the top of the receipt, and the rest of the block moves freely.
 - `assumed:` the French chain reference is the chain position and the first eight characters of the record's hash.
 
 ## 12. Slice 9: switching on and off, setup checks and the certificate ([#656](https://github.com/wcpos/roadmap/issues/656), [#658](https://github.com/wcpos/roadmap/issues/658))
@@ -282,19 +284,19 @@ Paul answered "A": a fiscal mode can be switched off, as a recorded event.
 **Till holds:** the store's fiscal mode as an auto-synced store field, and in Spain the certificate. **Store holds:** the mode and its history, the setup data and the certificate.
 
 **Failure cases.**
-- A till offline at the moment of the switch keeps selling as before until it syncs. `assumed:` its sales made after the switch but before it learned of it are not chained; the store records them as made outside fiscal mode by that till, in the event log.
+- A till offline at the moment of the switch keeps selling as before until it syncs. **Ruled** (Paul, 2026-11-23, [#640](https://github.com/wcpos/roadmap/issues/640#issuecomment-7104344981)): its sales made after the switch but before it learned of it are not chained; the store records them as made outside fiscal mode by that till, in the event log.
 - A till offline at a switch-off keeps issuing until it syncs; its records are accepted and the chain then closes.
 - The certificate expires: an event is written ahead of time; once expired, non-reporting tills keep selling and record the anomaly, since invoicing "NUNCA debe interrumpirse" (Spain research §3.2).
 
 **For the spec.**
 - Whether Spain allows leaving VERI\*FACTU mode only at a year end is taken from the law: a taxpayer stays in the mode until 31 December of the last year it operated in it, and leaves by sending `FechaFinVeriFactu` before the year ends (Spain research §9.8). So a switch-off or a change to non-reporting mode in Spain takes effect on 1 January following, and the store sends the end date with its last submission of the year. Before the merchant's own obligation date AEAT treats the time as a test period (§9.8).
-- **Entering the SII ends the Spanish mode at once, not at year end.** A taxpayer in the SII must stop submitting and stop printing the tax QR from the moment it begins complying with the SII (Spain research §2.1). The setup screen's SII declaration covers only the day of the switch. `assumed:` the store's edit screen offers "This business has entered the SII" with a start date; from that date the store and its tills stop sending to AEAT and stop printing the QR, the chains close with a final record, and the change is an event. Records already made stay kept and exportable, as for any switch-off.
+- **Entering the SII ends the Spanish mode at once, not at year end.** A taxpayer in the SII must stop submitting and stop printing the tax QR from the moment it begins complying with the SII (Spain research §2.1). The setup screen's SII declaration covers only the day of the switch. **Ruled** (Paul, 2026-11-23, [#640](https://github.com/wcpos/roadmap/issues/640#issuecomment-7104344981)): joining the SII is something the merchant declares with a start date, and the Spanish mode stops then. The store's edit screen offers "This business has entered the SII" with a start date; from that date the store and its tills stop sending to AEAT and stop printing the QR, the chains close with a final record, and the change is an event. Records already made stay kept and exportable, as for any switch-off.
 - How the certificate is encrypted at rest on a merchant's host waits on adviser question 8 (§16).
-- `assumed:` setup **refuses** when the merchant says they are in the Basque Country or Navarre ([#658](https://github.com/wcpos/roadmap/issues/658) left refuse-or-warn to the spec), and refuses a store whose currency is not the euro, since AEAT records are in euros (Spain research §4).
-- `assumed:` a Pro licence that lapses never switches a mode off and never stops records being made. It blocks switching a mode on again and issuing new attestations or declarations. Switching off stays a recorded act.
+- **Ruled** (Paul, 2026-11-23, [#640](https://github.com/wcpos/roadmap/issues/640#issuecomment-7104344981)): setup **refuses** when the merchant says they are in the Basque Country or Navarre ([#658](https://github.com/wcpos/roadmap/issues/658) left refuse-or-warn to the spec), and refuses a store whose currency is not the euro, since AEAT records are in euros (Spain research §4).
+- **Ruled** (Paul, 2026-11-23, [#640](https://github.com/wcpos/roadmap/issues/640#issuecomment-7104344981)): a Pro licence that lapses never switches a mode off and never stops records being made. It only blocks switching a mode on. Switching off stays a recorded act.
 - `assumed:` the switch, the setup checks, the certificate store and the AEAT client live in Pro. The country payloads live in Free and the app, because the store verifies them (§6) and the engine is core.
-- `assumed:` the screens are gated by the existing "Manage POS settings in WP Admin" capability.
-- `assumed:` the archive that lets an uninstall delete data must cover every record, closure and event the wipe would remove, the current period included. The uninstall screen offers to make that archive up to the moment, and allows the wipe only once it has been downloaded and nothing newer exists. An archive of an earlier period does not count.
+- **Ruled** (Paul, 2026-11-23, [#640](https://github.com/wcpos/roadmap/issues/640#issuecomment-7104344981)): the screens are gated by the existing "Manage POS settings in WP Admin" capability.
+- **Ruled** (Paul, 2026-11-23, [#640](https://github.com/wcpos/roadmap/issues/640#issuecomment-7104344981)): the archive that lets an uninstall delete data must cover every record, closure and event the wipe would remove, the current period included. The uninstall screen offers to make that archive up to the moment, and allows the wipe only once it has been downloaded and nothing newer exists. An archive of an earlier period does not count.
 
 ## 13. Spain: the records, VERI\*FACTU submission and the non-reporting mode ([#647](https://github.com/wcpos/roadmap/issues/647))
 
@@ -319,7 +321,7 @@ From Spain research §9:
 - SOAP 1.1 over HTTPS to AEAT's `VerifactuSOAP` endpoints, authenticated by a qualified certificate; operation `RegFactuSistemaFacturacion`; 1 to 1,000 records per message, one taxpayer per message.
 - **Flow control:** wait `TiempoEsperaEnvio` (60 seconds at the start) between sends, or send at 1,000 waiting records, whichever comes first. Simplified invoices still go "de forma inmediata", not at closing time.
 - **Offline or AEAT down:** invoicing continues; pending records go in generation order with `Incidencia = S`; retry at least hourly; a warning with the count remaining shows until the queue is empty.
-- **Responses:** per-record `Correcto`, `AceptadoConErrores` or `Incorrecto` are stored with the record; a rejected record is corrected and resent (`Subsanacion = S`, `RechazoPrevio = X`); "accepted with errors" ones that need correcting are listed in WP Admin. A SOAP `Server` fault or no answer is resent; a `Client` fault is a defect, logged as an event.
+- **Responses:** per-record `Correcto`, `AceptadoConErrores` or `Incorrecto` are stored with the record; a record rejected for an error in the record only is corrected and resent as an alta de subsanación (`Subsanacion = S`, `RechazoPrevio = X`); where the invoice itself carries an ROF-defined error, a factura rectificativa is issued instead, and nothing more is done with the rejected original (Spain research §9.7, developer FAQ no. 17); "accepted with errors" ones that need correcting are listed in WP Admin. A SOAP `Server` fault or no answer is resent; a `Client` fault is a defect, logged as an event.
 - Every failed or rejected submission and its retry is an event (§9).
 
 **Till holds:** its records and, per record, whether AEAT has accepted it, learned from the store. **Store holds:** the send queue, every response, and the certificate.
@@ -343,7 +345,7 @@ From Spain research §10, on top of everything in 13.1:
 
 **Till holds:** the certificate as a non-exportable key or in secure storage, its billing chain and its event chain. **Store holds:** every signed record and event, and the certificate.
 
-**Failure cases.** A till whose stored key is lost or wiped gets the certificate again when a cashier signs in; until then it cannot sign, and so cannot issue a Spanish document in this mode. `assumed:` such a till refuses to complete a sale until it has the certificate, because an unsigned record is not a record (Spain research §3.3) and the no-limit ruling covers being offline, not lacking a key.
+**Failure cases.** A till whose stored key is lost or wiped gets the certificate again when a cashier signs in; until then it cannot sign, and so cannot issue a Spanish document. **Ruled** (Paul, 2026-11-23, [#640](https://github.com/wcpos/roadmap/issues/640#issuecomment-7104344981)): in Spain such a till refuses to complete a sale until it has the certificate, because an unsigned record is not a record (Spain research §3.3) and the no-limit ruling covers being offline, not lacking a key.
 
 ## 14. France: the items left from the gap list ([#643](https://github.com/wcpos/roadmap/issues/643))
 
@@ -404,7 +406,7 @@ The French research ranks ten gaps (§7). Gaps 1 to 4 and 6 to 8 are covered by 
   - Poland: an online cash register, or a software register in listed activities.
   - Belgium: a certified till with a fiscal data module for hospitality.
   - Sweden: a certified control unit.
-- **TicketBAI (Álava, Gipuzkoa, Bizkaia) and Navarre** ([#658](https://github.com/wcpos/roadmap/issues/658)): the Spanish mode serves Spain outside the foral territories and says so. TicketBAI is later work; its three provincial software registrations are a commercial step.
+- **TicketBAI (Álava, Gipuzkoa, Bizkaia) and Navarre** ([#658](https://github.com/wcpos/roadmap/issues/658)): the Spanish mode serves Spain outside the foral territories and says so. TicketBAI is not in this release; its three provincial software registrations are a commercial step.
 - **Accredited third-party certification** (NF525/LNE and equivalents): "a commercial step after the software is ready" ([#225](https://github.com/wcpos/roadmap/issues/225), 2026-09-10).
 - **Training mode** ([#652](https://github.com/wcpos/roadmap/issues/652)): none in this release; reopens on #659 question 7.
 
@@ -453,7 +455,7 @@ The regime-kinds note sorts the world's till rules into nine kinds by what they 
 - A closure that can sit inside a till chain: slice 1 (a record type either chain may hold); France and Spain put closures on the store's chain (slice 5).
 - Export formatters behind the archive: slice 7.
 
-**Not built now:** a signer that is told when a sale starts, as Germany's TSE needs (regime-kinds note §7). It is later work.
+**Not built now:** a signer that is told when a sale starts, as Germany's TSE needs (regime-kinds note §7). It is not in this release.
 
 **Rules that hold only in France and Spain.** Four rulings are written in this file as rules of the France and Spain modes, never as rules of fiscal mode: no offline limit (rule 4), the store holds the certificate (rule 2, §12), the store makes every closure (§8), and a sale completes locally at once (rule 5).
 
