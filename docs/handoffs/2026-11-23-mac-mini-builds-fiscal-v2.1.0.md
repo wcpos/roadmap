@@ -11,7 +11,7 @@ This is the session's plan, described to Paul on 2026-11-23; it is not recorded 
 - **One builder, one queue.** Permissions (#599) comes first. Take a fiscal ticket only when permissions has nothing takeable: every open permissions ticket is claimed, blocked, or waiting on checks, review or Paul.
 - **The tracker holds the order.** Take the first open, unblocked, unclaimed `ready-for-agent` ticket under #640, in the order of the table below. Never start a blocked ticket, whatever the reason looks like.
 - **Never two builds at once.** One suite at a time; a fiscal PR and a permissions PR may both be open, but only one is being built or tested at any moment.
-- **Same lane as permissions:** `next` in wcpos/woocommerce-pos, wcpos/woocommerce-pos-pro and wcpos/monorepo. Sync `main` into `next` per repo before each slice. Live evidence comes from dev-next only.
+- **Same lane as permissions:** `next` in wcpos/woocommerce-pos, wcpos/woocommerce-pos-pro and wcpos/monorepo. Sync `main` into `next` per repo before each slice. Live evidence comes from dev-next, the hosted store that serves `next`, never a local WordPress (Paul, 2026-11-23, confirming his rule of 2026-10-21; the permissions handoff carries the full line).
 
 ## Tickets
 
