@@ -1,0 +1,96 @@
+// Capture every width × state of the register prototype at default light and dark, regular and
+// compact scale; fail on any page or console error. Throwaway.
+//   node docs/prototypes/2026-09-12-language/pos-register/shoot.js            (all)
+//   node …/shoot.js --quick                                                    (tablet light regular only)
+const { chromium } = require('/Users/kilbot/Projects/monorepo-v2/node_modules/playwright');
+const path = require('path');
+const fs = require('fs');
+const DIR = __dirname;
+const OUT = path.join(DIR, 'screens');
+const QUICK = process.argv.includes('--quick');
+// clear only this script's own captures; the board and variant folders under screens/ are kept
+fs.mkdirSync(OUT, { recursive: true });
+for (const f of fs.readdirSync(OUT)) if (f.endsWith('.jpg') || f.endsWith('.png')) fs.rmSync(path.join(OUT, f));
+
+const STATES = ['open','added','line-actions','line-edit','many-orders','cart-settings','empty','closed','pick','counting','overdue','panel','closure','offline','loading','noresults','table','settings','tender','tender-card','tender-legacy','split','split-1of2','split-2of3','split-item','paid','long'];
+STATES.push('paid-change','paid-split','paid-printing','paid-printed','paid-captured','paid-syncing','paid-offline','paid-nopreview','paid-email','paid-email-offline');
+STATES.push('var-popover','var-sheet','var-syncing','var-unavailable','camera-permission','camera-scanning','camera-unavailable','scan-searching','scan-notfound','scan-ambiguous','scan-outofstock','filter-editor','filter-editor-empty','outage');
+const ORDERS_STATES = ['receipt'];
+const WIDTHS = QUICK ? ['tablet'] : ['phone','tablet','desktop'];
+const THEMES = QUICK ? ['light'] : ['light','dark'];
+const SCALES = QUICK ? ['regular'] : ['regular','compact'];
+
+(async () => {
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 1500, height: 1400 } /* tall enough that the 844 px phone frame never scrolls under the sticky control strip */, reducedMotion: 'reduce' });
+  const errors = [];
+  page.on('pageerror', e => errors.push('pageerror: ' + e.message));
+  page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
+  await page.goto('file://' + path.join(DIR, 'index.html'));
+
+  const set = (k, v) => page.click(`.strip button[data-set="${k}"][data-v="${v}"]`);
+  const scn = (v) => page.click(`.strip button[data-scn="${v}"]`);
+  let n = 0;
+  for (const w of WIDTHS) for (const theme of THEMES) for (const scale of SCALES) {
+    await set('w', w); await set('theme', theme); await set('scale', scale);
+    for (const s of STATES) {
+      await scn(s);
+      // phone: the products-side states live on the Products tab, cart-side on the Cart tab (jump() already picks)
+      const name = `${w}-${theme}-${scale}-${s}`;
+      await page.locator('#frame').screenshot({ path: path.join(OUT, name + '.jpg'), type: 'jpeg', quality: 82, animations: 'disabled' });
+      n++;
+    }
+  }
+  // The new Orders receipt scene uses the same body, without checkout auto-print.
+  await page.goto('file://' + path.join(DIR, 'index.html') + '?screen=orders');
+  for (const w of WIDTHS) for (const theme of THEMES) for (const scale of SCALES) {
+    await set('w', w); await set('theme', theme); await set('scale', scale);
+    for (const state of ORDERS_STATES) {
+      await scn(state);
+      await page.locator('#frame').screenshot({ path: path.join(OUT, `${w}-${theme}-${scale}-orders-${state}.jpg`), type: 'jpeg', quality: 82, animations: 'disabled' });
+      n++;
+    }
+  }
+  await page.goto('file://' + path.join(DIR, 'index.html'));
+  // a few interaction assertions: add a line, open the panel, close it, type on the keypad
+  await set('w','tablet'); await set('theme','light'); await set('scale','regular'); await scn('empty');
+  await page.click('.tile >> nth=0');
+  if (!(await page.locator('.line.settle').count())) throw new Error('adding a line did not settle');
+  // Products: the variable tile opens choices; Add lands one quiet cart-line beat.
+  await scn('open');
+  await page.click('[data-testid="products-variable-tile"]');
+  await page.click('[data-pp="colour"][data-v="Natural"]');
+  await page.click('[data-pp="add"]');
+  if (!(await page.locator('.line.settle').textContent()).includes('Tote bag')) throw new Error('variation did not settle in the cart');
+  if (await page.locator('.pp-picker,.pp-sheet,.toast').count()) throw new Error('variation left a picker or success toast open');
+  await page.click('[data-act="openPanel"]');
+  if (!(await page.locator('.panel').count())) throw new Error('panel did not open');
+  await page.click('.panel [data-act="closePanel"]');
+  if (await page.locator('.panel').count()) throw new Error('panel did not close');
+  await scn('tender');
+  await page.keyboard.type('5000');
+  const big = await page.locator('.pay .big').textContent();
+  if (!/50\.?00/.test(big)) throw new Error('keypad did not type: ' + big);
+  await page.keyboard.press('Enter');
+  if (!(await page.locator('.paidwrap').count())) throw new Error('Enter did not take cash');
+  if (!(await page.locator('[data-rc="print"]').textContent()).includes('Printing…')) throw new Error('receipt did not auto-print');
+  if (!(await page.locator('.rc-next').isDisabled()) || !(await page.locator('.rc-skip').isDisabled())) throw new Error('sale can finish before dispatch');
+  await page.waitForFunction(() => document.querySelector('[data-rc="print"]')?.textContent.includes('Printed to Epson TM-m30 · Print again'));
+  if (await page.locator('.rc-next').isDisabled() || await page.locator('.rc-skip').isDisabled()) throw new Error('finish actions did not unlock after dispatch');
+  // the rail links the pages: Reports and back, and the phone's menu sheet does the same
+  await scn('open');
+  await page.click('.rail [data-nav="reports"]');
+  if (!(await page.locator('.frame[data-screen="reports"] .rail [data-nav="reports"][aria-current="page"]').count())) throw new Error('rail did not open Reports');
+  await page.click('.rail [data-nav="register"]');
+  if (!(await page.locator('.frame[data-screen="register"] .cartcol').count())) throw new Error('rail did not return to the register');
+  await set('w','phone');
+  await page.click('.bar [data-sheet="menu"]');
+  await page.click('.sheet .menu-list [data-nav="reports"]');
+  if (!(await page.locator('.frame[data-screen="reports"] .bar').count()) || await page.locator('.sheet').count()) throw new Error('phone menu did not open Reports');   // the Reports page's own bar; its phone tab row is a Reports layout choice, not this script's
+  await page.click('.bar [data-sheet="menu"]');
+  await page.click('.sheet .menu-list [data-nav="register"]');
+  if (!(await page.locator('.frame[data-screen="register"]').count())) throw new Error('phone menu did not return to the register');
+  await browser.close();
+  if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
+  console.log(`ok · ${n} captures in ${OUT}`);
+})().catch(e => { console.error(e); process.exit(1); });

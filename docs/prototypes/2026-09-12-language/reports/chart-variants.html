@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sales chart · variants</title>
+<!-- Reports › Sales hero chart, five ways, on the prototype's own fixture (Monday 14 Sep 2026, now 5:30 pm)
+     and tokens. Paul 2026-09-17: "let's start with that chart"; references gathered from Mobbin the same day
+     (Strava active times, Square sales trends, Midday revenue, Monzo average, Chase money out, Shopify compare,
+     Eight Sleep paired bars). Throwaway: the winner moves into ../pos-register/index.html (RP.chart). -->
+<style>
+:root{--font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif}
+body{margin:0;background:#141416;color:#ddd;font:14px/1.4 var(--font)}
+.strip{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;padding:10px 18px;background:#1c1c1f;border-bottom:1px solid #2a2a2e}
+.strip b{font-weight:600;margin-right:8px;color:#aaa}.seg{display:inline-flex;border:1px solid #3a3a40;border-radius:6px;overflow:hidden}
+.seg button{background:transparent;border:0;color:#bbb;padding:5px 10px;font:inherit;cursor:pointer}.seg button.on{background:#e8e8ea;color:#111}
+.stage{padding:24px 18px 60px;display:flex;flex-direction:column;gap:28px;align-items:flex-start}
+.note{max-width:1090px;color:#999}.note b{color:#ddd}
+h2{margin:0 0 6px;font-size:14px;font-weight:600;color:#eee}h2 span{font-weight:400;color:#8a8a90;margin-left:8px}
+
+/* ---- the prototype's tokens, light and dark ---- */
+.frame{--u:4px;--fs:14px;--ctl:44px;--r:8px;--amt:40px;--hair:1px;--floor:44px;
+  --bg:oklch(0.975 0.004 250);--fg:oklch(0.22 0.02 250);--card:oklch(1 0 0);--muted:oklch(0.955 0.006 250);--muted-fg:oklch(0.50 0.02 250);--border:oklch(0.90 0.008 250);
+  --primary:oklch(0.50 0.18 240);--primary-fg:oklch(0.99 0.01 240);--ok:oklch(0.55 0.16 155);--bad:oklch(0.58 0.2 25);--warn:oklch(0.68 0.16 70);
+  color-scheme:light;background:var(--bg);color:var(--fg);font:var(--fs)/1.4 var(--font);padding:16px;border-radius:12px;width:1122px;box-sizing:border-box}
+.frame[data-theme="dark"]{--bg:oklch(0.19 0.018 250);--fg:oklch(0.93 0.01 250);--card:oklch(0.23 0.018 250);--muted:oklch(0.28 0.018 250);--muted-fg:oklch(0.70 0.015 250);--border:oklch(0.33 0.02 250);
+  --primary:oklch(0.70 0.17 240);--primary-fg:oklch(0.16 0.02 250);--ok:oklch(0.72 0.15 155);--bad:oklch(0.68 0.18 25);--warn:oklch(0.78 0.15 75);color-scheme:dark}
+.frame[data-w="phone"]{width:390px;padding:12px;--amt:34px}
+.frame[data-w="desktop"]{--floor:24px}
+.frame button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+.card{background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r)}
+.hero{padding:calc(var(--u)*5);position:relative}.frame[data-w="phone"] .hero{padding:calc(var(--u)*4)}
+.hero-top{display:flex;justify-content:space-between;gap:calc(var(--u)*6)}
+.lbl{color:var(--muted-fg)}.big{font-size:var(--amt);font-weight:700;letter-spacing:-.03em;line-height:1.1;margin:2px 0 6px}
+.prev{display:flex;flex-wrap:wrap;align-items:center;gap:calc(var(--u)*2);color:var(--muted-fg)}
+.delta{border:var(--hair) solid var(--border);border-radius:var(--r);padding:var(--u) calc(var(--u)*2);color:var(--muted-fg)}.delta.up{color:var(--ok)}
+.cmpbtn{display:inline-flex;align-items:center;gap:var(--u);min-height:max(calc(var(--ctl) - 14px),var(--floor));color:var(--muted-fg);margin-top:4px}.cmpbtn svg{width:14px;height:14px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(var(--u)*6);align-content:center;margin-right:var(--ctl)}.frame[data-w="phone"] .kpis{display:none}
+.kpi .l{color:var(--muted-fg)}.kpi .n{font-size:calc(var(--fs)*1.7);font-weight:600}.kpi .p{color:var(--muted-fg);font-size:calc(var(--fs)*.9)}
+.printb{position:absolute;right:calc(var(--u)*2);top:calc(var(--u)*2);width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted-fg)}.printb svg{width:18px;height:18px}
+svg.bars{width:100%;height:auto;display:block;margin-top:calc(var(--u)*4);overflow:visible}
+svg.bars text{font-family:var(--font)}
+.cap{display:flex;gap:calc(var(--u)*3);flex-wrap:wrap;font-size:calc(var(--fs)*.9);color:var(--muted-fg);padding-top:calc(var(--u)*2);align-items:center}.cap b{color:var(--fg);font-weight:500}.cap .grow{flex:1}
+.lg{display:inline-flex;gap:var(--u);align-items:center}.lg i{width:8px;height:8px;border-radius:2px;display:inline-block}.lg i.dash{width:14px;height:0;border-top:2px dashed var(--muted-fg);border-radius:0}.lg i.line{width:14px;height:0;border-top:2px solid var(--primary);border-radius:0}
+.head{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--u) calc(var(--u)*3);margin-top:calc(var(--u)*5);font-size:calc(var(--fs)*.93);color:var(--muted-fg)}.head b{color:var(--fg);font-weight:600;font-size:var(--fs)}
+.tipwrap{position:relative}.tip{position:absolute;z-index:2;background:var(--card);border:var(--hair) solid var(--border);border-radius:var(--r);padding:calc(var(--u)*2) calc(var(--u)*3);font-size:calc(var(--fs)*.9);pointer-events:none;white-space:nowrap;box-shadow:0 4px 16px oklch(0 0 0 / .12)}
+.tip .t{font-weight:600;margin-bottom:2px}.tip .r{display:flex;justify-content:space-between;gap:calc(var(--u)*5);color:var(--muted-fg)}.tip .r b{color:var(--fg);font-weight:500}
+.hit{cursor:crosshair}
+.segt{display:inline-flex;border:var(--hair) solid var(--border);border-radius:var(--r);overflow:hidden;height:max(36px,var(--floor));background:var(--card);align-self:center}.segt button{padding:0 calc(var(--u)*2.5);color:var(--muted-fg);font-weight:500;font-size:calc(var(--fs)*.93)}.segt button.on{background:var(--muted);color:var(--fg);font-weight:600}.segt button+button{border-left:var(--hair) solid var(--border)}
+</style>
+<div class="strip">
+  <span><b>Theme</b><span class="seg"><button class="on" data-set="theme" data-v="light">Light</button><button data-set="theme" data-v="dark">Dark</button></span></span>
+  <span><b>Width</b><span class="seg"><button class="on" data-set="w" data-v="desktop">Desktop</button><button data-set="w" data-v="phone">Phone</button></span></span>
+  <span><b>Show</b><span class="seg"><button class="on" data-set="only" data-v="all">All</button><button data-set="only" data-v="A">A</button><button data-set="only" data-v="B">B</button><button data-set="only" data-v="C">C</button><button data-set="only" data-v="D">D</button><button data-set="only" data-v="E">E</button><button data-set="only" data-v="F">F</button><button data-set="only" data-v="G">G</button><button data-set="only" data-v="H">H</button></span></span>
+</div>
+<div class="stage" id="stage"></div>
+<script>
+/* fixture, copied from the prototype: hours 8–19, today's orders by hour, last Monday = the normal-day shape × £1108.20 */
+const HOURS=[8,9,10,11,12,13,14,15,16,17,18,19], NOWH=17;
+const CUR=[0,142.50,109.30,164.99,212.40,49.00,96.50,203.80,203.01,59.00,0,0];
+const P=[0,.04,.09,.08,.06,.15,.09,.10,.14,.13,.08,.04], PREV=P.map(p=>Math.round(1108.20*p*100)/100);
+const ORDERS_AT={9:2,10:2,11:2,12:2,13:1,14:1,15:1,16:2,17:1};
+const label=h=>h===12?'12pm':h<12?h+'am':(h-12)+'pm';
+const sum=a=>a.reduce((s,x)=>s+x,0);
+const fmt=n=>'£'+Math.abs(n).toFixed(2);
+const total=sum(CUR), prevRef=sum(PREV.filter((_,i)=>HOURS[i]<=NOWH));
+const peak=CUR.indexOf(Math.max(...CUR));
+const S={theme:'light',w:'desktop',only:'H',tip:null,mode:'hour'};
+const I={print:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17h2a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2"/><path d="M17 9V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v4"/><rect x="7" y="13" width="10" height="8" rx="2"/></svg>',
+ chevd:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>'};
+
+function heroTop(){
+  const d=(total-prevRef)/prevRef;
+  return `<button class="printb" title="Sales summary">${I.print}</button><div class="hero-top"><div><div class="lbl">Sales</div><div class="big">${fmt(total)}</div><div class="prev"><span class="delta ${d>0?'up':'down'}">${d>0?'+':'−'}${Math.round(Math.abs(d)*100)}%</span><span>${fmt(prevRef)} by now last Monday</span></div><button class="cmpbtn">vs same day last week${I.chevd}</button></div><div class="kpis"><div class="kpi"><div class="l">Orders</div><div class="n">14</div><div class="p">11 by now</div></div><div class="kpi"><div class="l">Average order</div><div class="n">£88.61</div><div class="p">£88.66</div></div><div class="kpi"><div class="l">Items</div><div class="n">33</div><div class="p">24</div></div></div></div>`;
+}
+const phone=()=>S.w==='phone';
+function geom(){ const W=phone()?340:1090, H=phone()?140:150, padB=20, top=phone()?22:26; const n=12, step=W/n; return {W,H,padB,top,n,step,plot:H-padB-top}; }
+const axis=(g,every)=>HOURS.map((h,i)=>i%every===0?`<text x="${(i+.5)*g.step}" y="${g.H-5}" text-anchor="middle" font-size="11" fill="var(--muted-fg)">${label(h)}</text>`:'').join('');
+const hits=(g,v)=>HOURS.map((h,i)=>`<rect class="hit" data-v="${v}" data-i="${i}" x="${i*g.step}" y="0" width="${g.step}" height="${g.H}" fill="transparent"/>`).join('');
+const every=()=>phone()?2:1;
+
+/* A · as drawn: last Monday as a ghost bar behind today's bar, the busiest hour in the caption */
+function chartA(){
+  const g=geom(), bw=Math.min(40,g.step-8), max=Math.max(...CUR,...PREV), y=v=>g.top+g.plot*(1-v/max);
+  let s=`<svg class="bars" viewBox="0 0 ${g.W} ${g.H}">`;
+  HOURS.forEach((h,i)=>{ const x=(i+.5)*g.step-bw/2;
+    if(PREV[i]>0) s+=`<rect x="${x}" y="${y(PREV[i])}" width="${bw}" height="${g.H-g.padB-y(PREV[i])}" rx="2" fill="var(--border)"/>`;
+    if(CUR[i]>0) s+=`<rect x="${x}" y="${y(CUR[i])}" width="${bw}" height="${g.H-g.padB-y(CUR[i])}" rx="2" fill="var(--primary)"/>`; });
+  s+=axis(g,every())+hits(g,'A')+'</svg>';
+  return s+`<div class="cap"><span>Busiest hour <b>${label(HOURS[peak])}</b>, ${fmt(CUR[peak])} from ${ORDERS_AT[HOURS[peak]]} orders</span><span class="grow"></span><span class="lg"><i style="background:var(--primary)"></i>Today</span><span class="lg"><i style="background:var(--border)"></i>last Monday</span></div>`;
+}
+/* B · Strava's peak + Midday's line: today's bars, the busiest hour labelled on the bar, last Monday a dashed line, the hours still to come as faint bars of last Monday's shape */
+function chartB(){
+  const g=geom(), bw=Math.min(40,g.step-8), max=Math.max(...CUR,...PREV)*1.02, y=v=>g.top+g.plot*(1-v/max);
+  let s=`<svg class="bars" viewBox="0 0 ${g.W} ${g.H}">`;
+  HOURS.forEach((h,i)=>{ const x=(i+.5)*g.step-bw/2;
+    if(h>NOWH&&PREV[i]>0) s+=`<rect x="${x}" y="${y(PREV[i])}" width="${bw}" height="${g.H-g.padB-y(PREV[i])}" rx="2" fill="var(--muted)"/>`;
+    if(CUR[i]>0) s+=`<rect x="${x}" y="${y(CUR[i])}" width="${bw}" height="${g.H-g.padB-y(CUR[i])}" rx="2" fill="var(--primary)" fill-opacity="${i===peak?1:.5}"/>`; });
+  const pts=HOURS.map((h,i)=>`${(i+.5)*g.step},${y(PREV[i])}`).join(' ');
+  s+=`<polyline points="${pts}" fill="none" stroke="var(--muted-fg)" stroke-width="1.5" stroke-dasharray="4 4" stroke-linejoin="round"/>`;
+  s+=`<text x="${(peak+.5)*g.step}" y="${y(CUR[peak])-7}" text-anchor="middle" font-size="12" font-weight="600" fill="var(--fg)">${fmt(CUR[peak])}</text>`;
+  s+=axis(g,every())+hits(g,'B')+'</svg>';
+  return `<div class="head"><b>By hour</b><span>busiest ${label(HOURS[peak])}, ${ORDERS_AT[HOURS[peak]]} orders</span></div>`+s+`<div class="cap"><span class="grow"></span><span class="lg"><i style="background:var(--primary)"></i>Today</span><span class="lg"><i class="dash"></i>last Monday</span><span class="lg"><i style="background:var(--muted)"></i>still to come</span></div>`;
+}
+/* C · paired bars (Eight Sleep, Origin): today and last Monday side by side, thinner, primary and border */
+function chartC(){
+  const g=geom(), bw=Math.min(16,(g.step-10)/2), max=Math.max(...CUR,...PREV), y=v=>g.top+g.plot*(1-v/max);
+  let s=`<svg class="bars" viewBox="0 0 ${g.W} ${g.H}">`;
+  HOURS.forEach((h,i)=>{ const c=(i+.5)*g.step;
+    if(CUR[i]>0) s+=`<rect x="${c-bw-1}" y="${y(CUR[i])}" width="${bw}" height="${g.H-g.padB-y(CUR[i])}" rx="2" fill="var(--primary)"/>`;
+    if(PREV[i]>0) s+=`<rect x="${c+1}" y="${y(PREV[i])}" width="${bw}" height="${g.H-g.padB-y(PREV[i])}" rx="2" fill="${h>NOWH?'var(--muted)':'var(--border)'}"/>`; });
+  s+=`<text x="${(peak+.5)*g.step-bw/2-1}" y="${y(CUR[peak])-7}" text-anchor="middle" font-size="12" font-weight="600" fill="var(--fg)">${fmt(CUR[peak])}</text>`;
+  s+=axis(g,every())+hits(g,'C')+'</svg>';
+  return `<div class="head"><b>By hour</b><span>busiest ${label(HOURS[peak])}, ${ORDERS_AT[HOURS[peak]]} orders</span></div>`+s+`<div class="cap"><span class="grow"></span><span class="lg"><i style="background:var(--primary)"></i>Today</span><span class="lg"><i style="background:var(--border)"></i>last Monday</span></div>`;
+}
+/* D · quiet (Monzo, Chase): today only, rounded bars, the amount under every hour, one dashed line for last Monday's average hour; the comparison lives in the delta chip */
+function chartD(){
+  const g=geom(), bw=Math.min(28,g.step-14), max=Math.max(...CUR)*1.05, y=v=>g.top+g.plot*(1-v/max);
+  const past=PREV.filter((_,i)=>HOURS[i]<=NOWH&&HOURS[i]>8), avg=sum(past)/past.length;
+  let s=`<svg class="bars" viewBox="0 0 ${g.W} ${g.H+(phone()?0:14)}">`;
+  HOURS.forEach((h,i)=>{ const x=(i+.5)*g.step-bw/2;
+    if(CUR[i]>0) s+=`<rect x="${x}" y="${y(CUR[i])}" width="${bw}" height="${g.H-g.padB-y(CUR[i])}" rx="${bw/2}" fill="var(--primary)" fill-opacity="${i===peak?1:.5}"/>`;
+    else if(h<=NOWH) s+=`<rect x="${x}" y="${g.H-g.padB-3}" width="${bw}" height="3" rx="1.5" fill="var(--border)"/>`;
+    if(!phone()&&CUR[i]>0) s+=`<text x="${x+bw/2}" y="${g.H+9}" text-anchor="middle" font-size="10.5" fill="var(--muted-fg)">£${Math.round(CUR[i])}</text>`; });
+  s+=`<line x1="0" x2="${g.W}" y1="${y(avg)}" y2="${y(avg)}" stroke="var(--muted-fg)" stroke-width="1" stroke-dasharray="3 4"/>${phone()?'':`<text x="${g.W}" y="${y(avg)-4}" text-anchor="end" font-size="10.5" fill="var(--muted-fg)">last Monday, ${fmt(avg)}/hour</text>`}`;
+  s+=axis(g,every())+hits(g,'D')+'</svg>';
+  return `<div class="head"><b>By hour</b><span>busiest ${label(HOURS[peak])}, ${ORDERS_AT[HOURS[peak]]} orders</span></div>`+s+(phone()?`<div class="cap"><span class="grow"></span><span class="lg"><i class="dash"></i>last Monday, ${fmt(avg)}/hour</span></div>`:'');
+}
+/* E · running total (Shopify compare): today as a filled line, last Monday dotted; "ahead or behind" at every hour */
+function chartE(){
+  const g=geom(), max=Math.max(sum(CUR),sum(PREV))*1.04, y=v=>g.top+g.plot*(1-v/max);
+  const cum=a=>a.map((_,i)=>sum(a.slice(0,i+1)));
+  const cc=cum(CUR), cp=cum(PREV), xi=i=>i*g.step+g.step/2, last=HOURS.indexOf(NOWH);
+  const pc=cc.slice(0,last+1).map((v,i)=>`${xi(i)},${y(v)}`), pp=cp.map((v,i)=>`${xi(i)},${y(v)}`);
+  let s=`<svg class="bars" viewBox="0 0 ${g.W} ${g.H}">`;
+  s+=`<polygon points="${xi(0)},${g.H-g.padB} ${pc.join(' ')} ${xi(last)},${g.H-g.padB}" fill="color-mix(in oklch, var(--primary) 12%, transparent)"/>`;
+  s+=`<polyline points="${pp.join(' ')}" fill="none" stroke="var(--muted-fg)" stroke-width="1.5" stroke-dasharray="2 4" stroke-linecap="round"/>`;
+  s+=`<polyline points="${pc.join(' ')}" fill="none" stroke="var(--primary)" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round"/>`;
+  s+=`<circle cx="${xi(last)}" cy="${y(cc[last])}" r="4" fill="var(--primary)"/><text x="${xi(last)-8}" y="${y(cc[last])-9}" text-anchor="end" font-size="12" font-weight="600" fill="var(--fg)">${fmt(cc[last])} now</text>`;
+  if(!phone()) s+=`<text x="${xi(11)}" y="${y(cp[11])-7}" text-anchor="end" font-size="11" fill="var(--muted-fg)">${fmt(cp[11])} last Monday, all day</text>`;
+  s+=axis(g,every())+hits(g,'E')+'</svg>';
+  return `<div class="head"><b>Running total</b><span>ahead of last Monday since 11am</span></div>`+s+`<div class="cap"><span class="grow"></span><span class="lg"><i class="line"></i>Today</span><span class="lg"><i class="dash"></i>last Monday${phone()?`, ${fmt(cp[11])} all day`:''}</span></div>`;
+}
+/* F · E's running total carrying B's information (Paul 2026-09-17: "the running total style but with the B information"):
+   the hourly bars sit under the line on their own scale (bottom third), the busiest hour is the full-colour bar and its
+   segment of the line is marked; last Monday's dashed line runs to close, so what is still to come is already there */
+function chartF(withBars=true){
+  const g=geom(), max=Math.max(sum(CUR),sum(PREV))*1.06, y=v=>g.top+g.plot*(1-v/max);
+  const cum=a=>a.map((_,i)=>sum(a.slice(0,i+1)));
+  const cc=cum(CUR), cp=cum(PREV), xi=i=>i*g.step+g.step/2, last=HOURS.indexOf(NOWH);
+  const pc=cc.slice(0,last+1).map((v,i)=>`${xi(i)},${y(v)}`), pp=cp.map((v,i)=>`${xi(i)},${y(v)}`);
+  let s=`<svg class="bars" viewBox="0 0 ${g.W} ${g.H}">`;
+  if(withBars){ const bw=Math.min(28,g.step-10), hmax=Math.max(...CUR), base=g.H-g.padB, hb=g.plot*.38;
+    HOURS.forEach((h,i)=>{ if(CUR[i]>0){ const hh=hb*CUR[i]/hmax; s+=`<rect x="${xi(i)-bw/2}" y="${base-hh}" width="${bw}" height="${hh}" rx="2" fill="var(--primary)" fill-opacity="${i===peak?.9:.22}"/>`; } }); }
+  s+=`<polygon points="${xi(0)},${g.H-g.padB} ${pc.join(' ')} ${xi(last)},${g.H-g.padB}" fill="color-mix(in oklch, var(--primary) 10%, transparent)"/>`;
+  s+=`<polyline points="${pp.join(' ')}" fill="none" stroke="var(--muted-fg)" stroke-width="1.5" stroke-dasharray="2 4" stroke-linecap="round"/>`;
+  s+=`<polyline points="${pc.join(' ')}" fill="none" stroke="var(--primary)" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round"/>`;
+  /* the busiest hour: its segment of the line, thicker, with the amount */
+  s+=`<line x1="${xi(peak-1)}" y1="${y(cc[peak-1])}" x2="${xi(peak)}" y2="${y(cc[peak])}" stroke="var(--primary)" stroke-width="5" stroke-linecap="round"/>`;
+  s+=`<circle cx="${xi(peak)}" cy="${y(cc[peak])}" r="4" fill="var(--card)" stroke="var(--primary)" stroke-width="2"/>`;
+  s+=`<text x="${xi(peak)}" y="${y(cc[peak])-11}" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--fg)">+${fmt(CUR[peak])}${phone()?'':' <tspan font-weight="400" fill="var(--muted-fg)">busiest hour</tspan>'}</text>`;
+  s+=`<circle cx="${xi(last)}" cy="${y(cc[last])}" r="4" fill="var(--primary)"/><text x="${xi(last)-8}" y="${y(cc[last])-9}" text-anchor="end" font-size="12" font-weight="600" fill="var(--fg)">${fmt(cc[last])} now</text>`;
+  if(!phone()) s+=`<text x="${xi(11)}" y="${y(cp[11])-7}" text-anchor="end" font-size="11" fill="var(--muted-fg)">${fmt(cp[11])} last Monday, all day</text>`;
+  s+=axis(g,every())+hits(g,withBars?'F':'G')+'</svg>';
+  return `<div class="head"><b>Running total</b><span>ahead of last Monday since 11am${phone()?'':` · busiest ${label(HOURS[peak])}, ${ORDERS_AT[HOURS[peak]]} orders`}</span></div>`+s+`<div class="cap"><span class="grow"></span><span class="lg"><i class="line"></i>Today</span>${withBars?`<span class="lg"><i style="background:var(--primary);opacity:.3"></i>by hour</span>`:''}<span class="lg"><i class="dash"></i>last Monday${phone()?`, ${fmt(cp[11])} all day`:''}</span></div>`;
+}
+/* H · one chart, two views (Paul 2026-09-17: "an easy toggle for sales by the hour vs running total") */
+function chartH(){
+  const seg=`<span class="segt" style="margin-left:auto"><button class="${S.mode==='hour'?'on':''}" data-set="mode" data-v="hour">By hour</button><button class="${S.mode==='run'?'on':''}" data-set="mode" data-v="run">Running total</button></span>`;
+  const body=S.mode==='hour'?chartB():chartF(false);
+  return body.replace('</div>',`${seg}</div>`).replaceAll('data-v="B"','data-v="H"').replaceAll('data-v="G"','data-v="H"');
+}
+const VARIANTS=[
+ ['A','As drawn','ghost bars behind, busiest hour in the caption. The baseline.',chartA],
+ ['B','Peak on the bar, dashed reference','Strava’s busiest-hour callout + Midday’s comparison line; hours still to come as faint bars. My pick.',chartB],
+ ['C','Paired bars','Eight Sleep / Origin: today and last Monday side by side, so every hour reads as a pair.',chartC],
+ ['D','Quiet','Monzo / Chase: today only, the amount under each hour, one dashed line for last Monday’s average hour.',chartD],
+ ['E','Running total','Shopify’s compare: cumulative lines, so ahead-or-behind is visible at every hour, not just in the chip.',chartE],
+ ['F','Running total + the hours','E with B’s information: faint hourly bars under the line on their own scale, the busiest hour full-colour and marked on the line, last Monday dashed to close.',()=>chartF(true)],
+ ['G','Running total, busiest hour marked','F without the bars: the busiest hour is the thick segment of the line.',()=>chartF(false)],
+ ['H','One chart, two views','B and G behind a toggle in the chart head. This is what went into the register prototype.',chartH],
+];
+function tip(){
+  if(!S.tip) return ''; const {v,i,x,y}=S.tip, h=HOURS[i];
+  const rows=['E','F','G'].includes(v)||(v==='H'&&S.mode==='run')?[['Today so far',h>NOWH?'—':fmt(sum(CUR.slice(0,i+1)))],['Last Monday so far',fmt(sum(PREV.slice(0,i+1)))],...(v!=='G'&&h<=NOWH?[['This hour',fmt(CUR[i])+(ORDERS_AT[h]?` · ${ORDERS_AT[h]} order${ORDERS_AT[h]>1?'s':''}`:'')]]:[])]:[['Today',h>NOWH?'—':fmt(CUR[i])+(ORDERS_AT[h]?` · ${ORDERS_AT[h]} order${ORDERS_AT[h]>1?'s':''}`:'')],['Last Monday',fmt(PREV[i])]];
+  return `<div class="tip" style="left:${x}px;top:${y}px"><div class="t">${label(h)}–${label(h+1)}</div>${rows.map(([l,n])=>`<div class="r"><span>${l}</span><b>${n}</b></div>`).join('')}</div>`;
+}
+function render(){
+  document.querySelectorAll('.strip [data-set]').forEach(b=>b.classList.toggle('on',S[b.dataset.set]===b.dataset.v));
+  document.getElementById('stage').innerHTML=`<div class="note">Same figures, same card, same tokens as the prototype. Hover a column for the numbers. The header is the decided hero; only the chart changes.</div>`+VARIANTS.filter(([k])=>S.only==='all'||S.only===k).map(([k,t,d,f])=>`<section><h2>${k} · ${t}<span>${d}</span></h2><div class="frame" data-theme="${S.theme}" data-w="${S.w}"><div class="card hero tipwrap" data-k="${k}">${heroTop()}${f()}${S.tip&&S.tip.v===k?tip():''}</div></div></section>`).join('');
+}
+document.addEventListener('click',e=>{ const b=e.target.closest('[data-set]'); if(!b) return; S[b.dataset.set]=b.dataset.v; S.tip=null; render(); });
+document.addEventListener('mousemove',e=>{
+  const h=e.target.closest('.hit'); const was=S.tip;
+  if(!h){ if(was){ S.tip=null; render(); } return; }
+  const card=h.closest('.hero'); const r=card.getBoundingClientRect(), hr=h.getBoundingClientRect();
+  const t={v:h.dataset.v,i:+h.dataset.i,x:Math.min(hr.left-r.left+hr.width/2+10,r.width-190),y:hr.top-r.top+20};
+  if(was&&was.v===t.v&&was.i===t.i) return; S.tip=t; render();
+});
+render();
+</script>
+</html>
